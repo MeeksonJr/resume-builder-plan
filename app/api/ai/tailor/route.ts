@@ -1,4 +1,4 @@
-import { tailorForJob } from "@/lib/ai";
+import { tailorForJob, ResumeData } from "@/lib/ai";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { resumeData, jobDescription } = requestSchema.parse(body);
 
-        const result = await tailorForJob(resumeData, jobDescription);
+        const result = await tailorForJob(resumeData as unknown as ResumeData, jobDescription);
 
         return NextResponse.json(result);
     } catch (error) {
