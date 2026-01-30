@@ -60,7 +60,7 @@ interface WorkExperience {
   is_current: boolean;
   description: string | null;
   highlights: string[];
-  display_order: number;
+  sort_order: number;
 }
 
 interface Education {
@@ -73,7 +73,7 @@ interface Education {
   end_date: string | null;
   gpa: string | null;
   highlights: string[];
-  display_order: number;
+  sort_order: number;
 }
 
 interface Skill {
@@ -81,7 +81,7 @@ interface Skill {
   name: string;
   category: string | null;
   proficiency_level: number | null;
-  display_order: number;
+  sort_order: number;
 }
 
 interface Project {
@@ -91,7 +91,7 @@ interface Project {
   technologies: string[];
   url: string | null;
   highlights: string[];
-  display_order: number;
+  sort_order: number;
 }
 
 interface Certification {
@@ -102,14 +102,14 @@ interface Certification {
   expiry_date: string | null;
   credential_id: string | null;
   credential_url: string | null;
-  display_order: number;
+  sort_order: number;
 }
 
 interface Language {
   id: string;
   language: string;
   proficiency: string;
-  display_order: number;
+  sort_order: number;
 }
 
 interface ResumeEditorProps {
@@ -155,12 +155,14 @@ export function ResumeEditor({
   useEffect(() => {
     setResumeId(resume.id);
     if (profile) setProfile(profile);
-    setWorkExperiences(workExperiences);
-    setEducation(education);
-    setSkills(skills);
-    setProjects(projects);
-    setCertifications(certifications);
-    setLanguages(languages);
+
+    // Map DB sort_order to store display_order
+    setWorkExperiences(workExperiences.map(i => ({ ...i, display_order: i.sort_order })));
+    setEducation(education.map(i => ({ ...i, display_order: i.sort_order })));
+    setSkills(skills.map(i => ({ ...i, display_order: i.sort_order })));
+    setProjects(projects.map(i => ({ ...i, display_order: i.sort_order })));
+    setCertifications(certifications.map(i => ({ ...i, display_order: i.sort_order })));
+    setLanguages(languages.map(i => ({ ...i, display_order: i.sort_order })));
   }, [
     resume.id,
     profile,

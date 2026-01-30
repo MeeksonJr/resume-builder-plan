@@ -37,52 +37,72 @@ export default async function ResumePage({ params }: ResumePageProps) {
     .eq("id", user.id)
     .single();
 
+  // Fetch personal_info
+  const { data: personalInfo } = await supabase
+    .from("personal_info")
+    .select("*")
+    .eq("resume_id", id)
+    .single();
+
   // Fetch work experiences
   const { data: workExperiences } = await supabase
     .from("work_experiences")
     .select("*")
     .eq("resume_id", id)
-    .order("display_order");
+    .order("sort_order");
 
   // Fetch education
   const { data: education } = await supabase
     .from("education")
     .select("*")
     .eq("resume_id", id)
-    .order("display_order");
+    .order("sort_order");
 
   // Fetch skills
   const { data: skills } = await supabase
     .from("skills")
     .select("*")
     .eq("resume_id", id)
-    .order("display_order");
+    .order("sort_order");
 
   // Fetch projects
   const { data: projects } = await supabase
     .from("projects")
     .select("*")
     .eq("resume_id", id)
-    .order("display_order");
+    .order("sort_order");
 
   // Fetch certifications
   const { data: certifications } = await supabase
     .from("certifications")
     .select("*")
     .eq("resume_id", id)
-    .order("display_order");
+    .order("sort_order");
 
   // Fetch languages
   const { data: languages } = await supabase
     .from("languages")
     .select("*")
     .eq("resume_id", id)
-    .order("display_order");
+    .order("sort_order");
+
+  // Merge profile and personal_info
+  const mergedProfile = {
+    ...profile,
+    // personal_info takes precedence for resume-specific details
+    // but we use profile as a fallback/base identity
+    phone: personalInfo?.phone || profile?.phone,
+    location: personalInfo?.location || profile?.location,
+    linkedin_url: personalInfo?.linkedin || profile?.linkedin_url,
+    website_url: personalInfo?.website || profile?.website_url,
+    github_url: personalInfo?.github || profile?.github_url,
+    summary: personalInfo?.summary || profile?.summary,
+  };
 
   return (
     <ResumeEditor
       resume={resume}
-      profile={profile}
+      profile={mergedProfile}
       workExperiences={workExperiences || []}
       education={education || []}
       skills={skills || []}

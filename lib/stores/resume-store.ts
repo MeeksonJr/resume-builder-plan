@@ -320,196 +320,201 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
     if (!user) throw new Error("Not authenticated");
 
-    // Update profile
+    // Update profile (auth.users extension)
     if (state.profile) {
-      await supabase
-        .from("profiles")
-        .update({
-          full_name: state.profile.full_name,
-          email: state.profile.email,
-          phone: state.profile.phone,
-          location: state.profile.location,
-          linkedin_url: state.profile.linkedin_url,
-          website_url: state.profile.website_url,
-          github_url: state.profile.github_url,
-          summary: state.profile.summary,
-        })
-        .eq("id", user.id);
+      const { ...profileData } = state.profile;
+
+      // Update basic profile info
+      if (profileData.full_name || profileData.email) {
+        await supabase
+          .from("profiles")
+          .update({
+            full_name: profileData.full_name,
+            email: profileData.email,
+          })
+          .eq("id", user.id);
+      }
+
+      // Update/Insert personal_info linked to resume
+      const personalInfoData = {
+        resume_id: state.resumeId,
+        full_name: profileData.full_name,
+        email: profileData.email,
+        phone: profileData.phone,
+        location: profileData.location,
+        linkedin: profileData.linkedin_url,
+        website: profileData.website_url,
+        github: profileData.github_url,
+        summary: profileData.summary,
+      };
+
+      const { error: personalInfoError } = await supabase
+        .from("personal_info")
+        .upsert(personalInfoData, { onConflict: "resume_id" });
+
+      if (personalInfoError) {
+        console.error("Error saving personal info:", personalInfoError);
+      }
     }
+
+    // Helper to handle collection updates
+    const handleCollectionSave = async (
+      collection: any[],
+      tableName: string,
+      mapToDb: (item: any) => any,
+      updateLocalState: (id: string, newId: string) => void
+    ) => {
+      for (const item of collection) {
+        const dbItem = mapToDb(item);
+
+        if (item.id.startsWith("temp-")) {
+          // Insert new
+          const { data, error } = await supabase
+            .from(tableName)
+            .insert({ ...dbItem, resume_id: state.resumeId })
+            .select("id")
+            .single();
+
+          if (!error && data) {
+            updateLocalState(item.id, data.id);
+          }
+        } else {
+          // Update existing
+          await supabase
+            .from(tableName)
+            .update(dbItem)
+            .eq("id", item.id);
+        }
+      }
+    };
 
     // Handle work experiences
-    for (const exp of state.workExperiences) {
-      if (exp.id.startsWith("temp-")) {
-        // Insert new
-        await supabase.from("work_experiences").insert({
-          user_id: user.id,
-          resume_id: state.resumeId,
-          company: exp.company,
-          position: exp.position,
-          location: exp.location,
-          start_date: exp.start_date,
-          end_date: exp.end_date,
-          is_current: exp.is_current,
-          description: exp.description,
-          highlights: exp.highlights,
-          display_order: exp.display_order,
-        });
-      } else {
-        // Update existing
-        await supabase
-          .from("work_experiences")
-          .update({
-            company: exp.company,
-            position: exp.position,
-            location: exp.location,
-            start_date: exp.start_date,
-            end_date: exp.end_date,
-            is_current: exp.is_current,
-            description: exp.description,
-            highlights: exp.highlights,
-            display_order: exp.display_order,
-          })
-          .eq("id", exp.id);
+    await handleCollectionSave(
+      state.workExperiences,
+      "work_experiences",
+      (exp) => ({
+        company: exp.company,
+        position: exp.position,
+        location: exp.location,
+        start_date: exp.start_date,
+        end_date: exp.end_date,
+        is_current: exp.is_current,
+        description: exp.description,
+        highlights: exp.highlights,
+        sort_order: exp.display_order,
+      }),
+      (oldId, newId) => {
+        set((s) => ({
+          workExperiences: s.workExperiences.map((i) =>
+            i.id === oldId ? { ...i, id: newId } : i
+          )
+        }));
       }
-    }
+    );
 
     // Handle education
-    for (const edu of state.education) {
-      if (edu.id.startsWith("temp-")) {
-        await supabase.from("education").insert({
-          user_id: user.id,
-          resume_id: state.resumeId,
-          institution: edu.institution,
-          degree: edu.degree,
-          field_of_study: edu.field_of_study,
-          location: edu.location,
-          start_date: edu.start_date,
-          end_date: edu.end_date,
-          gpa: edu.gpa,
-          highlights: edu.highlights,
-          display_order: edu.display_order,
-        });
-      } else {
-        await supabase
-          .from("education")
-          .update({
-            institution: edu.institution,
-            degree: edu.degree,
-            field_of_study: edu.field_of_study,
-            location: edu.location,
-            start_date: edu.start_date,
-            end_date: edu.end_date,
-            gpa: edu.gpa,
-            highlights: edu.highlights,
-            display_order: edu.display_order,
-          })
-          .eq("id", edu.id);
+    await handleCollectionSave(
+      state.education,
+      "education",
+      (edu) => ({
+        institution: edu.institution,
+        degree: edu.degree,
+        field_of_study: edu.field_of_study,
+        location: edu.location,
+        start_date: edu.start_date,
+        end_date: edu.end_date,
+        gpa: edu.gpa,
+        achievements: edu.highlights,
+        sort_order: edu.display_order,
+      }),
+      (oldId, newId) => {
+        set((s) => ({
+          education: s.education.map((i) =>
+            i.id === oldId ? { ...i, id: newId } : i
+          )
+        }));
       }
-    }
+    );
 
     // Handle skills
-    for (const skill of state.skills) {
-      if (skill.id.startsWith("temp-")) {
-        await supabase.from("skills").insert({
-          user_id: user.id,
-          resume_id: state.resumeId,
-          name: skill.name,
-          category: skill.category,
-          proficiency_level: skill.proficiency_level,
-          display_order: skill.display_order,
-        });
-      } else {
-        await supabase
-          .from("skills")
-          .update({
-            name: skill.name,
-            category: skill.category,
-            proficiency_level: skill.proficiency_level,
-            display_order: skill.display_order,
-          })
-          .eq("id", skill.id);
+    await handleCollectionSave(
+      state.skills,
+      "skills",
+      (skill) => ({
+        name: skill.name,
+        category: skill.category,
+        proficiency_level: skill.proficiency_level,
+        sort_order: skill.display_order,
+      }),
+      (oldId, newId) => {
+        set((s) => ({
+          skills: s.skills.map((i) =>
+            i.id === oldId ? { ...i, id: newId } : i
+          )
+        }));
       }
-    }
+    );
 
     // Handle projects
-    for (const proj of state.projects) {
-      if (proj.id.startsWith("temp-")) {
-        await supabase.from("projects").insert({
-          user_id: user.id,
-          resume_id: state.resumeId,
-          name: proj.name,
-          description: proj.description,
-          technologies: proj.technologies,
-          url: proj.url,
-          highlights: proj.highlights,
-          display_order: proj.display_order,
-        });
-      } else {
-        await supabase
-          .from("projects")
-          .update({
-            name: proj.name,
-            description: proj.description,
-            technologies: proj.technologies,
-            url: proj.url,
-            highlights: proj.highlights,
-            display_order: proj.display_order,
-          })
-          .eq("id", proj.id);
+    await handleCollectionSave(
+      state.projects,
+      "projects",
+      (proj) => ({
+        name: proj.name,
+        description: proj.description,
+        technologies: proj.technologies,
+        url: proj.url,
+        highlights: proj.highlights,
+        sort_order: proj.display_order,
+      }),
+      (oldId, newId) => {
+        set((s) => ({
+          projects: s.projects.map((i) =>
+            i.id === oldId ? { ...i, id: newId } : i
+          )
+        }));
       }
-    }
+    );
 
     // Handle certifications
-    for (const cert of state.certifications) {
-      if (cert.id.startsWith("temp-")) {
-        await supabase.from("certifications").insert({
-          user_id: user.id,
-          resume_id: state.resumeId,
-          name: cert.name,
-          issuer: cert.issuer,
-          issue_date: cert.issue_date,
-          expiry_date: cert.expiry_date,
-          credential_id: cert.credential_id,
-          credential_url: cert.credential_url,
-          display_order: cert.display_order,
-        });
-      } else {
-        await supabase
-          .from("certifications")
-          .update({
-            name: cert.name,
-            issuer: cert.issuer,
-            issue_date: cert.issue_date,
-            expiry_date: cert.expiry_date,
-            credential_id: cert.credential_id,
-            credential_url: cert.credential_url,
-            display_order: cert.display_order,
-          })
-          .eq("id", cert.id);
+    await handleCollectionSave(
+      state.certifications,
+      "certifications",
+      (cert) => ({
+        name: cert.name,
+        issuer: cert.issuer,
+        issue_date: cert.issue_date,
+        expiry_date: cert.expiry_date,
+        credential_id: cert.credential_id,
+        credential_url: cert.credential_url,
+        sort_order: cert.display_order,
+      }),
+      (oldId, newId) => {
+        set((s) => ({
+          certifications: s.certifications.map((i) =>
+            i.id === oldId ? { ...i, id: newId } : i
+          )
+        }));
       }
-    }
+    );
 
     // Handle languages
-    for (const lang of state.languages) {
-      if (lang.id.startsWith("temp-")) {
-        await supabase.from("languages").insert({
-          user_id: user.id,
-          resume_id: state.resumeId,
-          language: lang.language,
-          proficiency: lang.proficiency,
-          display_order: lang.display_order,
-        });
-      } else {
-        await supabase
-          .from("languages")
-          .update({
-            language: lang.language,
-            proficiency: lang.proficiency,
-            display_order: lang.display_order,
-          })
-          .eq("id", lang.id);
+    await handleCollectionSave(
+      state.languages,
+      "languages",
+      (lang) => ({
+        name: lang.language,
+        proficiency: lang.proficiency,
+        sort_order: lang.display_order,
+      }),
+      (oldId, newId) => {
+        set((s) => ({
+          languages: s.languages.map((i) =>
+            i.id === oldId ? { ...i, id: newId } : i
+          )
+        }));
       }
-    }
+    );
 
     // Update resume timestamp
     await supabase
