@@ -90,6 +90,17 @@ export type ResumeData = z.infer<typeof resumeDataSchema>;
 async function withFallback<T>(
   operation: (model: ReturnType<typeof groq | typeof google | typeof openai>) => Promise<T>
 ): Promise<T> {
+  // Check if any keys are available and non-empty
+  const hasKeys =
+    (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.length > 0) ||
+    (process.env.GOOGLE_GENERATIVE_AI_API_KEY && process.env.GOOGLE_GENERATIVE_AI_API_KEY.length > 0) ||
+    (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 0);
+
+  if (!hasKeys) {
+    console.warn("[AI] No valid API keys found. Using mock response.");
+    throw new Error("NO_API_KEYS");
+  }
+
   const models = [
     { provider: groq, model: "llama-3.3-70b-versatile", name: "Groq" },
     { provider: google, model: "gemini-1.5-flash", name: "Gemini" },
@@ -144,18 +155,25 @@ export async function improveText(
       "Improve this job or project description. Make it clear, professional, and highlight key responsibilities and achievements.",
   };
 
-  const result = await withFallback(async (model) => {
-    return generateText({
-      model,
-      prompt: `${instructions[type]}
+  try {
+    const result = await withFallback(async (model) => {
+      return generateText({
+        model,
+        prompt: `${instructions[type]}
 
 ${context ? `Context: ${context}\n\n` : ""}Original text: ${text}
 
 Provide only the improved text, nothing else.`,
+      });
     });
-  });
-
-  return result.text.trim();
+    return result.text.trim();
+  } catch (error: any) {
+    console.warn("[AI] Improvement failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return `[MOCK AI] Improved: ${text}`;
+    }
+    throw error;
+  }
 }
 
 // Generate content based on job description
