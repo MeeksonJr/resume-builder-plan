@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
+import { useReactToPrint } from "react-to-print";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -194,9 +195,13 @@ export function ResumeEditor({
     }
   };
 
-  const handleDownloadPDF = async () => {
-    toast.info("PDF download coming soon!");
-  };
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPDF = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `${resume.title || "Resume"}`,
+    onAfterPrint: () => toast.success("Download started"),
+  });
 
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col">
@@ -320,6 +325,11 @@ export function ResumeEditor({
       {showAI && (
         <AIAssistant onClose={() => setShowAI(false)} />
       )}
+
+      {/* Hidden Print Preview */}
+      <div className="hidden">
+        <ResumePreview ref={printRef} />
+      </div>
     </div>
   );
 }

@@ -1,10 +1,9 @@
-"use client";
-
+import React, { forwardRef } from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { cn } from "@/lib/utils";
 import { Mail, Phone, MapPin, Linkedin, Link as LinkIcon, Github } from "lucide-react";
 
-export function ResumePreview() {
+export const ResumePreview = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>((props, ref) => {
     const {
         profile,
         workExperiences,
@@ -24,7 +23,7 @@ export function ResumePreview() {
     }
 
     return (
-        <div className="bg-white text-black p-8 min-h-[1056px] shadow-lg print:shadow-none">
+        <div ref={ref} className="bg-white text-black p-8 min-h-[1056px] shadow-lg print:shadow-none">
             {/* Header */}
             <header className="border-b-2 border-gray-900 pb-6 mb-6">
                 <h1 className="text-4xl font-bold uppercase tracking-wide mb-2">
@@ -223,4 +222,6 @@ export function ResumePreview() {
             </div>
         </div>
     );
-}
+});
+
+ResumePreview.displayName = "ResumePreview";
