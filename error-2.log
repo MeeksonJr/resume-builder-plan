@@ -1,0 +1,78 @@
+
+> my-v0-project@0.1.0 dev C:\Users\Mo\CODE-#2\resume-builder-plan
+> next dev
+
+ ΓÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\Mo\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\Mo\CODE-#2\resume-builder-plan\pnpm-lock.yaml
+
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3003
+   - Network:       http://192.168.0.51:3003
+   - Environments: .env.local
+
+ Γ£ô Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ Γ£ô Ready in 3s
+ Γùï Compiling / ...
+ Γ¿» ./CODE-#2/resume-builder-plan/app/globals.css:2235:20
+Parsing CSS source code failed
+  2233 | }
+  2234 | .\[--cell-size\:--spacing\(8\)\] {
+> 2235 |   --cell-size: var(--spacing(8));
+       |                    ^
+  2236 | }
+  2237 | .selection\:bg-primary *::-moz-selection {
+  2238 |   --tw-bg-opacity: 1;
+
+Unexpected token Function("--spacing")
+
+Import trace:
+  Client Component Browser:
+    ./CODE-#2/resume-builder-plan/app/globals.css [Client Component Browser]
+    ./CODE-#2/resume-builder-plan/app/layout.tsx [Server Component]
+
+
+ GET / 500 in 8.6s (compile: 8.1s, proxy.ts: 190ms, render: 262ms)
+ Γ¿» ./CODE-#2/resume-builder-plan/app/globals.css:2258:20
+Parsing CSS source code failed
+  2256 | }
+  2257 | .\[--cell-size\:--spacing\(8\)\] {
+> 2258 |   --cell-size: var(--spacing(8));
+       |                    ^
+  2259 | }
+  2260 | .\[--cell-size\:2rem\] {
+  2261 |   --cell-size: 2rem;
+
+Unexpected token Function("--spacing")
+
+Import trace:
+  Client Component Browser:
+    ./CODE-#2/resume-builder-plan/app/globals.css [Client Component Browser]
+    ./CODE-#2/resume-builder-plan/app/layout.tsx [Server Component]
+
+
+ GET / 500 in 434ms (compile: 383ms, proxy.ts: 15ms, render: 36ms)
+ Γ¿» ./CODE-#2/resume-builder-plan/app/globals.css:2258:20
+Parsing CSS source code failed
+  2256 | }
+  2257 | .\[--cell-size\:--spacing\(8\)\] {
+> 2258 |   --cell-size: var(--spacing(8));
+       |                    ^
+  2259 | }
+  2260 | .\[--cell-size\:2rem\] {
+  2261 |   --cell-size: 2rem;
+
+Unexpected token Function("--spacing")
+
+Import trace:
+  Client Component Browser:
+    ./CODE-#2/resume-builder-plan/app/globals.css [Client Component Browser]
+    ./CODE-#2/resume-builder-plan/app/layout.tsx [Server Component]
+
+
+ GET / 500 in 339ms (compile: 309ms, proxy.ts: 9ms, render: 21ms)
