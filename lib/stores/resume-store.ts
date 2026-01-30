@@ -84,6 +84,7 @@ interface ResumeState {
   projects: Project[];
   certifications: Certification[];
   languages: Language[];
+  template: string;
   hasChanges: boolean;
 
   // Setters
@@ -95,6 +96,7 @@ interface ResumeState {
   setProjects: (projects: Project[]) => void;
   setCertifications: (certifications: Certification[]) => void;
   setLanguages: (languages: Language[]) => void;
+  setTemplate: (template: string) => void;
 
   // Update functions
   updateProfile: (updates: Partial<Profile>) => void;
@@ -130,6 +132,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   projects: [],
   certifications: [],
   languages: [],
+  template: "modern",
   hasChanges: false,
 
   setResumeId: (id) => set({ resumeId: id }),
@@ -140,6 +143,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   setProjects: (projects) => set({ projects }),
   setCertifications: (certifications) => set({ certifications }),
   setLanguages: (languages) => set({ languages }),
+  setTemplate: (template) => set({ template, hasChanges: true }),
 
   updateProfile: (updates) =>
     set((state) => ({
@@ -522,10 +526,13 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       }
     );
 
-    // Update resume timestamp
+    // Update resume timestamp and template
     await supabase
       .from("resumes")
-      .update({ updated_at: new Date().toISOString() })
+      .update({
+        updated_at: new Date().toISOString(),
+        template: state.template
+      })
       .eq("id", state.resumeId);
 
     set({ hasChanges: false });

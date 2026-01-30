@@ -148,6 +148,8 @@ export function ResumeEditor({
     setProjects,
     setCertifications,
     setLanguages,
+    setTemplate,
+    template,
     hasChanges,
     saveAllChanges,
   } = useResumeStore();
@@ -155,6 +157,7 @@ export function ResumeEditor({
   // Initialize store with data
   useEffect(() => {
     setResumeId(resume.id);
+    setTemplate(resume.template_id || "modern");
     if (profile) setProfile(profile);
 
     // Map DB sort_order to store display_order
@@ -181,6 +184,8 @@ export function ResumeEditor({
     setProjects,
     setCertifications,
     setLanguages,
+    setTemplate,
+    resume.template_id,
   ]);
 
   const handleSave = async () => {
@@ -259,6 +264,14 @@ export function ResumeEditor({
             <Save className="h-4 w-4" />
             <span className="hidden sm:inline">Save</span>
           </Button>
+          <select
+            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            value={template}
+            onChange={(e) => setTemplate(e.target.value)}
+          >
+            <option value="modern">Modern</option>
+            <option value="minimal">Minimal</option>
+          </select>
           <Button
             size="sm"
             onClick={handleDownloadPDF}
