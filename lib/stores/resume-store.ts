@@ -377,13 +377,19 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
           if (!error && data) {
             updateLocalState(item.id, data.id);
+          } else if (error) {
+            console.error(`Error saving to ${tableName}:`, error);
           }
         } else {
           // Update existing
-          await supabase
+          const { error } = await supabase
             .from(tableName)
             .update(dbItem)
             .eq("id", item.id);
+
+          if (error) {
+            console.error(`Error updating ${tableName}:`, error);
+          }
         }
       }
     };
@@ -396,8 +402,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         company: exp.company,
         position: exp.position,
         location: exp.location,
-        start_date: exp.start_date,
-        end_date: exp.end_date,
+        start_date: exp.start_date === "" ? null : exp.start_date,
+        end_date: exp.end_date === "" ? null : exp.end_date,
         is_current: exp.is_current,
         description: exp.description,
         highlights: exp.highlights,
@@ -421,8 +427,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         degree: edu.degree,
         field_of_study: edu.field_of_study,
         location: edu.location,
-        start_date: edu.start_date,
-        end_date: edu.end_date,
+        start_date: edu.start_date === "" ? null : edu.start_date,
+        end_date: edu.end_date === "" ? null : edu.end_date,
         gpa: edu.gpa,
         achievements: edu.highlights,
         sort_order: edu.display_order,
@@ -483,8 +489,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       (cert) => ({
         name: cert.name,
         issuer: cert.issuer,
-        issue_date: cert.issue_date,
-        expiry_date: cert.expiry_date,
+        issue_date: cert.issue_date === "" ? null : cert.issue_date,
+        expiry_date: cert.expiry_date === "" ? null : cert.expiry_date,
         credential_id: cert.credential_id,
         credential_url: cert.credential_url,
         sort_order: cert.display_order,

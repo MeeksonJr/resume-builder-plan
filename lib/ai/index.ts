@@ -185,15 +185,16 @@ export async function tailorForJob(
   keywordsToAdd: string[];
   improvedSummary: string;
 }> {
-  const result = await withFallback(async (model) => {
-    return generateObject({
-      model,
-      schema: z.object({
-        suggestions: z.array(z.string()).describe("List of specific suggestions to improve the resume for this job"),
-        keywordsToAdd: z.array(z.string()).describe("Important keywords from the job description to add to the resume"),
-        improvedSummary: z.string().describe("An improved professional summary tailored for this specific job"),
-      }),
-      prompt: `Analyze this resume against the job description and provide tailoring suggestions.
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          suggestions: z.array(z.string()).describe("List of specific suggestions to improve the resume for this job"),
+          keywordsToAdd: z.array(z.string()).describe("Important keywords from the job description to add to the resume"),
+          improvedSummary: z.string().describe("An improved professional summary tailored for this specific job"),
+        }),
+        prompt: `Analyze this resume against the job description and provide tailoring suggestions.
 
 Resume Data:
 ${JSON.stringify(resumeData, null, 2)}
@@ -202,10 +203,25 @@ Job Description:
 ${jobDescription}
 
 Provide specific, actionable suggestions to improve this resume for the target job.`,
+      });
     });
-  });
 
-  return result.object;
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Tailoring failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        suggestions: [
+          "[MOCK] Add more metrics to your work experience",
+          "[MOCK] Highlight your leadership skills",
+          "[MOCK] Rephrase your summary to match the job title"
+        ],
+        keywordsToAdd: ["React", "TypeScript", "Team Leadership", "Agile"],
+        improvedSummary: "[MOCK] A highly experienced professional with a proven track record in software engineering. Skilled in React, TypeScript, and leading high-performing teams to deliver scalable solutions."
+      };
+    }
+    throw error;
+  }
 }
 
 // Generate skill suggestions based on job title
