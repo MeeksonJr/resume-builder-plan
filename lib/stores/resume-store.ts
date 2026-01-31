@@ -436,7 +436,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         .upsert(personalInfoData, { onConflict: "resume_id" });
 
       if (personalInfoError) {
-        console.error("Error saving personal info:", personalInfoError);
+        throw new Error(`Failed to save personal info: ${personalInfoError.message}`);
       }
     }
 
@@ -447,6 +447,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       mapToDb: (item: any) => any,
       updateLocalState: (id: string, newId: string) => void
     ) => {
+      const errors: any[] = [];
       for (const item of collection) {
         const dbItem = mapToDb(item);
 
@@ -462,6 +463,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
             updateLocalState(item.id, data.id);
           } else if (error) {
             console.error(`Error saving to ${tableName}:`, error);
+            errors.push(error);
           }
         } else {
           // Update existing
@@ -472,8 +474,13 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
           if (error) {
             console.error(`Error updating ${tableName}:`, error);
+            errors.push(error);
           }
         }
+      }
+
+      if (errors.length > 0) {
+        throw new Error(`Failed to save ${tableName}. See console for details.`);
       }
     };
 
@@ -681,7 +688,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
           start_date: e.start_date,
           end_date: e.end_date,
           gpa: e.gpa,
-          highlights: e.highlights || [],
+          highlights: e.achievements || [],
           display_order: e.sort_order
         })),
         skills: (skills || []).map((e: any) => ({
