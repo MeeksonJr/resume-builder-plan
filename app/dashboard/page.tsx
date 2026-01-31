@@ -29,26 +29,42 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: true });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+    <div className="relative space-y-12 pb-20">
+      {/* Background Decorative Elements */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -right-24 w-80 h-80 bg-primary/2 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="flex flex-col gap-6 px-4 md:px-0 sm:flex-row sm:items-center sm:justify-between relative">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-heading font-black tracking-tighter md:text-5xl lg:text-6xl gradient-text">
             My Resumes
           </h1>
-          <p className="mt-1 text-muted-foreground">
-            Create, edit, and manage your resumes
+          <p className="text-lg text-muted-foreground font-medium max-w-lg">
+            Manage your career assets with AI-powered precision.
           </p>
         </div>
       </div>
 
-      {resumes && resumes.length > 0 ? (
-        <>
-          <AnalyticsView resumes={resumes} events={events || []} />
-          <ResumeList resumes={resumes} />
-        </>
-      ) : (
-        <EmptyState />
-      )}
+      <div className="space-y-16">
+        {resumes && resumes.length > 0 ? (
+          <>
+            <section className="relative">
+              <AnalyticsView resumes={resumes} events={events || []} />
+            </section>
+
+            <section className="relative pt-4">
+              <div className="flex items-center gap-4 mb-8 px-4 md:px-0">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 whitespace-nowrap">Your Portfolio</span>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+              </div>
+              <ResumeList resumes={resumes} />
+            </section>
+          </>
+        ) : (
+          <EmptyState />
+        )}
+      </div>
     </div>
   );
 }

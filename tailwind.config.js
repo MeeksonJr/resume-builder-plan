@@ -74,6 +74,7 @@ module.exports = {
             },
             fontFamily: {
                 sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+                heading: ["var(--font-manrope)", "system-ui", "sans-serif"],
                 mono: ["var(--font-mono)", "monospace"],
             },
             keyframes: {
