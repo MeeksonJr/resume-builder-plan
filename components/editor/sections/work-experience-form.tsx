@@ -24,9 +24,10 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, GripVertical, CalendarIcon } from "lucide-react";
+import { Plus, Trash2, GripVertical, CalendarIcon, Sparkles, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
     DndContext,
     closestCenter,
@@ -49,9 +50,40 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useState } from "react";
 
 export function WorkExperienceForm() {
     const { workExperiences, addWorkExperience, updateWorkExperience, removeWorkExperience } = useResumeStore();
+    const [improvingId, setImprovingId] = useState<string | null>(null);
+
+    const handleImproveDescription = async (id: string, text: string) => {
+        if (!text) {
+            toast.error("Please write a description first");
+            return;
+        }
+
+        setImprovingId(id);
+        try {
+            const response = await fetch("/api/ai/improve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text,
+                    type: "description",
+                }),
+            });
+
+            if (!response.ok) throw new Error("Failed to improve description");
+
+            const { improved } = await response.json();
+            updateWorkExperience(id, { description: improved });
+            toast.success("Description improved!");
+        } catch {
+            toast.error("Failed to improve description");
+        } finally {
+            setImprovingId(null);
+        }
+    };
 
     const handleAdd = () => {
         addWorkExperience({
@@ -212,7 +244,23 @@ export function WorkExperienceForm() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Description</Label>
+                                            <div className="flex items-center justify-between">
+                                                <Label>Description</Label>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleImproveDescription(exp.id, exp.description || "")}
+                                                    disabled={improvingId === exp.id || !exp.description}
+                                                    className="h-8 gap-1 text-xs"
+                                                >
+                                                    {improvingId === exp.id ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                    ) : (
+                                                        <Sparkles className="h-3 w-3" />
+                                                    )}
+                                                    Improve with AI
+                                                </Button>
+                                            </div>
                                             <RichTextEditor
                                                 content={exp.description || ""}
                                                 onChange={(content) =>

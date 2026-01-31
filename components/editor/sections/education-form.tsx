@@ -17,7 +17,12 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, Sparkles, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+const RichTextEditor = dynamic(() => import("../rich-text-editor").then(mod => mod.RichTextEditor), {
+    ssr: false,
+    loading: () => <div className="h-[150px] w-full animate-pulse rounded-md bg-muted/50" />
+});
 import {
     DndContext,
     closestCenter,
@@ -34,9 +39,41 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableAccordionItem, SortableDragHandle } from "../sortable-accordion";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function EducationForm() {
     const { education, addEducation, updateEducation, removeEducation } = useResumeStore();
+    const [improvingId, setImprovingId] = useState<string | null>(null);
+
+    const handleImproveHighlights = async (id: string, text: string) => {
+        if (!text) {
+            toast.error("Please write some highlights first");
+            return;
+        }
+
+        setImprovingId(id);
+        try {
+            const response = await fetch("/api/ai/improve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text,
+                    type: "bullet",
+                }),
+            });
+
+            if (!response.ok) throw new Error("Failed to improve highlights");
+
+            const { improved } = await response.json();
+            updateEducation(id, { highlights: [improved] }); // For now, handle as single block or split if needed
+            toast.success("Highlights improved!");
+        } catch {
+            toast.error("Failed to improve highlights");
+        } finally {
+            setImprovingId(null);
+        }
+    };
 
     const handleAdd = () => {
         addEducation({
@@ -197,6 +234,33 @@ export function EducationForm() {
                                                     updateEducation(edu.id, { gpa: e.target.value })
                                                 }
                                                 placeholder="e.g. 3.8"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <Label>Highlights / Achievements</Label>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleImproveHighlights(edu.id, edu.highlights?.join("\n") || "")}
+                                                    disabled={improvingId === edu.id || !edu.highlights?.length}
+                                                    className="h-8 gap-1 text-xs"
+                                                >
+                                                    {improvingId === edu.id ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                    ) : (
+                                                        <Sparkles className="h-3 w-3" />
+                                                    )}
+                                                    Improve with AI
+                                                </Button>
+                                            </div>
+                                            <RichTextEditor
+                                                content={edu.highlights?.join("\n") || ""}
+                                                onChange={(content) =>
+                                                    updateEducation(edu.id, { highlights: [content] })
+                                                }
+                                                placeholder="Relevant coursework, honors, or activities..."
                                             />
                                         </div>
                                     </AccordionContent>

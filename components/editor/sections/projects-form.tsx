@@ -23,7 +23,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, Sparkles, Loader2 } from "lucide-react";
 import {
     DndContext,
     closestCenter,
@@ -40,9 +40,41 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableAccordionItem, SortableDragHandle } from "../sortable-accordion";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function ProjectsForm() {
     const { projects, addProject, updateProject, removeProject } = useResumeStore();
+    const [improvingId, setImprovingId] = useState<string | null>(null);
+
+    const handleImproveDescription = async (id: string, text: string) => {
+        if (!text) {
+            toast.error("Please write a description first");
+            return;
+        }
+
+        setImprovingId(id);
+        try {
+            const response = await fetch("/api/ai/improve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text,
+                    type: "description",
+                }),
+            });
+
+            if (!response.ok) throw new Error("Failed to improve description");
+
+            const { improved } = await response.json();
+            updateProject(id, { description: improved });
+            toast.success("Description improved!");
+        } catch {
+            toast.error("Failed to improve description");
+        } finally {
+            setImprovingId(null);
+        }
+    };
 
     const handleAdd = () => {
         addProject({
@@ -155,7 +187,23 @@ export function ProjectsForm() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Description</Label>
+                                            <div className="flex items-center justify-between">
+                                                <Label>Description</Label>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleImproveDescription(proj.id, proj.description || "")}
+                                                    disabled={improvingId === proj.id || !proj.description}
+                                                    className="h-8 gap-1 text-xs"
+                                                >
+                                                    {improvingId === proj.id ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                    ) : (
+                                                        <Sparkles className="h-3 w-3" />
+                                                    )}
+                                                    Improve with AI
+                                                </Button>
+                                            </div>
                                             <RichTextEditor
                                                 content={proj.description || ""}
                                                 onChange={(content) =>

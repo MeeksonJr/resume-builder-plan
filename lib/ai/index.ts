@@ -82,6 +82,7 @@ export const resumeDataSchema = z.object({
       proficiency: z.string().optional(),
     })
   ),
+  hobbies: z.array(z.string()).optional(),
 });
 
 export type ResumeData = z.infer<typeof resumeDataSchema>;
@@ -168,6 +169,50 @@ Resume Text:
 ${text}
 
 Extract all personal information, work experience, education, skills, projects, certifications, and languages mentioned.`,
+    });
+  });
+
+  return result.object;
+}
+
+// Generate a full resume from onboarding data
+export async function generateFullResume(data: {
+  role: string;
+  experienceLevel: string;
+  workHistory?: string;
+  education?: string;
+  projects?: string;
+  skills: string[];
+  achievements: string;
+  languages?: string;
+  hobbies?: string;
+  additionalInfo?: string;
+}): Promise<ResumeData> {
+  const result = await withFallback(async (model) => {
+    return generateObject({
+      model,
+      schema: resumeDataSchema,
+      prompt: `Create a comprehensive, professional, and highly detailed full resume based on the following onboarding information for a ${data.role} (${data.experienceLevel} level).
+      
+      User-Provided Information:
+      - Work History: ${data.workHistory || "Not specified - generate realistic placeholders"}
+      - Education: ${data.education || "Not specified - generate realistic placeholders"}
+      - Projects: ${data.projects || "Not specified - generate realistic placeholders"}
+      - Skills: ${data.skills.join(", ") || "Provide industry-standard skills for this role"}
+      - Key Achievements: ${data.achievements || "Flesh out based on role expectations"}
+      - Languages: ${data.languages || "English"}
+      - Hobbies: ${data.hobbies || "Not specified"}
+      - Additional Context: ${data.additionalInfo || "None"}
+      
+      CRITICAL INSTRUCTIONS:
+      1. FULL COMPLETION: You MUST populate ALL sections of the resume: Personal Info, Summary, Work Experience (2-4 entries), Education (1-2 entries), Skills (categorized), Projects, and Languages.
+      2. INTELLIGENT HALLUCINATION: If the user provided sparse info, use your knowledge of the ${data.role} role to create realistic, high-quality placeholders. For example, if they didn't list a degree, add a "Bachelor of Science in [Related Field]" at a "[Major University]".
+      3. SMART PLACEHOLDERS: For specific details the user SHOULD fill in themselves (like specific dates or company names if not provided), use professional placeholders like "[Insert Company Name]" or "[YYYY] - [Present]".
+      4. IMPACTFUL CONTENT: Write bullet points using the STAR method (Situation, Task, Action, Result). Use strong action verbs and quantify achievements (e.g., "Increased efficiency by 20%").
+      5. PROFESSIONAL TONE: Ensure the language is sophisticated and tailored to the ${data.role} market.
+      6. SKILLS: Categorize skills logically (e.g., Technical, Professional, Tools).
+      
+      The goal is to give the user a 90% complete resume that looks amazing, which they can then fine-tune.`,
     });
   });
 

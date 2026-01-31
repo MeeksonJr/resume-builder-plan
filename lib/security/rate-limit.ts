@@ -7,7 +7,8 @@ export type AIFeature =
     | "ai_ats"
     | "ai_interview"
     | "ai_parse"
-    | "ai_keywords";
+    | "ai_keywords"
+    | "ai_generate";
 
 const LIMITS: Record<AIFeature, number> = {
     ai_improve: 50,
@@ -16,7 +17,8 @@ const LIMITS: Record<AIFeature, number> = {
     ai_ats: 20,
     ai_interview: 15,
     ai_parse: 10,
-    ai_keywords: 30
+    ai_keywords: 30,
+    ai_generate: 10
 };
 
 export async function checkRateLimit(feature: AIFeature): Promise<{ allowed: boolean; remaining: number }> {
