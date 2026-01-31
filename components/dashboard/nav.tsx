@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FileText, Mail, Plus, LogOut, User, Settings, Menu } from "lucide-react";
+import { FileText, Mail, Plus, LogOut, User, Settings, Menu, LayoutDashboard, Briefcase, Globe } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useState } from "react";
 
@@ -74,6 +74,18 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Cover Letters
+            </Link>
+            <Link
+              href="/dashboard/tracker"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Job Tracker
+            </Link>
+            <Link
+              href="/dashboard/portfolio"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Career Portfolio
             </Link>
           </nav>
         </div>
@@ -164,6 +176,20 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               onClick={() => setMobileMenuOpen(false)}
             >
               Cover Letters
+            </Link>
+            <Link
+              href="/dashboard/tracker"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Job Tracker
+            </Link>
+            <Link
+              href="/dashboard/portfolio"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Career Portfolio
             </Link>
             <Button asChild size="sm" className="mt-2 min-h-[44px] gap-2">
               <Link href="/dashboard/resume/new">
