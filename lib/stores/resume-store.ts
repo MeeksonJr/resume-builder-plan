@@ -99,6 +99,7 @@ interface ResumeState {
   projects: Project[];
   certifications: Certification[];
   languages: Language[];
+  sectionOrder: string[];
   template: string;
   slug: string | null;
   is_public: boolean;
@@ -113,6 +114,7 @@ interface ResumeState {
   setProjects: (projects: Project[]) => void;
   setCertifications: (certifications: Certification[]) => void;
   setLanguages: (languages: Language[]) => void;
+  setSectionOrder: (order: string[]) => void;
   setTemplate: (template: string) => void;
   setIsPublic: (isPublic: boolean) => void;
   setSlug: (slug: string) => void;
@@ -161,6 +163,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   slug: null,
   is_public: false,
   hasChanges: false,
+  sectionOrder: ["experience", "education", "skills", "projects", "certifications", "languages"],
   versions: [],
 
   setResumeId: (id) => set({ resumeId: id }),
@@ -170,7 +173,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   setSkills: (skills) => set({ skills }),
   setProjects: (projects) => set({ projects }),
   setCertifications: (certifications) => set({ certifications }),
-  setLanguages: (languages) => set({ languages }),
+  setLanguages: (languages) => set({ languages, hasChanges: true }),
+  setSectionOrder: (order) => set({ sectionOrder: order, hasChanges: true }),
   setTemplate: (template) => set({ template, hasChanges: true }),
   setIsPublic: (isPublic) => set({ is_public: isPublic, hasChanges: true }),
   setSlug: (slug) => set({ slug, hasChanges: true }),
@@ -556,14 +560,15 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       }
     );
 
-    // Update resume timestamp and template
+    // Update resume timestamp, template, and section order
     await supabase
       .from("resumes")
       .update({
         updated_at: new Date().toISOString(),
-        template: state.template,
+        template_id: state.template,
         slug: state.slug,
-        is_public: state.is_public
+        is_public: state.is_public,
+        section_order: state.sectionOrder,
       })
       .eq("id", state.resumeId);
 

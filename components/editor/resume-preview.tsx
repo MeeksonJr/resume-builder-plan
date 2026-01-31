@@ -2,6 +2,7 @@ import React, { forwardRef } from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { ModernTemplate } from "./templates/modern-template";
 import { MinimalTemplate } from "./templates/minimal-template";
+import { ClassicTemplate } from "./templates/classic-template";
 
 interface ResumePreviewProps extends React.HTMLAttributes<HTMLDivElement> {
     data?: {
@@ -28,6 +29,8 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
         switch (template) {
             case "minimal":
                 return <MinimalTemplate data={data} />;
+            case "classic":
+                return <ClassicTemplate data={data} />;
             case "modern":
             default:
                 return <ModernTemplate data={data} />;

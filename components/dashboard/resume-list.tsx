@@ -38,6 +38,17 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Archive } from "lucide-react";
 
 interface Resume {
   id: string;
@@ -57,6 +68,12 @@ export function ResumeList({ resumes }: ResumeListProps) {
   const [renameId, setRenameId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const [archiveId, setArchiveId] = useState<string | null>(null);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
   const handleSetPrimary = async (id: string, currentPrimary: boolean) => {
     if (currentPrimary) return;
@@ -106,11 +123,14 @@ export function ResumeList({ resumes }: ResumeListProps) {
     router.refresh();
   };
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
 
     const supabase = createClient();
-    const { error } = await supabase.from("resumes").delete().eq("id", id);
+    const { error } = await supabase.from("resumes").delete().eq("id", deleteId);
+
+    setIsDeleteDialogOpen(false);
+    setDeleteId(null);
 
     if (error) {
       toast.error("Failed to delete resume");
@@ -118,6 +138,27 @@ export function ResumeList({ resumes }: ResumeListProps) {
     }
 
     toast.success("Resume deleted");
+    router.refresh();
+  };
+
+  const handleArchive = async () => {
+    if (!archiveId) return;
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("resumes")
+      .update({ is_archived: true, updated_at: new Date().toISOString() })
+      .eq("id", archiveId);
+
+    setIsArchiveDialogOpen(false);
+    setArchiveId(null);
+
+    if (error) {
+      toast.error("Failed to archive resume");
+      return;
+    }
+
+    toast.success("Resume archived");
     router.refresh();
   };
 
@@ -129,24 +170,71 @@ export function ResumeList({ resumes }: ResumeListProps) {
 
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from("resumes")
-      .insert({
-        user_id: user.id,
-        title: `${resume.title} (Copy)`,
-        template_id: resume.template_id,
-        is_primary: false,
-      })
-      .select()
-      .single();
+    const loadingToast = toast.loading("Duplicating resume...");
 
-    if (error) {
-      toast.error("Failed to duplicate resume");
-      return;
+    try {
+      // 1. Duplicate the main resume record
+      const { data: newResume, error: resumeError } = await supabase
+        .from("resumes")
+        .insert({
+          user_id: user.id,
+          title: `${resume.title} (Copy)`,
+          template_id: resume.template_id,
+          is_primary: false,
+          is_public: false, // Default to private
+        })
+        .select()
+        .single();
+
+      if (resumeError || !newResume) throw new Error("Failed to create resume copy");
+
+      // 2. Define tables to copy
+      const tables = [
+        "personal_info",
+        "work_experiences",
+        "education",
+        "skills",
+        "projects",
+        "certifications",
+        "languages",
+      ];
+
+      // 3. Process each table
+      for (const table of tables) {
+        // Fetch data from source
+        const { data: sourceData, error: fetchError } = await supabase
+          .from(table)
+          .select("*")
+          .eq(table === "personal_info" ? "resume_id" : "resume_id", resume.id); // For consistency
+
+        if (fetchError) {
+          console.error(`Error fetching from ${table}:`, fetchError);
+          continue; // Move to next table
+        }
+
+        if (sourceData && sourceData.length > 0) {
+          // Prepare data for insertion (remove id and updated_at, set new resume_id)
+          const dataToInsert = sourceData.map((item: any) => {
+            const { id, created_at, updated_at, ...rest } = item;
+            return {
+              ...rest,
+              resume_id: newResume.id,
+            };
+          });
+
+          const { error: insertError } = await supabase.from(table).insert(dataToInsert);
+          if (insertError) {
+            console.error(`Error inserting into ${table}:`, insertError);
+          }
+        }
+      }
+
+      toast.success("Resume duplicated successfully", { id: loadingToast });
+      router.refresh();
+    } catch (error) {
+      console.error("Duplication failed:", error);
+      toast.error("Failed to duplicate resume", { id: loadingToast });
     }
-
-    toast.success("Resume duplicated");
-    router.refresh();
   };
 
   return (
@@ -219,14 +307,20 @@ export function ResumeList({ resumes }: ResumeListProps) {
                     <Star className="mr-2 h-4 w-4" />
                     Set as Primary
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleDuplicate(resume)}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Duplicate
+                  <DropdownMenuItem onClick={() => {
+                    setArchiveId(resume.id);
+                    setIsArchiveDialogOpen(true);
+                  }}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archive
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => handleDelete(resume.id, resume.title)}
+                    onClick={() => {
+                      setDeleteId(resume.id);
+                      setIsDeleteDialogOpen(true);
+                    }}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
@@ -286,6 +380,44 @@ export function ResumeList({ resumes }: ResumeListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              resume and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Resume?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will hide the resume from your main dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive}>
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div >
   );
 }

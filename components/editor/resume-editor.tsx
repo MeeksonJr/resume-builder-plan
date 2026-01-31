@@ -19,17 +19,18 @@ import {
   Sparkles,
   Settings,
 } from "lucide-react";
-import { PersonalInfoForm } from "./sections/personal-info-form";
-import { WorkExperienceForm } from "./sections/work-experience-form";
-import { EducationForm } from "./sections/education-form";
-import { SkillsForm } from "./sections/skills-form";
-import { ProjectsForm } from "./sections/projects-form";
-import { CertificationsForm } from "./sections/certifications-form";
-import { LanguagesForm } from "./sections/languages-form";
-import { ResumePreview } from "./resume-preview";
-import { AIAssistant } from "./ai-assistant";
-import { ShareDialog } from "./share-dialog";
-import { VersionHistory } from "./version-history";
+import { PersonalInfoForm } from "@/components/editor/sections/personal-info-form";
+import { WorkExperienceForm } from "@/components/editor/sections/work-experience-form";
+import { EducationForm } from "@/components/editor/sections/education-form";
+import { SkillsForm } from "@/components/editor/sections/skills-form";
+import { ProjectsForm } from "@/components/editor/sections/projects-form";
+import { CertificationsForm } from "@/components/editor/sections/certifications-form";
+import { LanguagesForm } from "@/components/editor/sections/languages-form";
+import { ResumePreview } from "@/components/editor/resume-preview";
+import { AIAssistant } from "@/components/editor/ai-assistant";
+import { ShareDialog } from "@/components/editor/share-dialog";
+import { VersionHistory } from "@/components/editor/version-history";
+import { SectionReorder } from "@/components/editor/section-reorder";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ interface Resume {
   is_primary: boolean;
   slug: string | null;
   is_public: boolean;
+  section_order: string[] | null;
 }
 
 interface Profile {
@@ -155,6 +157,7 @@ export function ResumeEditor({
     setTemplate,
     setIsPublic,
     setSlug,
+    setSectionOrder,
     template,
     hasChanges,
     saveAllChanges,
@@ -166,6 +169,7 @@ export function ResumeEditor({
     setTemplate(resume.template_id || "modern");
     setIsPublic(resume.is_public || false);
     setSlug(resume.slug || "");
+    if (resume.section_order) setSectionOrder(resume.section_order);
     if (profile) setProfile(profile);
 
     // Map DB sort_order to store display_order
@@ -239,6 +243,7 @@ export function ResumeEditor({
         </div>
 
         <div className="flex items-center gap-2">
+          <SectionReorder />
           <VersionHistory />
           <ShareDialog />
           <Button
@@ -285,6 +290,7 @@ export function ResumeEditor({
           >
             <option value="modern">Modern</option>
             <option value="minimal">Minimal</option>
+            <option value="classic">Classic</option>
           </select>
           <Button
             size="sm"
@@ -368,27 +374,19 @@ function EditorForm({
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }) {
+  const { sectionOrder } = useResumeStore();
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1">
         <TabsTrigger value="personal" className="min-h-[44px]">
           Personal
         </TabsTrigger>
-        <TabsTrigger value="experience" className="min-h-[44px]">
-          Experience
-        </TabsTrigger>
-        <TabsTrigger value="education" className="min-h-[44px]">
-          Education
-        </TabsTrigger>
-        <TabsTrigger value="skills" className="min-h-[44px]">
-          Skills
-        </TabsTrigger>
-        <TabsTrigger value="projects" className="min-h-[44px]">
-          Projects
-        </TabsTrigger>
-        <TabsTrigger value="other" className="min-h-[44px]">
-          Other
-        </TabsTrigger>
+        {sectionOrder.map((sectionId) => (
+          <TabsTrigger key={sectionId} value={sectionId} className="min-h-[44px] capitalize">
+            {sectionId}
+          </TabsTrigger>
+        ))}
       </TabsList>
 
       <TabsContent value="personal" className="mt-0">
@@ -406,11 +404,11 @@ function EditorForm({
       <TabsContent value="projects" className="mt-0">
         <ProjectsForm />
       </TabsContent>
-      <TabsContent value="other" className="mt-0">
-        <div className="space-y-6">
-          <CertificationsForm />
-          <LanguagesForm />
-        </div>
+      <TabsContent value="certifications" className="mt-0">
+        <CertificationsForm />
+      </TabsContent>
+      <TabsContent value="languages" className="mt-0">
+        <LanguagesForm />
       </TabsContent>
     </Tabs>
   );
