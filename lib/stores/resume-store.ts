@@ -75,6 +75,20 @@ interface Language {
   display_order: number;
 }
 
+export interface VisualConfig {
+  accentColor: string;
+  fontFamily: string;
+  fontSize: "small" | "standard" | "large";
+  lineHeight: "tight" | "standard" | "relaxed";
+}
+
+const DEFAULT_VISUAL_CONFIG: VisualConfig = {
+  accentColor: "#0070f3",
+  fontFamily: "Inter",
+  fontSize: "standard",
+  lineHeight: "relaxed",
+};
+
 export interface ResumeVersion {
   id: string;
   created_at: string;
@@ -86,6 +100,7 @@ export interface ResumeVersion {
     projects: Project[];
     certifications: Certification[];
     languages: Language[];
+    visualConfig?: VisualConfig;
     summary: string | null;
   };
 }
@@ -100,6 +115,7 @@ interface ResumeState {
   certifications: Certification[];
   languages: Language[];
   sectionOrder: string[];
+  visualConfig: VisualConfig;
   template: string;
   slug: string | null;
   is_public: boolean;
@@ -107,6 +123,8 @@ interface ResumeState {
 
   // Setters
   setResumeId: (id: string) => void;
+  setVisualConfig: (config: VisualConfig) => void;
+  updateVisualConfig: (updates: Partial<VisualConfig>) => void;
   setProfile: (profile: Profile) => void;
   setWorkExperiences: (experiences: WorkExperience[]) => void;
   setEducation: (education: Education[]) => void;
@@ -164,9 +182,16 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   is_public: false,
   hasChanges: false,
   sectionOrder: ["experience", "education", "skills", "projects", "certifications", "languages"],
+  visualConfig: DEFAULT_VISUAL_CONFIG,
   versions: [],
 
   setResumeId: (id) => set({ resumeId: id }),
+  setVisualConfig: (config) => set({ visualConfig: config }),
+  updateVisualConfig: (updates) =>
+    set((state) => ({
+      visualConfig: { ...state.visualConfig, ...updates },
+      hasChanges: true,
+    })),
   setProfile: (profile) => set({ profile }),
   setWorkExperiences: (experiences) => set({ workExperiences: experiences }),
   setEducation: (education) => set({ education }),
@@ -569,6 +594,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         slug: state.slug,
         is_public: state.is_public,
         section_order: state.sectionOrder,
+        visual_config: state.visualConfig,
       })
       .eq("id", state.resumeId);
 
@@ -606,6 +632,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       projects: state.projects,
       certifications: state.certifications,
       languages: state.languages,
+      visualConfig: state.visualConfig,
     };
 
     const supabase = createClient();
@@ -642,6 +669,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       projects: regenIds(content.projects),
       certifications: regenIds(content.certifications),
       languages: regenIds(content.languages),
+      visualConfig: content.visualConfig || DEFAULT_VISUAL_CONFIG,
       hasChanges: true
     });
   },

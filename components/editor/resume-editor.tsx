@@ -34,6 +34,7 @@ import { SectionReorder } from "@/components/editor/section-reorder";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { VisualCustomizer } from "@/components/editor/visual-customizer";
 
 interface Resume {
   id: string;
@@ -43,6 +44,7 @@ interface Resume {
   slug: string | null;
   is_public: boolean;
   section_order: string[] | null;
+  visual_config: any | null;
 }
 
 interface Profile {
@@ -158,6 +160,7 @@ export function ResumeEditor({
     setIsPublic,
     setSlug,
     setSectionOrder,
+    setVisualConfig,
     template,
     hasChanges,
     saveAllChanges,
@@ -170,6 +173,7 @@ export function ResumeEditor({
     setIsPublic(resume.is_public || false);
     setSlug(resume.slug || "");
     if (resume.section_order) setSectionOrder(resume.section_order);
+    if (resume.visual_config) setVisualConfig(resume.visual_config);
     if (profile) setProfile(profile);
 
     // Map DB sort_order to store display_order
@@ -243,6 +247,7 @@ export function ResumeEditor({
         </div>
 
         <div className="flex items-center gap-2">
+          <VisualCustomizer />
           <SectionReorder />
           <VersionHistory />
           <ShareDialog />

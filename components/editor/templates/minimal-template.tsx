@@ -1,5 +1,5 @@
-import React from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
+import { cn } from "@/lib/utils";
 
 interface TemplateProps {
     data?: {
@@ -28,15 +28,22 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
     } = data || store;
 
     const sectionOrder = data?.resume?.section_order || store.sectionOrder;
+    const visualConfig = data?.resume?.visual_config || store.visualConfig;
 
     if (!profile) return null;
+
+    const accentStyle = { color: visualConfig.accentColor };
+    const borderStyle = { borderColor: visualConfig.accentColor };
 
     const renderSection = (id: string) => {
         switch (id) {
             case "experience":
                 return workExperiences.length > 0 && (
                     <section key="experience">
-                        <h2 className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 mb-4">
+                        <h2
+                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={borderStyle}
+                        >
                             Experience
                         </h2>
                         <div className="space-y-5">
@@ -63,7 +70,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
             case "education":
                 return education.length > 0 && (
                     <section key="education">
-                        <h2 className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 mb-4">
+                        <h2
+                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={borderStyle}
+                        >
                             Education
                         </h2>
                         <div className="space-y-4">
@@ -87,7 +97,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
             case "projects":
                 return projects.length > 0 && (
                     <section key="projects">
-                        <h2 className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 mb-4">
+                        <h2
+                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={borderStyle}
+                        >
                             Projects
                         </h2>
                         <div className="space-y-4">
@@ -117,7 +130,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
             case "skills":
                 return skills.length > 0 && (
                     <section key="skills">
-                        <h2 className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 mb-4">
+                        <h2
+                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={borderStyle}
+                        >
                             Skills
                         </h2>
                         <p className="text-sm leading-6">
@@ -128,7 +144,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
             case "certifications":
                 return certifications.length > 0 && (
                     <section key="certifications">
-                        <h2 className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 mb-4">
+                        <h2
+                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={borderStyle}
+                        >
                             Certifications
                         </h2>
                         <div className="space-y-2">
@@ -147,7 +166,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
             case "languages":
                 return languages.length > 0 && (
                     <section key="languages">
-                        <h2 className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 mb-4">
+                        <h2
+                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={borderStyle}
+                        >
                             Languages
                         </h2>
                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -166,10 +188,20 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
     };
 
     return (
-        <div className="bg-white text-gray-800 p-10 min-h-[1056px] h-full font-serif">
+        <div
+            className={cn(
+                "bg-white p-10 min-h-[1056px] h-full transition-all duration-300",
+                visualConfig.fontSize === "small" ? "text-[13px]" : visualConfig.fontSize === "large" ? "text-[16px]" : "text-[14px]",
+                visualConfig.lineHeight === "tight" ? "leading-tight" : visualConfig.lineHeight === "relaxed" ? "leading-relaxed" : "leading-normal"
+            )}
+            style={{ fontFamily: visualConfig.fontFamily, color: "#374151" }}
+        >
             {/* Header - Centered */}
             <header className="text-center mb-8">
-                <h1 className="text-3xl font-normal uppercase tracking-[0.2em] mb-3 text-black">
+                <h1
+                    className="text-3xl font-normal uppercase tracking-[0.2em] mb-3"
+                    style={{ color: visualConfig.accentColor }}
+                >
                     {profile.full_name || "Your Name"}
                 </h1>
                 <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs uppercase tracking-wider text-gray-500">

@@ -1,6 +1,7 @@
 import React from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { Mail, Phone, MapPin, Linkedin, Link as LinkIcon, Github } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TemplateProps {
     data?: {
@@ -29,15 +30,22 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
     } = data || store;
 
     const sectionOrder = data?.resume?.section_order || store.sectionOrder;
+    const visualConfig = data?.resume?.visual_config || store.visualConfig;
 
     if (!profile) return null;
+
+    const accentStyle = { color: visualConfig.accentColor };
+    const borderStyle = { borderColor: visualConfig.accentColor };
 
     const renderSection = (id: string) => {
         switch (id) {
             case "experience":
                 return workExperiences.length > 0 && (
                     <section key="experience">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 border-b pb-1">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1"
+                            style={accentStyle}
+                        >
                             Experience
                         </h2>
                         <div className="space-y-4">
@@ -64,7 +72,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
             case "education":
                 return education.length > 0 && (
                     <section key="education">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 border-b pb-1">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1"
+                            style={accentStyle}
+                        >
                             Education
                         </h2>
                         <div className="space-y-4">
@@ -90,7 +101,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
             case "projects":
                 return projects.length > 0 && (
                     <section key="projects">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 border-b pb-1">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1"
+                            style={accentStyle}
+                        >
                             Projects
                         </h2>
                         <div className="space-y-4">
@@ -120,7 +134,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
             case "skills":
                 return skills.length > 0 && (
                     <section key="skills">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 border-b pb-1">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1"
+                            style={accentStyle}
+                        >
                             Skills
                         </h2>
                         <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm">
@@ -136,7 +153,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
             case "certifications":
                 return certifications.length > 0 && (
                     <section key="certifications">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 border-b pb-1">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1"
+                            style={accentStyle}
+                        >
                             Certifications
                         </h2>
                         <div className="space-y-2">
@@ -155,7 +175,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
             case "languages":
                 return languages.length > 0 && (
                     <section key="languages">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 border-b pb-1">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-3 border-b pb-1"
+                            style={accentStyle}
+                        >
                             Languages
                         </h2>
                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -174,9 +197,19 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
     };
 
     return (
-        <div className="bg-white text-black p-8 min-h-[1056px] h-full">
+        <div
+            className={cn(
+                "bg-white text-black p-8 min-h-[1056px] h-full transition-all duration-300",
+                visualConfig.fontSize === "small" ? "text-[13px]" : visualConfig.fontSize === "large" ? "text-[16px]" : "text-[14px]",
+                visualConfig.lineHeight === "tight" ? "leading-tight" : visualConfig.lineHeight === "relaxed" ? "leading-relaxed" : "leading-normal"
+            )}
+            style={{ fontFamily: visualConfig.fontFamily }}
+        >
             {/* Header */}
-            <header className="border-b-2 border-gray-900 pb-6 mb-6">
+            <header
+                className="border-b-2 pb-6 mb-6"
+                style={{ borderBottomColor: visualConfig.accentColor }}
+            >
                 <h1 className="text-4xl font-bold uppercase tracking-wide mb-2">
                     {profile.full_name || "Your Name"}
                 </h1>
@@ -224,10 +257,13 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                 {/* Summary */}
                 {profile.summary && (
                     <section>
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">
+                        <h2
+                            className="text-sm font-bold uppercase tracking-wider mb-2"
+                            style={accentStyle}
+                        >
                             Professional Summary
                         </h2>
-                        <p className="text-sm leading-relaxed">{profile.summary}</p>
+                        <p className="leading-inherit text-justify">{profile.summary}</p>
                     </section>
                 )}
 

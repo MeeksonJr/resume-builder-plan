@@ -1,5 +1,5 @@
-import React from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
+import { cn } from "@/lib/utils";
 
 interface TemplateProps {
     data?: {
@@ -28,15 +28,24 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
     } = data || store;
 
     const sectionOrder = data?.resume?.section_order || store.sectionOrder;
+    const visualConfig = data?.resume?.visual_config || store.visualConfig;
 
     if (!profile) return null;
+
+    const accentStyle = { color: visualConfig.accentColor };
+    const borderStyle = { borderBottomColor: visualConfig.accentColor };
 
     const renderSection = (id: string) => {
         switch (id) {
             case "experience":
                 return workExperiences.length > 0 && (
                     <section key="experience" className="mb-6">
-                        <h2 className="text-lg font-bold border-b-2 border-gray-800 mb-3 uppercase">Experience</h2>
+                        <h2
+                            className="text-lg font-bold border-b-2 mb-3 uppercase"
+                            style={borderStyle}
+                        >
+                            Experience
+                        </h2>
                         <div className="space-y-4">
                             {workExperiences.map((exp) => (
                                 <div key={exp.id}>
@@ -59,7 +68,12 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
             case "education":
                 return education.length > 0 && (
                     <section key="education" className="mb-6">
-                        <h2 className="text-lg font-bold border-b-2 border-gray-800 mb-3 uppercase">Education</h2>
+                        <h2
+                            className="text-lg font-bold border-b-2 mb-3 uppercase"
+                            style={borderStyle}
+                        >
+                            Education
+                        </h2>
                         <div className="space-y-4">
                             {education.map((edu) => (
                                 <div key={edu.id}>
@@ -80,7 +94,12 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
             case "projects":
                 return projects.length > 0 && (
                     <section key="projects" className="mb-6">
-                        <h2 className="text-lg font-bold border-b-2 border-gray-800 mb-3 uppercase">Projects</h2>
+                        <h2
+                            className="text-lg font-bold border-b-2 mb-3 uppercase"
+                            style={borderStyle}
+                        >
+                            Projects
+                        </h2>
                         <div className="space-y-4">
                             {projects.map((proj) => (
                                 <div key={proj.id}>
@@ -104,7 +123,12 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
             case "skills":
                 return skills.length > 0 && (
                     <section key="skills" className="mb-6">
-                        <h2 className="text-lg font-bold border-b-2 border-gray-800 mb-3 uppercase">Skills</h2>
+                        <h2
+                            className="text-lg font-bold border-b-2 mb-3 uppercase"
+                            style={borderStyle}
+                        >
+                            Skills
+                        </h2>
                         <p className="text-sm leading-relaxed text-gray-700">
                             {skills.map(s => s.name).join(" • ")}
                         </p>
@@ -113,7 +137,12 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
             case "certifications":
                 return certifications.length > 0 && (
                     <section key="certifications" className="mb-6">
-                        <h2 className="text-lg font-bold border-b-2 border-gray-800 mb-3 uppercase">Certifications</h2>
+                        <h2
+                            className="text-lg font-bold border-b-2 mb-3 uppercase"
+                            style={borderStyle}
+                        >
+                            Certifications
+                        </h2>
                         <div className="space-y-1">
                             {certifications.map((cert) => (
                                 <div key={cert.id} className="flex justify-between text-sm">
@@ -127,7 +156,12 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
             case "languages":
                 return languages.length > 0 && (
                     <section key="languages" className="mb-6">
-                        <h2 className="text-lg font-bold border-b-2 border-gray-800 mb-3 uppercase">Languages</h2>
+                        <h2
+                            className="text-lg font-bold border-b-2 mb-3 uppercase"
+                            style={borderStyle}
+                        >
+                            Languages
+                        </h2>
                         <div className="flex flex-wrap gap-x-8 gap-y-1">
                             {languages.map((lang) => (
                                 <p key={lang.id} className="text-sm">
@@ -143,10 +177,20 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
     };
 
     return (
-        <div className="bg-white text-black p-12 min-h-[1056px] h-full font-serif">
+        <div
+            className={cn(
+                "bg-white text-black p-12 min-h-[1056px] h-full transition-all duration-300",
+                visualConfig.fontSize === "small" ? "text-[13px]" : visualConfig.fontSize === "large" ? "text-[16px]" : "text-[14px]",
+                visualConfig.lineHeight === "tight" ? "leading-tight" : visualConfig.lineHeight === "relaxed" ? "leading-relaxed" : "leading-normal"
+            )}
+            style={{ fontFamily: visualConfig.fontFamily }}
+        >
             {/* Header - Traditional */}
             <header className="text-center mb-8">
-                <h1 className="text-3xl font-bold mb-2 tracking-tight">
+                <h1
+                    className="text-3xl font-bold mb-2 tracking-tight"
+                    style={{ color: visualConfig.accentColor }}
+                >
                     {profile.full_name || "Your Name"}
                 </h1>
                 <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-700">

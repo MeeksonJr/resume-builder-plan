@@ -93,9 +93,8 @@ export function SectionReorder() {
                         <SortableContext items={items} strategy={verticalListSortingStrategy}>
                             <div className="space-y-2">
                                 {items.map((id) => (
-                                    <SortableItem key={id} id={id}>
-                                        <div className="flex items-center gap-3 rounded-lg border bg-card p-4 shadow-sm">
-                                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                    <SortableItem key={id} id={id} className="w-full">
+                                        <div className="flex items-center gap-3 rounded-lg border bg-card p-4 shadow-sm w-full">
                                             <span className="font-medium">{SECTION_LABELS[id] || id}</span>
                                         </div>
                                     </SortableItem>
