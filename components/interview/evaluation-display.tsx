@@ -10,6 +10,8 @@ import {
     AlertCircle,
 } from "lucide-react";
 
+import { FeedbackPDFButton } from "@/components/interview/feedback-pdf";
+
 interface Feedback {
     id: string;
     score: number;
@@ -17,6 +19,18 @@ interface Feedback {
     weaknesses: string[];
     improvements: string[];
     overall_feedback: string;
+    scores: {
+        situation: number;
+        task: number;
+        action: number;
+        result: number;
+    };
+    star_breakdown: {
+        situation: string;
+        task: string;
+        action: string;
+        result: string;
+    };
 }
 
 interface EvaluationDisplayProps {
@@ -29,6 +43,7 @@ export function EvaluationDisplay({
     autoEvaluate = true,
 }: EvaluationDisplayProps) {
     const [feedback, setFeedback] = useState<Feedback | null>(null);
+    const [answerData, setAnswerData] = useState<any>(null); // Store the full answer object
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +64,11 @@ export function EvaluationDisplay({
             }
 
             const data = await response.json();
+            console.log("Evaluation response:", data);
             setFeedback(data.feedback);
+            if (data.answer) {
+                setAnswerData(data.answer);
+            }
         } catch (err) {
             console.error("Error fetching evaluation:", err);
             setError("Failed to evaluate your answer. Please try again.");
@@ -123,6 +142,26 @@ export function EvaluationDisplay({
 
     return (
         <div className="space-y-6">
+            {/* Header Actions */}
+            {answerData && feedback.scores && feedback.star_breakdown && (
+                <div className="flex justify-end">
+                    <FeedbackPDFButton
+                        data={{
+                            question: answerData.interview_questions?.question_text || "Unknown Question",
+                            answer: answerData.answer_text || "",
+                            date: answerData.created_at || new Date().toISOString(),
+                            type: answerData.interview_questions?.question_type || "General",
+                            feedback: {
+                                ...feedback,
+                                feedback: feedback.overall_feedback,
+                                scores: feedback.scores,
+                                star_breakdown: feedback.star_breakdown
+                            }
+                        }}
+                    />
+                </div>
+            )}
+
             {/* Score Card */}
             <div
                 className={`flex items-center justify-between p-6 rounded-lg border-2 ${getScoreColor(
@@ -158,7 +197,7 @@ export function EvaluationDisplay({
                         {feedback.strengths.map((strength, index) => (
                             <li key={index} className="flex items-start gap-2 text-green-800">
                                 <span className="text-green-600 mt-1">•</span>
-                                <span>{strength}</span>
+                                <span className="text-sm">{strength}</span>
                             </li>
                         ))}
                     </ul>
@@ -178,7 +217,7 @@ export function EvaluationDisplay({
                         {feedback.weaknesses.map((weakness, index) => (
                             <li key={index} className="flex items-start gap-2 text-orange-800">
                                 <span className="text-orange-600 mt-1">•</span>
-                                <span>{weakness}</span>
+                                <span className="text-sm">{weakness}</span>
                             </li>
                         ))}
                     </ul>
@@ -203,7 +242,7 @@ export function EvaluationDisplay({
                                 <span className="flex-shrink-0 w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center text-purple-700 text-sm font-semibold">
                                     {index + 1}
                                 </span>
-                                <span>{improvement}</span>
+                                <span className="text-sm">{improvement}</span>
                             </li>
                         ))}
                     </ul>

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { AnswerRecorder } from "@/components/interview/answer-recorder";
 import { EvaluationDisplay } from "@/components/interview/evaluation-display";
 import { AnswerHistory } from "@/components/interview/answer-history";
+import { AnswerComparison } from "@/components/interview/answer-comparison";
 
 interface PracticeInterfaceProps {
     session: any;
@@ -28,6 +29,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
     const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
     const [answers, setAnswers] = useState<any[]>([]);
+    const [comparisonData, setComparisonData] = useState<{ a1: any, a2: any } | null>(null);
 
     const currentQuestion = questions[currentIndex];
     const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -77,6 +79,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(currentIndex + 1);
             setCurrentAnswerId(null);
+            setComparisonData(null);
         }
     };
 
@@ -84,6 +87,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
             setCurrentAnswerId(null);
+            setComparisonData(null);
         }
     };
 
@@ -193,12 +197,25 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
                             <AnswerHistory
                                 answers={currentQuestionAnswers}
                                 currentAnswerId={currentAnswerId}
-                                onSelectAnswer={(a) => setCurrentAnswerId(a.id)}
+                                onSelectAnswer={(a) => {
+                                    setCurrentAnswerId(a.id);
+                                    setComparisonData(null);
+                                }}
+                                onCompare={(a1, a2) => {
+                                    setComparisonData({ a1, a2 });
+                                    setCurrentAnswerId(null);
+                                }}
                             />
                         </div>
                     )}
 
-                    {!currentAnswerId ? (
+                    {comparisonData ? (
+                        <AnswerComparison
+                            answer1={comparisonData.a1}
+                            answer2={comparisonData.a2}
+                            onClose={() => setComparisonData(null)}
+                        />
+                    ) : !currentAnswerId ? (
                         <div className="space-y-4">
                             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
                                 <p className="text-sm text-blue-800 dark:text-blue-200">

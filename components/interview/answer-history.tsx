@@ -25,9 +25,12 @@ interface AnswerHistoryProps {
 export function AnswerHistory({
     answers,
     onSelectAnswer,
-    currentAnswerId
-}: AnswerHistoryProps) {
+    currentAnswerId,
+    onCompare
+}: AnswerHistoryProps & { onCompare?: (a1: any, a2: any) => void }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [isCompareMode, setIsCompareMode] = useState(false);
+    const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
 
     if (!answers || answers.length === 0) return null;
 
@@ -37,7 +40,9 @@ export function AnswerHistory({
     );
 
     const getScoreColor = (score: number) => {
-        if (score >= 8) return "text-green-600 bg-green-100 border-green-200";
+        if (score >= 80) return "text-green-600 bg-green-100 border-green-200"; // Assuming 0-100 now based on previous files, but let's be safe
+        if (score >= 8) return "text-green-600 bg-green-100 border-green-200"; // Fallback for 0-10 scale
+        if (score >= 60) return "text-yellow-600 bg-yellow-100 border-yellow-200";
         if (score >= 6) return "text-yellow-600 bg-yellow-100 border-yellow-200";
         return "text-red-600 bg-red-100 border-red-200";
     };
@@ -54,44 +59,91 @@ export function AnswerHistory({
         return <Minus className="w-4 h-4 text-gray-400" />;
     };
 
+    const handleAnswerClick = (answer: any) => {
+        if (isCompareMode) {
+            if (selectedForComparison.includes(answer.id)) {
+                setSelectedForComparison(selectedForComparison.filter(id => id !== answer.id));
+            } else if (selectedForComparison.length < 2) {
+                setSelectedForComparison([...selectedForComparison, answer.id]);
+            }
+        } else {
+            onSelectAnswer?.(answer);
+        }
+    };
+
+    const handleCompare = () => {
+        if (selectedForComparison.length !== 2) return;
+        const a1 = answers.find(a => a.id === selectedForComparison[0]);
+        const a2 = answers.find(a => a.id === selectedForComparison[1]);
+        if (a1 && a2) {
+            onCompare?.(a1, a2);
+            setIsCompareMode(false);
+            setSelectedForComparison([]);
+        }
+    };
+
     return (
         <div className="border rounded-lg bg-white dark:bg-gray-950 overflow-hidden">
-            <Button
-                variant="ghost"
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-900"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <div className="flex items-center gap-2">
-                    <History className="w-4 h-4 text-gray-500" />
-                    <span className="font-medium">Answer History</span>
-                    <Badge variant="secondary" className="ml-2">
-                        {answers.length} {answers.length === 1 ? 'attempt' : 'attempts'}
-                    </Badge>
-                </div>
-                {isOpen ? (
-                    <ChevronUp className="w-4 h-4 text-gray-500" />
-                ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
+            <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-900/50 border-b">
+                <Button
+                    variant="ghost"
+                    className="p-0 hover:bg-transparent h-auto"
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    <div className="flex items-center gap-2">
+                        <History className="w-4 h-4 text-gray-500" />
+                        <span className="font-medium">Answer History</span>
+                        <Badge variant="secondary" className="ml-2">
+                            {answers.length} {answers.length === 1 ? 'attempt' : 'attempts'}
+                        </Badge>
+                        {isOpen ? (
+                            <ChevronUp className="w-4 h-4 text-gray-500 ml-1" />
+                        ) : (
+                            <ChevronDown className="w-4 h-4 text-gray-500 ml-1" />
+                        )}
+                    </div>
+                </Button>
+                {isOpen && answers.length >= 2 && (
+                    <div className="flex items-center gap-2">
+                        {isCompareMode ? (
+                            <>
+                                <Button size="sm" variant="ghost" onClick={() => {
+                                    setIsCompareMode(false);
+                                    setSelectedForComparison([]);
+                                }}>Cancel</Button>
+                                <Button size="sm" onClick={handleCompare} disabled={selectedForComparison.length !== 2}>
+                                    Compare ({selectedForComparison.length}/2)
+                                </Button>
+                            </>
+                        ) : (
+                            <Button size="sm" variant="outline" onClick={() => setIsCompareMode(true)}>
+                                Compare
+                            </Button>
+                        )}
+                    </div>
                 )}
-            </Button>
+            </div>
 
             {isOpen && (
-                <div className="border-t bg-gray-50/50 dark:bg-gray-900/50">
+                <div className="bg-gray-50/50 dark:bg-gray-900/50">
                     <ScrollArea className="max-h-[300px]">
                         <div className="p-4 space-y-3">
                             {sortedAnswers.map((answer, index) => {
                                 const feedback = answer.interview_feedback;
                                 const isSelected = currentAnswerId === answer.id;
+                                const isCompareSelected = selectedForComparison.includes(answer.id);
 
                                 return (
                                     <div
                                         key={answer.id}
-                                        onClick={() => onSelectAnswer?.(answer)}
+                                        onClick={() => handleAnswerClick(answer)}
                                         className={`
                       relative p-3 rounded-lg border transition-all cursor-pointer
-                      ${isSelected
-                                                ? "bg-blue-50 border-blue-200 ring-1 ring-blue-300 dark:bg-blue-900/20 dark:border-blue-800"
-                                                : "bg-white border-gray-200 hover:border-gray-300 dark:bg-gray-950 dark:border-gray-800"
+                      ${isCompareMode
+                                                ? (isCompareSelected ? "ring-2 ring-primary border-primary bg-primary/5" : "hover:border-primary/50")
+                                                : (isSelected
+                                                    ? "bg-blue-50 border-blue-200 ring-1 ring-blue-300 dark:bg-blue-900/20 dark:border-blue-800"
+                                                    : "bg-white border-gray-200 hover:border-gray-300 dark:bg-gray-950 dark:border-gray-800")
                                             }
                     `}
                                     >
@@ -103,7 +155,7 @@ export function AnswerHistory({
                                             {feedback && (
                                                 <div className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${getScoreColor(feedback.score)}`}>
                                                     <Award className="w-3 h-3" />
-                                                    <span>{feedback.score}/10</span>
+                                                    <span>{feedback.score >= 20 ? feedback.score : `${feedback.score}/10`}</span>
                                                     {getScoreTrend(answer, index)}
                                                 </div>
                                             )}

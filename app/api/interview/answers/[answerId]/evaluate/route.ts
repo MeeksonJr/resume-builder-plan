@@ -50,7 +50,10 @@ export async function POST(
 
         if (existingFeedback) {
             return NextResponse.json(
-                { feedback: existingFeedback },
+                {
+                    feedback: existingFeedback,
+                    answer: answer
+                },
                 { status: 200 }
             );
         }
@@ -73,6 +76,8 @@ export async function POST(
                 weaknesses: evaluation.weaknesses,
                 improvements: evaluation.improvements,
                 overall_feedback: evaluation.overallFeedback,
+                scores: evaluation.scores, // Assuming these exist in the schema or JSON column
+                star_breakdown: evaluation.starBreakdown // Assuming these exist
             })
             .select()
             .single();
@@ -85,7 +90,7 @@ export async function POST(
             );
         }
 
-        return NextResponse.json({ feedback }, { status: 201 });
+        return NextResponse.json({ feedback, answer }, { status: 201 });
     } catch (error) {
         console.error("Error evaluating answer:", error);
         return NextResponse.json(
