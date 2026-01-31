@@ -4,7 +4,7 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "../rich-text-editor";
 import {
   Card,
   CardContent,
@@ -159,13 +159,10 @@ export function PersonalInfoForm() {
               Improve with AI
             </Button>
           </div>
-          <Textarea
-            id="summary"
-            value={profile.summary || ""}
-            onChange={(e) => updateProfile({ summary: e.target.value })}
+          <RichTextEditor
+            content={profile.summary || ""}
+            onChange={(content) => updateProfile({ summary: content })}
             placeholder="A brief 2-4 sentence summary of your professional background and career goals..."
-            rows={4}
-            className="min-h-[100px] resize-none"
           />
         </div>
       </CardContent>

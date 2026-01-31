@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FileText, Plus, LogOut, User, Settings, Menu } from "lucide-react";
+import { FileText, Mail, Plus, LogOut, User, Settings, Menu } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useState } from "react";
 
@@ -70,10 +70,10 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               My Resumes
             </Link>
             <Link
-              href="/dashboard/templates"
+              href="/dashboard/cover-letters"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Templates
+              Cover Letters
             </Link>
           </nav>
         </div>
@@ -159,11 +159,11 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               My Resumes
             </Link>
             <Link
-              href="/dashboard/templates"
+              href="/dashboard/cover-letters"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Templates
+              Cover Letters
             </Link>
             <Button asChild size="sm" className="mt-2 min-h-[44px] gap-2">
               <Link href="/dashboard/resume/new">

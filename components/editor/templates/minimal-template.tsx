@@ -59,9 +59,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                                         <span className="font-medium">{exp.company}</span>
                                         {exp.location && <span className="text-gray-500">, {exp.location}</span>}
                                     </div>
-                                    <p className="text-sm leading-6 whitespace-pre-wrap text-gray-700">
-                                        {exp.description}
-                                    </p>
+                                    <div
+                                        className="text-sm leading-6 text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0 font-normal"
+                                        dangerouslySetInnerHTML={{ __html: exp.description }}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -119,9 +120,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                                             {proj.technologies.join(", ")}
                                         </div>
                                     )}
-                                    <p className="text-sm leading-6 whitespace-pre-wrap text-gray-700">
-                                        {proj.description}
-                                    </p>
+                                    <div
+                                        className="text-sm leading-6 text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0 font-normal"
+                                        dangerouslySetInnerHTML={{ __html: proj.description }}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -225,7 +227,10 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                 {/* Summary */}
                 {profile.summary && (
                     <section>
-                        <p className="text-sm leading-7 text-justify">{profile.summary}</p>
+                        <div
+                            className="text-sm leading-7 text-justify prose-sm prose-p:my-0 font-normal"
+                            dangerouslySetInnerHTML={{ __html: profile.summary }}
+                        />
                     </section>
                 )}
 

@@ -4,7 +4,7 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "../rich-text-editor";
 import {
     Card,
     CardContent,
@@ -208,13 +208,12 @@ export function WorkExperienceForm() {
 
                                         <div className="space-y-2">
                                             <Label>Description</Label>
-                                            <Textarea
-                                                value={exp.description || ""}
-                                                onChange={(e) =>
-                                                    updateWorkExperience(exp.id, { description: e.target.value })
+                                            <RichTextEditor
+                                                content={exp.description || ""}
+                                                onChange={(content) =>
+                                                    updateWorkExperience(exp.id, { description: content })
                                                 }
                                                 placeholder="Describe your responsibilities and achievements..."
-                                                className="min-h-[100px]"
                                             />
                                         </div>
                                     </AccordionContent>

@@ -4,7 +4,7 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "../rich-text-editor";
 import {
     Card,
     CardContent,
@@ -151,13 +151,12 @@ export function ProjectsForm() {
 
                                         <div className="space-y-2">
                                             <Label>Description</Label>
-                                            <Textarea
-                                                value={proj.description || ""}
-                                                onChange={(e) =>
-                                                    updateProject(proj.id, { description: e.target.value })
+                                            <RichTextEditor
+                                                content={proj.description || ""}
+                                                onChange={(content) =>
+                                                    updateProject(proj.id, { description: content })
                                                 }
                                                 placeholder="Describe what you built..."
-                                                className="min-h-[100px]"
                                             />
                                         </div>
                                     </AccordionContent>

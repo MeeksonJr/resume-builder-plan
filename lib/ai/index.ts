@@ -352,3 +352,46 @@ export async function analyzeKeywords(
     throw error;
   }
 }
+
+// Generate a cover letter
+export async function generateCoverLetter(
+  resumeData: ResumeData,
+  jobDescription: string,
+  recipientInfo?: { name?: string; company?: string; title?: string }
+): Promise<string> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateText({
+        model,
+        prompt: `Write a highly professional, tailored cover letter based on the following resume and job description.
+  
+  Resume:
+  ${JSON.stringify(resumeData, null, 2)}
+  
+  Job Description:
+  ${jobDescription}
+  
+  ${recipientInfo ? `Recipient: ${recipientInfo.name || "Hiring Manager"}\nCompany: ${recipientInfo.company || ""}\nRole Title: ${recipientInfo.title || ""}` : ""}
+  
+  Guidelines:
+  - Strong opening that highlights interest in the role.
+  - 3 main paragraphs focusing on key achievements that match the job requirements.
+  - Professional tone throughout.
+  - Do not use placeholders like [Your Name] if the information is in the resume; use the actual data.
+  - Length: 300-400 words.
+  
+  Provide only the cover letter content.`,
+      });
+    });
+
+    return result.text.trim();
+  } catch (error: any) {
+    console.warn("[AI] Cover letter generation failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return `[MOCK] Dear Hiring Manager,
+
+I am writing to express my strong interest in the position... [This is a mock response because no API keys were configured or providers failed]`;
+    }
+    throw error;
+  }
+}

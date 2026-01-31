@@ -61,9 +61,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                                         <span className="font-medium text-gray-800">{exp.company}</span>
                                         <span className="text-sm text-gray-500">{exp.location}</span>
                                     </div>
-                                    <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-700">
-                                        {exp.description}
-                                    </p>
+                                    <div
+                                        className="text-sm leading-relaxed text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                        dangerouslySetInnerHTML={{ __html: exp.description }}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -123,9 +124,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                                             {proj.technologies.join(", ")}
                                         </div>
                                     )}
-                                    <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-700">
-                                        {proj.description}
-                                    </p>
+                                    <div
+                                        className="text-sm leading-relaxed text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                        dangerouslySetInnerHTML={{ __html: proj.description }}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -263,7 +265,10 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                         >
                             Professional Summary
                         </h2>
-                        <p className="leading-inherit text-justify">{profile.summary}</p>
+                        <div
+                            className="leading-inherit text-justify prose-sm prose-p:my-0"
+                            dangerouslySetInnerHTML={{ __html: profile.summary }}
+                        />
                     </section>
                 )}
 

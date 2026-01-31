@@ -57,9 +57,10 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
                                         <span>{exp.position}</span>
                                         <span>{exp.start_date} – {exp.is_current ? "Present" : exp.end_date}</span>
                                     </div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                                        {exp.description}
-                                    </p>
+                                    <div
+                                        className="text-sm text-gray-700 leading-relaxed prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                        dangerouslySetInnerHTML={{ __html: exp.description }}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -112,9 +113,10 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
                                             Technologies: {proj.technologies.join(", ")}
                                         </p>
                                     )}
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                        {proj.description}
-                                    </p>
+                                    <div
+                                        className="text-sm text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                        dangerouslySetInnerHTML={{ __html: proj.description }}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -210,9 +212,10 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
             {/* Summary */}
             {profile.summary && (
                 <section className="mb-6">
-                    <p className="text-sm leading-relaxed text-justify italic text-gray-800">
-                        {profile.summary}
-                    </p>
+                    <div
+                        className="text-sm leading-relaxed text-justify italic text-gray-800 prose-sm prose-p:my-0"
+                        dangerouslySetInnerHTML={{ __html: profile.summary }}
+                    />
                 </section>
             )}
 

@@ -12,13 +12,72 @@ interface ResumeData {
     sectionOrder: string[];
 }
 
+// Helper to convert simple HTML to docx elements
+function renderRichText(html: string): (Paragraph | TextRun)[] {
+    if (!html) return [];
+
+    // For simplicity, we'll extract text and some basic formatting
+    // A robust parser would be better, but this handles common Tiptap output
+    const elements: any[] = [];
+
+    // Remove outer <p> and split by paragraphs/bullets
+    const blocks = html.split(/<\/p>|<\/li>|<li>|<p>/).filter(b => b.trim().length > 0);
+
+    blocks.forEach(block => {
+        const children: TextRun[] = [];
+        // Extract basic formatting from block
+        let text = block;
+
+        // Simple regex to find <b> and <i> tags
+        // This is a simplified approach
+        const parts = text.split(/(<b>.*?<\/b>|<i>.*?<\/i>|<strong>.*?<\/strong>|<em>.*?<\/em>)/);
+
+        parts.forEach(part => {
+            if (!part) return;
+
+            let bold = false;
+            let italics = false;
+            let cleanText = part;
+
+            if (part.startsWith('<b>') || part.startsWith('<strong>')) {
+                bold = true;
+                cleanText = part.replace(/<\/?(b|strong)>/g, '');
+            } else if (part.startsWith('<i>') || part.startsWith('<em>')) {
+                italics = true;
+                cleanText = part.replace(/<\/?(i|em)>/g, '');
+            }
+
+            // Further clean any remaining tags
+            cleanText = cleanText.replace(/<[^>]*>/g, '');
+
+            if (cleanText) {
+                children.push(new TextRun({
+                    text: cleanText,
+                    bold,
+                    italics,
+                    size: 20
+                }));
+            }
+        });
+
+        if (children.length > 0) {
+            elements.push(new Paragraph({
+                children,
+                spacing: { before: 100 }
+            }));
+        }
+    });
+
+    return elements;
+}
+
 export async function exportToDocx(data: ResumeData) {
     const { profile, workExperiences, education, skills, projects, certifications, languages, sectionOrder } = data;
 
-    const sections = [];
+    const items: (Paragraph | ExternalHyperlink)[] = [];
 
     // Header Section
-    sections.push(
+    items.push(
         new Paragraph({
             alignment: AlignmentType.CENTER,
             children: [
@@ -47,7 +106,7 @@ export async function exportToDocx(data: ResumeData) {
     if (profile.website_url) linkItems.push(`Portfolio: ${profile.website_url}`);
 
     if (linkItems.length > 0) {
-        sections.push(
+        items.push(
             new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [
@@ -63,17 +122,19 @@ export async function exportToDocx(data: ResumeData) {
 
     // Summary
     if (profile.summary) {
-        sections.push(
+        items.push(
             new Paragraph({ text: "", spacing: { before: 200 } }),
             new Paragraph({
                 heading: HeadingLevel.HEADING_2,
                 children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24 })],
-            }),
-            new Paragraph({
-                children: [new TextRun({ text: profile.summary, size: 22 })],
-                spacing: { before: 100 },
             })
         );
+
+        // Use helper for rich text summary
+        const summaryParagraphs = renderRichText(profile.summary);
+        summaryParagraphs.forEach(p => {
+            if (p instanceof Paragraph) items.push(p);
+        });
     }
 
     // Dynamic Sections based on order
@@ -81,7 +142,7 @@ export async function exportToDocx(data: ResumeData) {
         switch (sectionId) {
             case "experience":
                 if (workExperiences.length > 0) {
-                    sections.push(
+                    items.push(
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
@@ -89,7 +150,7 @@ export async function exportToDocx(data: ResumeData) {
                         })
                     );
                     workExperiences.forEach(exp => {
-                        sections.push(
+                        items.push(
                             new Paragraph({
                                 spacing: { before: 150 },
                                 children: [
@@ -108,23 +169,9 @@ export async function exportToDocx(data: ResumeData) {
                         );
 
                         if (exp.description) {
-                            sections.push(
-                                new Paragraph({
-                                    spacing: { before: 100 },
-                                    children: [new TextRun({ text: exp.description, size: 20 })],
-                                })
-                            );
-                        }
-
-                        if (exp.highlights && exp.highlights.length > 0) {
-                            exp.highlights.forEach((highlight: string) => {
-                                sections.push(
-                                    new Paragraph({
-                                        text: highlight,
-                                        bullet: { level: 0 },
-                                        spacing: { before: 50 },
-                                    })
-                                );
+                            const descItems = renderRichText(exp.description);
+                            descItems.forEach(item => {
+                                if (item instanceof Paragraph) items.push(item);
                             });
                         }
                     });
@@ -133,7 +180,7 @@ export async function exportToDocx(data: ResumeData) {
 
             case "education":
                 if (education.length > 0) {
-                    sections.push(
+                    items.push(
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
@@ -141,7 +188,7 @@ export async function exportToDocx(data: ResumeData) {
                         })
                     );
                     education.forEach(edu => {
-                        sections.push(
+                        items.push(
                             new Paragraph({
                                 spacing: { before: 150 },
                                 children: [
@@ -164,7 +211,7 @@ export async function exportToDocx(data: ResumeData) {
 
             case "skills":
                 if (skills.length > 0) {
-                    sections.push(
+                    items.push(
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
@@ -180,7 +227,7 @@ export async function exportToDocx(data: ResumeData) {
 
             case "certifications":
                 if (certifications.length > 0) {
-                    sections.push(
+                    items.push(
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
@@ -188,7 +235,7 @@ export async function exportToDocx(data: ResumeData) {
                         })
                     );
                     certifications.forEach(cert => {
-                        sections.push(
+                        items.push(
                             new Paragraph({
                                 spacing: { before: 100 },
                                 children: [
@@ -207,7 +254,7 @@ export async function exportToDocx(data: ResumeData) {
 
             case "projects":
                 if (projects.length > 0) {
-                    sections.push(
+                    items.push(
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
@@ -215,7 +262,7 @@ export async function exportToDocx(data: ResumeData) {
                         })
                     );
                     projects.forEach(proj => {
-                        sections.push(
+                        items.push(
                             new Paragraph({
                                 spacing: { before: 150 },
                                 children: [
@@ -227,7 +274,7 @@ export async function exportToDocx(data: ResumeData) {
                         );
 
                         if (proj.technologies && proj.technologies.length > 0) {
-                            sections.push(
+                            items.push(
                                 new Paragraph({
                                     children: [new TextRun({ text: `Technologies: ${proj.technologies.join(", ")}`, italics: true, size: 18 })],
                                 })
@@ -235,23 +282,9 @@ export async function exportToDocx(data: ResumeData) {
                         }
 
                         if (proj.description) {
-                            sections.push(
-                                new Paragraph({
-                                    spacing: { before: 100 },
-                                    children: [new TextRun({ text: proj.description, size: 20 })],
-                                })
-                            );
-                        }
-
-                        if (proj.highlights && proj.highlights.length > 0) {
-                            proj.highlights.forEach((highlight: string) => {
-                                sections.push(
-                                    new Paragraph({
-                                        text: highlight,
-                                        bullet: { level: 0 },
-                                        spacing: { before: 50 },
-                                    })
-                                );
+                            const projDescItems = renderRichText(proj.description);
+                            projDescItems.forEach(item => {
+                                if (item instanceof Paragraph) items.push(item);
                             });
                         }
                     });
@@ -260,7 +293,7 @@ export async function exportToDocx(data: ResumeData) {
 
             case "languages":
                 if (languages.length > 0) {
-                    sections.push(
+                    items.push(
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
@@ -280,7 +313,7 @@ export async function exportToDocx(data: ResumeData) {
         sections: [
             {
                 properties: {},
-                children: sections,
+                children: items,
             },
         ],
     });
