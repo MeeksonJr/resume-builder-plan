@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FileText, Mail, Plus, LogOut, User, Settings, Menu, LayoutDashboard, Briefcase, Globe, Sparkles } from "lucide-react";
+import { FileText, Mail, Plus, LogOut, User, Settings, Menu, LayoutDashboard, Briefcase, Globe, Sparkles, Download } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useState } from "react";
 
@@ -93,6 +93,13 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             >
               <Sparkles className="h-4 w-4 text-primary" />
               Career Coach
+            </Link>
+            <Link
+              href="/dashboard/import"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+            >
+              <Download className="h-4 w-4" />
+              Import
             </Link>
             <Link
               href="/portfolios"
@@ -212,6 +219,14 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             >
               <Sparkles className="h-4 w-4 text-primary" />
               AI Career Coach
+            </Link>
+            <Link
+              href="/dashboard/import"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Download className="h-4 w-4" />
+              Smart Import
             </Link>
             <Link
               href="/portfolios"

@@ -703,3 +703,135 @@ export async function analyzeCareerPath(
     throw error;
   }
 }
+
+// Parse LinkedIn profile data (from PDF or text paste)
+export async function parseLinkedInData(linkedinText: string): Promise<ResumeData> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: resumeDataSchema,
+        prompt: `You are an expert at extracting structured data from LinkedIn profiles.
+        
+        Parse the following LinkedIn profile text and extract all relevant information into a structured resume format.
+        
+        LinkedIn Profile Text:
+        ${linkedinText}
+        
+        Instructions:
+        - Extract personal details from the header section (name, location, headline).
+        - Parse the "About" or "Summary" section into the summary field.
+        - Extract all work experiences with company names, titles, dates, and descriptions.
+        - Parse education history including institutions, degrees, and dates.
+        - Identify skills mentioned throughout the profile.
+        - Extract projects if mentioned.
+        - Parse certifications and languages.
+        - For dates, use YYYY-MM-DD format when possible, or YYYY-MM if day is unknown.
+        - If something is not found or mentioned, leave the field empty or use an empty array.
+        
+        Return a complete, valid resume data object.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] LinkedIn parsing failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        personalInfo: {
+          fullName: "[MOCK] LinkedIn User",
+          email: "user@linkedin.com",
+          location: "San Francisco, CA",
+          linkedin: "linkedin.com/in/user",
+          summary: "[MOCK] Extracted summary from LinkedIn. Experienced professional with 5+ years in tech.",
+        },
+        workExperience: [
+          {
+            company: "[MOCK] Tech Corp",
+            position: "Senior Engineer",
+            location: "San Francisco, CA",
+            startDate: "2020-01",
+            current: true,
+            description: "Leading development of key features.",
+          }
+        ],
+        education: [
+          {
+            institution: "[MOCK] University",
+            degree: "Bachelor of Science",
+            field: "Computer Science",
+            startDate: "2015-09",
+            endDate: "2019-06",
+          }
+        ],
+        skills: [{ items: ["JavaScript", "React", "Node.js"], category: "Technical Skills" }],
+        projects: [],
+        certifications: [],
+        languages: [],
+      };
+    }
+    throw error;
+  }
+}
+
+// Generate a professional project description from a GitHub repo
+export async function generateProjectFromRepo(
+  repoName: string,
+  repoDescription: string | null,
+  repoLanguage: string | null,
+  readmeContent: string | null
+): Promise<{
+  name: string;
+  description: string;
+  technologies: string[];
+  highlights: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          name: z.string(),
+          description: z.string(),
+          technologies: z.array(z.string()),
+          highlights: z.array(z.string()).length(3),
+        }),
+        prompt: `You are an expert at writing compelling project descriptions for resumes.
+        
+        Analyze this GitHub repository and create a professional resume entry:
+        
+        Repository Name: ${repoName}
+        Description: ${repoDescription || "No description provided"}
+        Primary Language: ${repoLanguage || "Not specified"}
+        README Content (first 2000 chars):
+        ${readmeContent ? readmeContent.substring(0, 2000) : "No README available"}
+        
+        Instructions:
+        - Create a concise, professional project name (clean up the repo name if needed).
+        - Write a 1-2 sentence description focusing on the project's purpose and impact.
+        - List 3-5 key technologies used (infer from README and language).
+        - Generate exactly 3 achievement-focused bullet points (start with action verbs, quantify if possible).
+        - Make it sound professional and impressive for a resume.
+        
+        Return a structured project object.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] GitHub project generation failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        name: repoName || "[MOCK] Project Name",
+        description: "[MOCK] A full-stack application demonstrating modern web development practices.",
+        technologies: [repoLanguage || "JavaScript", "React", "Node.js"],
+        highlights: [
+          "[MOCK] Built scalable backend API serving 10K+ requests daily",
+          "[MOCK] Implemented responsive UI with 95+ Lighthouse performance score",
+          "[MOCK] Integrated third-party APIs for enhanced functionality"
+        ],
+      };
+    }
+    throw error;
+  }
+}
