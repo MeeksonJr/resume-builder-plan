@@ -29,6 +29,7 @@ import { LanguagesForm } from "./sections/languages-form";
 import { ResumePreview } from "./resume-preview";
 import { AIAssistant } from "./ai-assistant";
 import { ShareDialog } from "./share-dialog";
+import { VersionHistory } from "./version-history";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -238,6 +239,7 @@ export function ResumeEditor({
         </div>
 
         <div className="flex items-center gap-2">
+          <VersionHistory />
           <ShareDialog />
           <Button
             variant="outline"

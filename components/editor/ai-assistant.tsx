@@ -21,7 +21,7 @@ interface AIAssistantProps {
 
 export function AIAssistant({ onClose }: AIAssistantProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve">("menu");
+    const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve" | "ats">("menu");
     const [jobDescription, setJobDescription] = useState("");
     const [textToImprove, setTextToImprove] = useState("");
     const [improvedText, setImprovedText] = useState("");
@@ -29,6 +29,12 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         suggestions: string[];
         keywordsToAdd: string[];
         improvedSummary: string;
+    } | null>(null);
+    const [atsResults, setAtsResults] = useState<{
+        score: number;
+        breakdown: { category: string; score: number; feedback: string[] }[];
+        missingKeywords: string[];
+        overallFeedback: string;
     } | null>(null);
 
     const {
@@ -211,6 +217,31 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         }
     };
 
+    const handleCheckATS = async () => {
+        setIsLoading(true);
+        try {
+            const resumeData = getResumeData();
+            const response = await fetch("/api/ai/ats-score", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    resumeData,
+                    jobDescription: jobDescription.trim() || undefined
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to calculate ATS score");
+
+            const result = await response.json();
+            setAtsResults(result);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to calculate ATS score");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <Card className="h-full border-l rounded-none flex flex-col w-[400px]">
             <CardHeader>
@@ -235,8 +266,8 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                     <div className="space-y-4">
                         <div className="bg-muted p-4 rounded-lg text-sm">
                             <p>
-                                👋 Hi! I can help you write better bullet points, generate a summary, or
-                                tailor your resume for a specific job description.
+                                👋 Hi! I can help you write better bullet points, generate a summary,
+                                analyze your resume for ATS compatibility, or tailor it for a specific job.
                             </p>
                         </div>
 
@@ -257,6 +288,14 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             >
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                                 Generate Summary
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start"
+                                onClick={() => setMode("ats")}
+                            >
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                Check ATS Score
                             </Button>
                             <Button
                                 variant="outline"
@@ -322,6 +361,95 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             </Button>
                             <Button onClick={handleTailor} disabled={isLoading || !jobDescription} className="flex-1">
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Analyze"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {mode === "ats" && !atsResults && (
+                    <div className="flex flex-col h-full gap-4">
+                        <div className="bg-muted p-4 rounded-lg text-sm">
+                            <p>
+                                Check how well your resume is optimized for Applicant Tracking Systems.
+                                We'll analyze content, keywords, and formatting.
+                            </p>
+                        </div>
+                        <Textarea
+                            placeholder="Optional: Paste job description for targeted analysis..."
+                            className="flex-1 min-h-[150px]"
+                            value={jobDescription}
+                            onChange={(e) => setJobDescription(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setMode("menu")} className="flex-1">
+                                Back
+                            </Button>
+                            <Button onClick={handleCheckATS} disabled={isLoading} className="flex-1">
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Calculate Score"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {mode === "ats" && atsResults && (
+                    <div className="flex flex-col h-full gap-4 overflow-hidden">
+                        <ScrollArea className="flex-1 pr-4">
+                            <div className="space-y-6">
+                                <div className="text-center py-4">
+                                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-full border-4 border-primary/20 relative">
+                                        <div className="text-2xl font-bold">{atsResults.score}</div>
+                                        <div className="text-xs text-muted-foreground absolute bottom-4">/100</div>
+                                    </div>
+                                    <h3 className="text-sm font-medium mt-2 text-muted-foreground">Overall Score</h3>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-semibold mb-2">Breakdown</h4>
+                                    <div className="space-y-3">
+                                        {atsResults.breakdown.map((item, i) => (
+                                            <div key={i} className="text-sm">
+                                                <div className="flex justify-between mb-1">
+                                                    <span>{item.category}</span>
+                                                    <span>{item.score}/100</span>
+                                                </div>
+                                                <div className="w-full bg-muted rounded-full h-2 mb-2">
+                                                    <div
+                                                        className="bg-primary h-2 rounded-full"
+                                                        style={{ width: `${item.score}%` }}
+                                                    />
+                                                </div>
+                                                <ul className="list-disc pl-4 text-xs text-muted-foreground">
+                                                    {item.feedback.map((fb, j) => (
+                                                        <li key={j}>{fb}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-semibold mb-2">Summary</h4>
+                                    <p className="text-sm text-muted-foreground">{atsResults.overallFeedback}</p>
+                                </div>
+
+                                {atsResults.missingKeywords.length > 0 && (
+                                    <div>
+                                        <h4 className="font-semibold mb-2">Missing Keywords</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {atsResults.missingKeywords.map((keyword, i) => (
+                                                <span key={i} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                                                    {keyword}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </ScrollArea>
+                        <div className="flex gap-2 pt-2 border-t">
+                            <Button variant="outline" onClick={() => { setMode("menu"); setAtsResults(null); }} className="flex-1">
+                                Back to Menu
                             </Button>
                         </div>
                     </div>

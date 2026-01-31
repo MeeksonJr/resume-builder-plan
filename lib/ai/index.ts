@@ -245,3 +245,67 @@ Suggest 10-15 additional skills that would be valuable for this role and are not
 
   return result.object.suggestedSkills;
 }
+
+// Calculate ATS score and provide feedback
+export async function calculateATSScore(
+  resumeData: ResumeData,
+  jobDescription?: string
+): Promise<{
+  score: number;
+  breakdown: {
+    category: string;
+    score: number;
+    feedback: string[];
+  }[];
+  missingKeywords: string[];
+  overallFeedback: string;
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          score: z.number().min(0).max(100).describe("Overall ATS score out of 100"),
+          breakdown: z.array(z.object({
+            category: z.string().describe("Category name (e.g., Content, Formatting, Keywords)"),
+            score: z.number().min(0).max(100),
+            feedback: z.array(z.string()).describe("Specific feedback points for this category"),
+          })).describe("Breakdown of the score by category"),
+          missingKeywords: z.array(z.string()).describe("Important keywords missing from the resume"),
+          overallFeedback: z.string().describe("Summary of the ATS analysis"),
+        }),
+        prompt: `Analyze this resume for ATS (Applicant Tracking System) compatibility${jobDescription ? " against the provided job description" : ""}.
+  
+  Resume Data:
+  ${JSON.stringify(resumeData, null, 2)}
+  
+  ${jobDescription ? `Job Description:\n${jobDescription}\n` : ""}
+  
+  Provide a score from 0 to 100 based on:
+  1. Content relevance and quality
+  2. Keyword matching (if job description provided, otherwise general industry keywords)
+  3. Formatting (infer from data structure - e.g., clear sections)
+  4. Completeness (contact info, standard sections)
+  
+  Be critical but constructive.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] ATS scoring failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        score: 75,
+        breakdown: [
+          { category: "Content", score: 80, feedback: ["[MOCK] Good action verbs", "[MOCK] Quantify more results"] },
+          { category: "Keywords", score: 70, feedback: ["[MOCK] Missing some technical terms"] },
+          { category: "Completeness", score: 90, feedback: ["[MOCK] All sections present"] }
+        ],
+        missingKeywords: ["React", "TypeScript", "Next.js"],
+        overallFeedback: "[MOCK] Good resume but could be more targeted."
+      };
+    }
+    throw error;
+  }
+}

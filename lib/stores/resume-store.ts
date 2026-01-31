@@ -75,6 +75,21 @@ interface Language {
   display_order: number;
 }
 
+export interface ResumeVersion {
+  id: string;
+  created_at: string;
+  content: {
+    profile: Profile | null;
+    workExperiences: WorkExperience[];
+    education: Education[];
+    skills: Skill[];
+    projects: Project[];
+    certifications: Certification[];
+    languages: Language[];
+    summary: string | null;
+  };
+}
+
 interface ResumeState {
   resumeId: string | null;
   profile: Profile | null;
@@ -125,6 +140,12 @@ interface ResumeState {
 
   // Save function
   saveAllChanges: () => Promise<void>;
+
+  // Versioning
+  versions: ResumeVersion[];
+  loadVersions: () => Promise<void>;
+  saveVersion: () => Promise<void>;
+  restoreVersion: (version: ResumeVersion) => void;
 }
 
 export const useResumeStore = create<ResumeState>((set, get) => ({
@@ -140,6 +161,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   slug: null,
   is_public: false,
   hasChanges: false,
+  versions: [],
 
   setResumeId: (id) => set({ resumeId: id }),
   setProfile: (profile) => set({ profile }),
@@ -546,5 +568,76 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       .eq("id", state.resumeId);
 
     set({ hasChanges: false });
+  },
+
+  loadVersions: async () => {
+    const state = get();
+    if (!state.resumeId) return;
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("resume_versions")
+      .select("*")
+      .eq("resume_id", state.resumeId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading versions:", error);
+      return;
+    }
+
+    set({ versions: data || [] });
+  },
+
+  saveVersion: async () => {
+    const state = get();
+    if (!state.resumeId) return;
+
+    const content = {
+      profile: state.profile,
+      workExperiences: state.workExperiences,
+      education: state.education,
+      skills: state.skills,
+      projects: state.projects,
+      certifications: state.certifications,
+      languages: state.languages,
+    };
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("resume_versions")
+      .insert({
+        resume_id: state.resumeId,
+        content,
+      });
+
+    if (error) {
+      console.error("Error saving version:", error);
+      throw error;
+    }
+
+    // Reload versions
+    get().loadVersions();
+  },
+
+  restoreVersion: (version) => {
+    const content = version.content;
+
+    // Helper to generate new IDs for restored content to avoid conflicts
+    const regenIds = (items: any[]) => items.map(item => ({
+      ...item,
+      id: `temp-restored-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    }));
+
+    set({
+      profile: content.profile,
+      workExperiences: regenIds(content.workExperiences),
+      education: regenIds(content.education),
+      skills: regenIds(content.skills),
+      projects: regenIds(content.projects),
+      certifications: regenIds(content.certifications),
+      languages: regenIds(content.languages),
+      hasChanges: true
+    });
   },
 }));
