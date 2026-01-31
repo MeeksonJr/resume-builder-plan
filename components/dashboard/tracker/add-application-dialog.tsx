@@ -35,6 +35,7 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
     const [isSaving, setIsSaving] = useState(false);
     const [resumes, setResumes] = useState<any[]>([]);
     const [coverLetters, setCoverLetters] = useState<any[]>([]);
+    const [versions, setVersions] = useState<any[]>([]);
     const supabase = createClient();
 
     const [form, setForm] = useState({
@@ -42,6 +43,7 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
         role: "",
         status: "applied",
         resume_id: "",
+        resume_version_id: "",
         cover_letter_id: "",
         location: "",
         url: "",
@@ -65,6 +67,25 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
         if (coverLettersRes.data) setCoverLetters(coverLettersRes.data);
     };
 
+    const fetchResumeVersions = async (resumeId: string) => {
+        if (!resumeId) {
+            setVersions([]);
+            return;
+        }
+
+        const { data } = await supabase
+            .from("resume_versions")
+            .select("id, version_number, title")
+            .eq("resume_id", resumeId)
+            .order("version_number", { ascending: false });
+
+        setVersions(data || []);
+        // Auto-select the latest version
+        if (data && data.length > 0) {
+            setForm(prev => ({ ...prev, resume_version_id: data[0].id }));
+        }
+    };
+
     const handleSave = async () => {
         if (!form.company || !form.role) {
             toast.error("Company and Role are required");
@@ -80,6 +101,7 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
                 ...form,
                 user_id: user.id,
                 resume_id: form.resume_id || null,
+                resume_version_id: form.resume_version_id || null,
                 cover_letter_id: form.cover_letter_id || null,
             });
 
@@ -93,6 +115,7 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
                 role: "",
                 status: "applied",
                 resume_id: "",
+                resume_version_id: "",
                 cover_letter_id: "",
                 location: "",
                 url: "",
@@ -173,7 +196,10 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
                             <Label htmlFor="resume">Resume Used</Label>
                             <Select
                                 value={form.resume_id}
-                                onValueChange={(v) => setForm({ ...form, resume_id: v })}
+                                onValueChange={(v) => {
+                                    setForm({ ...form, resume_id: v, resume_version_id: "" });
+                                    fetchResumeVersions(v);
+                                }}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select resume" />
@@ -185,6 +211,26 @@ export function AddApplicationDialog({ children, onSave }: AddApplicationDialogP
                                 </SelectContent>
                             </Select>
                         </div>
+                        {form.resume_id && versions.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="version">Resume Version</Label>
+                                <Select
+                                    value={form.resume_version_id}
+                                    onValueChange={(v) => setForm({ ...form, resume_version_id: v })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select version" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {versions.map(v => (
+                                            <SelectItem key={v.id} value={v.id}>
+                                                Version {v.version_number} {v.version_number === versions[0].version_number && "(Latest)"}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <Label htmlFor="cover-letter">Cover Letter Used</Label>
                             <Select
