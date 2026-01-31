@@ -104,7 +104,6 @@ export interface ResumeVersion {
     certifications: Certification[];
     languages: Language[];
     visualConfig?: VisualConfig;
-
     summary: string | null;
   };
   metrics?: {
@@ -436,9 +435,20 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         .upsert(personalInfoData, { onConflict: "resume_id" });
 
       if (personalInfoError) {
+        console.error("Error saving personal_info:", JSON.stringify(personalInfoError, null, 2));
         throw new Error(`Failed to save personal info: ${personalInfoError.message}`);
       }
     }
+
+    const normalizeDate = (dateStr: any) => {
+      if (!dateStr || typeof dateStr !== "string" || dateStr.trim() === "") return null;
+      const cleanDate = dateStr.trim();
+      // Match YYYY-MM
+      if (/^\d{4}-\d{2}$/.test(cleanDate)) {
+        return `${cleanDate}-01`;
+      }
+      return cleanDate;
+    };
 
     // Helper to handle collection updates
     const handleCollectionSave = async (
@@ -462,7 +472,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
           if (!error && data) {
             updateLocalState(item.id, data.id);
           } else if (error) {
-            console.error(`Error saving to ${tableName}:`, error);
+            console.error(`Error saving to ${tableName}:`, JSON.stringify(error, null, 2));
             errors.push(error);
           }
         } else {
@@ -473,7 +483,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
             .eq("id", item.id);
 
           if (error) {
-            console.error(`Error updating ${tableName}:`, error);
+            console.error(`Error updating ${tableName}:`, JSON.stringify(error, null, 2));
             errors.push(error);
           }
         }
@@ -492,8 +502,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         company: exp.company,
         position: exp.position,
         location: exp.location,
-        start_date: exp.start_date === "" ? null : exp.start_date,
-        end_date: exp.end_date === "" ? null : exp.end_date,
+        start_date: normalizeDate(exp.start_date),
+        end_date: normalizeDate(exp.end_date),
         is_current: exp.is_current,
         description: exp.description,
         highlights: exp.highlights,
@@ -517,8 +527,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         degree: edu.degree,
         field_of_study: edu.field_of_study,
         location: edu.location,
-        start_date: edu.start_date === "" ? null : edu.start_date,
-        end_date: edu.end_date === "" ? null : edu.end_date,
+        start_date: normalizeDate(edu.start_date),
+        end_date: normalizeDate(edu.end_date),
         gpa: edu.gpa,
         achievements: edu.highlights,
         sort_order: edu.display_order,
@@ -579,8 +589,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       (cert) => ({
         name: cert.name,
         issuer: cert.issuer,
-        issue_date: cert.issue_date === "" ? null : cert.issue_date,
-        expiry_date: cert.expiry_date === "" ? null : cert.expiry_date,
+        issue_date: normalizeDate(cert.issue_date),
+        expiry_date: normalizeDate(cert.expiry_date),
         credential_id: cert.credential_id,
         credential_url: cert.credential_url,
         sort_order: cert.display_order,
@@ -613,7 +623,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
     );
 
     // Update resume timestamp, template, and section order
-    await supabase
+    const { error: resumeUpdateError } = await supabase
       .from("resumes")
       .update({
         updated_at: new Date().toISOString(),
@@ -626,6 +636,10 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         is_rtl: state.is_rtl,
       })
       .eq("id", state.resumeId);
+
+    if (resumeUpdateError) {
+      console.error("Error updating resume:", JSON.stringify(resumeUpdateError, null, 2));
+    }
 
     set({ hasChanges: false });
   },
@@ -643,14 +657,14 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       { data: languages },
       { data: resume },
     ] = await Promise.all([
-      supabase.from("personal_info").select("id, full_name, email, phone, location, linkedin, website, github, summary").eq("resume_id", id).maybeSingle(),
+      supabase.from("personal_info").select("*").eq("resume_id", id).maybeSingle(),
       supabase.from("work_experiences").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("education").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("skills").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("projects").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("certifications").select("*").eq("resume_id", id).order("sort_order"),
-      supabase.from("languages").select("id, language, proficiency, sort_order").eq("resume_id", id).order("sort_order"),
-      supabase.from("resumes").select("id, title, template_id, is_public, slug, section_order, visual_config, language, is_rtl").eq("id", id).maybeSingle(),
+      supabase.from("languages").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("resumes").select("*").eq("id", id).maybeSingle(),
     ]);
 
     if (resume) {
@@ -668,64 +682,47 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
           summary: profile.summary,
         } : null,
         workExperiences: (workExperiences || []).map((e: any) => ({
-          id: e.id,
-          company: e.company,
-          position: e.position,
-          location: e.location,
-          start_date: e.start_date,
-          end_date: e.end_date,
-          is_current: e.is_current,
-          description: e.description,
+          ...e,
+          start_date: e.start_date?.substring(0, 7) || "",
+          end_date: e.end_date?.substring(0, 7) || "",
           highlights: e.highlights || [],
           display_order: e.sort_order
         })),
         education: (education || []).map((e: any) => ({
-          id: e.id,
-          institution: e.institution,
-          degree: e.degree,
-          field_of_study: e.field_of_study,
-          location: e.location,
-          start_date: e.start_date,
-          end_date: e.end_date,
-          gpa: e.gpa,
-          highlights: e.achievements || [],
+          ...e,
+          start_date: e.start_date?.substring(0, 7) || "",
+          end_date: e.end_date?.substring(0, 7) || "",
+          highlights: e.highlights || e.achievements || [],
           display_order: e.sort_order
         })),
         skills: (skills || []).map((e: any) => ({
-          id: e.id,
-          name: e.name,
-          category: e.category,
-          display_order: e.sort_order,
-          proficiency_level: e.proficiency_level
+          ...e,
+          display_order: e.sort_order
         })),
         projects: (projects || []).map((e: any) => ({
-          id: e.id,
-          name: e.name,
-          description: e.description,
-          technologies: e.technologies || [],
-          url: e.url,
+          ...e,
           highlights: e.highlights || [],
           display_order: e.sort_order
         })),
         certifications: (certifications || []).map((e: any) => ({
-          id: e.id,
-          name: e.name,
-          issuer: e.issuer,
-          issue_date: e.issue_date,
-          expiry_date: e.expiry_date,
-          credential_id: e.credential_id,
-          credential_url: e.credential_url,
-          display_order: e.display_order
+          ...e,
+          issue_date: e.issue_date?.substring(0, 7) || "",
+          expiry_date: e.expiry_date?.substring(0, 7) || "",
+          display_order: e.sort_order
         })),
         languages: (languages || []).map((e: any) => ({
-          id: e.id,
-          language: e.language,
-          proficiency: e.proficiency,
+          ...e,
+          language: e.language || e.name || "",
           display_order: e.sort_order
         })),
 
+        template: resume.template_id || "modern",
         slug: resume.slug,
         is_public: resume.is_public,
+        sectionOrder: resume.section_order || ["experience", "education", "skills", "projects", "certifications", "languages"],
+        visualConfig: resume.visual_config || DEFAULT_VISUAL_CONFIG,
+        language: resume.language || "en",
+        is_rtl: resume.is_rtl || false,
         hasChanges: false
       });
     }

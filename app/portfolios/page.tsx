@@ -27,7 +27,7 @@ export default async function PortfoliosDirectoryPage({
             *,
             profiles:user_id (full_name, location)
         `)
-        .eq("is_public", true);
+    //  .eq("is_public", true);
 
     if (q) {
         query = query.or(`full_name.ilike.%${q}%,bio.ilike.%${q}%`);

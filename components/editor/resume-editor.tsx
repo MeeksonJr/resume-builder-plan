@@ -193,13 +193,44 @@ export function ResumeEditor({
     setIsRtl(resume.is_rtl || false);
     if (profile) setProfile(profile);
 
-    // Map DB sort_order to store display_order
-    setWorkExperiences(workExperiences.map(i => ({ ...i, display_order: i.sort_order })));
-    setEducation(education.map(i => ({ ...i, display_order: i.sort_order })));
+    const trimDate = (dateStr: any) => {
+      if (!dateStr || typeof dateStr !== "string") return "";
+      return dateStr.substring(0, 7); // YYYY-MM
+    };
+
+    // Map DB sort_order to store display_order and align column names
+    setWorkExperiences(workExperiences.map(i => ({
+      ...i,
+      display_order: i.sort_order,
+      start_date: trimDate(i.start_date),
+      end_date: trimDate(i.end_date)
+    })));
+
+    setEducation(education.map((i: any) => ({
+      ...i,
+      display_order: i.sort_order,
+      // Map DB 'achievements' to store 'highlights'
+      highlights: i.highlights || i.achievements || [],
+      start_date: trimDate(i.start_date),
+      end_date: trimDate(i.end_date)
+    })));
+
     setSkills(skills.map(i => ({ ...i, display_order: i.sort_order })));
     setProjects(projects.map(i => ({ ...i, display_order: i.sort_order })));
-    setCertifications(certifications.map(i => ({ ...i, display_order: i.sort_order })));
-    setLanguages(languages.map(i => ({ ...i, display_order: i.sort_order })));
+
+    setCertifications(certifications.map(i => ({
+      ...i,
+      display_order: i.sort_order,
+      issue_date: trimDate(i.issue_date),
+      expiry_date: trimDate(i.expiry_date)
+    })));
+
+    setLanguages(languages.map((i: any) => ({
+      ...i,
+      // Map DB 'name' to store 'language'
+      language: i.language || i.name || "",
+      display_order: i.sort_order
+    })));
   }, [
     resume.id,
     profile,

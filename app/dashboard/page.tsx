@@ -1,13 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ResumeList } from "@/components/dashboard/resume-list";
 import { EmptyState } from "@/components/dashboard/empty-state";
-import dynamic from "next/dynamic";
-import DashboardLoading from "./loading";
-
-const AnalyticsView = dynamic(() => import("@/components/dashboard/analytics-view").then(mod => mod.AnalyticsView), {
-  ssr: false,
-  loading: () => <DashboardLoading /> // Or a more specific chunk of the skeleton
-});
+import { AnalyticsView } from "@/components/dashboard/analytics-view";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -19,7 +13,7 @@ export default async function DashboardPage() {
 
   const { data: resumes } = await supabase
     .from("resumes")
-    .select("id, title, updated_at, created_at, is_public, slug, template_id, view_count, is_primary, is_archived, last_viewed_at")
+    .select("*")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 

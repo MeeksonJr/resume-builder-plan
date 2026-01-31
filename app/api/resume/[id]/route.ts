@@ -122,7 +122,7 @@ export async function GET(
                     url: cert.url,
                 })),
                 languages: (languages || []).map((lang: any) => ({
-                    language: lang.language,
+                    language: lang.name,
                     fluency: lang.proficiency,
                 })),
                 meta: {

@@ -121,7 +121,6 @@ export async function POST(request: NextRequest) {
     // Insert work experiences
     if (resumeData.workExperience?.length > 0) {
       const workExperiences = resumeData.workExperience.map((exp, index) => ({
-        user_id: user.id,
         resume_id: resume.id,
         company: exp.company,
         position: exp.position,
@@ -131,7 +130,7 @@ export async function POST(request: NextRequest) {
         is_current: exp.current || false,
         description: exp.description || null,
         highlights: exp.highlights || [],
-        display_order: index,
+        sort_order: index,
       }));
 
       await supabase.from("work_experiences").insert(workExperiences);
@@ -140,7 +139,6 @@ export async function POST(request: NextRequest) {
     // Insert education
     if (resumeData.education?.length > 0) {
       const education = resumeData.education.map((edu, index) => ({
-        user_id: user.id,
         resume_id: resume.id,
         institution: edu.institution,
         degree: edu.degree || null,
@@ -149,8 +147,8 @@ export async function POST(request: NextRequest) {
         start_date: edu.startDate || null,
         end_date: edu.endDate || null,
         gpa: edu.gpa || null,
-        highlights: edu.highlights || [],
-        display_order: index,
+        achievements: edu.highlights || [],
+        sort_order: index,
       }));
 
       await supabase.from("education").insert(education);
@@ -160,11 +158,10 @@ export async function POST(request: NextRequest) {
     if (resumeData.skills?.length > 0) {
       const skills = resumeData.skills.flatMap((skillGroup, groupIndex) =>
         skillGroup.items.map((skill, index) => ({
-          user_id: user.id,
           resume_id: resume.id,
           name: skill,
           category: skillGroup.category || "General",
-          display_order: groupIndex * 100 + index,
+          sort_order: groupIndex * 100 + index,
         }))
       );
 
@@ -174,14 +171,13 @@ export async function POST(request: NextRequest) {
     // Insert projects
     if (resumeData.projects?.length > 0) {
       const projects = resumeData.projects.map((proj, index) => ({
-        user_id: user.id,
         resume_id: resume.id,
         name: proj.name,
         description: proj.description || null,
         technologies: proj.technologies || [],
         url: proj.url || null,
         highlights: proj.highlights || [],
-        display_order: index,
+        sort_order: index,
       }));
 
       await supabase.from("projects").insert(projects);
@@ -190,13 +186,12 @@ export async function POST(request: NextRequest) {
     // Insert certifications
     if (resumeData.certifications?.length > 0) {
       const certifications = resumeData.certifications.map((cert, index) => ({
-        user_id: user.id,
         resume_id: resume.id,
         name: cert.name,
         issuer: cert.issuer || null,
         issue_date: cert.date || null,
         credential_url: cert.url || null,
-        display_order: index,
+        sort_order: index,
       }));
 
       await supabase.from("certifications").insert(certifications);
@@ -205,11 +200,10 @@ export async function POST(request: NextRequest) {
     // Insert languages
     if (resumeData.languages?.length > 0) {
       const languages = resumeData.languages.map((lang, index) => ({
-        user_id: user.id,
         resume_id: resume.id,
-        language: lang.language,
+        name: lang.language,
         proficiency: lang.proficiency || "Professional",
-        display_order: index,
+        sort_order: index,
       }));
 
       await supabase.from("languages").insert(languages);
