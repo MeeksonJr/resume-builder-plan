@@ -1,38 +1,59 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
-import { PortfolioView } from "@/components/portfolio/portfolio-view";
 import { Metadata } from "next";
+import {
+    ModernTemplate,
+    MinimalTemplate,
+    CorporateTemplate,
+    CreativeTemplate,
+} from "@/components/portfolio/templates";
 
 interface PortfolioPageProps {
-    params: {
+    params: Promise<{
         slug: string;
-    };
+    }>;
 }
 
 export async function generateMetadata({ params }: PortfolioPageProps): Promise<Metadata> {
+    const { slug } = await params;
     const supabase = await createClient();
     const { data: portfolio } = await supabase
         .from("portfolios")
-        .select("bio")
-        .eq("slug", params.slug)
+        .select("full_name, bio, tagline")
+        .eq("slug", slug)
         .single();
 
     if (!portfolio) return { title: "Portfolio Not Found" };
 
+    const title = `${portfolio.full_name || slug} - Professional Portfolio`;
+    const description = portfolio.bio || portfolio.tagline || "Professional career portfolio and showcase.";
+
     return {
-        title: `${params.slug}'s Career Portfolio | ResumeForge`,
-        description: portfolio.bio || "Professional career portfolio and resumes.",
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            type: "profile",
+            url: `https://yourdomain.com/p/${slug}`,
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+        },
     };
 }
 
 export default async function PublicPortfolioPage({ params }: PortfolioPageProps) {
+    const { slug } = await params;
     const supabase = await createClient();
 
     // 1. Fetch portfolio by slug
     const { data: portfolio, error: pError } = await supabase
         .from("portfolios")
         .select("*")
-        .eq("slug", params.slug)
+        .eq("slug", slug)
         .single();
 
     if (!portfolio || pError) {
@@ -40,11 +61,10 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
     }
 
     if (!portfolio.is_public) {
-        // You could return a custom "Private Portfolio" page here
         notFound();
     }
 
-    // 2. Fetch profile, resumes, and projects for this user
+    // 2. Fetch profile, resumes, projects, and testimonials
     const [
         { data: profile },
         { data: resumes },
@@ -57,15 +77,33 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
         supabase.from("portfolio_testimonials").select("*").eq("portfolio_id", portfolio.id).eq("is_active", true)
     ]);
 
-    // Note: We'll filter resumes and projects in the PortfolioView based on the featured_resumes/featured_projects arrays in the portfolio record.
+    // 3. Increment view count (fire and forget)
+    try {
+        await supabase.rpc("increment_portfolio_views", { portfolio_id_param: portfolio.id });
+    } catch (error) {
+        console.error("Failed to increment view count:", error);
+    }
 
-    return (
-        <PortfolioView
-            portfolio={portfolio}
-            resumes={resumes || []}
-            projects={projects || []}
-            profile={profile || { email: portfolio.user_id }}
-            testimonials={testimonials || []}
-        />
-    );
+    // 4. Select template based on portfolio setting
+    const template = portfolio.template || "modern";
+    const templateProps = {
+        portfolio,
+        resumes: resumes || [],
+        projects: projects || [],
+        profile: profile || { email: portfolio.user_id },
+        testimonials: testimonials || [],
+    };
+
+    // 5. Render the selected template
+    switch (template) {
+        case "minimal":
+            return <MinimalTemplate {...templateProps} />;
+        case "corporate":
+            return <CorporateTemplate {...templateProps} />;
+        case "creative":
+            return <CreativeTemplate {...templateProps} />;
+        case "modern":
+        default:
+            return <ModernTemplate {...templateProps} />;
+    }
 }
