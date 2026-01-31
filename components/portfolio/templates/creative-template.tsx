@@ -4,6 +4,11 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 import {
     Github,
     Linkedin,
@@ -15,6 +20,9 @@ import {
     Zap,
     Rocket,
     Star,
+    CheckCircle,
+    Send,
+    Loader2,
 } from "lucide-react"
 
 interface CreativeTemplateProps {
@@ -92,17 +100,17 @@ export function CreativeTemplate({
                                     Get in Touch
                                 </Button>
                             )}
-                            {portfolio?.github_url && (
+                            {portfolio?.social_links?.github && (
                                 <Button variant="outline" size="lg" className="rounded-full border-2 gap-2" asChild>
-                                    <a href={portfolio.github_url} target="_blank" rel="noopener noreferrer">
+                                    <a href={portfolio.social_links.github} target="_blank" rel="noopener noreferrer">
                                         <Github className="h-4 w-4" />
                                         GitHub
                                     </a>
                                 </Button>
                             )}
-                            {portfolio?.linkedin_url && (
+                            {portfolio?.social_links?.linkedin && (
                                 <Button variant="outline" size="lg" className="rounded-full border-2 gap-2" asChild>
-                                    <a href={portfolio.linkedin_url} target="_blank" rel="noopener noreferrer">
+                                    <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer">
                                         <Linkedin className="h-4 w-4" />
                                         LinkedIn
                                     </a>
@@ -167,7 +175,7 @@ export function CreativeTemplate({
                                 <div className="relative p-8 space-y-4">
                                     <div className="flex items-start justify-between gap-4">
                                         <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 group-hover:scale-105 transition-transform">
-                                            {project.title}
+                                            {project.name || project.title}
                                         </h3>
                                         {project.url && (
                                             <Button
@@ -288,26 +296,161 @@ export function CreativeTemplate({
                 </section>
             )}
 
+            {/* Contact Form Section */}
+            <section className="container max-w-4xl mx-auto px-6 py-16">
+                <div className="mb-12 text-center">
+                    <h2 className="text-4xl font-black bg-gradient-to-r from-pink-600 via-purple-600 to-orange-600 bg-clip-text text-transparent mb-4">
+                        Let's Connect!
+                    </h2>
+                    <p className="text-lg text-slate-700 dark:text-slate-300">
+                        Got a project or idea? Drop me a message!
+                    </p>
+                </div>
+                <ContactForm portfolioId={portfolio.id} />
+            </section>
+
             {/* Fun Footer */}
             <footer className="relative overflow-hidden py-16">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-orange-500/10" />
                 <div className="relative container max-w-6xl mx-auto px-6 text-center space-y-6">
-                    <h2 className="text-4xl font-black bg-gradient-to-r from-pink-600 via-purple-600 to-orange-600 bg-clip-text text-transparent">
-                        Let's Create Magic Together!
-                    </h2>
-                    <p className="text-lg text-slate-700 dark:text-slate-300 max-w-2xl mx-auto">
-                        Got an exciting project? I'd love to hear about it.
-                    </p>
-                    {portfolio?.email && (
-                        <Button size="lg" className="rounded-full bg-gradient-to-r from-pink-600 via-purple-600 to-orange-600 hover:shadow-xl transition-shadow gap-2" asChild>
-                            <a href={`mailto:${portfolio.email}`}>
-                                <Mail className="h-5 w-5" />
-                                Start a Conversation
-                            </a>
-                        </Button>
-                    )}
+                    <p className="text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} {displayName}. All rights reserved.</p>
                 </div>
             </footer>
         </div>
+    )
+}
+
+// Contact Form Component
+function ContactForm({ portfolioId }: { portfolioId: string }) {
+    const [isSubmitting, setIsSubmitting] = React.useState(false)
+    const [isSent, setIsSent] = React.useState(false)
+    const [form, setForm] = React.useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+    })
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!form.name || !form.email || !form.message) {
+            toast.error("Please fill in all required fields.")
+            return
+        }
+
+        setIsSubmitting(true)
+        const supabase = createClient()
+
+        try {
+            const { error } = await supabase.from("portfolio_messages").insert({
+                portfolio_id: portfolioId,
+                sender_name: form.name,
+                sender_email: form.email,
+                subject: form.subject,
+                message: form.message
+            })
+
+            if (error) throw error
+            setIsSent(true)
+            setForm({ name: "", email: "", subject: "", message: "" })
+            toast.success("Message sent successfully!")
+        } catch (error: any) {
+            console.error(error)
+            toast.error("Failed to send message. Please try again later.")
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    if (isSent) {
+        return (
+            <Card className="p-12 flex flex-col items-center justify-center text-center space-y-6 border-4" style={{
+                borderImage: 'linear-gradient(135deg, #ec4899, #a855f7, #f97316) 1'
+            }}>
+                <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <CheckCircle className="h-10 w-10 text-green-500" />
+                </div>
+                <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50">Thank You!</h3>
+                    <p className="text-slate-600 dark:text-slate-400">Your message has been sent. I'll get back to you soon.</p>
+                </div>
+                <Button
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => setIsSent(false)}
+                >
+                    Send another message
+                </Button>
+            </Card>
+        )
+    }
+
+    return (
+        <Card className="p-8 border-4" style={{
+            borderImage: 'linear-gradient(135deg, #ec4899, #a855f7, #f97316) 1'
+        }}>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="name" className="text-slate-900 dark:text-slate-50 font-bold">Name *</Label>
+                        <Input
+                            id="name"
+                            placeholder="Your name"
+                            value={form.name}
+                            onChange={(e) => setForm({ ...form, name: e.target.value })}
+                            className="rounded-xl"
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email" className="text-slate-900 dark:text-slate-50 font-bold">Email *</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="your@email.com"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            className="rounded-xl"
+                            required
+                        />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="subject" className="text-slate-900 dark:text-slate-50 font-bold">Subject</Label>
+                    <Input
+                        id="subject"
+                        placeholder="Project inquiry"
+                        value={form.subject}
+                        onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                        className="rounded-xl"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="message" className="text-slate-900 dark:text-slate-50 font-bold">Message *</Label>
+                    <Textarea
+                        id="message"
+                        rows={5}
+                        placeholder="Tell me about your project..."
+                        value={form.message}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        className="resize-none rounded-xl"
+                        required
+                    />
+                </div>
+                <Button
+                    type="submit"
+                    className="w-full gap-2 rounded-full bg-gradient-to-r from-pink-600 via-purple-600 to-orange-600 hover:shadow-xl transition-shadow"
+                    disabled={isSubmitting}
+                    size="lg"
+                >
+                    {isSubmitting ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                        <Send className="h-5 w-5" />
+                    )}
+                    Send Message
+                </Button>
+            </form>
+        </Card>
     )
 }

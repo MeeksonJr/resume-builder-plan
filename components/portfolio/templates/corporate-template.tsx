@@ -4,6 +4,11 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 import {
     Github,
     Linkedin,
@@ -15,6 +20,9 @@ import {
     GraduationCap,
     Award,
     TrendingUp,
+    CheckCircle,
+    Send,
+    Loader2,
 } from "lucide-react"
 
 interface CorporateTemplateProps {
@@ -49,25 +57,25 @@ export function CorporateTemplate({
                             <p className="text-blue-50 leading-relaxed">{bio}</p>
 
                             <div className="flex flex-wrap gap-4 pt-4">
-                                {portfolio?.github_url && (
+                                {portfolio?.social_links?.github && (
                                     <Button variant="secondary" size="sm" className="gap-2" asChild>
-                                        <a href={portfolio.github_url} target="_blank" rel="noopener noreferrer">
+                                        <a href={portfolio.social_links.github} target="_blank" rel="noopener noreferrer">
                                             <Github className="h-4 w-4" />
                                             GitHub
                                         </a>
                                     </Button>
                                 )}
-                                {portfolio?.linkedin_url && (
+                                {portfolio?.social_links?.linkedin && (
                                     <Button variant="secondary" size="sm" className="gap-2" asChild>
-                                        <a href={portfolio.linkedin_url} target="_blank" rel="noopener noreferrer">
+                                        <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer">
                                             <Linkedin className="h-4 w-4" />
                                             LinkedIn
                                         </a>
                                     </Button>
                                 )}
-                                {portfolio?.website_url && (
+                                {portfolio?.social_links?.website && (
                                     <Button variant="secondary" size="sm" className="gap-2" asChild>
-                                        <a href={portfolio.website_url} target="_blank" rel="noopener noreferrer">
+                                        <a href={portfolio.social_links.website} target="_blank" rel="noopener noreferrer">
                                             <ExternalLink className="h-4 w-4" />
                                             Website
                                         </a>
@@ -159,7 +167,7 @@ export function CorporateTemplate({
                                             <div className="space-y-3">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
-                                                        {project.title}
+                                                        {project.name || project.title}
                                                     </h3>
                                                     {project.url && (
                                                         <Button variant="outline" size="sm" className="gap-1" asChild>
@@ -291,7 +299,139 @@ export function CorporateTemplate({
                         </Card>
                     </div>
                 </div>
+
+                {/* Contact Form Section */}
+                <div className="max-w-4xl mx-auto mt-12">
+                    <div className="mb-8 text-center">
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-2">Get in Touch</h2>
+                        <p className="text-slate-600 dark:text-slate-400">Have a project or opportunity? Let's discuss it.</p>
+                    </div>
+                    <ContactForm portfolioId={portfolio.id} />
+                </div>
             </div>
         </div>
+    )
+}
+
+// Contact Form Component
+function ContactForm({ portfolioId }: { portfolioId: string }) {
+    const [isSubmitting, setIsSubmitting] = React.useState(false)
+    const [isSent, setIsSent] = React.useState(false)
+    const [form, setForm] = React.useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+    })
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!form.name || !form.email || !form.message) {
+            toast.error("Please fill in all required fields.")
+            return
+        }
+
+        setIsSubmitting(true)
+        const supabase = createClient()
+
+        try {
+            const { error } = await supabase.from("portfolio_messages").insert({
+                portfolio_id: portfolioId,
+                sender_name: form.name,
+                sender_email: form.email,
+                subject: form.subject,
+                message: form.message
+            })
+
+            if (error) throw error
+            setIsSent(true)
+            setForm({ name: "", email: "", subject: "", message: "" })
+            toast.success("Message sent successfully!")
+        } catch (error: any) {
+            console.error(error)
+            toast.error("Failed to send message. Please try again later.")
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    if (isSent) {
+        return (
+            <Card className="p-12 flex flex-col items-center justify-center text-center space-y-6 bg-blue-50 dark:bg-blue-950/30">
+                <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <CheckCircle className="h-10 w-10 text-green-500" />
+                </div>
+                <div className="space-y-2">
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Thank You!</h3>
+                    <p className="text-slate-600 dark:text-slate-400">Your message has been sent. I'll get back to you soon.</p>
+                </div>
+                <Button variant="outline" onClick={() => setIsSent(false)}>
+                    Send another message
+                </Button>
+            </Card>
+        )
+    }
+
+    return (
+        <Card className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="name" className="text-slate-900 dark:text-slate-50">Name *</Label>
+                        <Input
+                            id="name"
+                            placeholder="Your name"
+                            value={form.name}
+                            onChange={(e) => setForm({ ...form, name: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email" className="text-slate-900 dark:text-slate-50">Email *</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="your@email.com"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            required
+                        />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="subject" className="text-slate-900 dark:text-slate-50">Subject</Label>
+                    <Input
+                        id="subject"
+                        placeholder="Project inquiry"
+                        value={form.subject}
+                        onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="message" className="text-slate-900 dark:text-slate-50">Message *</Label>
+                    <Textarea
+                        id="message"
+                        rows={5}
+                        placeholder="Tell me about your project..."
+                        value={form.message}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        className="resize-none"
+                        required
+                    />
+                </div>
+                <Button
+                    type="submit"
+                    className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <Send className="h-4 w-4" />
+                    )}
+                    Send Message
+                </Button>
+            </form>
+        </Card>
     )
 }

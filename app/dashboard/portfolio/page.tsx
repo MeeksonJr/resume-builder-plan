@@ -26,7 +26,9 @@ import {
     User,
     Calendar,
     Mail,
-    Trophy
+    Trophy,
+    Sparkles,
+    Briefcase
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
@@ -96,7 +98,8 @@ export default function PortfolioManagementPage() {
                     featured_projects: [],
                     is_public: true,
                     open_to_work: false,
-                    booking_url: ""
+                    booking_url: "",
+                    template: "modern"
                 };
             }
             setPortfolio(currentPortfolio);
@@ -512,6 +515,52 @@ export default function PortfolioManagementPage() {
                                             <p className="text-xs text-muted-foreground">{s.desc}</p>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 pt-4 border-t">
+                                <div>
+                                    <Label className="text-base">Portfolio Template</Label>
+                                    <p className="text-sm text-muted-foreground mt-1">Choose the layout and design for your public portfolio</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {[
+                                        { id: "modern", label: "Modern", desc: "Bold gradients and contemporary design", icon: Sparkles },
+                                        { id: "minimal", label: "Minimalist", desc: "Clean, simple, and focused", icon: Layout },
+                                        { id: "corporate", label: "Corporate", desc: "Professional and traditional", icon: Briefcase },
+                                        { id: "creative", label: "Creative", desc: "Unique and expressive design", icon: Palette },
+                                    ].map((template) => {
+                                        const Icon = template.icon;
+                                        const isSelected = (portfolio.template || "modern") === template.id;
+                                        return (
+                                            <div
+                                                key={template.id}
+                                                className={`p-5 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md ${isSelected
+                                                    ? "border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20"
+                                                    : "border-muted hover:border-primary/50"
+                                                    }`}
+                                                onClick={() => setPortfolio({
+                                                    ...portfolio,
+                                                    template: template.id
+                                                })}
+                                            >
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className={`p-2 rounded-lg ${isSelected ? "bg-primary/10" : "bg-muted"}`}>
+                                                            <Icon className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                                                        </div>
+                                                        {isSelected && (
+                                                            <Badge variant="default" className="text-xs">Active</Badge>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold mb-1">{template.label}</p>
+                                                        <p className="text-xs text-muted-foreground leading-relaxed">{template.desc}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </CardContent>
