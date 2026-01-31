@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ResumeList } from "@/components/dashboard/resume-list";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { AnalyticsView } from "@/components/dashboard/analytics-view";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -31,7 +32,10 @@ export default async function DashboardPage() {
       </div>
 
       {resumes && resumes.length > 0 ? (
-        <ResumeList resumes={resumes} />
+        <>
+          <AnalyticsView resumes={resumes} />
+          <ResumeList resumes={resumes} />
+        </>
       ) : (
         <EmptyState />
       )}

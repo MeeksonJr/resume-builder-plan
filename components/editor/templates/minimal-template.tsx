@@ -48,7 +48,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         </h2>
                         <div className="space-y-5">
                             {workExperiences.map((exp) => (
-                                <div key={exp.id}>
+                                <div key={exp.id} className="break-inside-avoid">
                                     <div className="flex justify-between items-baseline mb-1">
                                         <h3 className="font-semibold text-base">{exp.position}</h3>
                                         <span className="text-xs text-gray-500 italic">
@@ -78,7 +78,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         </h2>
                         <div className="space-y-4">
                             {education.map((edu) => (
-                                <div key={edu.id}>
+                                <div key={edu.id} className="break-inside-avoid">
                                     <div className="flex justify-between items-baseline mb-1">
                                         <h3 className="font-semibold text-base">{edu.institution}</h3>
                                         <span className="text-xs text-gray-500 italic">
@@ -105,7 +105,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         </h2>
                         <div className="space-y-4">
                             {projects.map((proj) => (
-                                <div key={proj.id}>
+                                <div key={proj.id} className="break-inside-avoid">
                                     <div className="flex justify-between items-baseline mb-1">
                                         <h3 className="font-semibold text-base">{proj.name}</h3>
                                         {proj.url && (
@@ -152,7 +152,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         </h2>
                         <div className="space-y-2">
                             {certifications.map((cert) => (
-                                <div key={cert.id} className="flex justify-between text-sm">
+                                <div key={cert.id} className="flex justify-between text-sm break-inside-avoid">
                                     <span className="font-medium">{cert.name}</span>
                                     <div className="text-gray-600">
                                         <span>{cert.issuer}</span>

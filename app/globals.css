@@ -98,4 +98,14 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* Also add a non-print version for utility if needed, or just let tailwind handle it if possible */
+.break-inside-avoid {
+  break-inside: avoid;
 }

@@ -49,11 +49,19 @@ export default function NewResumePage() {
       return;
     }
 
-    const { data, error: insertError } = await supabase
+    // Fetch profile for default settings
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    const { data: resume, error: insertError } = await supabase
       .from("resumes")
       .insert({
         user_id: user.id,
         title: title.trim(),
+        template_id: profile?.settings?.defaultTemplate || "modern",
       })
       .select()
       .single();
@@ -64,8 +72,22 @@ export default function NewResumePage() {
       return;
     }
 
+    // Auto-populate personal_info from profile
+    if (profile) {
+      await supabase.from("personal_info").upsert({
+        resume_id: resume.id,
+        full_name: profile.full_name,
+        email: profile.email,
+        phone: profile.phone,
+        location: profile.location,
+        linkedin: profile.linkedin_url,
+        github: profile.github_url,
+        website: profile.website_url,
+      }, { onConflict: 'resume_id' });
+    }
+
     toast.success("Resume created!");
-    router.push(`/dashboard/resume/${data.id}`);
+    router.push(`/dashboard/resume/${resume.id}`);
   };
 
   return (

@@ -22,7 +22,8 @@ import {
   Plus,
   Upload,
   Star,
-  Pencil
+  Pencil,
+  Eye
 } from "lucide-react";
 import {
   Dialog,
@@ -48,13 +49,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Archive } from "lucide-react";
+import { Archive, FileDown } from "lucide-react";
+import { exportToDocx } from "@/lib/export/docx-export";
 
 interface Resume {
   id: string;
   title: string;
   template_id: string | null;
   is_primary: boolean;
+  view_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -237,6 +240,59 @@ export function ResumeList({ resumes }: ResumeListProps) {
     }
   };
 
+  const handleDownloadWord = async (resume: Resume) => {
+    const supabase = createClient();
+    const loadingToast = toast.loading("Preparing Word document...");
+    try {
+      // 1. Fetch all data for this specific resume
+      const [
+        { data: profile },
+        { data: workExperiences },
+        { data: education },
+        { data: skills },
+        { data: projects },
+        { data: certifications },
+        { data: languages },
+        { data: personalInfo },
+      ] = await Promise.all([
+        supabase.from("profiles").select("*").single(), // User's profile
+        supabase.from("work_experiences").select("*").eq("resume_id", resume.id).order("sort_order"),
+        supabase.from("education").select("*").eq("resume_id", resume.id).order("sort_order"),
+        supabase.from("skills").select("*").eq("resume_id", resume.id).order("sort_order"),
+        supabase.from("projects").select("*").eq("resume_id", resume.id).order("sort_order"),
+        supabase.from("certifications").select("*").eq("resume_id", resume.id).order("sort_order"),
+        supabase.from("languages").select("*").eq("resume_id", resume.id).order("sort_order"),
+        supabase.from("personal_info").select("*").eq("resume_id", resume.id).single(),
+      ]);
+
+      // Merge profile with resume-specific personal info
+      const mergedProfile = {
+        ...profile,
+        phone: personalInfo?.phone || profile?.phone,
+        location: personalInfo?.location || profile?.location,
+        linkedin_url: personalInfo?.linkedin || profile?.linkedin_url,
+        website_url: personalInfo?.website || profile?.website_url,
+        github_url: personalInfo?.github || profile?.github_url,
+        summary: personalInfo?.summary || profile?.summary,
+      };
+
+      await exportToDocx({
+        profile: mergedProfile,
+        workExperiences: workExperiences || [],
+        education: education || [],
+        skills: skills || [],
+        projects: projects || [],
+        certifications: certifications || [],
+        languages: languages || [],
+        sectionOrder: (resume as any).section_order || ["experience", "education", "skills", "projects", "certifications", "languages"],
+      });
+      toast.success("Word document generated", { id: loadingToast });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate Word document", { id: loadingToast });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Action buttons */}
@@ -295,9 +351,9 @@ export function ResumeList({ resumes }: ResumeListProps) {
                       Edit
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download PDF
+                  <DropdownMenuItem onClick={() => handleDownloadWord(resume)}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Download Word
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => startRename(resume)}>
                     <Pencil className="mr-2 h-4 w-4" />
@@ -329,12 +385,18 @@ export function ResumeList({ resumes }: ResumeListProps) {
               </DropdownMenu>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-muted-foreground">
-                Updated{" "}
-                {formatDistanceToNow(new Date(resume.updated_at), {
-                  addSuffix: true,
-                })}
-              </p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-muted-foreground">
+                  Updated{" "}
+                  {formatDistanceToNow(new Date(resume.updated_at), {
+                    addSuffix: true,
+                  })}
+                </p>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Eye className="h-3 w-3" />
+                  <span>{resume.view_count || 0}</span>
+                </div>
+              </div>
               <Button
                 asChild
                 variant="ghost"

@@ -55,6 +55,11 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
 
     const resumeId = resume.id;
 
+    // Increment view count (fire and forget in background)
+    supabase.rpc("increment_resume_view", { resume_id_param: resumeId }).then(({ error }) => {
+        if (error) console.error("Error incrementing view count:", error);
+    });
+
     // 2. Fetch all related data
     // We can run these in parallel
     const [

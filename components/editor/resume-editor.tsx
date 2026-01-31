@@ -18,6 +18,7 @@ import {
   Save,
   Sparkles,
   Settings,
+  FileDown,
 } from "lucide-react";
 import { PersonalInfoForm } from "@/components/editor/sections/personal-info-form";
 import { WorkExperienceForm } from "@/components/editor/sections/work-experience-form";
@@ -35,6 +36,7 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { VisualCustomizer } from "@/components/editor/visual-customizer";
+import { exportToDocx } from "@/lib/export/docx-export";
 
 interface Resume {
   id: string;
@@ -228,6 +230,27 @@ export function ResumeEditor({
     onAfterPrint: () => toast.success("Download started"),
   });
 
+  const handleDownloadWord = async () => {
+    const store = useResumeStore.getState();
+    const loadingToast = toast.loading("Generating Word document...");
+    try {
+      await exportToDocx({
+        profile: store.profile,
+        workExperiences: store.workExperiences,
+        education: store.education,
+        skills: store.skills,
+        projects: store.projects,
+        certifications: store.certifications,
+        languages: store.languages,
+        sectionOrder: store.sectionOrder,
+      });
+      toast.success("Word document generated", { id: loadingToast });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate Word document", { id: loadingToast });
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col">
       {/* Editor Header */}
@@ -303,7 +326,16 @@ export function ResumeEditor({
             className="min-h-[44px] gap-2"
           >
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Download</span>
+            <span className="hidden lg:inline text-xs">PDF</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownloadWord}
+            className="min-h-[44px] gap-2 bg-transparent"
+          >
+            <FileDown className="h-4 w-4" />
+            <span className="hidden lg:inline text-xs">Word</span>
           </Button>
         </div>
       </div>

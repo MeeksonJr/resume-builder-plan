@@ -21,7 +21,7 @@ interface AIAssistantProps {
 
 export function AIAssistant({ onClose }: AIAssistantProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve" | "ats">("menu");
+    const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve" | "ats" | "keywords">("menu");
     const [jobDescription, setJobDescription] = useState("");
     const [textToImprove, setTextToImprove] = useState("");
     const [improvedText, setImprovedText] = useState("");
@@ -29,6 +29,11 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         suggestions: string[];
         keywordsToAdd: string[];
         improvedSummary: string;
+    } | null>(null);
+    const [keywordResults, setKeywordResults] = useState<{
+        found: string[];
+        missing: string[];
+        relevance: number;
     } | null>(null);
     const [atsResults, setAtsResults] = useState<{
         score: number;
@@ -242,6 +247,36 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         }
     };
 
+    const handleCheckKeywords = async () => {
+        if (!jobDescription.trim()) {
+            toast.error("Please enter a job description");
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const resumeData = getResumeData();
+            const response = await fetch("/api/ai/keywords", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    resumeData,
+                    jobDescription
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to analyze keywords");
+
+            const result = await response.json();
+            setKeywordResults(result);
+            setMode("keywords");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to analyze keywords");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <Card className="h-full border-l rounded-none flex flex-col w-[400px]">
             <CardHeader>
@@ -259,6 +294,7 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                     {mode === "tailor" && "Paste the job description to tailor your resume"}
                     {mode === "results" && "Analysis results"}
                     {mode === "improve" && "Improve any text for your resume"}
+                    {mode === "keywords" && "Keyword Matcher"}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden flex flex-col gap-4">
@@ -304,6 +340,14 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             >
                                 <Sparkles className="mr-2 h-4 w-4" />
                                 Tailor to Job Description
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start"
+                                onClick={() => setMode("keywords")}
+                            >
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                Keyword Matcher
                             </Button>
                         </div>
                     </div>
@@ -361,6 +405,76 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             </Button>
                             <Button onClick={handleTailor} disabled={isLoading || !jobDescription} className="flex-1">
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Analyze"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {mode === "keywords" && !keywordResults && (
+                    <div className="flex flex-col h-full gap-4">
+                        <div className="bg-muted p-4 rounded-lg text-sm">
+                            <p>
+                                Compare your resume against a job description to see which keywords you're missing.
+                            </p>
+                        </div>
+                        <Textarea
+                            placeholder="Paste job description here..."
+                            className="flex-1 min-h-[200px]"
+                            value={jobDescription}
+                            onChange={(e) => setJobDescription(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setMode("menu")} className="flex-1">
+                                Back
+                            </Button>
+                            <Button onClick={handleCheckKeywords} disabled={isLoading || !jobDescription} className="flex-1">
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Match Keywords"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {mode === "keywords" && keywordResults && (
+                    <div className="flex flex-col h-full gap-4 overflow-hidden">
+                        <ScrollArea className="flex-1 pr-4">
+                            <div className="space-y-6">
+                                <div className="text-center py-4">
+                                    <div className="text-3xl font-bold text-primary">{keywordResults.relevance}%</div>
+                                    <p className="text-sm text-muted-foreground mt-1">Keyword Match Score</p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                        <Check className="h-4 w-4 text-green-500" />
+                                        Found Keywords ({keywordResults.found.length})
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {keywordResults.found.map((k, i) => (
+                                            <span key={i} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-300">
+                                                {k}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-red-600">
+                                        <X className="h-4 w-4" />
+                                        Missing Keywords ({keywordResults.missing.length})
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {keywordResults.missing.map((k, i) => (
+                                            <span key={i} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                                                {k}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </ScrollArea>
+                        <div className="flex gap-2 pt-2 border-t">
+                            <Button variant="outline" onClick={() => { setMode("menu"); setKeywordResults(null); }} className="flex-1">
+                                Back to Menu
                             </Button>
                         </div>
                     </div>
