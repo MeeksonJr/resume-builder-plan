@@ -540,3 +540,166 @@ export async function getAnalyticsInsights(
     throw error;
   }
 }
+// Evaluate an interview answer using the STAR method
+export async function getInterviewFeedback(
+  question: string,
+  answer: string,
+  resumeData: ResumeData,
+  jobDescription: string
+): Promise<{
+  score: number;
+  star_breakdown: {
+    situation: string;
+    task: string;
+    action: string;
+    result: string;
+  };
+  scores: {
+    situation: number;
+    task: number;
+    action: number;
+    result: number;
+  };
+  strengths: string[];
+  improvements: string[];
+  ideal_answer_points: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          score: z.number().min(0).max(100),
+          star_breakdown: z.object({
+            situation: z.string().describe("Evaluation of how well the situation was described"),
+            task: z.string().describe("Evaluation of how clearly the task/goal was stated"),
+            action: z.string().describe("Evaluation of the specific actions taken by the candidate"),
+            result: z.string().describe("Evaluation of the impact and results shared"),
+          }),
+          scores: z.object({
+            situation: z.number().min(0).max(100),
+            task: z.number().min(0).max(100),
+            action: z.number().min(0).max(100),
+            result: z.number().min(0).max(100),
+          }),
+          strengths: z.array(z.string()),
+          improvements: z.array(z.string()),
+          ideal_answer_points: z.array(z.string()).describe("What a 'perfect' answer would include from their resume for this question"),
+        }),
+        prompt: `Act as a senior hiring manager and interview coach. Evaluate the following interview response using the STAR method.
+        
+        Question: ${question}
+        User's Answer: ${answer}
+        
+        Candidate's Resume:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Job Description:
+        ${jobDescription}
+        
+        Be critical but constructive. Score each part of the STAR framework. If a part is missing (e.g. they didn't mention a result), give it a low score and explain why.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Interview feedback failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        score: 70,
+        star_breakdown: {
+          situation: "[MOCK] You set the scene well.",
+          task: "[MOCK] Clear objective stated.",
+          action: "[MOCK] Good actions, but could use more detail on 'how'.",
+          result: "[MOCK] Result was missing or vague. Quantify it!",
+        },
+        scores: { situation: 85, task: 80, action: 65, result: 40 },
+        strengths: ["Clear communication", "Relevant experience choice"],
+        improvements: ["Quantify your results", "Focus more on YOUR specific actions"],
+        ideal_answer_points: ["Mention the 20% increase in efficiency from your resume", "Detail the React refactor steps"],
+      };
+    }
+    throw error;
+  }
+}
+
+// Perform a career gap analysis and generate a roadmap
+export async function analyzeCareerPath(
+  resumeData: ResumeData,
+  targetRole: string,
+  targetIndustry: string,
+  careerGoals: string
+): Promise<{
+  match_percentage: number;
+  strengths: string[];
+  gaps: string[];
+  roadmap: { timeframe: string; action: string; description: string }[];
+  project_ideas: { title: string; difficulty: "Beginner" | "Intermediate" | "Advanced"; description: string; focus_area: string }[];
+  market_trend: string;
+  hiring_tip: string;
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          match_percentage: z.number().min(0).max(100),
+          strengths: z.array(z.string()),
+          gaps: z.array(z.string()),
+          roadmap: z.array(z.object({
+            timeframe: z.string(),
+            action: z.string(),
+            description: z.string(),
+          })).length(3),
+          project_ideas: z.array(z.object({
+            title: z.string(),
+            difficulty: z.enum(["Beginner", "Intermediate", "Advanced"]),
+            description: z.string(),
+            focus_area: z.string(),
+          })).length(2),
+          market_trend: z.string(),
+          hiring_tip: z.string(),
+        }),
+        prompt: `Act as a veteran career strategist and recruiter. Analyze the candidate's resume against their target career goals.
+        
+        Resume:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Target Role: ${targetRole}
+        Target Industry: ${targetIndustry}
+        Long-term Career Goals: ${careerGoals}
+        
+        Your task is to:
+        1. Calculate a 'Match Percentage' based on current qualifications vs market expectations for the target role.
+        2. Identify specific strengths matching the target.
+        3. Pinpoint critical gaps (missing skills, certifications, or experiences).
+        4. Provide a 3-step roadmap (e.g. Next 3 months, 6 months, 1 year).
+        5. Suggest 2 high-impact projects that would bridge the gaps.
+        6. Provide a relevant market trend for this role and one specific hiring tip.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Career analysis failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        match_percentage: 65,
+        strengths: ["[MOCK] Strong React background", "[MOCK] Experience in Fintech"],
+        gaps: ["[MOCK] Missing direct Cloud experience", "[MOCK] Need for leadership projects"],
+        roadmap: [
+          { timeframe: "Next 3 Months", action: "AWS Cloud Practitioner", description: "Get certified to prove cloud foundational knowledge." },
+          { timeframe: "6 Months", action: "Internal Leadership", description: "Take ownership of a cross-functional feature." },
+          { timeframe: "1 Year", action: "Senior Role Move", description: "Leverage cloud and leadership wins for promotion." }
+        ],
+        project_ideas: [
+          { title: "Serverless Dashboard", difficulty: "Intermediate", description: "Build a monitoring tool using AWS Lambda.", focus_area: "Cloud Architecture" },
+          { title: "Team Mentorship Program", difficulty: "Advanced", description: "Design a formal process for onboarding junior devs.", focus_area: "Leadership" }
+        ],
+        market_trend: "[MOCK] Shift towards AI-augmented development across all tech stacks.",
+        hiring_tip: "[MOCK] Focus on system design during your interviews to stand out for senior roles."
+      };
+    }
+    throw error;
+  }
+}

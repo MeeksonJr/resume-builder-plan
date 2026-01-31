@@ -38,9 +38,15 @@ export function InterviewPrepDialog({ children, application }: InterviewPrepDial
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [questions, setQuestions] = useState<any[]>([]);
+    const [practicingIdx, setPracticingIdx] = useState<number | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [answer, setAnswer] = useState("");
+    const [feedback, setFeedback] = useState<any | null>(null);
 
     const handleGenerate = async () => {
         setIsLoading(true);
+        setFeedback(null);
+        setPracticingIdx(null);
         try {
             const response = await fetch("/api/ai/interview", {
                 method: "POST",
@@ -61,6 +67,39 @@ export function InterviewPrepDialog({ children, application }: InterviewPrepDial
             toast.error("Failed to generate questions. Please ensure you have a resume linked and a job description in notes.");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleSubmitAnswer = async (question: string) => {
+        if (!answer.trim()) {
+            toast.error("Please provide an answer first");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setFeedback(null);
+        try {
+            const response = await fetch("/api/ai/interview/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    resumeId: application.resume_id,
+                    jobDescription: application.notes || `${application.role} at ${application.company}`,
+                    question,
+                    answer,
+                }),
+            });
+
+            if (!response.ok) throw new Error("Failed to get feedback");
+
+            const data = await response.json();
+            setFeedback(data);
+            toast.success("Feedback generated!");
+        } catch (error: any) {
+            console.error(error);
+            toast.error("Failed to evaluate answer.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -184,6 +223,125 @@ export function InterviewPrepDialog({ children, application }: InterviewPrepDial
                                                         </li>
                                                     ))}
                                                 </ul>
+                                            </div>
+
+                                            <div className="pt-4 border-t">
+                                                {practicingIdx === idx ? (
+                                                    <div className="space-y-4">
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-sm font-bold">Your Mock Response</h4>
+                                                            <textarea
+                                                                className="w-full min-h-[120px] p-3 rounded-lg border bg-background text-sm focus:ring-2 focus:ring-primary outline-none"
+                                                                placeholder="Type your answer here using the STAR method..."
+                                                                value={answer}
+                                                                onChange={(e) => setAnswer(e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleSubmitAnswer(q.question)}
+                                                                disabled={isSubmitting || !answer.trim()}
+                                                                className="flex-1 gap-2"
+                                                            >
+                                                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                                                                Get AI Feedback
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setPracticingIdx(null);
+                                                                    setAnswer("");
+                                                                    setFeedback(null);
+                                                                }}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </div>
+
+                                                        {feedback && practicingIdx === idx && (
+                                                            <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                                                                <div className="flex items-center justify-between bg-primary/5 p-4 rounded-xl border border-primary/20">
+                                                                    <div>
+                                                                        <p className="text-xs font-bold uppercase text-primary mb-1">Overall STAR Score</p>
+                                                                        <div className="flex items-baseline gap-2">
+                                                                            <span className="text-3xl font-black text-primary">{feedback.score}</span>
+                                                                            <span className="text-sm text-muted-foreground font-medium">/ 100</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary flex items-center justify-center font-bold text-lg">
+                                                                        {feedback.score}%
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    {[
+                                                                        { label: "Situation", key: "situation", variant: "blue" },
+                                                                        { label: "Task", key: "task", variant: "purple" },
+                                                                        { label: "Action", key: "action", variant: "green" },
+                                                                        { label: "Result", key: "result", variant: "orange" },
+                                                                    ].map((item) => (
+                                                                        <Card key={item.key} className="p-3 border-none bg-muted/30">
+                                                                            <div className="flex justify-between items-center mb-1">
+                                                                                <span className="text-[10px] font-black uppercase text-muted-foreground">{item.label}</span>
+                                                                                <span className="text-xs font-bold">{feedback.scores[item.key]}%</span>
+                                                                            </div>
+                                                                            <p className="text-[10px] leading-tight text-muted-foreground italic">
+                                                                                {feedback.star_breakdown[item.key]}
+                                                                            </p>
+                                                                        </Card>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="space-y-4">
+                                                                    <div className="space-y-2">
+                                                                        <h5 className="text-xs font-bold uppercase flex items-center gap-1 text-green-600">
+                                                                            <CheckCircle2 className="h-3 w-3" />
+                                                                            Strengths
+                                                                        </h5>
+                                                                        <ul className="space-y-1">
+                                                                            {feedback.strengths.map((s: string, i: number) => (
+                                                                                <li key={i} className="text-sm flex items-start gap-2">
+                                                                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 mt-1.5 shrink-0" />
+                                                                                    {s}
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <h5 className="text-xs font-bold uppercase flex items-center gap-1 text-orange-600">
+                                                                            <Target className="h-3 w-3" />
+                                                                            Areas for Improvement
+                                                                        </h5>
+                                                                        <ul className="space-y-1">
+                                                                            {feedback.improvements.map((imp: string, i: number) => (
+                                                                                <li key={i} className="text-sm flex items-start gap-2 text-muted-foreground">
+                                                                                    <div className="h-1.5 w-1.5 rounded-full bg-orange-500 mt-1.5 shrink-0" />
+                                                                                    {imp}
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="w-full gap-2"
+                                                        onClick={() => {
+                                                            setPracticingIdx(idx);
+                                                            setAnswer("");
+                                                            setFeedback(null);
+                                                        }}
+                                                    >
+                                                        <Sparkles className="h-4 w-4" />
+                                                        Practice this Answer
+                                                    </Button>
+                                                )}
                                             </div>
                                         </AccordionContent>
                                     </AccordionItem>

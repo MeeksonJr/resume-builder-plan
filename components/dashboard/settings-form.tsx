@@ -36,6 +36,9 @@ interface Profile {
     github_url: string | null;
     website_url: string | null;
     settings: any;
+    target_role?: string | null;
+    target_industry?: string | null;
+    career_goals?: string | null;
 }
 
 interface SettingsFormProps {
@@ -56,8 +59,9 @@ export function SettingsForm({ profile }: SettingsFormProps) {
         default_template: profile.settings?.defaultTemplate || "modern",
         ai_tone: profile.settings?.aiTone || "professional",
         theme: profile.settings?.theme || "system",
-        job_role: profile.settings?.jobSearch?.targetRole || "",
-        industry: profile.settings?.jobSearch?.industry || "",
+        target_role: profile.target_role || profile.settings?.jobSearch?.targetRole || "",
+        target_industry: profile.target_industry || profile.settings?.jobSearch?.industry || "",
+        career_goals: profile.career_goals || "",
         salary: profile.settings?.jobSearch?.salaryExpectation || "",
     });
 
@@ -81,12 +85,10 @@ export function SettingsForm({ profile }: SettingsFormProps) {
                         defaultTemplate: formData.default_template,
                         aiTone: formData.ai_tone,
                         theme: formData.theme,
-                        jobSearch: {
-                            targetRole: formData.job_role,
-                            industry: formData.industry,
-                            salaryExpectation: formData.salary,
-                        },
                     },
+                    target_role: formData.target_role,
+                    target_industry: formData.target_industry,
+                    career_goals: formData.career_goals,
                 })
                 .eq("id", profile.id);
 
@@ -169,21 +171,21 @@ export function SettingsForm({ profile }: SettingsFormProps) {
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="job_role">Target Job Role</Label>
+                            <Label htmlFor="target_role">Target Job Role</Label>
                             <Input
-                                id="job_role"
+                                id="target_role"
                                 placeholder="e.g. Senior Software Engineer"
-                                value={formData.job_role}
-                                onChange={(e) => setFormData({ ...formData, job_role: e.target.value })}
+                                value={formData.target_role}
+                                onChange={(e) => setFormData({ ...formData, target_role: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="industry">Preferred Industry</Label>
+                            <Label htmlFor="target_industry">Preferred Industry</Label>
                             <Input
-                                id="industry"
+                                id="target_industry"
                                 placeholder="e.g. FinTech, Healthcare"
-                                value={formData.industry}
-                                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                                value={formData.target_industry}
+                                onChange={(e) => setFormData({ ...formData, target_industry: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
@@ -195,6 +197,17 @@ export function SettingsForm({ profile }: SettingsFormProps) {
                                 onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="career_goals">Long-term Career Goals</Label>
+                        <textarea
+                            id="career_goals"
+                            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="Describe where you want to be in 2-5 years. This helps our AI Career Coach plan your roadmap."
+                            value={formData.career_goals}
+                            onChange={(e) => setFormData({ ...formData, career_goals: e.target.value })}
+                        />
                     </div>
                 </CardContent>
             </Card>
