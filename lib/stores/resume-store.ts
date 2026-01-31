@@ -774,12 +774,15 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
     const supabase = createClient();
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Authentication required");
+
     // Get next version number
     const { data: nextVersion, error: versionError } = await supabase
       .rpc('get_next_version_number', { p_resume_id: state.resumeId });
 
     if (versionError) {
-      console.error("Error getting next version number:", versionError);
+      console.error("Error getting next version number:", JSON.stringify(versionError, null, 2));
       throw versionError;
     }
 
@@ -791,7 +794,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         title,
         change_summary: summary,
         snapshot_data: content,
-        created_by: (await supabase.auth.getUser()).data.user?.id
+        created_by: user.id
       });
 
     if (error) {
