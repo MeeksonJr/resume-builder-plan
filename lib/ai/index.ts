@@ -835,3 +835,154 @@ export async function generateProjectFromRepo(
     throw error;
   }
 }
+
+// Comprehensive resume quality analysis and scoring
+export async function analyzeResumeQuality(
+  resumeData: ResumeData,
+  targetRole?: string
+): Promise<{
+  overallScore: number;
+  scores: {
+    contentQuality: number;
+    keywordOptimization: number;
+    atsCompatibility: number;
+    completeness: number;
+    impactLanguage: number;
+    quantification: number;
+  };
+  suggestions: {
+    priority: "high" | "medium" | "low";
+    category: string;
+    title: string;
+    description: string;
+  }[];
+  strengths: string[];
+  quickWins: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          overallScore: z.number().min(0).max(100),
+          scores: z.object({
+            contentQuality: z.number().min(0).max(100),
+            keywordOptimization: z.number().min(0).max(100),
+            atsCompatibility: z.number().min(0).max(100),
+            completeness: z.number().min(0).max(100),
+            impactLanguage: z.number().min(0).max(100),
+            quantification: z.number().min(0).max(100),
+          }),
+          suggestions: z.array(z.object({
+            priority: z.enum(["high", "medium", "low"]),
+            category: z.string(),
+            title: z.string(),
+            description: z.string(),
+          })),
+          strengths: z.array(z.string()).max(5),
+          quickWins: z.array(z.string()).max(3),
+        }),
+        prompt: `You are a professional resume optimization expert. Analyze this resume and provide comprehensive feedback.
+
+        Resume Data:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Target Role: ${targetRole || "General Professional"}
+        
+        Your task is to score this resume across 6 dimensions (0-100):
+        
+        1. **Content Quality** (0-100):
+           - Professional language and clarity
+           - Relevance to target role
+           - Career progression narrative
+           - Free of clichés and filler words
+        
+        2. **Keyword Optimization** (0-100):
+           - Industry-specific terminology
+           - Technical skills mentioned
+           - Role-relevant keywords
+           - Alignment with job market trends
+        
+        3. **ATS Compatibility** (0-100):
+           - Clear section headers
+           - Standard date formats
+           - Searchable skills and technologies
+           - No graphics or tables that confuse parsers
+        
+        4. **Completeness** (0-100):
+           - All relevant sections present
+           - Sufficient detail in each section
+           - Contact information complete
+           - No obvious gaps
+        
+        5. **Impact Language** (0-100):
+           - Strong action verbs
+           - Achievement-focused (not duty-focused)
+           - Leadership and ownership indicators
+           - Professional tone
+        
+        6. **Quantification** (0-100):
+           - Numbers and metrics present
+           - Results-oriented statements
+           - Scale/scope indicators
+           - Measurable achievements
+        
+        Then provide:
+        - Overall score (weighted average, emphasize content and impact)
+        - 3-7 specific improvement suggestions (prioritized as high/medium/low)
+        - 3-5 current strengths
+        - Top 3 "quick wins" (easy changes with high impact)
+        
+        Be specific and actionable in your suggestions.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Resume quality analysis failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        overallScore: 68,
+        scores: {
+          contentQuality: 72,
+          keywordOptimization: 65,
+          atsCompatibility: 80,
+          completeness: 60,
+          impactLanguage: 58,
+          quantification: 45,
+        },
+        suggestions: [
+          {
+            priority: "high",
+            category: "Quantification",
+            title: "Add metrics to achievements",
+            description: "[MOCK] Your work experience lacks specific numbers. Add metrics like '20% increase', '50+ users', or 'reduced by 3 hours' to demonstrate impact."
+          },
+          {
+            priority: "high",
+            category: "Impact Language",
+            title: "Replace weak verbs",
+            description: "[MOCK] Replace phrases like 'responsible for' and 'worked on' with stronger action verbs like 'led', 'architected', or 'optimized'."
+          },
+          {
+            priority: "medium",
+            category: "Completeness",
+            title: "Expand project descriptions",
+            description: "[MOCK] Your projects section is thin. Add 2-3 bullet points per project highlighting technologies used and outcomes achieved."
+          },
+        ],
+        strengths: [
+          "[MOCK] Clear career progression",
+          "[MOCK] Strong technical skills list",
+          "[MOCK] Good ATS-friendly formatting",
+        ],
+        quickWins: [
+          "[MOCK] Add your GitHub profile URL to contact info",
+          "[MOCK] Quantify your top 3 achievements with specific metrics",
+          "[MOCK] Add a professional summary at the top (2-3 sentences)",
+        ],
+      };
+    }
+    throw error;
+  }
+}
