@@ -26,8 +26,9 @@ export function AnswerHistory({
     answers,
     onSelectAnswer,
     currentAnswerId,
-    onCompare
-}: AnswerHistoryProps & { onCompare?: (a1: any, a2: any) => void }) {
+    onCompare,
+    onImprove
+}: AnswerHistoryProps & { onCompare?: (a1: any, a2: any) => void; onImprove?: (text: string) => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isCompareMode, setIsCompareMode] = useState(false);
     const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
@@ -161,15 +162,33 @@ export function AnswerHistory({
                                             )}
                                         </div>
 
-                                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-2">
                                             {answer.answer_text}
                                         </p>
 
-                                        {answer.answer_duration && (
-                                            <div className="mt-2 text-xs text-gray-500">
-                                                {Math.floor(answer.answer_duration / 60)}m {answer.answer_duration % 60}s duration
-                                            </div>
-                                        )}
+                                        <div className="flex items-center justify-between mt-2">
+                                            {answer.answer_duration ? (
+                                                <div className="text-xs text-gray-500">
+                                                    {Math.floor(answer.answer_duration / 60)}m {answer.answer_duration % 60}s duration
+                                                </div>
+                                            ) : (
+                                                <div />
+                                            )}
+
+                                            {onImprove && !isCompareMode && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="h-6 text-xs px-2"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onImprove(answer.answer_text);
+                                                    }}
+                                                >
+                                                    Improve
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}

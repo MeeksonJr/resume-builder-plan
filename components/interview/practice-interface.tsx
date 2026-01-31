@@ -29,7 +29,9 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
     const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
     const [answers, setAnswers] = useState<any[]>([]);
+
     const [comparisonData, setComparisonData] = useState<{ a1: any, a2: any } | null>(null);
+    const [initialAnswerText, setInitialAnswerText] = useState("");
 
     const currentQuestion = questions[currentIndex];
     const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -80,6 +82,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
             setCurrentIndex(currentIndex + 1);
             setCurrentAnswerId(null);
             setComparisonData(null);
+            setInitialAnswerText("");
         }
     };
 
@@ -88,6 +91,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
             setCurrentIndex(currentIndex - 1);
             setCurrentAnswerId(null);
             setComparisonData(null);
+            setInitialAnswerText("");
         }
     };
 
@@ -205,6 +209,11 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
                                     setComparisonData({ a1, a2 });
                                     setCurrentAnswerId(null);
                                 }}
+                                onImprove={(text) => {
+                                    setInitialAnswerText(text);
+                                    setCurrentAnswerId(null);
+                                    setComparisonData(null);
+                                }}
                             />
                         </div>
                     )}
@@ -227,6 +236,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
                                 questionId={currentQuestion.id}
                                 sessionId={session.id}
                                 onAnswerSubmitted={handleAnswerSubmitted}
+                                initialValue={initialAnswerText}
                             />
                         </div>
                     ) : (
@@ -238,7 +248,10 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
 
                             <Button
                                 variant="outline"
-                                onClick={() => setCurrentAnswerId(null)}
+                                onClick={() => {
+                                    setCurrentAnswerId(null);
+                                    setInitialAnswerText("");
+                                }}
                                 className="w-full"
                             >
                                 Try Different Answer
