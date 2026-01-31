@@ -74,7 +74,7 @@ function renderRichText(html: string): (Paragraph | TextRun)[] {
 export async function exportToDocx(data: ResumeData) {
     const { profile, workExperiences, education, skills, projects, certifications, languages, sectionOrder } = data;
 
-    const items: (Paragraph | ExternalHyperlink)[] = [];
+    const items: Paragraph[] = [];
 
     // Header Section
     items.push(

@@ -31,6 +31,7 @@ export default function NewCoverLetterPage() {
     const [loading, setLoading] = useState(false);
     const [resumes, setResumes] = useState<any[]>([]);
     const [selectedResumeId, setSelectedResumeId] = useState<string>("");
+    const [tone, setTone] = useState<string>("professional");
     const [formData, setFormData] = useState({
         jobTitle: "",
         companyName: "",
@@ -72,6 +73,7 @@ export default function NewCoverLetterPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     resumeId: selectedResumeId,
+                    tone,
                     ...formData,
                 }),
             });
@@ -114,20 +116,37 @@ export default function NewCoverLetterPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Select Base Resume</Label>
-                            <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-                                <SelectTrigger className="min-h-[44px]">
-                                    <SelectValue placeholder="Select a resume" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {resumes.map((resume) => (
-                                        <SelectItem key={resume.id} value={resume.id}>
-                                            {resume.title}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label>Select Base Resume</Label>
+                                <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
+                                    <SelectTrigger className="min-h-[44px]">
+                                        <SelectValue placeholder="Select a resume" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {resumes.map((resume) => (
+                                            <SelectItem key={resume.id} value={resume.id}>
+                                                {resume.title}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Writing Tone</Label>
+                                <Select value={tone} onValueChange={setTone}>
+                                    <SelectTrigger className="min-h-[44px]">
+                                        <SelectValue placeholder="Select tone" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="professional">Professional</SelectItem>
+                                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                                        <SelectItem value="concise">Concise</SelectItem>
+                                        <SelectItem value="creative">Creative</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">

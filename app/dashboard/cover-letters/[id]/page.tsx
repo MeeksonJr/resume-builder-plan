@@ -10,26 +10,52 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { ChevronLeft, Download, FileDown, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useReactToPrint } from "react-to-print";
 
-const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profile: any }>(({ content, profile }, ref) => {
+const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profile: any, template: string }>(({ content, profile, template }, ref) => {
+    const isClassic = template === "classic";
+    const isModern = template === "modern";
+    const isMinimal = template === "minimal";
+
     return (
-        <div ref={ref} className="p-12 text-gray-900 bg-white min-h-[1056px] font-serif leading-relaxed">
+        <div ref={ref} className={`p-16 text-gray-900 bg-white min-h-[1056px] leading-relaxed ${isClassic ? 'font-serif' : 'font-sans'}`}>
             {profile && (
-                <div className="mb-8 border-b pb-4">
-                    <h1 className="text-2xl font-bold">{profile.full_name}</h1>
-                    <p className="text-sm text-gray-600">
-                        {profile.location} | {profile.phone} | {profile.email}
-                    </p>
-                    {profile.website_url && <p className="text-sm text-gray-600">{profile.website_url}</p>}
+                <div className={`mb-10 pb-6 ${isModern ? 'border-l-4 border-primary pl-6' : isClassic ? 'text-center border-b' : 'border-b'}`}>
+                    <h1 className={`${isModern ? 'text-3xl' : 'text-2xl'} font-bold text-gray-900 uppercase tracking-tight`}>
+                        {profile.full_name}
+                    </h1>
+                    <div className={`mt-2 text-sm text-gray-600 ${isClassic ? 'flex justify-center gap-3' : 'space-y-1'}`}>
+                        <span>{profile.location}</span>
+                        {!isClassic && <br />}
+                        {isClassic && <span>|</span>}
+                        <span>{profile.phone}</span>
+                        {!isClassic && <br />}
+                        {isClassic && <span>|</span>}
+                        <span>{profile.email}</span>
+                        {profile.website_url && (
+                            <>
+                                {!isClassic && <br />}
+                                {isClassic && <span>|</span>}
+                                <span>{profile.website_url}</span>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
             <div
-                className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-1"
+                className={`prose prose-sm max-w-none prose-p:my-3 prose-ul:my-2 prose-li:my-1 text-gray-800 ${isClassic ? 'text-justify' : ''}`}
+                style={{ fontSize: '11pt' }}
                 dangerouslySetInnerHTML={{ __html: content }}
             />
         </div>
@@ -44,6 +70,7 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
     const [saving, setSaving] = useState(false);
     const [coverLetter, setCoverLetter] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
+    const [coverLetterTemplate, setCoverLetterTemplate] = useState<string>("modern");
     const componentRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = useReactToPrint({
@@ -162,6 +189,19 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
+                                <label className="text-xs font-semibold uppercase text-muted-foreground">Template</label>
+                                <Select value={coverLetterTemplate} onValueChange={setCoverLetterTemplate}>
+                                    <SelectTrigger className="mt-1 h-9">
+                                        <SelectValue placeholder="Select template" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="modern">Modern</SelectItem>
+                                        <SelectItem value="classic">Classic</SelectItem>
+                                        <SelectItem value="minimal">Minimal</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
                                 <label className="text-xs font-semibold uppercase text-muted-foreground">Title</label>
                                 <p className="font-medium">{coverLetter.title}</p>
                             </div>
@@ -184,7 +224,7 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
 
             {/* Hidden printable component */}
             <div className="hidden">
-                <PrintableCoverLetter ref={componentRef} content={coverLetter.content} profile={profile} />
+                <PrintableCoverLetter ref={componentRef} content={coverLetter.content} profile={profile} template={coverLetterTemplate} />
             </div>
         </div>
     );

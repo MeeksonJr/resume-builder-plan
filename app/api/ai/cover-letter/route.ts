@@ -13,7 +13,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumeId, jobDescription, recipientName, companyName, jobTitle } = await req.json();
+        const { resumeId, jobDescription, recipientName, companyName, jobTitle, tone } = await req.json();
 
         if (!resumeId || !jobDescription) {
             return new NextResponse("Missing required fields", { status: 400 });
@@ -51,7 +51,8 @@ export async function POST(req: Request) {
         const content = await generateCoverLetter(
             resumeData as any,
             jobDescription,
-            { name: recipientName, company: companyName, title: jobTitle }
+            { name: recipientName, company: companyName, title: jobTitle },
+            tone
         );
 
         // Save to database

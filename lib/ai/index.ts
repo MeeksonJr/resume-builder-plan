@@ -357,13 +357,21 @@ export async function analyzeKeywords(
 export async function generateCoverLetter(
   resumeData: ResumeData,
   jobDescription: string,
-  recipientInfo?: { name?: string; company?: string; title?: string }
+  recipientInfo?: { name?: string; company?: string; title?: string },
+  tone: "professional" | "enthusiastic" | "concise" | "creative" = "professional"
 ): Promise<string> {
+  const toneInstructions = {
+    professional: "Write in a balanced, highly professional, and standard corporate tone.",
+    enthusiastic: "Write with high energy, showing great passion for the company and excitement about the role.",
+    concise: "Keep it brief, punchy, and direct to the point while remaining professional.",
+    creative: "Use a more narrative-driven approach, focusing on storytelling and personality.",
+  };
+
   try {
     const result = await withFallback(async (model) => {
       return generateText({
         model,
-        prompt: `Write a highly professional, tailored cover letter based on the following resume and job description.
+        prompt: `Write a tailored cover letter based on the following resume and job description.
   
   Resume:
   ${JSON.stringify(resumeData, null, 2)}
@@ -373,12 +381,14 @@ export async function generateCoverLetter(
   
   ${recipientInfo ? `Recipient: ${recipientInfo.name || "Hiring Manager"}\nCompany: ${recipientInfo.company || ""}\nRole Title: ${recipientInfo.title || ""}` : ""}
   
+  Tone/Style: ${toneInstructions[tone]}
+  
   Guidelines:
   - Strong opening that highlights interest in the role.
-  - 3 main paragraphs focusing on key achievements that match the job requirements.
-  - Professional tone throughout.
+  - 3 main paragraphs (or equivalent) focusing on key achievements that match the job requirements.
+  - Professional tone appropriate for the selected style.
   - Do not use placeholders like [Your Name] if the information is in the resume; use the actual data.
-  - Length: 300-400 words.
+  - Length: ${tone === "concise" ? "150-250" : "300-400"} words.
   
   Provide only the cover letter content.`,
       });
