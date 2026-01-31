@@ -155,6 +155,16 @@
     --primary: 173 80% 40%;
     --ring: 173 80% 40%;
   }
+
+  .theme-rose {
+    --primary: 350 89% 60%;
+    --ring: 350 89% 60%;
+  }
+
+  .theme-violet {
+    --primary: 262 83% 58%;
+    --ring: 262 83% 58%;
+  }
 }
 
 @layer utilities {

@@ -54,6 +54,8 @@ export const viewport: Viewport = {
   ],
 };
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,7 +67,14 @@ export default function RootLayout({
         className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         <Toaster />
         <Analytics />
       </body>

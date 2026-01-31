@@ -12,7 +12,6 @@ import {
     User,
     LogOut,
     Sparkles,
-    Download,
     TrendingUp,
     Brain,
     Globe,
@@ -97,9 +96,53 @@ const navItems = [
     },
 ]
 
-export function AppSidebar({ user, profile }: AppSidebarProps) {
+export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
+    const [profile, setProfile] = React.useState(initialProfile)
+
+    // Fetch fresh profile data on mount and set up listener
+    React.useEffect(() => {
+        const supabase = createClient()
+
+        // Fetch fresh profile data
+        const fetchProfile = async () => {
+            const { data } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", user.id)
+                .single()
+
+            if (data) {
+                setProfile(data)
+            }
+        }
+
+        fetchProfile()
+
+        // Subscribe to profile changes
+        const channel = supabase
+            .channel(`profile-${user.id}`)
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "profiles",
+                    filter: `id=eq.${user.id}`,
+                },
+                (payload) => {
+                    if (payload.new) {
+                        setProfile(payload.new)
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [user.id])
 
     const displayName = profile?.full_name || user?.user_metadata?.full_name || "User"
     const initials = displayName
@@ -200,6 +243,9 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
                                     className="h-14 rounded-2xl hover:bg-primary/5 data-[state=open]:bg-primary/5 transition-all"
                                 >
                                     <Avatar className="h-9 w-9 border-2 border-primary/10">
+                                        {profile?.avatar_url && (
+                                            <AvatarImage src={profile.avatar_url} alt={displayName} />
+                                        )}
                                         <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
                                             {initials}
                                         </AvatarFallback>

@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card } from "@/components/ui/card"
 import { Moon, Sun, Monitor, Check } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -15,18 +14,20 @@ const themes = [
 ]
 
 export function AppearanceSettings() {
-    const { theme, setTheme } = useTheme()
+    const { theme, setTheme, systemTheme } = useTheme()
     const [mounted, setMounted] = React.useState(false)
     const [selectedTheme, setSelectedTheme] = React.useState("slate")
 
     React.useEffect(() => {
         setMounted(true)
-        // Get current theme from root element
+        // Get current theme from localStorage or default to slate
+        const savedTheme = localStorage.getItem("color-theme") || "slate"
+        setSelectedTheme(savedTheme)
+
+        // Apply theme on mount
         const root = document.documentElement
-        const currentTheme = root.className.split(" ").find(c => c.startsWith("theme-"))
-        if (currentTheme) {
-            setSelectedTheme(currentTheme.replace("theme-", ""))
-        }
+        themes.forEach(t => root.classList.remove(`theme-${t.id}`))
+        root.classList.add(`theme-${savedTheme}`)
     }, [])
 
     const handleThemeChange = (themeId: string) => {
@@ -42,6 +43,8 @@ export function AppearanceSettings() {
         // Save to localStorage
         localStorage.setItem("color-theme", themeId)
     }
+
+    const currentTheme = theme === "system" ? systemTheme : theme
 
     if (!mounted) {
         return <div className="h-64 animate-pulse bg-muted/20 rounded-lg" />
@@ -60,7 +63,7 @@ export function AppearanceSettings() {
 
                 <div className="grid grid-cols-3 gap-4">
                     <Card
-                        className={`cursor-pointer border-2 p-4 transition-all hover:shadow-lg ${theme === "light"
+                        className={`cursor-pointer border-2 p-4 transition-all hover:shadow-lg ${currentTheme === "light"
                                 ? "border-primary bg-primary/5"
                                 : "border-transparent hover:border-primary/50"
                             }`}
@@ -71,12 +74,12 @@ export function AppearanceSettings() {
                                 <Sun className="h-5 w-5 text-white" />
                             </div>
                             <span className="font-bold text-sm">Light</span>
-                            {theme === "light" && <Check className="h-4 w-4 text-primary" />}
+                            {currentTheme === "light" && <Check className="h-4 w-4 text-primary" />}
                         </div>
                     </Card>
 
                     <Card
-                        className={`cursor-pointer border-2 p-4 transition-all hover:shadow-lg ${theme === "dark"
+                        className={`cursor-pointer border-2 p-4 transition-all hover:shadow-lg ${currentTheme === "dark"
                                 ? "border-primary bg-primary/5"
                                 : "border-transparent hover:border-primary/50"
                             }`}
@@ -87,7 +90,7 @@ export function AppearanceSettings() {
                                 <Moon className="h-5 w-5 text-white" />
                             </div>
                             <span className="font-bold text-sm">Dark</span>
-                            {theme === "dark" && <Check className="h-4 w-4 text-primary" />}
+                            {currentTheme === "dark" && <Check className="h-4 w-4 text-primary" />}
                         </div>
                     </Card>
 
