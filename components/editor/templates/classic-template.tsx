@@ -12,9 +12,11 @@ interface TemplateProps {
         certifications: any[];
         languages: any[];
     };
+    isRtl?: boolean;
+    language?: string;
 }
 
-export const ClassicTemplate = ({ data }: TemplateProps) => {
+export const ClassicTemplate = ({ data, isRtl, language }: TemplateProps) => {
     const store = useResumeStore();
 
     const {
@@ -49,11 +51,11 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {workExperiences.map((exp) => (
                                 <div key={exp.id} className="break-inside-avoid">
-                                    <div className="flex justify-between font-bold">
+                                    <div className={cn("flex justify-between font-bold", isRtl && "flex-row-reverse")}>
                                         <span>{exp.company}</span>
                                         <span>{exp.location}</span>
                                     </div>
-                                    <div className="flex justify-between italic mb-2">
+                                    <div className={cn("flex justify-between italic mb-2", isRtl && "flex-row-reverse")}>
                                         <span>{exp.position}</span>
                                         <span>{exp.start_date} – {exp.is_current ? "Present" : exp.end_date}</span>
                                     </div>
@@ -78,11 +80,11 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {education.map((edu) => (
                                 <div key={edu.id} className="break-inside-avoid">
-                                    <div className="flex justify-between font-bold">
+                                    <div className={cn("flex justify-between font-bold", isRtl && "flex-row-reverse")}>
                                         <span>{edu.institution}</span>
                                         <span>{edu.location}</span>
                                     </div>
-                                    <div className="flex justify-between italic">
+                                    <div className={cn("flex justify-between italic", isRtl && "flex-row-reverse")}>
                                         <span>{edu.degree} in {edu.field_of_study}</span>
                                         <span>{edu.start_date} – {edu.end_date}</span>
                                     </div>
@@ -104,7 +106,7 @@ export const ClassicTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {projects.map((proj) => (
                                 <div key={proj.id} className="break-inside-avoid">
-                                    <div className="flex justify-between font-bold mb-1">
+                                    <div className={cn("flex justify-between font-bold mb-1", isRtl && "flex-row-reverse")}>
                                         <span>{proj.name}</span>
                                         {proj.url && <span className="text-xs font-normal underline">{proj.url}</span>}
                                     </div>

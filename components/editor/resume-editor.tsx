@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useReactToPrint } from "react-to-print";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResizableHandle,
@@ -47,6 +48,8 @@ interface Resume {
   is_public: boolean;
   section_order: string[] | null;
   visual_config: any | null;
+  language: string | null;
+  is_rtl: boolean | null;
 }
 
 interface Profile {
@@ -166,6 +169,8 @@ export function ResumeEditor({
     template,
     hasChanges,
     saveAllChanges,
+    setLanguage,
+    setIsRtl,
   } = useResumeStore();
 
   // Initialize store with data
@@ -176,6 +181,8 @@ export function ResumeEditor({
     setSlug(resume.slug || "");
     if (resume.section_order) setSectionOrder(resume.section_order);
     if (resume.visual_config) setVisualConfig(resume.visual_config);
+    if (resume.language) setLanguage(resume.language);
+    setIsRtl(resume.is_rtl || false);
     if (profile) setProfile(profile);
 
     // Map DB sort_order to store display_order
@@ -227,6 +234,13 @@ export function ResumeEditor({
   const handleDownloadPDF = useReactToPrint({
     contentRef: printRef,
     documentTitle: `${resume.title || "Resume"}`,
+    onBeforePrint: async () => {
+      const supabase = createClient();
+      await supabase.rpc("record_resume_event", {
+        resume_id_param: resume.id,
+        event_type_param: "download",
+      });
+    },
     onAfterPrint: () => toast.success("Download started"),
   });
 
@@ -234,6 +248,12 @@ export function ResumeEditor({
     const store = useResumeStore.getState();
     const loadingToast = toast.loading("Generating Word document...");
     try {
+      const supabase = createClient();
+      await supabase.rpc("record_resume_event", {
+        resume_id_param: resume.id,
+        event_type_param: "download",
+      });
+
       await exportToDocx({
         profile: store.profile,
         workExperiences: store.workExperiences,

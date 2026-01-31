@@ -12,9 +12,11 @@ interface TemplateProps {
         certifications: any[];
         languages: any[];
     };
+    isRtl?: boolean;
+    language?: string;
 }
 
-export const MinimalTemplate = ({ data }: TemplateProps) => {
+export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
     const store = useResumeStore();
 
     const {
@@ -49,7 +51,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-5">
                             {workExperiences.map((exp) => (
                                 <div key={exp.id} className="break-inside-avoid">
-                                    <div className="flex justify-between items-baseline mb-1">
+                                    <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-semibold text-base">{exp.position}</h3>
                                         <span className="text-xs text-gray-500 italic">
                                             {exp.start_date} – {exp.is_current ? "Present" : exp.end_date}
@@ -80,7 +82,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {education.map((edu) => (
                                 <div key={edu.id} className="break-inside-avoid">
-                                    <div className="flex justify-between items-baseline mb-1">
+                                    <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-semibold text-base">{edu.institution}</h3>
                                         <span className="text-xs text-gray-500 italic">
                                             {edu.start_date} – {edu.end_date}
@@ -107,7 +109,7 @@ export const MinimalTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {projects.map((proj) => (
                                 <div key={proj.id} className="break-inside-avoid">
-                                    <div className="flex justify-between items-baseline mb-1">
+                                    <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-semibold text-base">{proj.name}</h3>
                                         {proj.url && (
                                             <a href={proj.url} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:underline italic">

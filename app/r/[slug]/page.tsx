@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/client"; // Use client for public f
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { ResumePreview } from "@/components/editor/resume-preview";
 import { Metadata } from "next";
+import { headers } from "next/headers";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { PublicDownloadButton } from "../../../components/dashboard/public-download-button";
+
 
 interface PublicResumePageProps {
     params: Promise<{ slug: string }>;
@@ -55,9 +60,25 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
 
     const resumeId = resume.id;
 
-    // Increment view count (fire and forget in background)
-    supabase.rpc("increment_resume_view", { resume_id_param: resumeId }).then(({ error }) => {
-        if (error) console.error("Error incrementing view count:", error);
+    // 2. Advanced Tracking (Server-side)
+    const headerList = await headers();
+    const userAgent = headerList.get("user-agent") || "";
+
+    // Basic UA parsing (standard for server-side without heavy libs)
+    const isMobile = /mobile/i.test(userAgent);
+    const os = /windows/i.test(userAgent) ? "Windows" : /mac/i.test(userAgent) ? "MacOS" : /linux/i.test(userAgent) ? "Linux" : /android/i.test(userAgent) ? "Android" : /iphone|ipad/i.test(userAgent) ? "iOS" : "Unknown";
+    const browser = /chrome/i.test(userAgent) ? "Chrome" : /firefox/i.test(userAgent) ? "Firefox" : /safari/i.test(userAgent) ? "Safari" : /edge/i.test(userAgent) ? "Edge" : "Unknown";
+    const device = isMobile ? "Mobile" : "Desktop";
+
+    // Record view event
+    supabase.rpc("record_resume_event", {
+        resume_id_param: resumeId,
+        event_type_param: "view",
+        browser_param: browser,
+        os_param: os,
+        device_param: device
+    }).then(({ error }) => {
+        if (error) console.error("Error recording view event:", error);
     });
 
     // 2. Fetch all related data
@@ -111,9 +132,11 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
     // I hope it accepts props now. If not, I'll fix it.
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center">
-            <div className="w-full max-w-[210mm]">
-                {/* We need to ensure ResumePreview can take raw data. */}
+        <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex flex-col items-center">
+            <div className="w-full max-w-[210mm] mb-6 flex justify-end gap-2 no-print">
+                <PublicDownloadButton resumeId={resumeId} title={resume.title} />
+            </div>
+            <div className="w-full max-w-[210mm] shadow-xl">
                 <ResumePreview
                     data={{
                         resume,

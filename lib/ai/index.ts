@@ -122,6 +122,40 @@ async function withFallback<T>(
   throw lastError || new Error("All AI providers failed");
 }
 
+// Translate resume data to a target language
+export async function translateResume(
+  resumeData: any,
+  targetLanguage: string
+): Promise<any> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateText({
+        model,
+        prompt: `Translate the following resume data into ${targetLanguage}. 
+        Maintain the exact structure and JSON format.
+        Translate all text content (summaries, descriptions, highlights, titles, labels) into ${targetLanguage}.
+        Do NOT translate proper names, company names, or technical terms/technologies unless there is a standard translation in ${targetLanguage}.
+        Ensure the tone is professional and suitable for the local job market.
+
+        Resume Data:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Provide ONLY the translated JSON object.`,
+      });
+    });
+
+    const text = result.text.trim();
+    // Use regex to extract JSON in case the AI wraps it in markdown
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    return JSON.parse(jsonMatch ? jsonMatch[0] : text);
+  } catch (error: any) {
+    console.warn("[AI] Translation failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return { ...resumeData, _mock: true }; // Return original with mock flag if failed
+    }
+    throw error;
+  }
+}
 // Parse resume text and extract structured data
 export async function parseResumeText(text: string): Promise<ResumeData> {
   const result = await withFallback(async (model) => {

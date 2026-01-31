@@ -18,6 +18,17 @@ export default async function DashboardPage() {
     .eq("is_archived", false)
     .order("updated_at", { ascending: false });
 
+  // Fetch recent events (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data: events } = await supabase
+    .from("resume_events")
+    .select("*")
+    .eq("user_id", user.id)
+    .gte("created_at", thirtyDaysAgo.toISOString())
+    .order("created_at", { ascending: true });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -33,7 +44,7 @@ export default async function DashboardPage() {
 
       {resumes && resumes.length > 0 ? (
         <>
-          <AnalyticsView resumes={resumes} />
+          <AnalyticsView resumes={resumes} events={events || []} />
           <ResumeList resumes={resumes} />
         </>
       ) : (

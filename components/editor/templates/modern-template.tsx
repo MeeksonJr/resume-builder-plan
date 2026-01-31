@@ -14,9 +14,11 @@ interface TemplateProps {
         certifications: any[];
         languages: any[];
     };
+    isRtl?: boolean;
+    language?: string;
 }
 
-export const ModernTemplate = ({ data }: TemplateProps) => {
+export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
     const store = useResumeStore();
 
     const {
@@ -51,13 +53,13 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {workExperiences.map((exp) => (
                                 <div key={exp.id} className="break-inside-avoid">
-                                    <div className="flex justify-between items-baseline mb-1">
+                                    <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-bold">{exp.position}</h3>
                                         <span className="text-sm text-gray-600 font-medium">
                                             {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-baseline mb-2">
+                                    <div className={cn("flex justify-between items-baseline mb-2", isRtl && "flex-row-reverse")}>
                                         <span className="font-medium text-gray-800">{exp.company}</span>
                                         <span className="text-sm text-gray-500">{exp.location}</span>
                                     </div>
@@ -82,13 +84,13 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {education.map((edu) => (
                                 <div key={edu.id} className="break-inside-avoid">
-                                    <div className="flex justify-between items-baseline mb-1">
+                                    <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-bold">{edu.institution}</h3>
                                         <span className="text-sm text-gray-600 font-medium">
                                             {edu.start_date} - {edu.end_date}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center">
+                                    <div className={cn("flex justify-between items-center", isRtl && "flex-row-reverse")}>
                                         <div>
                                             <span className="font-medium text-gray-800">{edu.degree} in {edu.field_of_study}</span>
                                         </div>
@@ -111,7 +113,7 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                         <div className="space-y-4">
                             {projects.map((proj) => (
                                 <div key={proj.id} className="break-inside-avoid">
-                                    <div className="flex justify-between items-baseline mb-1">
+                                    <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-bold">{proj.name}</h3>
                                         {proj.url && (
                                             <a href={proj.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
@@ -215,7 +217,7 @@ export const ModernTemplate = ({ data }: TemplateProps) => {
                 <h1 className="text-4xl font-bold uppercase tracking-wide mb-2">
                     {profile.full_name || "Your Name"}
                 </h1>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className={cn("flex flex-wrap gap-4 text-sm text-gray-600", isRtl && "flex-row-reverse")}>
                     {profile.email && (
                         <div className="flex items-center gap-1">
                             <Mail className="h-3 w-3" />

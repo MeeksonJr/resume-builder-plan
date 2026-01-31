@@ -119,6 +119,8 @@ interface ResumeState {
   template: string;
   slug: string | null;
   is_public: boolean;
+  language: string;
+  is_rtl: boolean;
   hasChanges: boolean;
 
   // Setters
@@ -136,6 +138,8 @@ interface ResumeState {
   setTemplate: (template: string) => void;
   setIsPublic: (isPublic: boolean) => void;
   setSlug: (slug: string) => void;
+  setLanguage: (language: string) => void;
+  setIsRtl: (isRtl: boolean) => void;
 
   // Update functions
   updateProfile: (updates: Partial<Profile>) => void;
@@ -180,6 +184,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   template: "modern",
   slug: null,
   is_public: false,
+  language: "en",
+  is_rtl: false,
   hasChanges: false,
   sectionOrder: ["experience", "education", "skills", "projects", "certifications", "languages"],
   visualConfig: DEFAULT_VISUAL_CONFIG,
@@ -203,6 +209,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   setTemplate: (template) => set({ template, hasChanges: true }),
   setIsPublic: (isPublic) => set({ is_public: isPublic, hasChanges: true }),
   setSlug: (slug) => set({ slug, hasChanges: true }),
+  setLanguage: (language) => set({ language, hasChanges: true }),
+  setIsRtl: (isRtl) => set({ is_rtl: isRtl, hasChanges: true }),
 
   updateProfile: (updates) =>
     set((state) => ({
@@ -595,6 +603,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         is_public: state.is_public,
         section_order: state.sectionOrder,
         visual_config: state.visualConfig,
+        language: state.language,
+        is_rtl: state.is_rtl,
       })
       .eq("id", state.resumeId);
 
