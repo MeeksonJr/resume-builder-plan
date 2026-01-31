@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { AnswerRecorder } from "@/components/interview/answer-recorder";
 import { EvaluationDisplay } from "@/components/interview/evaluation-display";
+import { AnswerHistory } from "@/components/interview/answer-history";
 
 interface PracticeInterfaceProps {
     session: any;
@@ -26,15 +27,50 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+    const [answers, setAnswers] = useState<any[]>([]);
 
     const currentQuestion = questions[currentIndex];
     const progress = ((currentIndex + 1) / questions.length) * 100;
     const answeredCount = answeredQuestions.size;
 
+    // Fetch answers on mount
+    useEffect(() => {
+        const fetchAnswers = async () => {
+            try {
+                const response = await fetch(`/api/interview/answers?sessionId=${session.id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setAnswers(data.answers || []);
+
+                    // Mark questions as answered if they have answers
+                    const answeredIndices = new Set<number>();
+                    questions.forEach((q, index) => {
+                        if (data.answers.some((a: any) => a.question_id === q.id)) {
+                            answeredIndices.add(index);
+                        }
+                    });
+                    setAnsweredQuestions(answeredIndices);
+                }
+            } catch (error) {
+                console.error("Failed to fetch answers:", error);
+            }
+        };
+
+        fetchAnswers();
+    }, [session.id, questions]);
+
+    // Handle answer submission
     const handleAnswerSubmitted = (answerId: string) => {
         setCurrentAnswerId(answerId);
         setAnsweredQuestions(prev => new Set(prev).add(currentIndex));
         toast.success("Answer submitted successfully!");
+
+        // Refresh answers (optimistic update would be better but simple refetch is fine)
+        fetch(`/api/interview/answers?sessionId=${session.id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.answers) setAnswers(data.answers);
+            });
     };
 
     const handleNext = () => {
@@ -50,6 +86,9 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
             setCurrentAnswerId(null);
         }
     };
+
+    // Filter answers for current question
+    const currentQuestionAnswers = answers.filter(a => a.question_id === currentQuestion.id);
 
     const getQuestionTypeColor = (type: string) => {
         switch (type) {
@@ -134,7 +173,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
                                 <Badge className={getQuestionTypeColor(currentQuestion.question_type)}>
                                     {currentQuestion.question_type}
                                 </Badge>
-                                {currentQuestion.user_answer && (
+                                {answeredQuestions.has(currentIndex) && (
                                     <Badge variant="outline" className="gap-1">
                                         <CheckCircle2 className="h-3 w-3" />
                                         Answered
@@ -148,6 +187,17 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                    {/* Answer History specific to current question */}
+                    {currentQuestionAnswers.length > 0 && (
+                        <div className="mb-6">
+                            <AnswerHistory
+                                answers={currentQuestionAnswers}
+                                currentAnswerId={currentAnswerId}
+                                onSelectAnswer={(a) => setCurrentAnswerId(a.id)}
+                            />
+                        </div>
+                    )}
+
                     {!currentAnswerId ? (
                         <div className="space-y-4">
                             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
