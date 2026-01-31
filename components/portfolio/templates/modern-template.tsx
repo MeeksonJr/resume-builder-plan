@@ -76,39 +76,40 @@ export function ModernTemplate({
 
                         {/* Social Links */}
                         <div className="flex flex-wrap gap-3">
-                            {portfolio?.github_url && (
+                            {portfolio?.social_links?.linkedin && (
                                 <Button variant="outline" size="sm" className="rounded-xl gap-2" asChild>
-                                    <a href={portfolio.github_url} target="_blank" rel="noopener noreferrer">
-                                        <Github className="h-4 w-4" />
-                                        GitHub
-                                    </a>
-                                </Button>
-                            )}
-                            {portfolio?.linkedin_url && (
-                                <Button variant="outline" size="sm" className="rounded-xl gap-2" asChild>
-                                    <a href={portfolio.linkedin_url} target="_blank" rel="noopener noreferrer">
+                                    <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer">
                                         <Linkedin className="h-4 w-4" />
                                         LinkedIn
                                     </a>
                                 </Button>
                             )}
-                            {portfolio?.twitter_url && (
+                            {portfolio?.social_links?.github && (
                                 <Button variant="outline" size="sm" className="rounded-xl gap-2" asChild>
-                                    <a href={portfolio.twitter_url} target="_blank" rel="noopener noreferrer">
+                                    <a href={portfolio.social_links.github} target="_blank" rel="noopener noreferrer">
+                                        <Github className="h-4 w-4" />
+                                        GitHub
+                                    </a>
+                                </Button>
+                            )}
+                            {portfolio?.social_links?.twitter && (
+                                <Button variant="outline" size="sm" className="rounded-xl gap-2" asChild>
+                                    <a href={portfolio.social_links.twitter} target="_blank" rel="noopener noreferrer">
                                         <Twitter className="h-4 w-4" />
                                         Twitter
                                     </a>
                                 </Button>
                             )}
-                            {portfolio?.website_url && (
+                            {portfolio?.social_links?.website && (
                                 <Button variant="outline" size="sm" className="rounded-xl gap-2" asChild>
-                                    <a href={portfolio.website_url} target="_blank" rel="noopener noreferrer">
+                                    <a href={portfolio.social_links.website} target="_blank" rel="noopener noreferrer">
                                         <ExternalLink className="h-4 w-4" />
                                         Website
                                     </a>
                                 </Button>
                             )}
                         </div>
+
                     </div>
                 </div>
             </section>

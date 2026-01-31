@@ -84,17 +84,26 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
         console.error("Failed to increment view count:", error);
     }
 
-    // 4. Select template based on portfolio setting
+    // 4. Filter to only featured items
+    const featuredProjectIds = portfolio.featured_projects || [];
+    const featuredResumes = (portfolio.featured_resumes || [])
+        .map((id: string) => resumes?.find((r) => r.id === id))
+        .filter(Boolean);
+    const featuredProjects = featuredProjectIds.length > 0
+        ? (projects || []).filter((p) => featuredProjectIds.includes(p.id))
+        : (projects || []).slice(0, 6); // Show first 6 if no featured selected
+
+    // 5. Select template based on portfolio setting
     const template = portfolio.template || "modern";
     const templateProps = {
         portfolio,
-        resumes: resumes || [],
-        projects: projects || [],
+        resumes: featuredResumes.length > 0 ? featuredResumes : (resumes || []),
+        projects: featuredProjects,
         profile: profile || { email: portfolio.user_id },
         testimonials: testimonials || [],
     };
 
-    // 5. Render the selected template
+    // 6. Render the selected template
     switch (template) {
         case "minimal":
             return <MinimalTemplate {...templateProps} />;
