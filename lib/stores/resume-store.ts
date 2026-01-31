@@ -174,6 +174,9 @@ interface ResumeState {
   // Save function
   saveAllChanges: () => Promise<void>;
 
+  // Data fetching
+  fetchResume: (id: string) => Promise<void>;
+
   // Versioning
   versions: ResumeVersion[];
   loadVersions: () => Promise<void>;
@@ -618,6 +621,107 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       .eq("id", state.resumeId);
 
     set({ hasChanges: false });
+  },
+
+  fetchResume: async (id: string) => {
+    const supabase = createClient();
+
+    const [
+      { data: profile },
+      { data: workExperiences },
+      { data: education },
+      { data: skills },
+      { data: projects },
+      { data: certifications },
+      { data: languages },
+      { data: resume },
+    ] = await Promise.all([
+      supabase.from("personal_info").select("*").eq("resume_id", id).single(),
+      supabase.from("work_experiences").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("education").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("skills").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("projects").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("certifications").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("languages").select("*").eq("resume_id", id).order("sort_order"),
+      supabase.from("resumes").select("*").eq("id", id).single(),
+    ]);
+
+    if (resume) {
+      set({
+        resumeId: id,
+        profile: profile ? {
+          id: profile.id,
+          full_name: profile.full_name,
+          email: profile.email,
+          phone: profile.phone,
+          location: profile.location,
+          linkedin_url: profile.linkedin,
+          website_url: profile.website,
+          github_url: profile.github,
+          summary: profile.summary,
+        } : null,
+        workExperiences: (workExperiences || []).map((e: any) => ({
+          id: e.id,
+          company: e.company,
+          position: e.position,
+          location: e.location,
+          start_date: e.start_date,
+          end_date: e.end_date,
+          is_current: e.is_current,
+          description: e.description,
+          highlights: e.highlights || [],
+          display_order: e.sort_order
+        })),
+        education: (education || []).map((e: any) => ({
+          id: e.id,
+          institution: e.institution,
+          degree: e.degree,
+          field_of_study: e.field_of_study,
+          location: e.location,
+          start_date: e.start_date,
+          end_date: e.end_date,
+          gpa: e.gpa,
+          highlights: e.highlights || [],
+          display_order: e.sort_order
+        })),
+        skills: (skills || []).map((e: any) => ({
+          id: e.id,
+          name: e.name,
+          category: e.category,
+          display_order: e.sort_order,
+          proficiency_level: e.proficiency_level
+        })),
+        projects: (projects || []).map((e: any) => ({
+          id: e.id,
+          name: e.name,
+          description: e.description,
+          technologies: e.technologies || [],
+          url: e.url,
+          highlights: e.highlights || [],
+          display_order: e.sort_order
+        })),
+        certifications: (certifications || []).map((e: any) => ({
+          id: e.id,
+          name: e.name,
+          issuer: e.issuer,
+          issue_date: e.issue_date,
+          expiry_date: e.expiry_date,
+          credential_id: e.credential_id,
+          credential_url: e.credential_url,
+          display_order: e.display_order
+        })),
+        languages: (languages || []).map((e: any) => ({
+          id: e.id,
+          language: e.language,
+          proficiency: e.proficiency,
+          display_order: e.sort_order
+        })),
+
+        slug: resume.slug,
+        is_public: resume.is_public,
+        hasChanges: false
+      });
+    }
   },
 
   loadVersions: async () => {
