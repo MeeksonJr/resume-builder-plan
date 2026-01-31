@@ -4,7 +4,12 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RichTextEditor } from "../rich-text-editor";
+import dynamic from "next/dynamic";
+
+const RichTextEditor = dynamic(() => import("../rich-text-editor").then(mod => mod.RichTextEditor), {
+  ssr: false,
+  loading: () => <div className="h-[150px] w-full animate-pulse rounded-md bg-muted/50" />
+});
 import {
   Card,
   CardContent,

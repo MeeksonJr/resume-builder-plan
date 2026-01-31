@@ -643,14 +643,14 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       { data: languages },
       { data: resume },
     ] = await Promise.all([
-      supabase.from("personal_info").select("*").eq("resume_id", id).maybeSingle(),
+      supabase.from("personal_info").select("id, full_name, email, phone, location, linkedin, website, github, summary").eq("resume_id", id).maybeSingle(),
       supabase.from("work_experiences").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("education").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("skills").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("projects").select("*").eq("resume_id", id).order("sort_order"),
       supabase.from("certifications").select("*").eq("resume_id", id).order("sort_order"),
-      supabase.from("languages").select("*").eq("resume_id", id).order("sort_order"),
-      supabase.from("resumes").select("*").eq("id", id).maybeSingle(),
+      supabase.from("languages").select("id, language, proficiency, sort_order").eq("resume_id", id).order("sort_order"),
+      supabase.from("resumes").select("id, title, template_id, is_public, slug, section_order, visual_config, language, is_rtl").eq("id", id).maybeSingle(),
     ]);
 
     if (resume) {

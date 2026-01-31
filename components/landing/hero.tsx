@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ArrowRight, FileText, Sparkles, Zap } from "lucide-react";
+import Image from "next/image";
 
 export function Hero() {
   return (
@@ -54,18 +55,14 @@ export function Hero() {
         <div className="relative mt-20 mx-auto max-w-5xl">
           <div className="rounded-xl border border-border/50 bg-background/50 p-2 shadow-2xl backdrop-blur-sm lg:p-4">
             <div className="aspect-[16/10] overflow-hidden rounded-lg border border-border bg-muted/20 relative">
-              {/* Abstract UI Representation */}
-              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20">
-                <div className="space-y-4 w-3/4 opacity-50">
-                  <div className="h-8 w-1/3 bg-current rounded-md" />
-                  <div className="h-4 w-full bg-current rounded-md" />
-                  <div className="h-4 w-5/6 bg-current rounded-md" />
-                  <div className="grid grid-cols-2 gap-4 pt-8">
-                    <div className="h-32 bg-current rounded-md" />
-                    <div className="h-32 bg-current rounded-md" />
-                  </div>
-                </div>
-              </div>
+              <Image
+                src="/images/hero-mockup.png"
+                alt="ResumeForge AI Mockup"
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+              />
             </div>
           </div>
           {/* Decorative Glow */}
