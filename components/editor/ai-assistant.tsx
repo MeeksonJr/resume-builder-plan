@@ -11,9 +11,18 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, X, Loader2, Check, RefreshCw } from "lucide-react";
-import { useResumeStore } from "@/lib/stores/resume-store";
+import { Sparkles, X, Loader2, Check, RefreshCw, Plus, ClipboardCopy, ArrowUpRight, ChevronDown } from "lucide-react";
+import { useResumeStore, WorkExperience } from "@/lib/stores/resume-store";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AIAssistantProps {
     onClose: () => void;
@@ -51,8 +60,39 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         certifications,
         languages,
         updateProfile,
-        addSkill
+        addSkill,
+        updateWorkExperience
     } = useResumeStore();
+
+    const handleApplySkill = (skillName: string) => {
+        const existingSkills = new Set(skills.map(s => s.name.toLowerCase()));
+        if (!existingSkills.has(skillName.toLowerCase())) {
+            addSkill({
+                name: skillName,
+                category: "Suggested",
+                proficiency_level: 3
+            });
+            toast.success(`Added "${skillName}" to skills`);
+        } else {
+            toast.info(`"${skillName}" is already in your skills`);
+        }
+    };
+
+    const handleApplyToExperience = (expId: string, text: string) => {
+        const exp = workExperiences.find(w => w.id === expId);
+        if (exp) {
+            // Append as a new highlight or replace description? 
+            // Let's offer a choice or default to appending to highlights if it's a short text
+            const newHighlights = [...exp.highlights, text];
+            updateWorkExperience(expId, { highlights: newHighlights });
+            toast.success("Added to experience highlights");
+        }
+    };
+
+    const handleReplaceSummary = (text: string) => {
+        updateProfile({ summary: text });
+        toast.success("Summary updated");
+    };
 
     // Construct resume data object for API
     const getResumeData = () => ({
@@ -376,8 +416,34 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                         toast.success("Copied to clipboard");
                                     }}
                                 >
-                                    <Check className="h-3 w-3" />
+                                    <ClipboardCopy className="h-3 w-3" />
                                 </Button>
+                                <div className="absolute top-2 right-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs gap-1">
+                                                Apply <ChevronDown className="h-3 w-3" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Apply to Section</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={() => handleReplaceSummary(improvedText)}>
+                                                Replace Summary
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Work Experience</DropdownMenuLabel>
+                                            {workExperiences.map(exp => (
+                                                <DropdownMenuItem
+                                                    key={exp.id}
+                                                    onClick={() => handleApplyToExperience(exp.id, improvedText)}
+                                                >
+                                                    Add to {exp.company}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
                         )}
                         <div className="flex gap-2">
@@ -464,9 +530,21 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                     </h4>
                                     <div className="flex flex-wrap gap-2">
                                         {keywordResults.missing.map((k, i) => (
-                                            <span key={i} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                                            <Badge
+                                                key={i}
+                                                variant="outline"
+                                                className="pr-1 py-1 gap-1 border-red-200 bg-red-50 text-red-700 dark:bg-red-900/10 dark:text-red-400 group/badge"
+                                            >
                                                 {k}
-                                            </span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-4 w-4 p-0 hover:bg-red-200 dark:hover:bg-red-800 rounded-full"
+                                                    onClick={() => handleApplySkill(k)}
+                                                >
+                                                    <Plus className="h-2 w-2" />
+                                                </Button>
+                                            </Badge>
                                         ))}
                                     </div>
                                 </div>
@@ -552,9 +630,21 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                         <h4 className="font-semibold mb-2">Missing Keywords</h4>
                                         <div className="flex flex-wrap gap-2">
                                             {atsResults.missingKeywords.map((keyword, i) => (
-                                                <span key={i} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full dark:bg-red-900/30 dark:text-red-300">
+                                                <Badge
+                                                    key={i}
+                                                    variant="outline"
+                                                    className="pr-1 py-1 gap-1 border-red-200 bg-red-50 text-red-700 dark:bg-red-900/10 dark:text-red-400"
+                                                >
                                                     {keyword}
-                                                </span>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-4 w-4 p-0 hover:bg-red-200 dark:hover:bg-red-800 rounded-full"
+                                                        onClick={() => handleApplySkill(keyword)}
+                                                    >
+                                                        <Plus className="h-2 w-2" />
+                                                    </Button>
+                                                </Badge>
                                             ))}
                                         </div>
                                     </div>
@@ -578,8 +668,17 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                         <Check className="h-4 w-4 text-green-500" />
                                         Improved Summary
                                     </h4>
-                                    <div className="text-sm bg-muted p-3 rounded-md">
+                                    <div className="text-sm bg-muted p-3 rounded-md relative group">
                                         {tailoringResults.improvedSummary}
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => handleReplaceSummary(tailoringResults!.improvedSummary)}
+                                            title="Apply to Summary"
+                                        >
+                                            <Check className="h-3 w-3 text-green-600" />
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -587,9 +686,21 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                     <h4 className="font-semibold mb-2">Missing Keywords</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {tailoringResults.keywordsToAdd.map((keyword, i) => (
-                                            <span key={i} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full dark:bg-purple-900/30 dark:text-purple-300">
+                                            <Badge
+                                                key={i}
+                                                variant="outline"
+                                                className="pr-1 py-1 gap-1 border-purple-200 bg-purple-50 text-purple-700 dark:bg-purple-900/10 dark:text-purple-400"
+                                            >
                                                 {keyword}
-                                            </span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-4 w-4 p-0 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full"
+                                                    onClick={() => handleApplySkill(keyword)}
+                                                >
+                                                    <Plus className="h-2 w-2" />
+                                                </Button>
+                                            </Badge>
                                         ))}
                                     </div>
                                 </div>

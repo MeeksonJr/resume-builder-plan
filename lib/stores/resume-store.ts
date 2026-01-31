@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createClient } from "@/lib/supabase/client";
 
-interface Profile {
+export interface Profile {
   id: string;
   full_name: string | null;
   email: string | null;
@@ -13,7 +13,7 @@ interface Profile {
   summary: string | null;
 }
 
-interface WorkExperience {
+export interface WorkExperience {
   id: string;
   company: string;
   position: string;
@@ -26,7 +26,7 @@ interface WorkExperience {
   display_order: number;
 }
 
-interface Education {
+export interface Education {
   id: string;
   institution: string;
   degree: string | null;
@@ -39,7 +39,7 @@ interface Education {
   display_order: number;
 }
 
-interface Skill {
+export interface Skill {
   id: string;
   name: string;
   category: string | null;
@@ -47,7 +47,7 @@ interface Skill {
   display_order: number;
 }
 
-interface Project {
+export interface Project {
   id: string;
   name: string;
   description: string | null;
@@ -57,7 +57,7 @@ interface Project {
   display_order: number;
 }
 
-interface Certification {
+export interface Certification {
   id: string;
   name: string;
   issuer: string | null;
@@ -68,7 +68,7 @@ interface Certification {
   display_order: number;
 }
 
-interface Language {
+export interface Language {
   id: string;
   language: string;
   proficiency: string;

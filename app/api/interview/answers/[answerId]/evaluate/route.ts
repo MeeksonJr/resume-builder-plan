@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { evaluateInterviewAnswer } from "@/lib/ai/interview-evaluator";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(
     request: NextRequest,
@@ -15,6 +16,13 @@ export async function POST(
         } = await supabase.auth.getSession();
         if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { allowed, remaining } = await checkRateLimit("ai_interview");
+        if (!allowed) {
+            return NextResponse.json({
+                error: "Daily AI limit reached. Please try again tomorrow."
+            }, { status: 429 });
         }
 
         const { answerId } = params;

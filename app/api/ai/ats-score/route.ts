@@ -7,14 +7,31 @@ const requestSchema = z.object({
     jobDescription: z.string().optional(),
 });
 
+import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+
 export async function POST(req: NextRequest) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const { resumeData, jobDescription } = requestSchema.parse(body);
 
+        const { allowed, remaining } = await checkRateLimit("ai_ats");
+        if (!allowed) {
+            return NextResponse.json({
+                error: "Daily AI limit reached. Please try again tomorrow."
+            }, { status: 429 });
+        }
+
         const result = await calculateATSScore(resumeData as unknown as ResumeData, jobDescription);
 
-        return NextResponse.json(result);
+        return NextResponse.json({ ...result, remaining });
     } catch (error) {
         console.error("ATS Score Error:", error);
 

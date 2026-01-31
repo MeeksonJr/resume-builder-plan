@@ -8,14 +8,32 @@ const requestSchema = z.object({
     context: z.string().optional(),
 });
 
+import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+
 export async function POST(req: NextRequest) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const { text, type, context } = requestSchema.parse(body);
 
+        // Rate Limit Check
+        const { allowed, remaining } = await checkRateLimit("ai_improve");
+        if (!allowed) {
+            return NextResponse.json({
+                error: "Daily AI limit reached. Please try again tomorrow."
+            }, { status: 429 });
+        }
+
         const improved = await improveText(text, type, context);
 
-        return NextResponse.json({ improved });
+        return NextResponse.json({ improved, remaining });
     } catch (error) {
         console.error("AI Improvement Error:", error);
 

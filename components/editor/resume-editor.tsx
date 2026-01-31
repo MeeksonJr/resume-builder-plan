@@ -430,60 +430,71 @@ export function ResumeEditor({
       </div>
 
       {/* Main Editor Area */}
-      <div className="flex-1 overflow-hidden">
-        {/* Mobile: Tabs for switching between editor and preview */}
-        <div className="flex h-full flex-col md:hidden">
-          <Tabs
-            defaultValue="edit"
-            className="flex h-full flex-col"
-          >
-            <TabsList className="mx-4 mt-4 grid w-auto grid-cols-2">
-              <TabsTrigger value="edit" className="min-h-[44px]">
-                Edit
-              </TabsTrigger>
-              <TabsTrigger value="preview" className="min-h-[44px]">
-                Preview
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="edit" className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto p-4">
-                <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
-              </div>
-            </TabsContent>
-            <TabsContent value="preview" className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto bg-muted/30 p-4">
-                <ResumePreview />
-              </div>
-            </TabsContent>
-          </Tabs>
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          {/* Mobile: Tabs for switching between editor and preview */}
+          <div className="flex h-full flex-col md:hidden">
+            <Tabs
+              defaultValue="edit"
+              className="flex h-full flex-col"
+            >
+              <TabsList className="mx-4 mt-4 grid w-auto grid-cols-2">
+                <TabsTrigger value="edit" className="min-h-[44px]">
+                  Edit
+                </TabsTrigger>
+                <TabsTrigger value="preview" className="min-h-[44px]">
+                  Preview
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="edit" className="flex-1 overflow-hidden">
+                <div className="h-full overflow-y-auto p-4">
+                  <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
+                </div>
+              </TabsContent>
+              <TabsContent value="preview" className="flex-1 overflow-hidden">
+                <div className="h-full overflow-y-auto bg-muted/30 p-4">
+                  <ResumePreview />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Desktop: Resizable panels */}
+          <div className="hidden h-full md:block">
+            <ResizablePanelGroup direction="horizontal">
+              <ResizablePanel defaultSize={showPreview ? 50 : 100} minSize={30}>
+                <div className="h-full overflow-y-auto p-4">
+                  <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
+                </div>
+              </ResizablePanel>
+              {showPreview && (
+                <>
+                  <ResizableHandle withHandle />
+                  <ResizablePanel defaultSize={50} minSize={30}>
+                    <div className="h-full overflow-y-auto bg-muted/30 p-4">
+                      <ResumePreview />
+                    </div>
+                  </ResizablePanel>
+                </>
+              )}
+            </ResizablePanelGroup>
+          </div>
         </div>
 
-        {/* Desktop: Resizable panels */}
-        <div className="hidden h-full md:block">
-          <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={showPreview ? 50 : 100} minSize={30}>
-              <div className="h-full overflow-y-auto p-4">
-                <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
-              </div>
-            </ResizablePanel>
-            {showPreview && (
-              <>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={50} minSize={30}>
-                  <div className="h-full overflow-y-auto bg-muted/30 p-4">
-                    <ResumePreview />
-                  </div>
-                </ResizablePanel>
-              </>
-            )}
-          </ResizablePanelGroup>
-        </div>
+        {/* AI Assistant Sidebar (Desktop) */}
+        {showAI && (
+          <div className="hidden border-l md:block">
+            <AIAssistant onClose={() => setShowAI(false)} />
+          </div>
+        )}
+
+        {/* AI Assistant Overlay (Mobile) */}
+        {showAI && (
+          <div className="fixed inset-0 z-50 bg-background md:hidden">
+            <AIAssistant onClose={() => setShowAI(false)} />
+          </div>
+        )}
       </div>
-
-      {/* AI Assistant Drawer */}
-      {showAI && (
-        <AIAssistant onClose={() => setShowAI(false)} />
-      )}
 
       {/* Hidden Print Preview */}
       <div className="hidden">

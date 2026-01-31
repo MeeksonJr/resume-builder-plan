@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { parseResumeText, type ResumeData } from "@/lib/ai";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 // Dynamic import for pdf-parse to avoid build issues
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
@@ -18,6 +19,14 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate Limit Check
+    const { allowed } = await checkRateLimit("ai_parse");
+    if (!allowed) {
+      return NextResponse.json({
+        error: "Daily resume import limit reached. Please try again tomorrow."
+      }, { status: 429 });
     }
 
     const formData = await request.formData();
