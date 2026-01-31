@@ -1,7 +1,10 @@
 import React from "react"
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { DashboardNav } from "@/components/dashboard/nav";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { TopNav } from "@/components/dashboard/top-nav";
+import { CommandMenu } from "@/components/dashboard/command-menu";
 
 export default async function DashboardLayout({
   children,
@@ -25,9 +28,17 @@ export default async function DashboardLayout({
     .single();
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNav user={user} profile={profile} />
-      <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar user={user} profile={profile} />
+      <SidebarInset className="bg-background/50">
+        <TopNav />
+        <CommandMenu />
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 lg:px-10">
+            {children}
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
