@@ -58,6 +58,7 @@
     "docx": "^9.5.1",
     "embla-carousel-react": "8.5.1",
     "file-saver": "^2.0.5",
+    "groq-sdk": "^0.37.0",
     "immer": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",

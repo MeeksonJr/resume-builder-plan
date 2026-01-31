@@ -4,19 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
     ChevronLeft,
     ChevronRight,
-    Send,
-    Loader2,
     ArrowLeft,
     CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AnswerFeedback } from "@/components/interview/answer-feedback";
+import { AnswerRecorder } from "@/components/interview/answer-recorder";
+import { EvaluationDisplay } from "@/components/interview/evaluation-display";
 
 interface PracticeInterfaceProps {
     session: any;
@@ -26,76 +24,31 @@ interface PracticeInterfaceProps {
 export function PracticeInterface({ session, questions }: PracticeInterfaceProps) {
     const router = useRouter();
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [answer, setAnswer] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [feedback, setFeedback] = useState<any>(null);
+    const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
+    const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
 
     const currentQuestion = questions[currentIndex];
     const progress = ((currentIndex + 1) / questions.length) * 100;
-    const answeredCount = questions.filter(q => q.user_answer).length;
+    const answeredCount = answeredQuestions.size;
 
-    const handleSubmitAnswer = async () => {
-        if (!answer.trim()) {
-            toast.error("Please write an answer before submitting");
-            return;
-        }
-
-        if (answer.trim().length < 50) {
-            toast.error("Your answer should be at least 50 characters");
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            const response = await fetch(
-                `/api/interview/questions/${currentQuestion.id}/evaluate`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ answer: answer.trim() }),
-                }
-            );
-
-            if (!response.ok) throw new Error("Failed to evaluate answer");
-
-            const feedbackData = await response.json();
-            setFeedback(feedbackData);
-
-            // Update the question in local state
-            questions[currentIndex] = {
-                ...currentQuestion,
-                user_answer: answer.trim(),
-                ai_feedback: feedbackData,
-            };
-
-            toast.success("Answer submitted successfully!");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to evaluate answer");
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleAnswerSubmitted = (answerId: string) => {
+        setCurrentAnswerId(answerId);
+        setAnsweredQuestions(prev => new Set(prev).add(currentIndex));
+        toast.success("Answer submitted successfully!");
     };
 
     const handleNext = () => {
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(currentIndex + 1);
-            setAnswer(questions[currentIndex + 1]?.user_answer || "");
-            setFeedback(questions[currentIndex + 1]?.ai_feedback || null);
+            setCurrentAnswerId(null);
         }
     };
 
     const handlePrevious = () => {
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
-            setAnswer(questions[currentIndex - 1]?.user_answer || "");
-            setFeedback(questions[currentIndex - 1]?.ai_feedback || null);
+            setCurrentAnswerId(null);
         }
-    };
-
-    const handleTryAgain = () => {
-        setAnswer("");
-        setFeedback(null);
     };
 
     const getQuestionTypeColor = (type: string) => {
@@ -195,47 +148,35 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {!feedback ? (
-                        <>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Your Answer</label>
-                                <Textarea
-                                    value={answer}
-                                    onChange={(e) => setAnswer(e.target.value)}
-                                    placeholder="Type your answer here... Consider using the STAR framework (Situation, Task, Action, Result) for behavioral questions."
-                                    className="min-h-[200px] resize-none"
-                                    disabled={isSubmitting}
-                                />
-                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    <span>{answer.length} characters</span>
-                                    <span>Minimum 50 characters</span>
-                                </div>
+                    {!currentAnswerId ? (
+                        <div className="space-y-4">
+                            <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <p className="text-sm text-blue-800 dark:text-blue-200">
+                                    <strong>Tip:</strong> Consider using the STAR framework (Situation, Task, Action, Result) for behavioral questions.
+                                </p>
                             </div>
 
-                            <Button
-                                onClick={handleSubmitAnswer}
-                                disabled={isSubmitting || answer.trim().length < 50}
-                                className="w-full gap-2"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        Evaluating Answer...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="h-4 w-4" />
-                                        Submit Answer
-                                    </>
-                                )}
-                            </Button>
-                        </>
+                            <AnswerRecorder
+                                questionId={currentQuestion.id}
+                                sessionId={session.id}
+                                onAnswerSubmitted={handleAnswerSubmitted}
+                            />
+                        </div>
                     ) : (
-                        <AnswerFeedback
-                            feedback={feedback}
-                            answer={answer}
-                            onTryAgain={handleTryAgain}
-                        />
+                        <div className="space-y-4">
+                            <EvaluationDisplay
+                                answerId={currentAnswerId}
+                                autoEvaluate={true}
+                            />
+
+                            <Button
+                                variant="outline"
+                                onClick={() => setCurrentAnswerId(null)}
+                                className="w-full"
+                            >
+                                Try Different Answer
+                            </Button>
+                        </div>
                     )}
 
                     {/* Navigation */}
