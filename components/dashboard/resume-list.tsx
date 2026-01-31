@@ -21,7 +21,20 @@ import {
   Trash2,
   Plus,
   Upload,
+  Star,
+  Pencil
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -41,6 +54,57 @@ interface ResumeListProps {
 
 export function ResumeList({ resumes }: ResumeListProps) {
   const router = useRouter();
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  const handleSetPrimary = async (id: string, currentPrimary: boolean) => {
+    if (currentPrimary) return;
+
+    const supabase = createClient();
+
+    // Unset all
+    // Since we have RLS, this only updates user's resumes
+    await supabase.from("resumes").update({ is_primary: false }).eq("is_primary", true);
+
+    // Set new primary
+    const { error } = await supabase.from("resumes").update({ is_primary: true }).eq("id", id);
+
+    if (error) {
+      toast.error("Failed to set primary resume");
+      return;
+    }
+
+    toast.success("Primary resume updated");
+    router.refresh();
+  };
+
+  const startRename = (resume: Resume) => {
+    setRenameId(resume.id);
+    setNewTitle(resume.title);
+  };
+
+  const handleRename = async () => {
+    if (!renameId || !newTitle.trim()) return;
+
+    setIsRenaming(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("resumes")
+      .update({ title: newTitle.trim(), updated_at: new Date().toISOString() })
+      .eq("id", renameId);
+
+    setIsRenaming(false);
+
+    if (error) {
+      toast.error("Failed to rename resume");
+      return;
+    }
+
+    toast.success("Resume renamed");
+    setRenameId(null);
+    router.refresh();
+  };
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
@@ -147,6 +211,14 @@ export function ResumeList({ resumes }: ResumeListProps) {
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => startRename(resume)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSetPrimary(resume.id, resume.is_primary)}>
+                    <Star className="mr-2 h-4 w-4" />
+                    Set as Primary
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleDuplicate(resume)}>
                     <Copy className="mr-2 h-4 w-4" />
                     Duplicate
@@ -183,6 +255,37 @@ export function ResumeList({ resumes }: ResumeListProps) {
           </Card>
         ))}
       </div>
-    </div>
+
+
+      <Dialog open={!!renameId} onOpenChange={(open) => !open && setRenameId(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Rename Resume</DialogTitle>
+            <DialogDescription>
+              Enter a new name for your resume.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameId(null)}>Cancel</Button>
+            <Button onClick={handleRename} disabled={isRenaming}>
+              {isRenaming ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

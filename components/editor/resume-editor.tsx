@@ -28,6 +28,7 @@ import { CertificationsForm } from "./sections/certifications-form";
 import { LanguagesForm } from "./sections/languages-form";
 import { ResumePreview } from "./resume-preview";
 import { AIAssistant } from "./ai-assistant";
+import { ShareDialog } from "./share-dialog";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -37,6 +38,8 @@ interface Resume {
   title: string;
   template_id: string | null;
   is_primary: boolean;
+  slug: string | null;
+  is_public: boolean;
 }
 
 interface Profile {
@@ -149,6 +152,8 @@ export function ResumeEditor({
     setCertifications,
     setLanguages,
     setTemplate,
+    setIsPublic,
+    setSlug,
     template,
     hasChanges,
     saveAllChanges,
@@ -158,6 +163,8 @@ export function ResumeEditor({
   useEffect(() => {
     setResumeId(resume.id);
     setTemplate(resume.template_id || "modern");
+    setIsPublic(resume.is_public || false);
+    setSlug(resume.slug || "");
     if (profile) setProfile(profile);
 
     // Map DB sort_order to store display_order
@@ -185,7 +192,11 @@ export function ResumeEditor({
     setCertifications,
     setLanguages,
     setTemplate,
+    setIsPublic,
+    setSlug,
     resume.template_id,
+    resume.is_public,
+    resume.slug,
   ]);
 
   const handleSave = async () => {
@@ -227,6 +238,7 @@ export function ResumeEditor({
         </div>
 
         <div className="flex items-center gap-2">
+          <ShareDialog />
           <Button
             variant="outline"
             size="sm"

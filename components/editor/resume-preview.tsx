@@ -3,16 +3,34 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { ModernTemplate } from "./templates/modern-template";
 import { MinimalTemplate } from "./templates/minimal-template";
 
-export const ResumePreview = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>((props, ref) => {
-    const { template } = useResumeStore();
+interface ResumePreviewProps extends React.HTMLAttributes<HTMLDivElement> {
+    data?: {
+        resume: any;
+        profile: any;
+        workExperiences: any[];
+        education: any[];
+        skills: any[];
+        projects: any[];
+        certifications: any[];
+        languages: any[];
+    };
+    readOnly?: boolean;
+}
+
+export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((props, ref) => {
+    const { template: storeTemplate } = useResumeStore();
+    const { data } = props;
+
+    // If data is provided, use the template from data.resume, otherwise use store template
+    const template = data?.resume?.template || storeTemplate;
 
     const renderTemplate = () => {
         switch (template) {
             case "minimal":
-                return <MinimalTemplate />;
+                return <MinimalTemplate data={data} />;
             case "modern":
             default:
-                return <ModernTemplate />;
+                return <ModernTemplate data={data} />;
         }
     };
 

@@ -85,6 +85,8 @@ interface ResumeState {
   certifications: Certification[];
   languages: Language[];
   template: string;
+  slug: string | null;
+  is_public: boolean;
   hasChanges: boolean;
 
   // Setters
@@ -97,6 +99,8 @@ interface ResumeState {
   setCertifications: (certifications: Certification[]) => void;
   setLanguages: (languages: Language[]) => void;
   setTemplate: (template: string) => void;
+  setIsPublic: (isPublic: boolean) => void;
+  setSlug: (slug: string) => void;
 
   // Update functions
   updateProfile: (updates: Partial<Profile>) => void;
@@ -133,6 +137,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   certifications: [],
   languages: [],
   template: "modern",
+  slug: null,
+  is_public: false,
   hasChanges: false,
 
   setResumeId: (id) => set({ resumeId: id }),
@@ -144,6 +150,8 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   setCertifications: (certifications) => set({ certifications }),
   setLanguages: (languages) => set({ languages }),
   setTemplate: (template) => set({ template, hasChanges: true }),
+  setIsPublic: (isPublic) => set({ is_public: isPublic, hasChanges: true }),
+  setSlug: (slug) => set({ slug, hasChanges: true }),
 
   updateProfile: (updates) =>
     set((state) => ({
@@ -531,7 +539,9 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       .from("resumes")
       .update({
         updated_at: new Date().toISOString(),
-        template: state.template
+        template: state.template,
+        slug: state.slug,
+        is_public: state.is_public
       })
       .eq("id", state.resumeId);
 

@@ -2,7 +2,21 @@ import React from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { Mail, Phone, MapPin, Linkedin, Link as LinkIcon, Github } from "lucide-react";
 
-export const ModernTemplate = () => {
+interface TemplateProps {
+    data?: {
+        profile: any;
+        workExperiences: any[];
+        education: any[];
+        skills: any[];
+        projects: any[];
+        certifications: any[];
+        languages: any[];
+    };
+}
+
+export const ModernTemplate = ({ data }: TemplateProps) => {
+    const store = useResumeStore();
+
     const {
         profile,
         workExperiences,
@@ -11,7 +25,7 @@ export const ModernTemplate = () => {
         projects,
         certifications,
         languages,
-    } = useResumeStore();
+    } = data || store;
 
     if (!profile) return null;
 

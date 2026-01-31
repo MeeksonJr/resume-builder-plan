@@ -1,7 +1,21 @@
 import React from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 
-export const MinimalTemplate = () => {
+interface TemplateProps {
+    data?: {
+        profile: any;
+        workExperiences: any[];
+        education: any[];
+        skills: any[];
+        projects: any[];
+        certifications: any[];
+        languages: any[];
+    };
+}
+
+export const MinimalTemplate = ({ data }: TemplateProps) => {
+    const store = useResumeStore();
+
     const {
         profile,
         workExperiences,
@@ -10,7 +24,7 @@ export const MinimalTemplate = () => {
         projects,
         certifications,
         languages,
-    } = useResumeStore();
+    } = data || store;
 
     if (!profile) return null;
 
