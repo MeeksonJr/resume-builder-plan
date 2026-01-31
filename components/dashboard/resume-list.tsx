@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   FileText,
@@ -58,6 +59,7 @@ interface Resume {
   template_id: string | null;
   is_primary: boolean;
   view_count: number;
+  is_archived: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -311,105 +313,210 @@ export function ResumeList({ resumes }: ResumeListProps) {
         </Button>
       </div>
 
-      {/* Resume grid */}
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="all" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Active Resumes
+          </TabsTrigger>
+          <TabsTrigger value="archived" className="flex items-center gap-2">
+            <Archive className="h-4 w-4" />
+            Archived
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="mt-0">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {resumes.filter(r => !r.is_archived).length > 0 ? (
+              resumes.filter(r => !r.is_archived).map((resume) => (
+                <Card
+                  key={resume.id}
+                  className="group transition-all hover:border-primary/30 hover:shadow-md"
+                >
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="truncate text-base">
+                          {resume.title}
+                        </CardTitle>
+                        {resume.is_primary && (
+                          <Badge variant="secondary" className="mt-1 text-xs">
+                            Primary
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/resume/${resume.id}`}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDownloadWord(resume)}>
+                          <FileDown className="mr-2 h-4 w-4" />
+                          Download Word
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicate(resume)}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => startRename(resume)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSetPrimary(resume.id, resume.is_primary)}>
+                          <Star className="mr-2 h-4 w-4" />
+                          Set as Primary
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          setArchiveId(resume.id);
+                          setIsArchiveDialogOpen(true);
+                        }}>
+                          <Archive className="mr-2 h-4 w-4" />
+                          Archive
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => {
+                            setDeleteId(resume.id);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-muted-foreground">
+                        Updated{" "}
+                        {formatDistanceToNow(new Date(resume.updated_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Eye className="h-3 w-3" />
+                        <span>{resume.view_count || 0}</span>
+                      </div>
+                    </div>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="mt-3 w-full min-h-[44px]"
+                    >
+                      <Link href={`/dashboard/resume/${resume.id}`}>
+                        Open Editor
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                <h3 className="text-lg font-medium">No active resumes</h3>
+                <p className="text-sm">Create a new resume to get started.</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="archived" className="mt-0">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {resumes.filter(r => r.is_archived).length > 0 ? (
+              resumes.filter(r => r.is_archived).map((resume) => (
+                <Card
+                  key={resume.id}
+                  className="group transition-all hover:border-primary/30 hover:shadow-md bg-muted/40"
+                >
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                        <Archive className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="truncate text-base text-muted-foreground">
+                          {resume.title}
+                        </CardTitle>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={async () => {
+                          const supabase = createClient();
+                          await supabase.from("resumes").update({ is_archived: false }).eq("id", resume.id);
+                          router.refresh();
+                          toast.success("Resume restored");
+                        }}>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Restore
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => {
+                            setDeleteId(resume.id);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Permanently
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-muted-foreground">
+                        Updated{" "}
+                        {formatDistanceToNow(new Date(resume.updated_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+                <Archive className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                <h3 className="text-lg font-medium">No archived resumes</h3>
+                <p className="text-sm">Archived resumes will appear here.</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Resume grid handled in ResumeList with tabs now */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {resumes.map((resume) => (
-          <Card
-            key={resume.id}
-            className="group transition-all hover:border-primary/30 hover:shadow-md"
-          >
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="truncate text-base">
-                    {resume.title}
-                  </CardTitle>
-                  {resume.is_primary && (
-                    <Badge variant="secondary" className="mt-1 text-xs">
-                      Primary
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/resume/${resume.id}`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleDownloadWord(resume)}>
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Download Word
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => startRename(resume)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Rename
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSetPrimary(resume.id, resume.is_primary)}>
-                    <Star className="mr-2 h-4 w-4" />
-                    Set as Primary
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    setArchiveId(resume.id);
-                    setIsArchiveDialogOpen(true);
-                  }}>
-                    <Archive className="mr-2 h-4 w-4" />
-                    Archive
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => {
-                      setDeleteId(resume.id);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-muted-foreground">
-                  Updated{" "}
-                  {formatDistanceToNow(new Date(resume.updated_at), {
-                    addSuffix: true,
-                  })}
-                </p>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Eye className="h-3 w-3" />
-                  <span>{resume.view_count || 0}</span>
-                </div>
-              </div>
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="mt-3 w-full min-h-[44px]"
-              >
-                <Link href={`/dashboard/resume/${resume.id}`}>
-                  Open Editor
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+        {/* ... */}
       </div>
 
 

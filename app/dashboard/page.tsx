@@ -15,7 +15,6 @@ export default async function DashboardPage() {
     .from("resumes")
     .select("*")
     .eq("user_id", user.id)
-    .eq("is_archived", false)
     .order("updated_at", { ascending: false });
 
   // Fetch recent events (last 30 days)
