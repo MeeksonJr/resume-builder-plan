@@ -15,9 +15,10 @@ import Link from "next/link";
 export default async function PortfoliosDirectoryPage({
     searchParams
 }: {
-    searchParams: { q?: string; status?: string }
+    searchParams: Promise<{ q?: string; status?: string }>
 }) {
     const supabase = await createClient();
+    const { q, status } = await searchParams;
 
     // 1. Fetch public portfolios
     let query = supabase
@@ -28,11 +29,11 @@ export default async function PortfoliosDirectoryPage({
         `)
         .eq("is_public", true);
 
-    if (searchParams.q) {
-        query = query.or(`full_name.ilike.%${searchParams.q}%,bio.ilike.%${searchParams.q}%`);
+    if (q) {
+        query = query.or(`full_name.ilike.%${q}%,bio.ilike.%${q}%`);
     }
 
-    if (searchParams.status === "open") {
+    if (status === "open") {
         query = query.eq("open_to_work", true);
     }
 
@@ -57,14 +58,14 @@ export default async function PortfoliosDirectoryPage({
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 name="q"
-                                defaultValue={searchParams.q}
+                                defaultValue={q}
                                 placeholder="Search by name, role, or skills..."
                                 className="pl-10 h-12 rounded-xl"
                             />
                         </form>
                         <div className="flex gap-2">
-                            <Button variant={searchParams.status === "open" ? "default" : "outline"} className="h-12 rounded-xl" asChild>
-                                <a href={`/portfolios${searchParams.status === "open" ? "" : "?status=open"}${searchParams.q ? `&q=${searchParams.q}` : ""}`}>
+                            <Button variant={status === "open" ? "default" : "outline"} className="h-12 rounded-xl" asChild>
+                                <a href={`/portfolios${status === "open" ? "" : "?status=open"}${q ? `&q=${q}` : ""}`}>
                                     Open to Work
                                 </a>
                             </Button>

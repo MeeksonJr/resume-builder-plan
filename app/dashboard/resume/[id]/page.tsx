@@ -24,7 +24,7 @@ export default async function ResumePage({ params }: ResumePageProps) {
     .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!resume) {
     notFound();
@@ -35,14 +35,14 @@ export default async function ResumePage({ params }: ResumePageProps) {
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   // Fetch personal_info
   const { data: personalInfo } = await supabase
     .from("personal_info")
     .select("*")
     .eq("resume_id", id)
-    .single();
+    .maybeSingle();
 
   // Fetch work experiences
   const { data: workExperiences } = await supabase

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PublicResumePageProps): Promi
         .select("title, user:profiles(full_name)")
         .eq("slug", slug)
         .eq("is_public", true)
-        .single();
+        .maybeSingle();
 
     if (!resume) {
         return {
@@ -52,7 +52,7 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
         .select("*")
         .eq("slug", slug)
         .eq("is_public", true)
-        .single();
+        .maybeSingle();
 
     if (!resume) {
         notFound();
@@ -93,8 +93,8 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
         { data: certifications },
         { data: languages },
     ] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", resume.user_id).single(),
-        supabase.from("personal_info").select("*").eq("resume_id", resumeId).single(),
+        supabase.from("profiles").select("*").eq("id", resume.user_id).maybeSingle(),
+        supabase.from("personal_info").select("*").eq("resume_id", resumeId).maybeSingle(),
         supabase.from("work_experiences").select("*").eq("resume_id", resumeId).order("sort_order"),
         supabase.from("education").select("*").eq("resume_id", resumeId).order("sort_order"),
         supabase.from("skills").select("*").eq("resume_id", resumeId).order("sort_order"),

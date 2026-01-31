@@ -35,7 +35,7 @@ export async function createResumeSnapshot(resumeId: string): Promise<ResumeSnap
         { data: certifications },
         { data: languages },
     ] = await Promise.all([
-        supabase.from("personal_info").select("*").eq("resume_id", resumeId).single(),
+        supabase.from("personal_info").select("*").eq("resume_id", resumeId).maybeSingle(),
         supabase.from("work_experiences").select("*").eq("resume_id", resumeId).order("sort_order"),
         supabase.from("education").select("*").eq("resume_id", resumeId).order("sort_order"),
         supabase.from("skills").select("*").eq("resume_id", resumeId).order("sort_order"),
@@ -70,7 +70,7 @@ export async function saveResumeVersion(
         .from("resumes")
         .select("title, template")
         .eq("id", resumeId)
-        .single();
+        .maybeSingle();
 
     if (!resume) return null;
 
@@ -79,8 +79,7 @@ export async function saveResumeVersion(
 
     // Get next version number
     const { data: versionNumber } = await supabase
-        .rpc("get_next_version_number", { p_resume_id: resumeId })
-        .single();
+        .rpc("get_next_version_number", { p_resume_id: resumeId });
 
     // Save version
     const { data: version, error } = await supabase
