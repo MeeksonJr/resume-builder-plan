@@ -92,6 +92,9 @@ const DEFAULT_VISUAL_CONFIG: VisualConfig = {
 export interface ResumeVersion {
   id: string;
   created_at: string;
+  version_number: number;
+  title: string;
+  change_summary?: string;
   content: {
     profile: Profile | null;
     workExperiences: WorkExperience[];
@@ -101,7 +104,13 @@ export interface ResumeVersion {
     certifications: Certification[];
     languages: Language[];
     visualConfig?: VisualConfig;
+
     summary: string | null;
+  };
+  metrics?: {
+    applications_sent: number;
+    interviews_received: number;
+    offers_received: number;
   };
 }
 
@@ -168,7 +177,7 @@ interface ResumeState {
   // Versioning
   versions: ResumeVersion[];
   loadVersions: () => Promise<void>;
-  saveVersion: () => Promise<void>;
+  saveVersion: (title: string, summary?: string) => Promise<void>;
   restoreVersion: (version: ResumeVersion) => void;
 }
 
@@ -618,7 +627,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
     const supabase = createClient();
     const { data, error } = await supabase
       .from("resume_versions")
-      .select("*")
+      .select("*, version_metrics(applications_sent, interviews_received, offers_received)")
       .eq("resume_id", state.resumeId)
       .order("created_at", { ascending: false });
 
@@ -627,10 +636,20 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       return;
     }
 
-    set({ versions: data || [] });
+    set({
+      versions: (data || []).map((v: any) => ({
+        id: v.id,
+        created_at: v.created_at,
+        version_number: v.version_number,
+        title: v.title,
+        change_summary: v.change_summary,
+        content: v.snapshot_data,
+        metrics: Array.isArray(v.version_metrics) ? v.version_metrics[0] : v.version_metrics
+      }))
+    });
   },
 
-  saveVersion: async () => {
+  saveVersion: async (title: string, summary?: string) => {
     const state = get();
     if (!state.resumeId) return;
 
@@ -646,11 +665,25 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
     };
 
     const supabase = createClient();
+
+    // Get next version number
+    const { data: nextVersion, error: versionError } = await supabase
+      .rpc('get_next_version_number', { p_resume_id: state.resumeId });
+
+    if (versionError) {
+      console.error("Error getting next version number:", versionError);
+      throw versionError;
+    }
+
     const { error } = await supabase
       .from("resume_versions")
       .insert({
         resume_id: state.resumeId,
-        content,
+        version_number: nextVersion,
+        title,
+        change_summary: summary,
+        snapshot_data: content,
+        created_by: (await supabase.auth.getUser()).data.user?.id
       });
 
     if (error) {

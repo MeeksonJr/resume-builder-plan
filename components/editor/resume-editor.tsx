@@ -20,7 +20,12 @@ import {
   Sparkles,
   Settings,
   FileDown,
+  History,
+  GitCommit,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { SaveVersionDialog } from "@/components/dashboard/resume/save-version-dialog";
+import { VersionHistory } from "@/components/dashboard/resume/version-history";
 import { PersonalInfoForm } from "@/components/editor/sections/personal-info-form";
 import { WorkExperienceForm } from "@/components/editor/sections/work-experience-form";
 import { EducationForm } from "@/components/editor/sections/education-form";
@@ -31,7 +36,8 @@ import { LanguagesForm } from "@/components/editor/sections/languages-form";
 import { ResumePreview } from "@/components/editor/resume-preview";
 import { AIAssistant } from "@/components/editor/ai-assistant";
 import { ShareDialog } from "@/components/editor/share-dialog";
-import { VersionHistory } from "@/components/editor/version-history";
+
+// import { VersionHistory } from "@/components/editor/version-history"; // Removed generic import
 import { SectionReorder } from "@/components/editor/section-reorder";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
@@ -151,6 +157,8 @@ export function ResumeEditor({
   const [showAI, setShowAI] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
   const [isSaving, setIsSaving] = useState(false);
+  const [showVersionDialog, setShowVersionDialog] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const {
     setResumeId,
@@ -292,7 +300,37 @@ export function ResumeEditor({
         <div className="flex items-center gap-2">
           <VisualCustomizer />
           <SectionReorder />
-          <VersionHistory />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden min-h-[44px] gap-2 bg-transparent text-muted-foreground hover:text-foreground sm:flex"
+            onClick={() => setShowVersionDialog(true)}
+            title="Create Checkpoint"
+          >
+            <GitCommit className="h-4 w-4" />
+          </Button>
+
+          <Sheet open={showHistory} onOpenChange={setShowHistory}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden min-h-[44px] gap-2 bg-transparent text-muted-foreground hover:text-foreground sm:flex"
+                title="Version History"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Version History</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 h-[calc(100vh-100px)]">
+                <VersionHistory />
+              </div>
+            </SheetContent>
+          </Sheet>
+
           <ShareDialog />
           <Button
             variant="outline"
@@ -420,6 +458,11 @@ export function ResumeEditor({
       <div className="hidden">
         <ResumePreview ref={printRef} />
       </div>
+
+      <SaveVersionDialog
+        open={showVersionDialog}
+        onOpenChange={setShowVersionDialog}
+      />
     </div>
   );
 }
