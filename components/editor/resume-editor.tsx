@@ -36,6 +36,17 @@ import { LanguagesForm } from "@/components/editor/sections/languages-form";
 import { ResumePreview } from "@/components/editor/resume-preview";
 import { AIAssistant } from "@/components/editor/ai-assistant";
 import { ShareDialog } from "@/components/editor/share-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FileJson, FileText, FileCode, Printer, ChevronDown } from "lucide-react";
+import { exportToJSON } from "@/lib/export/json-export";
+import { exportToTxt } from "@/lib/export/txt-export";
 
 // import { VersionHistory } from "@/components/editor/version-history"; // Removed generic import
 import { SectionReorder } from "@/components/editor/section-reorder";
@@ -310,6 +321,47 @@ export function ResumeEditor({
     }
   };
 
+  const handleDownloadJSON = async () => {
+    const store = useResumeStore.getState();
+    const loadingToast = toast.loading("Generating JSON file...");
+    try {
+      exportToJSON({
+        profile: store.profile,
+        workExperiences: store.workExperiences,
+        education: store.education,
+        skills: store.skills,
+        projects: store.projects,
+        certifications: store.certifications,
+        languages: store.languages,
+      });
+      toast.success("JSON exported", { id: loadingToast });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export JSON", { id: loadingToast });
+    }
+  };
+
+  const handleDownloadTxt = async () => {
+    const store = useResumeStore.getState();
+    const loadingToast = toast.loading("Generating Text file...");
+    try {
+      exportToTxt({
+        profile: store.profile,
+        workExperiences: store.workExperiences,
+        education: store.education,
+        skills: store.skills,
+        projects: store.projects,
+        certifications: store.certifications,
+        languages: store.languages,
+        sectionOrder: store.sectionOrder,
+      });
+      toast.success("Text file exported", { id: loadingToast });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export Text file", { id: loadingToast });
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col">
       {/* Editor Header */}
@@ -409,23 +461,36 @@ export function ResumeEditor({
             <option value="minimal">Minimal</option>
             <option value="classic">Classic</option>
           </select>
-          <Button
-            size="sm"
-            onClick={handleDownloadPDF}
-            className="min-h-[44px] gap-2"
-          >
-            <Download className="h-4 w-4" />
-            <span className="hidden lg:inline text-xs">PDF</span>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleDownloadWord}
-            className="min-h-[44px] gap-2 bg-transparent"
-          >
-            <FileDown className="h-4 w-4" />
-            <span className="hidden lg:inline text-xs">Word</span>
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="min-h-[44px] gap-2">
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Export Resume</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleDownloadPDF} className="gap-2 cursor-pointer">
+                <Printer className="h-4 w-4" />
+                <span>PDF (Best for sharing)</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownloadWord} className="gap-2 cursor-pointer">
+                <FileDown className="h-4 w-4" />
+                <span>Word (.docx)</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownloadTxt} className="gap-2 cursor-pointer">
+                <FileText className="h-4 w-4" />
+                <span>Plain Text (.txt)</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownloadJSON} className="gap-2 cursor-pointer">
+                <FileCode className="h-4 w-4" />
+                <span>JSON Standard</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
