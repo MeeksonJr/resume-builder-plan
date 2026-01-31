@@ -174,62 +174,6 @@ Extract all personal information, work experience, education, skills, projects, 
   return result.object;
 }
 
-// Generate interview questions based on resume and job description
-export async function generateInterviewQuestions(
-  resumeData: ResumeData,
-  jobDescription: string
-): Promise<{
-  questions: {
-    question: string;
-    type: "behavioral" | "technical" | "situational";
-    star_guidance: string;
-    sample_answer_points: string[];
-  }[];
-}> {
-  try {
-    const result = await withFallback(async (model) => {
-      return generateObject({
-        model,
-        schema: z.object({
-          questions: z.array(
-            z.object({
-              question: z.string(),
-              type: z.enum(["behavioral", "technical", "situational"]),
-              star_guidance: z.string().describe("Specific points to highlight using the STAR method (Situation, Task, Action, Result)"),
-              sample_answer_points: z.array(z.string()).describe("Key talking points for a strong answer based on the resume content"),
-            })
-          ).min(5).max(10),
-        }),
-        prompt: `Act as an expert interviewer. Based on the candidate's resume and the job description, generate 5-10 tailored interview questions.
-        
-        Resume:
-        ${JSON.stringify(resumeData, null, 2)}
-        
-        Job Description:
-        ${jobDescription}
-        
-        For each question, provide guidance on how to use the STAR method to answer it effectively, drawing from the specific experiences in the candidate's resume.`,
-      });
-    });
-
-    return result.object;
-  } catch (error: any) {
-    console.warn("[AI] Interview prep failed:", error.message);
-    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
-      return {
-        questions: [
-          {
-            question: "[MOCK] Tell me about a time you led a challenging project.",
-            type: "behavioral",
-            star_guidance: "Situation: Choose a project from your work experience. Task: What was the goal? Action: What did YOU do? Result: What was the impact?",
-            sample_answer_points: ["Mention your React project", "Highlight your leadership role"],
-          }
-        ]
-      };
-    }
-    throw error;
-  }
-}
 
 // Improve a bullet point or description
 export async function improveText(
@@ -981,6 +925,223 @@ export async function analyzeResumeQuality(
           "[MOCK] Quantify your top 3 achievements with specific metrics",
           "[MOCK] Add a professional summary at the top (2-3 sentences)",
         ],
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Generate personalized interview questions based on resume and target role
+ */
+export async function generateInterviewQuestions(
+  resumeData: ResumeData,
+  targetRole: string,
+  difficulty: "junior" | "mid" | "senior"
+): Promise<{
+  questions: {
+    type: "behavioral" | "technical" | "situational";
+    question: string;
+  }[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          questions: z.array(z.object({
+            type: z.enum(["behavioral", "technical", "situational"]),
+            question: z.string(),
+          })),
+        }),
+        prompt: `You are an expert technical interviewer. Generate 12 personalized interview questions for a ${targetRole} position at the ${difficulty} level.
+
+        Candidate's Resume:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Target Role: ${targetRole}
+        Experience Level: ${difficulty}
+        
+        Generate questions across three categories:
+        
+        1. **Behavioral Questions (30%)** - Focus on past experiences
+           - Ask about specific projects/roles mentioned in their resume
+           - Use "Tell me about a time when..." format
+           - Focus on teamwork, leadership, conflict resolution
+           ${difficulty === "senior" ? "- Include questions about mentoring and strategic decision-making" : ""}
+        
+        2. **Technical Questions (40%)** - Role-specific knowledge
+           - Reference technologies and skills from their resume
+           - Adjust complexity based on experience level
+           ${difficulty === "junior" ? "- Focus on fundamentals and core concepts" : ""}
+           ${difficulty === "mid" ? "- Include system design and best practices" : ""}
+           ${difficulty === "senior" ? "- Include architecture decisions and scaling challenges" : ""}
+        
+        3. **Situational Questions (30%)** - Hypothetical scenarios
+           - Present realistic challenges for the target role
+           - Test problem-solving and decision-making
+           - Align with the candidate's experience level
+        
+        Important:
+        - Make questions specific to their background (e.g., "I see you worked on [project], tell me about...")
+        - Ensure difficulty matches the ${difficulty} level
+        - Mix easy, medium, and hard questions
+        - Questions should be concise but clear
+        - Total: 12 questions`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Interview question generation failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      // Return mock questions as fallback
+      return {
+        questions: [
+          { type: "behavioral", question: "[MOCK] Tell me about a time when you faced a significant technical challenge. How did you approach it?" },
+          { type: "technical", question: "[MOCK] How would you design a scalable system for handling 1 million concurrent users?" },
+          { type: "situational", question: "[MOCK] If you discovered a critical bug in production just before a major release, what would you do?" },
+          { type: "behavioral", question: "[MOCK] Describe a situation where you had to work with a difficult team member. How did you handle it?" },
+          { type: "technical", question: "[MOCK] Explain the difference between synchronous and asynchronous programming. When would you use each?" },
+          { type: "situational", question: "[MOCK] How would you prioritize tasks if you had three urgent deadlines on the same day?" },
+          { type: "behavioral", question: "[MOCK] Tell me about a project you're most proud of. What was your role and what did you achieve?" },
+          { type: "technical", question: "[MOCK] What strategies do you use to ensure code quality and maintainability?" },
+          { type: "situational", question: "[MOCK] If a stakeholder requested a feature that you believed would negatively impact the product, how would you handle it?" },
+          { type: "behavioral", question: "[MOCK] Describe a time when you had to learn a new technology quickly. How did you approach it?" },
+          { type: "technical", question: "[MOCK] How do you approach debugging a complex issue in a large codebase?" },
+          { type: "situational", question: "[MOCK] If you joined a team with poor documentation and no onboarding process, what would be your first steps?" },
+        ],
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Evaluate interview answer using STAR framework
+ */
+export async function evaluateInterviewAnswer(
+  question: string,
+  answer: string,
+  questionType: "behavioral" | "technical" | "situational"
+): Promise<{
+  overallScore: number;
+  scores: {
+    clarity: number;
+    relevance: number;
+    depth: number;
+    starCompleteness: number;
+  };
+  strengths: string[];
+  improvements: string[];
+  starAnalysis: {
+    situation: "present" | "missing" | "unclear" | "n/a";
+    task: "present" | "missing" | "unclear" | "n/a";
+    action: "present" | "missing" | "unclear" | "n/a";
+    result: "present" | "missing" | "unclear" | "n/a";
+  };
+  suggestedAnswer: string;
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          overallScore: z.number().min(0).max(100),
+          scores: z.object({
+            clarity: z.number().min(0).max(100),
+            relevance: z.number().min(0).max(100),
+            depth: z.number().min(0).max(100),
+            starCompleteness: z.number().min(0).max(100),
+          }),
+          strengths: z.array(z.string()).max(5),
+          improvements: z.array(z.string()).max(5),
+          starAnalysis: z.object({
+            situation: z.enum(["present", "missing", "unclear", "n/a"]),
+            task: z.enum(["present", "missing", "unclear", "n/a"]),
+            action: z.enum(["present", "missing", "unclear", "n/a"]),
+            result: z.enum(["present", "missing", "unclear", "n/a"]),
+          }),
+          suggestedAnswer: z.string(),
+        }),
+        prompt: `You are an expert interview coach. Evaluate this interview answer using the STAR framework and provide constructive feedback.
+
+        Question Type: ${questionType}
+        Question: ${question}
+        
+        Candidate's Answer:
+        ${answer}
+        
+        Evaluation Criteria:
+        
+        1. **Clarity (0-100)**: Is the answer well-structured and easy to understand?
+           - Clear introduction and conclusion
+           - Logical flow of information
+           - No rambling or tangents
+        
+        2. **Relevance (0-100)**: Does the answer directly address the question?
+           - Stays on topic
+           - Provides appropriate examples
+           - Doesn't include unnecessary information
+        
+        3. **Depth (0-100)**: How thorough and detailed is the response?
+           - Sufficient detail without being excessive
+           - Demonstrates deep understanding
+           - Provides context and nuance
+        
+        4. **STAR Completeness (0-100)**: For behavioral questions, how well does it follow STAR?
+           ${questionType === "behavioral" ? `
+           - **Situation**: Sets up the context clearly
+           - **Task**: Explains what needed to be done
+           - **Action**: Describes specific actions taken
+           - **Result**: Shares measurable outcomes
+           ` : "- For non-behavioral questions, evaluate how well they structure their response"}
+        
+        Analyze the answer:
+        - Calculate scores for each criterion (0-100)
+        - Overall score is weighted average: 25% clarity, 25% relevance, 25% depth, 25% STAR
+        - List 2-4 specific strengths (what they did well)
+        - List 2-4 specific improvements (actionable suggestions)
+        - For STAR analysis, mark each component as:
+          * "present": Clearly included and well-articulated
+          * "unclear": Mentioned but vague or incomplete
+          * "missing": Not addressed at all
+          * "n/a": Not applicable for this question type
+        - Provide a suggested answer showing how to improve (keep it concise, 150-200 words)
+        
+        Be constructive and encouraging in feedback while being honest about areas for improvement.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Interview answer evaluation failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      // Return mock evaluation as fallback
+      return {
+        overallScore: 65,
+        scores: {
+          clarity: 70,
+          relevance: 75,
+          depth: 50,
+          starCompleteness: 65,
+        },
+        strengths: [
+          "[MOCK] You provided a relevant example from your experience",
+          "[MOCK] Your answer was well-structured and easy to follow",
+        ],
+        improvements: [
+          "[MOCK] Include more specific metrics or outcomes (e.g., '20% improvement')",
+          "[MOCK] Strengthen the 'Result' section with quantifiable achievements",
+          "[MOCK] Add more detail about the specific actions you took",
+        ],
+        starAnalysis: {
+          situation: "present",
+          task: "unclear",
+          action: "present",
+          result: "unclear",
+        },
+        suggestedAnswer: "[MOCK] A stronger answer would be: 'When I was working on the e-commerce platform (Situation), we needed to reduce page load times by 50% (Task). I implemented lazy loading for images, optimized our database queries, and set up CDN caching (Action). As a result, page load time decreased from 4.2s to 1.8s, leading to a 23% increase in conversion rate (Result).'",
       };
     }
     throw error;

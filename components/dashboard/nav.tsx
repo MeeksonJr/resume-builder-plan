@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { FileText, Mail, Plus, LogOut, User, Settings, Menu, LayoutDashboard, Briefcase, Globe, Sparkles, Download, TrendingUp } from "lucide-react";
+import { FileText, Mail, Plus, LogOut, User, Settings, Menu, LayoutDashboard, Briefcase, Globe, Sparkles, Download, TrendingUp, Brain } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useState } from "react";
 
@@ -107,6 +107,13 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             >
               <TrendingUp className="h-4 w-4" />
               Optimize
+            </Link>
+            <Link
+              href="/dashboard/interview-prep"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+            >
+              <Brain className="h-4 w-4" />
+              Interview Prep
             </Link>
             <Link
               href="/portfolios"
@@ -242,6 +249,14 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             >
               <TrendingUp className="h-4 w-4" />
               Optimize Resume
+            </Link>
+            <Link
+              href="/dashboard/interview-prep"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Brain className="h-4 w-4" />
+              Interview Prep
             </Link>
             <Link
               href="/portfolios"
