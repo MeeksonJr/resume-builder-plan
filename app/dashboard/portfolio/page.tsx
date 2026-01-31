@@ -25,11 +25,31 @@ import {
     MessageSquare,
     User,
     Calendar,
-    Mail
+    Mail,
+    Trophy
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    Cell
+} from 'recharts';
+import {
+    TrendingUp,
+    Users,
+    MousePointer2,
+    ArrowUpRight,
+    BarChart3
+} from "lucide-react";
 
 export default function PortfolioManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +58,13 @@ export default function PortfolioManagementPage() {
     const [resumes, setResumes] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
     const [messages, setMessages] = useState<any[]>([]);
+    const [testimonials, setTestimonials] = useState<any[]>([]);
+    const [analytics, setAnalytics] = useState<{
+        dailyStats: any[];
+        referrers: any[];
+        totalVisits: number;
+        uniqueVisitors: number;
+    }>({ dailyStats: [], referrers: [], totalVisits: 0, uniqueVisitors: 0 });
     const supabase = createClient();
 
     const fetchPortfolio = async () => {
@@ -67,7 +94,9 @@ export default function PortfolioManagementPage() {
                     theme_settings: { color: "primary", typography: "default", style: "professional" },
                     featured_resumes: [],
                     featured_projects: [],
-                    is_public: true
+                    is_public: true,
+                    open_to_work: false,
+                    booking_url: ""
                 };
             }
             setPortfolio(currentPortfolio);
@@ -99,6 +128,68 @@ export default function PortfolioManagementPage() {
                     .eq("portfolio_id", currentPortfolio.id)
                     .order("created_at", { ascending: false });
                 setMessages(msgData || []);
+            }
+
+            // 5. Fetch testimonials
+            if (currentPortfolio?.id) {
+                const { data: testData } = await supabase
+                    .from("portfolio_testimonials")
+                    .select("*")
+                    .eq("portfolio_id", currentPortfolio.id)
+                    .order("created_at", { ascending: false });
+                setTestimonials(testData || []);
+            }
+
+            // 6. Fetch analytics if portfolio exists
+            if (currentPortfolio?.id) {
+                const { data: rawVisits } = await supabase
+                    .from("portfolio_analytics")
+                    .select("*")
+                    .eq("portfolio_id", currentPortfolio.id)
+                    .order("created_at", { ascending: true });
+
+                const visits = rawVisits || [];
+
+                // Process daily stats (last 7 days)
+                const last7Days = Array.from({ length: 7 }, (_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    return format(date, 'MMM dd');
+                }).reverse();
+
+                const statsMap = visits.reduce((acc: any, v: any) => {
+                    const day = format(new Date(v.created_at), 'MMM dd');
+                    acc[day] = (acc[day] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const dailyData = last7Days.map(day => ({
+                    name: day,
+                    visits: statsMap[day] || 0
+                }));
+
+                // Process referrers
+                const referrerMap = visits.reduce((acc: any, v: any) => {
+                    const ref = v.referrer === "direct" ? "Direct / Unknown" :
+                        v.referrer.includes("linkedin") ? "LinkedIn" :
+                            v.referrer.includes("github") ? "GitHub" :
+                                v.referrer.includes("twitter") || v.referrer.includes("x.com") ? "Twitter/X" :
+                                    new URL(v.referrer).hostname;
+                    acc[ref] = (acc[ref] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const referrerData = Object.entries(referrerMap)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a: any, b: any) => b.count - a.count)
+                    .slice(0, 5);
+
+                setAnalytics({
+                    dailyStats: dailyData,
+                    referrers: referrerData,
+                    totalVisits: visits.length,
+                    uniqueVisitors: new Set(visits.map(v => v.visitor_id || v.user_agent)).size
+                });
             }
 
         } catch (error: any) {
@@ -170,7 +261,7 @@ export default function PortfolioManagementPage() {
             </div>
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
+                <TabsList className="grid w-full grid-cols-7 lg:w-[950px]">
                     <TabsTrigger value="general" className="gap-2">
                         <Settings2 className="h-4 w-4" />
                         General
@@ -195,6 +286,14 @@ export default function PortfolioManagementPage() {
                                 {messages.length}
                             </Badge>
                         )}
+                    </TabsTrigger>
+                    <TabsTrigger value="testimonials" className="gap-2">
+                        <Trophy className="h-4 w-4" />
+                        Social Proof
+                    </TabsTrigger>
+                    <TabsTrigger value="insights" className="gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Insights
                     </TabsTrigger>
                 </TabsList>
 
@@ -259,6 +358,34 @@ export default function PortfolioManagementPage() {
                                 <span className="text-xs text-muted-foreground ml-auto">
                                     {portfolio.is_public !== false ? "Visible to everyone" : "Private (only you can see)"}
                                 </span>
+                            </div>
+
+                            <div className="pt-4 border-t space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="open_to_work" className="text-base font-bold">Open to New Opportunities</Label>
+                                        <p className="text-sm text-muted-foreground">Show an "Open to Work" badge on your public profile.</p>
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        id="open_to_work"
+                                        className="h-6 w-11 rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 checked:bg-primary bg-input cursor-pointer appearance-none relative before:absolute before:inline-block before:h-5 before:w-5 before:rounded-full before:bg-background before:shadow-lg before:ring-0 before:transition-transform checked:before:translate-x-5 before:translate-x-0"
+                                        checked={portfolio.open_to_work}
+                                        onChange={(e) => setPortfolio({ ...portfolio, open_to_work: e.target.checked })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="booking_url" className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        Booking URL (Calendly, Cal.com, etc.)
+                                    </Label>
+                                    <Input
+                                        id="booking_url"
+                                        placeholder="https://calendly.com/your-name"
+                                        value={portfolio.booking_url || ""}
+                                        onChange={(e) => setPortfolio({ ...portfolio, booking_url: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -536,6 +663,219 @@ export default function PortfolioManagementPage() {
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+                <TabsContent value="insights" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Total Views</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{analytics.totalVisits}</div>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                    <TrendingUp className="h-3 w-3 text-green-500" />
+                                    Cumulative visits
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Unique Visitors</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{analytics.uniqueVisitors}</div>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                    <Users className="h-3 w-3" />
+                                    Estimated reach
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Inquiries</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">{messages.length}</div>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                    <MessageSquare className="h-3 w-3 text-primary" />
+                                    Contact requests
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Conversion Rate</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">
+                                    {analytics.totalVisits > 0
+                                        ? ((messages.length / analytics.totalVisits) * 100).toFixed(1)
+                                        : "0.0"}%
+                                </div>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                    <ArrowUpRight className="h-3 w-3 text-primary" />
+                                    Visits to inquiries
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card className="p-6">
+                            <h3 className="text-lg font-bold mb-6">Traffic Trends (Last 7 Days)</h3>
+                            <div className="h-[250px] w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={analytics.dailyStats}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="visits"
+                                            stroke="hsl(var(--primary))"
+                                            strokeWidth={3}
+                                            dot={{ r: 4, fill: 'hsl(var(--primary))' }}
+                                            activeDot={{ r: 6 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Card>
+
+                        <Card className="p-6">
+                            <h3 className="text-lg font-bold mb-6">Top Referral Sources</h3>
+                            <div className="h-[250px] w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={analytics.referrers} layout="vertical">
+                                        <XAxis type="number" hide />
+                                        <YAxis dataKey="name" type="category" width={100} fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip
+                                            cursor={{ fill: 'transparent' }}
+                                            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px' }}
+                                        />
+                                        <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={30}>
+                                            {analytics.referrers.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={`hsl(var(--primary) / ${1 - (index * 0.15)})`} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Card>
+                    </div>
+                </TabsContent>
+                <TabsContent value="testimonials" className="mt-6 space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-bold">Recommendations & Social Proof</h2>
+                            <p className="text-sm text-muted-foreground">Manage testimonials from colleagues and clients.</p>
+                        </div>
+                        <Button className="gap-2" onClick={async () => {
+                            const { data, error } = await supabase.from("portfolio_testimonials").insert({
+                                portfolio_id: portfolio.id,
+                                name: "New Reference",
+                                content: "Click to edit this testimonial...",
+                                is_active: false
+                            }).select().single();
+                            if (error) toast.error("Failed to add testimonial");
+                            else {
+                                setTestimonials([data, ...testimonials]);
+                                toast.success("Draft testimonial added!");
+                            }
+                        }}>
+                            <TrendingUp className="h-4 w-4 rotate-45" />
+                            Add Testimonial
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                        {testimonials.map((t) => (
+                            <Card key={t.id} className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>Name</Label>
+                                                <Input
+                                                    value={t.name}
+                                                    onChange={(e) => {
+                                                        const updated = testimonials.map(item => item.id === t.id ? { ...item, name: e.target.value } : item);
+                                                        setTestimonials(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Title/Company</Label>
+                                                <Input
+                                                    value={t.title || ""}
+                                                    onChange={(e) => {
+                                                        const updated = testimonials.map(item => item.id === t.id ? { ...item, title: e.target.value } : item);
+                                                        setTestimonials(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Content</Label>
+                                            <Textarea
+                                                rows={3}
+                                                value={t.content}
+                                                onChange={(e) => {
+                                                    const updated = testimonials.map(item => item.id === t.id ? { ...item, content: e.target.value } : item);
+                                                    setTestimonials(updated);
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col justify-between border-l pl-6">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <Label>Active Status</Label>
+                                                <input
+                                                    type="checkbox"
+                                                    className="h-4 w-4"
+                                                    checked={t.is_active}
+                                                    onChange={(e) => {
+                                                        const updated = testimonials.map(item => item.id === t.id ? { ...item, is_active: e.target.checked } : item);
+                                                        setTestimonials(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Avatar URL (Optional)</Label>
+                                                <Input
+                                                    placeholder="https://..."
+                                                    value={t.avatar_url || ""}
+                                                    onChange={(e) => {
+                                                        const updated = testimonials.map(item => item.id === t.id ? { ...item, avatar_url: e.target.value } : item);
+                                                        setTestimonials(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 pt-4">
+                                            <Button variant="outline" size="sm" className="flex-1" onClick={async () => {
+                                                const { error } = await supabase.from("portfolio_testimonials").update(t).eq("id", t.id);
+                                                if (error) toast.error("Failed to update");
+                                                else toast.success("Updated!");
+                                            }}>Save</Button>
+                                            <Button variant="destructive" size="sm" onClick={async () => {
+                                                const { error } = await supabase.from("portfolio_testimonials").delete().eq("id", t.id);
+                                                if (error) toast.error("Failed to delete");
+                                                else {
+                                                    setTestimonials(testimonials.filter(item => item.id !== t.id));
+                                                    toast.success("Deleted");
+                                                }
+                                            }}>Delete</Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

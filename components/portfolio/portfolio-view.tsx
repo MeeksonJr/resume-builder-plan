@@ -20,11 +20,12 @@ import {
     Send,
     CheckCircle,
     Loader2,
-    Eye
+    Eye,
+    Calendar
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -36,10 +37,34 @@ interface PortfolioViewProps {
     resumes: any[];
     projects: any[];
     profile: any;
+    testimonials: any[];
 }
 
-export function PortfolioView({ portfolio, resumes, projects, profile }: PortfolioViewProps) {
+export function PortfolioView({ portfolio, resumes, projects, profile, testimonials }: PortfolioViewProps) {
     const theme = portfolio.theme_settings || {};
+
+    const [isSent, setIsSent] = useState(false);
+
+    // Analytics tracking
+    useEffect(() => {
+        const trackVisit = async () => {
+            if (typeof window === 'undefined') return;
+
+            const supabase = createClient();
+            try {
+                await supabase.from("portfolio_analytics").insert({
+                    portfolio_id: portfolio.id,
+                    referrer: document.referrer || "direct",
+                    path: window.location.pathname,
+                    user_agent: navigator.userAgent
+                });
+            } catch (err) {
+                console.error("Failed to track visit", err);
+            }
+        };
+
+        trackVisit();
+    }, [portfolio.id]);
 
     // Theme mapping
     const themeColors: Record<string, string> = {
@@ -55,8 +80,8 @@ export function PortfolioView({ portfolio, resumes, projects, profile }: Portfol
     const bgAccent = accentColor.replace("text-", "bg-") + "/10";
     const borderAccent = accentColor.replace("text-", "border-") + "/20";
 
-    const featuredResumes = resumes.filter(r => portfolio.featured_resumes?.includes(r.id));
-    const featuredProjects = projects.filter(p => portfolio.featured_projects?.includes(p.id));
+    const featuredResumes = resumes.filter((r: any) => portfolio.featured_resumes?.includes(r.id));
+    const featuredProjects = projects.filter((p: any) => portfolio.featured_projects?.includes(p.id));
 
     return (
         <div className={cn(
@@ -72,16 +97,23 @@ export function PortfolioView({ portfolio, resumes, projects, profile }: Portfol
                             <h1 className="text-4xl md:text-6xl font-black tracking-tight">
                                 {portfolio?.full_name || profile?.full_name || "Professional Portfolio"}
                             </h1>
-                            <div className="flex flex-wrap gap-4 text-muted-foreground font-medium">
-                                {(portfolio?.location || profile?.location) && (
-                                    <div className="flex items-center gap-1.5 text-sm md:text-base">
-                                        <MapPin className="h-4 w-4" />
-                                        {portfolio?.location || profile.location}
-                                    </div>
+                            <div className="flex flex-wrap gap-4 items-center">
+                                {portfolio.open_to_work && (
+                                    <Badge className="bg-green-500 hover:bg-green-600 animate-pulse py-1 px-3">
+                                        Open to Work
+                                    </Badge>
                                 )}
-                                <div className="flex items-center gap-1.5 text-sm md:text-base">
-                                    <Mail className="h-4 w-4" />
-                                    {profile?.email}
+                                <div className="flex flex-wrap gap-4 text-muted-foreground font-medium">
+                                    {(portfolio?.location || profile?.location) && (
+                                        <div className="flex items-center gap-1.5 text-sm md:text-base">
+                                            <MapPin className="h-4 w-4" />
+                                            {portfolio?.location || profile.location}
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-1.5 text-sm md:text-base">
+                                        <Mail className="h-4 w-4" />
+                                        {profile?.email}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -109,14 +141,24 @@ export function PortfolioView({ portfolio, resumes, projects, profile }: Portfol
                                     </Button>
                                 )}
                             </div>
-                            <Button
-                                size="lg"
-                                className={cn("rounded-full px-8 font-bold", theme.style === 'creative' ? "bg-primary hover:bg-primary/90" : "")}
-                                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                            >
-                                <Briefcase className="mr-2 h-4 w-4" />
-                                Hire Me
-                            </Button>
+                            <div className="flex gap-3">
+                                {portfolio.booking_url && (
+                                    <Button variant="outline" size="lg" className="rounded-full px-6 font-bold" asChild>
+                                        <a href={portfolio.booking_url} target="_blank" rel="noopener noreferrer">
+                                            <Calendar className="mr-2 h-4 w-4" />
+                                            Book Meeting
+                                        </a>
+                                    </Button>
+                                )}
+                                <Button
+                                    size="lg"
+                                    className={cn("rounded-full px-8 font-bold", theme.style === 'creative' ? "bg-primary hover:bg-primary/90" : "")}
+                                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                                >
+                                    <Briefcase className="mr-2 h-4 w-4" />
+                                    Hire Me
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -272,6 +314,49 @@ export function PortfolioView({ portfolio, resumes, projects, profile }: Portfol
                         </aside>
                     )}
                 </div>
+
+                {/* Testimonials Section */}
+                {testimonials.length > 0 && (
+                    <section className="space-y-10">
+                        <div className="flex items-center gap-3">
+                            <div className={cn("p-2 rounded-lg", bgAccent)}>
+                                <Trophy className={cn("h-6 w-6", accentColor)} />
+                            </div>
+                            <h2 className="text-2xl font-bold">Recommendations</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {testimonials.map((t) => (
+                                <Card key={t.id} className="p-8 border-2 bg-card/30 flex flex-col justify-between">
+                                    <div className="space-y-4">
+                                        <div className="flex text-yellow-500 gap-0.5">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <svg key={i} className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                            ))}
+                                        </div>
+                                        <p className="text-muted-foreground italic leading-relaxed">
+                                            "{t.content}"
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-4 mt-8 pt-6 border-t">
+                                        {t.avatar_url ? (
+                                            <img src={t.avatar_url} alt={t.name} className="h-12 w-12 rounded-full object-cover border-2 border-background shadow-sm" />
+                                        ) : (
+                                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                                {t.name[0]}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <p className="font-bold text-sm">{t.name}</p>
+                                            <p className="text-xs text-muted-foreground">{t.title}</p>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* Contact Section */}
                 <section id="contact" className="space-y-10 py-10">

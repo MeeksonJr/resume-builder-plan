@@ -87,6 +87,13 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             >
               Career Portfolio
             </Link>
+            <Link
+              href="/portfolios"
+              className="text-sm font-medium text-primary transition-colors hover:text-primary/80 flex items-center gap-1"
+            >
+              <Globe className="h-4 w-4" />
+              Discover
+            </Link>
           </nav>
         </div>
 
@@ -190,6 +197,14 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               onClick={() => setMobileMenuOpen(false)}
             >
               Career Portfolio
+            </Link>
+            <Link
+              href="/portfolios"
+              className="text-sm font-medium text-primary transition-colors hover:text-primary/80 flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Globe className="h-4 w-4" />
+              Discover Portfolios
             </Link>
             <Button asChild size="sm" className="mt-2 min-h-[44px] gap-2">
               <Link href="/dashboard/resume/new">

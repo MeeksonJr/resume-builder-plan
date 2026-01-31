@@ -48,11 +48,13 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
     const [
         { data: profile },
         { data: resumes },
-        { data: projects }
+        { data: projects },
+        { data: testimonials }
     ] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", portfolio.user_id).single(),
         supabase.from("resumes").select("*").eq("user_id", portfolio.user_id).order("updated_at", { ascending: false }),
-        supabase.from("projects").select("*").eq("user_id", portfolio.user_id).order("created_at", { ascending: false })
+        supabase.from("projects").select("*").eq("user_id", portfolio.user_id).order("created_at", { ascending: false }),
+        supabase.from("portfolio_testimonials").select("*").eq("portfolio_id", portfolio.id).eq("is_active", true)
     ]);
 
     // Note: We'll filter resumes and projects in the PortfolioView based on the featured_resumes/featured_projects arrays in the portfolio record.
@@ -63,6 +65,7 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
             resumes={resumes || []}
             projects={projects || []}
             profile={profile || { email: portfolio.user_id }}
+            testimonials={testimonials || []}
         />
     );
 }
