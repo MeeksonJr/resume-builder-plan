@@ -34,7 +34,7 @@ export function Hero() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button asChild size="lg" className="min-h-[44px] gap-2 px-8">
+          <Button asChild size="lg" className="min-h-[44px] gap-2 px-8 shadow-lg shadow-primary/25 transition-shadow hover:shadow-primary/40">
             <Link href="/auth/sign-up">
               Get Started Free
               <ArrowRight className="h-4 w-4" />
@@ -50,8 +50,30 @@ export function Hero() {
           </Button>
         </div>
 
+        {/* Visual Mockup */}
+        <div className="relative mt-20 mx-auto max-w-5xl">
+          <div className="rounded-xl border border-border/50 bg-background/50 p-2 shadow-2xl backdrop-blur-sm lg:p-4">
+            <div className="aspect-[16/10] overflow-hidden rounded-lg border border-border bg-muted/20 relative">
+              {/* Abstract UI Representation */}
+              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20">
+                <div className="space-y-4 w-3/4 opacity-50">
+                  <div className="h-8 w-1/3 bg-current rounded-md" />
+                  <div className="h-4 w-full bg-current rounded-md" />
+                  <div className="h-4 w-5/6 bg-current rounded-md" />
+                  <div className="grid grid-cols-2 gap-4 pt-8">
+                    <div className="h-32 bg-current rounded-md" />
+                    <div className="h-32 bg-current rounded-md" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Decorative Glow */}
+          <div className="absolute -inset-4 -z-10 bg-gradient-to-r from-primary/20 to-accent/20 blur-3xl opacity-50" />
+        </div>
+
         {/* Stats */}
-        <div className="mt-16 grid grid-cols-3 gap-8 border-t border-border pt-8">
+        <div className="mt-24 grid grid-cols-3 gap-8 border-t border-border pt-8">
           <div>
             <div className="text-2xl font-bold text-foreground md:text-3xl">
               AI-Powered

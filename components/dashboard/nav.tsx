@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { FileText, Mail, Plus, LogOut, User, Settings, Menu, LayoutDashboard, Briefcase, Globe, Sparkles, Download, TrendingUp, Brain } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface Profile {
   id: string;
@@ -29,6 +31,7 @@ interface DashboardNavProps {
 }
 
 export function DashboardNav({ user, profile }: DashboardNavProps) {
+  const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -49,77 +52,127 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
     .slice(0, 2);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+          <Link href="/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-90">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
               <FileText className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="hidden text-lg font-semibold sm:inline">
+            <span className="hidden text-lg font-bold tracking-tight sm:inline">
               ResumeForge
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-4 md:flex">
+          <nav className="hidden items-center gap-1 md:flex">
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary",
+                pathname === "/dashboard" ? "text-primary" : "text-muted-foreground"
+              )}
             >
               My Resumes
+              {pathname === "/dashboard" && (
+                <span className="absolute inset-x-0 -bottom-[13px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/cover-letters"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary",
+                pathname?.startsWith("/dashboard/cover-letters") ? "text-primary" : "text-muted-foreground"
+              )}
             >
               Cover Letters
+              {pathname?.startsWith("/dashboard/cover-letters") && (
+                <span className="absolute inset-x-0 -bottom-[13px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/tracker"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary",
+                pathname?.startsWith("/dashboard/tracker") ? "text-primary" : "text-muted-foreground"
+              )}
             >
               Job Tracker
+              {pathname?.startsWith("/dashboard/tracker") && (
+                <span className="absolute inset-x-0 -bottom-[13px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/portfolio"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary",
+                pathname?.startsWith("/dashboard/portfolio") ? "text-primary" : "text-muted-foreground"
+              )}
             >
-              Career Portfolio
+              Portfolio
+              {pathname?.startsWith("/dashboard/portfolio") && (
+                <span className="absolute inset-x-0 -bottom-[13px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/career-coach"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5",
+                pathname?.startsWith("/dashboard/career-coach") ? "text-primary" : "text-muted-foreground"
+              )}
             >
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-3.5 w-3.5" />
               Career Coach
+              {pathname?.startsWith("/dashboard/career-coach") && (
+                <span className="absolute inset-x-0 -bottom-[13px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/import"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5",
+                pathname?.startsWith("/dashboard/import") ? "text-primary" : "text-muted-foreground"
+              )}
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-3.5 w-3.5" />
               Import
+              {pathname?.startsWith("/dashboard/import") && (
+                <span className="absolute inset-x-0 -bottom-[19px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/optimize"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5",
+                pathname?.startsWith("/dashboard/optimize") ? "text-primary" : "text-muted-foreground"
+              )}
             >
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-3.5 w-3.5" />
               Optimize
+              {pathname?.startsWith("/dashboard/optimize") && (
+                <span className="absolute inset-x-0 -bottom-[19px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/dashboard/interview-prep"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-1"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5",
+                pathname?.startsWith("/dashboard/interview-prep") ? "text-primary" : "text-muted-foreground"
+              )}
             >
-              <Brain className="h-4 w-4" />
+              <Brain className="h-3.5 w-3.5" />
               Interview Prep
+              {pathname?.startsWith("/dashboard/interview-prep") && (
+                <span className="absolute inset-x-0 -bottom-[19px] h-0.5 bg-primary" />
+              )}
             </Link>
             <Link
               href="/portfolios"
-              className="text-sm font-medium text-primary transition-colors hover:text-primary/80 flex items-center gap-1"
+              className={cn(
+                "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5 text-primary/80",
+              )}
             >
-              <Globe className="h-4 w-4" />
+              <Globe className="h-3.5 w-3.5" />
               Discover
             </Link>
           </nav>
@@ -192,89 +245,91 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+      </div >
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="border-t border-border bg-background px-4 py-4 md:hidden">
-          <nav className="flex flex-col gap-4">
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              My Resumes
-            </Link>
-            <Link
-              href="/dashboard/cover-letters"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Cover Letters
-            </Link>
-            <Link
-              href="/dashboard/tracker"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Job Tracker
-            </Link>
-            <Link
-              href="/dashboard/portfolio"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Career Portfolio
-            </Link>
-            <Link
-              href="/dashboard/career-coach"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Sparkles className="h-4 w-4 text-primary" />
-              AI Career Coach
-            </Link>
-            <Link
-              href="/dashboard/import"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Download className="h-4 w-4" />
-              Smart Import
-            </Link>
-            <Link
-              href="/dashboard/optimize"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <TrendingUp className="h-4 w-4" />
-              Optimize Resume
-            </Link>
-            <Link
-              href="/dashboard/interview-prep"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Brain className="h-4 w-4" />
-              Interview Prep
-            </Link>
-            <Link
-              href="/portfolios"
-              className="text-sm font-medium text-primary transition-colors hover:text-primary/80 flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Globe className="h-4 w-4" />
-              Discover Portfolios
-            </Link>
-            <Button asChild size="sm" className="mt-2 min-h-[44px] gap-2">
-              <Link href="/dashboard/resume/new">
-                <Plus className="h-4 w-4" />
-                New Resume
+      {
+        mobileMenuOpen && (
+          <div className="border-t border-border bg-background px-4 py-4 md:hidden">
+            <nav className="flex flex-col gap-4">
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                My Resumes
               </Link>
-            </Button>
-          </nav>
-        </div>
-      )}
-    </header>
+              <Link
+                href="/dashboard/cover-letters"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Cover Letters
+              </Link>
+              <Link
+                href="/dashboard/tracker"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Job Tracker
+              </Link>
+              <Link
+                href="/dashboard/portfolio"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Career Portfolio
+              </Link>
+              <Link
+                href="/dashboard/career-coach"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Sparkles className="h-4 w-4 text-primary" />
+                AI Career Coach
+              </Link>
+              <Link
+                href="/dashboard/import"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Download className="h-4 w-4" />
+                Smart Import
+              </Link>
+              <Link
+                href="/dashboard/optimize"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <TrendingUp className="h-4 w-4" />
+                Optimize Resume
+              </Link>
+              <Link
+                href="/dashboard/interview-prep"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Brain className="h-4 w-4" />
+                Interview Prep
+              </Link>
+              <Link
+                href="/portfolios"
+                className="text-sm font-medium text-primary transition-colors hover:text-primary/80 flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Globe className="h-4 w-4" />
+                Discover Portfolios
+              </Link>
+              <Button asChild size="sm" className="mt-2 min-h-[44px] gap-2">
+                <Link href="/dashboard/resume/new">
+                  <Plus className="h-4 w-4" />
+                  New Resume
+                </Link>
+              </Button>
+            </nav>
+          </div>
+        )
+      }
+    </header >
   );
 }

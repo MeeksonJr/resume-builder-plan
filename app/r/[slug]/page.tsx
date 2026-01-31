@@ -132,25 +132,54 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
     // I hope it accepts props now. If not, I'll fix it.
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-8 flex flex-col items-center">
-            <div className="w-full max-w-[210mm] mb-6 flex justify-end gap-2 no-print">
-                <PublicDownloadButton resumeId={resumeId} title={resume.title} />
-            </div>
-            <div className="w-full max-w-[210mm] shadow-xl">
-                <ResumePreview
-                    data={{
-                        resume,
-                        profile: mergedProfile,
-                        workExperiences: workExperiences || [],
-                        education: education || [],
-                        skills: skills || [],
-                        projects: projects || [],
-                        certifications: certifications || [],
-                        languages: languages || []
-                    }}
-                    readOnly={true}
-                />
-            </div>
+        <div className="min-h-screen bg-[#f3f4f6] flex flex-col items-center font-sans selection:bg-primary/20">
+            {/* Top Navigation / Brand Bar */}
+            <header className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50 no-print">
+                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold">R</div>
+                        <span className="font-semibold text-lg tracking-tight hidden sm:inline-block">ResumeForge</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                            <a href="/">Build Your Own</a>
+                        </Button>
+                        <PublicDownloadButton resumeId={resumeId} title={resume.title} />
+                    </div>
+                </div>
+            </header>
+
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 md:py-12 flex flex-col items-center">
+                {/* Resume Container */}
+                {/* Shadow-2xl for depth, ring-1 for definition */}
+                <div className="w-full max-w-[210mm] bg-white shadow-2xl ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out md:hover:scale-[1.002]">
+                    <ResumePreview
+                        data={{
+                            resume,
+                            profile: mergedProfile,
+                            workExperiences: workExperiences || [],
+                            education: education || [],
+                            skills: skills || [],
+                            projects: projects || [],
+                            certifications: certifications || [],
+                            languages: languages || []
+                        }}
+                        readOnly={true}
+                    />
+                </div>
+
+                {/* Trust Badge / Footer */}
+                <div className="mt-12 mb-8 text-center space-y-2 no-print">
+                    <p className="text-sm text-muted-foreground">
+                        Verified Resume hosted on <span className="font-semibold text-foreground">ResumeForge</span>
+                    </p>
+                    <Button variant="link" size="sm" asChild className="text-primary">
+                        <a href="/?utm_source=resume_footer&utm_medium=referral">
+                            Create your own professional resume for free <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </Button>
+                </div>
+            </main>
         </div>
     );
 }
