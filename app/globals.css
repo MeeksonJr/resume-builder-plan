@@ -187,6 +187,65 @@
   .gradient-text {
     @apply bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent;
   }
+
+  /* Entrance animations for portfolio */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-from-bottom {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .slide-in-from-bottom-4 {
+    animation: slide-in-from-bottom 0.6s ease-out;
+  }
+
+  .duration-700 {
+    animation-duration: 0.7s;
+  }
+
+  .delay-100 {
+    animation-delay: 0.1s;
+    animation-fill-mode: backwards;
+  }
+
+  .delay-200 {
+    animation-delay: 0.2s;
+    animation-fill-mode: backwards;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
+    animation-fill-mode: backwards;
+  }
+
+  .delay-400 {
+    animation-delay: 0.4s;
+    animation-fill-mode: backwards;
+  }
 }
 
 @layer base {
