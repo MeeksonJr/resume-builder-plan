@@ -174,6 +174,63 @@ Extract all personal information, work experience, education, skills, projects, 
   return result.object;
 }
 
+// Generate interview questions based on resume and job description
+export async function generateInterviewQuestions(
+  resumeData: ResumeData,
+  jobDescription: string
+): Promise<{
+  questions: {
+    question: string;
+    type: "behavioral" | "technical" | "situational";
+    star_guidance: string;
+    sample_answer_points: string[];
+  }[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          questions: z.array(
+            z.object({
+              question: z.string(),
+              type: z.enum(["behavioral", "technical", "situational"]),
+              star_guidance: z.string().describe("Specific points to highlight using the STAR method (Situation, Task, Action, Result)"),
+              sample_answer_points: z.array(z.string()).describe("Key talking points for a strong answer based on the resume content"),
+            })
+          ).min(5).max(10),
+        }),
+        prompt: `Act as an expert interviewer. Based on the candidate's resume and the job description, generate 5-10 tailored interview questions.
+        
+        Resume:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Job Description:
+        ${jobDescription}
+        
+        For each question, provide guidance on how to use the STAR method to answer it effectively, drawing from the specific experiences in the candidate's resume.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Interview prep failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        questions: [
+          {
+            question: "[MOCK] Tell me about a time you led a challenging project.",
+            type: "behavioral",
+            star_guidance: "Situation: Choose a project from your work experience. Task: What was the goal? Action: What did YOU do? Result: What was the impact?",
+            sample_answer_points: ["Mention your React project", "Highlight your leadership role"],
+          }
+        ]
+      };
+    }
+    throw error;
+  }
+}
+
 // Improve a bullet point or description
 export async function improveText(
   text: string,
@@ -435,6 +492,50 @@ export async function generateCoverLetter(
       return `[MOCK] Dear Hiring Manager,
 
 I am writing to express my strong interest in the position... [This is a mock response because no API keys were configured or providers failed]`;
+    }
+    throw error;
+  }
+}
+
+// Generate insights based on resume performance and content
+export async function getAnalyticsInsights(
+  resumes: any[],
+  recentEvents: any[]
+): Promise<{
+  insights: string[];
+  keywordSuggestions: string[];
+  performanceVerdict: string;
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          insights: z.array(z.string()).describe("Actionable tips based on view/download data"),
+          keywordSuggestions: z.array(z.string()).describe("Keywords that could boost visibility"),
+          performanceVerdict: z.string().describe("Summary of current resume performance"),
+        }),
+        prompt: `Analyze the performance of these resumes and provide insights.
+        
+        Resumes:
+        ${JSON.stringify(resumes.map(r => ({ title: r.title, views: r.view_count, last_viewed: r.last_viewed_at })), null, 2)}
+        
+        Recent Activity (Views/Downloads):
+        ${JSON.stringify(recentEvents.slice(0, 20), null, 2)}
+        
+        Provide professional advice on how to improve these resumes to get more views and downloads. Focus on keyword optimization and market trends.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Analytics insights failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        insights: ["[MOCK] Your 'Modern' resume is performing well. Try adding more specific technical keywords."],
+        keywordSuggestions: ["React Native", "Cloud Architecture", "System Design"],
+        performanceVerdict: "[MOCK] Solid engagement, but could improve conversion with better highlights.",
+      };
     }
     throw error;
   }
