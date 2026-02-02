@@ -133,6 +133,10 @@ export default function UploadPage() {
           <CardDescription>
             Our AI will automatically extract your information including work
             experience, education, skills, and more.
+            <br />
+            <span className="text-xs text-muted-foreground/80 mt-1 block">
+              Note: Best results with text-based PDFs. Scanned images may not be readable.
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -157,11 +161,10 @@ export default function UploadPage() {
             <>
               {/* Drop zone */}
               <div
-                className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-                  isDragging
+                className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${isDragging
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
-                }`}
+                  }`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}

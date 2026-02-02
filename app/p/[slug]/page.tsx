@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: PortfolioPageProps): Promise<
     const title = `${portfolio.full_name || slug} - Professional Portfolio`;
     const description = portfolio.bio || portfolio.tagline || "Professional career portfolio and showcase.";
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://yourdomain.com";
+
     return {
         title,
         description,
@@ -35,7 +37,7 @@ export async function generateMetadata({ params }: PortfolioPageProps): Promise<
             title,
             description,
             type: "profile",
-            url: `https://yourdomain.com/p/${slug}`,
+            url: `${baseUrl}/p/${slug}`,
         },
         twitter: {
             card: "summary_large_image",
