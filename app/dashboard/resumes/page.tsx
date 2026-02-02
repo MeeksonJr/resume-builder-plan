@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { ResumesFilterBar } from "@/components/dashboard/resumes-filter-bar"
+import { DuplicateResumeAction, AnalyticsLinkAction } from "@/components/dashboard/resume-actions"
 
 export const metadata = {
     title: "All Resumes | ResumeForge",
@@ -115,6 +116,8 @@ export default async function AllResumesPage({
                                                     Open
                                                 </Link>
                                             </DropdownMenuItem>
+                                            <AnalyticsLinkAction resumeId={resume.id} />
+                                            <DuplicateResumeAction resumeId={resume.id} />
                                             {resume.is_public && resume.slug && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href={`/r/${resume.slug}`} target="_blank">
