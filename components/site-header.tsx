@@ -53,7 +53,7 @@ export function SiteHeader() {
                             Sign In
                         </Link>
                         <Button size="sm" className="rounded-full px-6 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-semibold" asChild>
-                            <Link href="/auth/register">Get Started</Link>
+                            <Link href="/auth/sign-up">Get Started</Link>
                         </Button>
                     </div>
 
@@ -90,7 +90,7 @@ export function SiteHeader() {
                             <Link href="/auth/login">Sign In</Link>
                         </Button>
                         <Button asChild className="w-full rounded-xl shadow-lg shadow-primary/25">
-                            <Link href="/auth/register">Get Started</Link>
+                            <Link href="/auth/sign-up">Get Started</Link>
                         </Button>
                     </div>
                 </motion.div>

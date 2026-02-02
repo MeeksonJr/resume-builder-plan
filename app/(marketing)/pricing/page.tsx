@@ -125,8 +125,8 @@ export default function PricingPage() {
                             transition={{ delay: idx * 0.1 + 0.3 }}
                         >
                             <Card className={`flex flex-col relative h-full ${plan.popular
-                                    ? 'border-primary shadow-2xl shadow-primary/20 scale-105 bg-gradient-to-b from-primary/5 to-transparent'
-                                    : 'border-white/10 bg-white/5'
+                                ? 'border-primary shadow-2xl shadow-primary/20 scale-105 bg-gradient-to-b from-primary/5 to-transparent'
+                                : 'border-white/10 bg-white/5'
                                 }`}>
                                 {plan.popular && (
                                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -167,7 +167,7 @@ export default function PricingPage() {
                                             }`}
                                         asChild
                                     >
-                                        <Link href={plan.href}>{plan.buttonText}</Link>
+                                        <Link href="/auth/sign-up">Get Started</Link>
                                     </Button>
                                 </CardFooter>
                             </Card>

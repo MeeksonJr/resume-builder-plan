@@ -14,9 +14,7 @@ export function HeroSection() {
         offset: ["start start", "end start"],
     });
 
-    const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-    const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-    const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+    const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
     return (
         <section ref={ref} className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
@@ -71,7 +69,7 @@ export function HeroSection() {
                     className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
                 >
                     <Button size="lg" className="h-14 px-8 text-base gap-2 rounded-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 transition-all hover:scale-105" asChild>
-                        <Link href="/auth/register">
+                        <Link href="/auth/sign-up">
                             Start Building Free <ArrowRight className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -102,7 +100,7 @@ export function HeroSection() {
 
                 {/* 3D Dashboard Mockup */}
                 <motion.div
-                    style={{ y, opacity, scale }}
+                    style={{ y }}
                     className="mt-20 relative mx-auto max-w-6xlPerspective"
                 >
                     <div className="relative rounded-2xl border border-white/10 bg-slate-900/50 p-2 shadow-2xl backdrop-blur-xl lg:rounded-3xl lg:p-3 overflow-hidden group">
