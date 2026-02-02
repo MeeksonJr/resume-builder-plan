@@ -86,8 +86,7 @@ export async function GET(request: NextRequest) {
         interview_questions (
           id,
           question_text,
-          question_type,
-          difficulty
+          question_type
         ),
         interview_feedback (
           id,

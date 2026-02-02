@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
-import { User, Palette, Shield, Settings as SettingsIcon, Database } from "lucide-react"
+import { User, Palette, Shield, Settings as SettingsIcon, Database, Target } from "lucide-react"
 
 interface SettingsLayoutProps {
     children?: React.ReactNode
@@ -23,7 +23,7 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
             </div>
 
             <Tabs defaultValue={defaultTab} className="space-y-6">
-                <TabsList className="glass-border bg-muted/30 p-1">
+                <TabsList className="glass-border bg-muted/30 p-1 flex-wrap h-auto gap-1">
                     <TabsTrigger value="general" className="gap-2 rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                         <SettingsIcon className="h-4 w-4" />
                         <span className="hidden sm:inline">General</span>
@@ -31,6 +31,10 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
                     <TabsTrigger value="profile" className="gap-2 rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                         <User className="h-4 w-4" />
                         <span className="hidden sm:inline">Profile</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="career" className="gap-2 rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                        <Target className="h-4 w-4" />
+                        <span className="hidden sm:inline">Career</span>
                     </TabsTrigger>
                     <TabsTrigger value="appearance" className="gap-2 rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                         <Palette className="h-4 w-4" />

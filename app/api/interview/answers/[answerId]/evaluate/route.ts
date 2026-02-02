@@ -5,9 +5,10 @@ import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { answerId: string } }
+    { params }: { params: Promise<{ answerId: string }> }
 ) {
     try {
+        const { answerId } = await params;
         const supabase = await createClient();
 
         // Check authentication
@@ -25,8 +26,6 @@ export async function POST(
             }, { status: 429 });
         }
 
-        const { answerId } = params;
-
         // Fetch the answer and associated question
         const { data: answer, error: fetchError } = await supabase
             .from("interview_answers")
@@ -36,8 +35,7 @@ export async function POST(
         interview_questions (
           id,
           question_text,
-          question_type,
-          difficulty
+          question_type
         )
       `
             )
@@ -71,7 +69,6 @@ export async function POST(
             question: answer.interview_questions.question_text,
             questionType: answer.interview_questions.question_type,
             answer: answer.answer_text,
-            difficulty: answer.interview_questions.difficulty,
         });
 
         // Save the feedback
@@ -84,8 +81,6 @@ export async function POST(
                 weaknesses: evaluation.weaknesses,
                 improvements: evaluation.improvements,
                 overall_feedback: evaluation.overallFeedback,
-                scores: evaluation.scores, // Assuming these exist in the schema or JSON column
-                star_breakdown: evaluation.starBreakdown // Assuming these exist
             })
             .select()
             .single();

@@ -104,7 +104,7 @@ async function withFallback<T>(
 
   const models = [
     { provider: groq, model: "llama-3.3-70b-versatile", name: "Groq" },
-    { provider: google, model: "gemini-1.5-flash", name: "Gemini" },
+    { provider: google, model: "gemini-2.0-flash-exp", name: "Gemini" },
     { provider: openai, model: "gpt-4o-mini", name: "OpenAI" },
   ];
 
@@ -1187,6 +1187,604 @@ export async function evaluateInterviewAnswer(
           result: "unclear",
         },
         suggestedAnswer: "[MOCK] A stronger answer would be: 'When I was working on the e-commerce platform (Situation), we needed to reduce page load times by 50% (Task). I implemented lazy loading for images, optimized our database queries, and set up CDN caching (Action). As a result, page load time decreased from 4.2s to 1.8s, leading to a 23% increase in conversion rate (Result).'",
+      };
+    }
+    throw error;
+  }
+}
+
+// ============================================================================
+// PHASE 35: AI POWER-UPS ENHANCEMENT
+// ============================================================================
+
+/**
+ * Get real-time writing suggestions while typing
+ */
+export async function getWritingSuggestions(
+  partialText: string,
+  context: {
+    section: "summary" | "experience" | "education" | "project" | "skill";
+    fieldName?: string;
+    resumeData?: Partial<ResumeData>;
+  }
+): Promise<{
+  suggestions: string[];
+  completions: string[];
+  improvements: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          suggestions: z.array(z.string()).max(3).describe("Short inline suggestions to complete the current sentence"),
+          completions: z.array(z.string()).max(2).describe("Full sentence completions based on context"),
+          improvements: z.array(z.string()).max(2).describe("Alternative phrasings that are more impactful"),
+        }),
+        prompt: `You are a professional resume writing assistant. Provide real-time writing suggestions.
+
+Current text being typed: "${partialText}"
+Section: ${context.section}
+${context.fieldName ? `Field: ${context.fieldName}` : ""}
+${context.resumeData ? `Resume context: ${JSON.stringify(context.resumeData, null, 2)}` : ""}
+
+Provide:
+1. Short suggestions (3-5 words) to complete the current thought
+2. Full sentence completions that sound professional
+3. Alternative phrasings that are more impactful and action-oriented
+
+Keep suggestions concise and immediately usable. Focus on:
+- Strong action verbs
+- Quantifiable achievements
+- Professional tone
+- ATS-friendly language`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Writing suggestions failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        suggestions: ["led the development of", "implemented a solution that", "improved efficiency by"],
+        completions: [`${partialText} resulting in significant improvements to team productivity.`],
+        improvements: ["Spearheaded", "Orchestrated", "Drove"],
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Calculate job match score with detailed breakdown
+ */
+export async function calculateJobMatchScore(
+  resumeData: ResumeData,
+  jobPosting: string
+): Promise<{
+  overallScore: number;
+  breakdown: {
+    skillsMatch: { score: number; matched: string[]; missing: string[] };
+    experienceMatch: { score: number; feedback: string };
+    educationMatch: { score: number; feedback: string };
+    keywordMatch: { score: number; found: string[]; missing: string[] };
+  };
+  recommendations: string[];
+  strongPoints: string[];
+  dealBreakers: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          overallScore: z.number().min(0).max(100),
+          breakdown: z.object({
+            skillsMatch: z.object({
+              score: z.number().min(0).max(100),
+              matched: z.array(z.string()),
+              missing: z.array(z.string()),
+            }),
+            experienceMatch: z.object({
+              score: z.number().min(0).max(100),
+              feedback: z.string(),
+            }),
+            educationMatch: z.object({
+              score: z.number().min(0).max(100),
+              feedback: z.string(),
+            }),
+            keywordMatch: z.object({
+              score: z.number().min(0).max(100),
+              found: z.array(z.string()),
+              missing: z.array(z.string()),
+            }),
+          }),
+          recommendations: z.array(z.string()).max(5),
+          strongPoints: z.array(z.string()).max(3),
+          dealBreakers: z.array(z.string()).max(3),
+        }),
+        prompt: `You are an expert HR recruiter and ATS specialist. Analyze how well this resume matches the job posting.
+
+Resume:
+${JSON.stringify(resumeData, null, 2)}
+
+Job Posting:
+${jobPosting}
+
+Provide a detailed match analysis:
+
+1. **Overall Score (0-100)**: How likely is this candidate to pass initial screening?
+
+2. **Skills Match**: 
+   - Score the technical and soft skills alignment
+   - List matched skills found in both resume and job
+   - List critical missing skills from the job requirements
+
+3. **Experience Match**:
+   - Score based on years, seniority level, and relevance
+   - Provide specific feedback
+
+4. **Education Match**:
+   - Score based on degree requirements
+   - Provide specific feedback
+
+5. **Keyword Match**:
+   - Score ATS keyword optimization
+   - List found and missing keywords
+
+6. **Recommendations**: Top 5 actionable improvements to increase match score
+
+7. **Strong Points**: What makes this candidate stand out
+
+8. **Deal Breakers**: Any critical gaps that could disqualify the candidate
+
+Be specific and actionable in your analysis.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Job match scoring failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        overallScore: 65,
+        breakdown: {
+          skillsMatch: { score: 70, matched: ["JavaScript", "React"], missing: ["TypeScript", "AWS"] },
+          experienceMatch: { score: 60, feedback: "[MOCK] Experience level appears to be slightly below requirements." },
+          educationMatch: { score: 80, feedback: "[MOCK] Education requirements are met." },
+          keywordMatch: { score: 55, found: ["development", "team"], missing: ["agile", "scrum", "CI/CD"] },
+        },
+        recommendations: ["[MOCK] Add TypeScript to your skills", "[MOCK] Include more metrics in achievements"],
+        strongPoints: ["[MOCK] Strong React experience", "[MOCK] Good project portfolio"],
+        dealBreakers: ["[MOCK] Missing required cloud experience"],
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Auto-complete an incomplete resume section
+ */
+export async function autoCompleteSection(
+  sectionType: "summary" | "experience" | "education" | "project" | "skills",
+  existingData: Partial<ResumeData>,
+  partialSectionData?: any
+): Promise<{
+  generatedContent: any;
+  confidence: number;
+  notes: string[];
+}> {
+  try {
+    const sectionSchemas = {
+      summary: z.object({
+        generatedContent: z.object({
+          summary: z.string(),
+        }),
+        confidence: z.number().min(0).max(100),
+        notes: z.array(z.string()),
+      }),
+      experience: z.object({
+        generatedContent: z.object({
+          position: z.string().optional(),
+          company: z.string().optional(),
+          description: z.string(),
+          highlights: z.array(z.string()),
+        }),
+        confidence: z.number().min(0).max(100),
+        notes: z.array(z.string()),
+      }),
+      education: z.object({
+        generatedContent: z.object({
+          degree: z.string().optional(),
+          field: z.string().optional(),
+          highlights: z.array(z.string()),
+        }),
+        confidence: z.number().min(0).max(100),
+        notes: z.array(z.string()),
+      }),
+      project: z.object({
+        generatedContent: z.object({
+          description: z.string(),
+          highlights: z.array(z.string()),
+          technologies: z.array(z.string()),
+        }),
+        confidence: z.number().min(0).max(100),
+        notes: z.array(z.string()),
+      }),
+      skills: z.object({
+        generatedContent: z.object({
+          suggestedSkills: z.array(z.object({
+            category: z.string(),
+            items: z.array(z.string()),
+          })),
+        }),
+        confidence: z.number().min(0).max(100),
+        notes: z.array(z.string()),
+      }),
+    };
+
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: sectionSchemas[sectionType],
+        prompt: `You are a professional resume writer. Auto-complete the missing parts of this ${sectionType} section.
+
+Existing Resume Data:
+${JSON.stringify(existingData, null, 2)}
+
+${partialSectionData ? `Partial Section Data to Complete:\n${JSON.stringify(partialSectionData, null, 2)}` : "Generate content from scratch based on the resume context."}
+
+Section Type: ${sectionType}
+
+Instructions:
+- Generate professional, compelling content that fits the candidate's background
+- Use strong action verbs and quantifiable achievements where appropriate
+- Keep the tone consistent with the existing resume
+- For skills, suggest relevant skills based on their experience
+- Provide a confidence score (0-100) for how certain you are about the generated content
+- Include notes about any assumptions made or suggestions for improvement
+
+Be specific and make the content immediately usable.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Section auto-complete failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        generatedContent: sectionType === "summary"
+          ? { summary: "[MOCK] Results-driven professional with 5+ years of experience..." }
+          : sectionType === "skills"
+            ? { suggestedSkills: [{ category: "Technical", items: ["JavaScript", "React", "Node.js"] }] }
+            : { description: "[MOCK] Generated description...", highlights: ["[MOCK] Achievement 1", "[MOCK] Achievement 2"] },
+        confidence: 60,
+        notes: ["[MOCK] This is placeholder content. Configure AI providers for real suggestions."],
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Bulk optimize entire resume at once
+ */
+export async function bulkOptimizeResume(
+  resumeData: ResumeData,
+  options: {
+    targetRole?: string;
+    jobDescription?: string;
+    focusAreas?: ("impact" | "keywords" | "clarity" | "ats" | "brevity")[];
+  } = {}
+): Promise<{
+  optimizedResume: ResumeData;
+  changes: {
+    section: string;
+    original: string;
+    optimized: string;
+    reason: string;
+  }[];
+  overallImprovements: string[];
+  scoreImprovement: { before: number; after: number };
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          optimizedResume: resumeDataSchema,
+          changes: z.array(z.object({
+            section: z.string(),
+            original: z.string(),
+            optimized: z.string(),
+            reason: z.string(),
+          })),
+          overallImprovements: z.array(z.string()).max(5),
+          scoreImprovement: z.object({
+            before: z.number().min(0).max(100),
+            after: z.number().min(0).max(100),
+          }),
+        }),
+        prompt: `You are a senior resume optimization expert. Perform a comprehensive optimization of this entire resume.
+
+Current Resume:
+${JSON.stringify(resumeData, null, 2)}
+
+${options.targetRole ? `Target Role: ${options.targetRole}` : ""}
+${options.jobDescription ? `Job Description:\n${options.jobDescription}` : ""}
+Focus Areas: ${options.focusAreas?.join(", ") || "all aspects"}
+
+Optimization Guidelines:
+
+1. **Impact Enhancement**:
+   - Replace weak verbs with strong action verbs
+   - Add quantifiable metrics where possible
+   - Focus on achievements over responsibilities
+
+2. **Keyword Optimization**:
+   - Add industry-relevant keywords
+   - Optimize for ATS systems
+   - Include technical and soft skills
+
+3. **Clarity Improvements**:
+   - Remove filler words and jargon
+   - Make sentences more concise
+   - Improve readability
+
+4. **ATS Compatibility**:
+   - Use standard section headings
+   - Remove special characters that confuse parsers
+   - Optimize formatting
+
+5. **Brevity**:
+   - Trim verbose descriptions
+   - Keep bullet points under 2 lines
+   - Remove redundant information
+
+Provide:
+- The fully optimized resume
+- A list of specific changes made with reasons
+- Summary of overall improvements
+- Estimated score improvement`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Bulk optimization failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        optimizedResume: resumeData,
+        changes: [
+          {
+            section: "summary",
+            original: resumeData.personalInfo?.summary || "",
+            optimized: "[MOCK] Optimized summary would appear here",
+            reason: "[MOCK] Added stronger action verbs and metrics",
+          },
+        ],
+        overallImprovements: [
+          "[MOCK] Added 5 quantifiable achievements",
+          "[MOCK] Improved keyword density by 30%",
+          "[MOCK] Reduced word count by 15%",
+        ],
+        scoreImprovement: { before: 65, after: 82 },
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Adjust the tone of resume content
+ */
+export async function adjustTone(
+  content: string | ResumeData,
+  targetTone: "professional" | "casual" | "technical" | "creative" | "executive" | "entry-level",
+  scope: "full" | "summary" | "experience" | "selected"
+): Promise<{
+  adjustedContent: string | ResumeData;
+  toneAnalysis: {
+    originalTone: string;
+    targetTone: string;
+    changes: string[];
+  };
+}> {
+  const toneDescriptions = {
+    professional: "Formal, polished, corporate-appropriate language with focus on achievements",
+    casual: "Friendly, approachable while maintaining professionalism",
+    technical: "Detailed, specification-focused, emphasizing technologies and methodologies",
+    creative: "Dynamic, unique phrasing that showcases personality and innovation",
+    executive: "Strategic, leadership-focused, emphasizing vision and business impact",
+    "entry-level": "Enthusiastic, potential-focused, highlighting learning and growth",
+  };
+
+  try {
+    const isFullResume = typeof content !== "string";
+
+    const result = await withFallback(async (model) => {
+      if (isFullResume) {
+        return generateObject({
+          model,
+          schema: z.object({
+            adjustedContent: resumeDataSchema,
+            toneAnalysis: z.object({
+              originalTone: z.string(),
+              targetTone: z.string(),
+              changes: z.array(z.string()),
+            }),
+          }),
+          prompt: `You are an expert resume writer. Adjust the tone of this entire resume.
+
+Current Resume:
+${JSON.stringify(content, null, 2)}
+
+Target Tone: ${targetTone}
+Tone Description: ${toneDescriptions[targetTone]}
+Scope: ${scope}
+
+Instructions:
+- Rewrite content to match the target tone
+- Maintain all factual information
+- Keep the same structure and sections
+- Adjust vocabulary, sentence structure, and emphasis
+- Don't fabricate new achievements or skills
+
+Provide the adjusted resume and analysis of changes made.`,
+        });
+      } else {
+        return generateObject({
+          model,
+          schema: z.object({
+            adjustedContent: z.string(),
+            toneAnalysis: z.object({
+              originalTone: z.string(),
+              targetTone: z.string(),
+              changes: z.array(z.string()),
+            }),
+          }),
+          prompt: `You are an expert resume writer. Adjust the tone of this text.
+
+Original Text:
+${content}
+
+Target Tone: ${targetTone}
+Tone Description: ${toneDescriptions[targetTone]}
+
+Instructions:
+- Rewrite the text to match the target tone
+- Maintain the core message and facts
+- Adjust vocabulary and sentence structure appropriately
+
+Provide the adjusted text and analysis.`,
+        });
+      }
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Tone adjustment failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        adjustedContent: content,
+        toneAnalysis: {
+          originalTone: "[MOCK] Professional",
+          targetTone: targetTone,
+          changes: ["[MOCK] Would adjust vocabulary", "[MOCK] Would modify sentence structure"],
+        },
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Customize resume for a specific industry
+ */
+export async function customizeForIndustry(
+  resumeData: ResumeData,
+  targetIndustry: string,
+  options?: {
+    subIndustry?: string;
+    companySize?: "startup" | "mid" | "enterprise";
+    role?: string;
+  }
+): Promise<{
+  customizedResume: ResumeData;
+  industryKeywords: string[];
+  formattingTips: string[];
+  industryInsights: {
+    trends: string[];
+    valuedSkills: string[];
+    commonMistakes: string[];
+  };
+  changes: {
+    section: string;
+    change: string;
+    reason: string;
+  }[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          customizedResume: resumeDataSchema,
+          industryKeywords: z.array(z.string()).max(20),
+          formattingTips: z.array(z.string()).max(5),
+          industryInsights: z.object({
+            trends: z.array(z.string()).max(3),
+            valuedSkills: z.array(z.string()).max(10),
+            commonMistakes: z.array(z.string()).max(10),
+          }),
+          changes: z.array(z.object({
+            section: z.string(),
+            change: z.string(),
+            reason: z.string(),
+          })),
+        }),
+        prompt: `You are an industry-specific resume customization expert. Adapt this resume for the ${targetIndustry} industry.
+
+Current Resume:
+${JSON.stringify(resumeData, null, 2)}
+
+Target Industry: ${targetIndustry}
+${options?.subIndustry ? `Sub-industry: ${options.subIndustry}` : ""}
+${options?.companySize ? `Target Company Size: ${options.companySize}` : ""}
+${options?.role ? `Target Role: ${options.role}` : ""}
+
+Customization Tasks:
+
+1. **Vocabulary Adjustment**:
+   - Replace generic terms with industry-specific terminology
+   - Use jargon appropriately for the target audience
+   - Adjust technical depth based on typical readers
+
+2. **Keyword Optimization**:
+   - Add critical industry keywords
+   - Include relevant certifications and tools
+   - Optimize for industry-specific ATS systems
+
+3. **Achievement Reframing**:
+   - Highlight achievements most relevant to this industry
+   - Adjust metrics to resonate with industry priorities
+   - Emphasize transferable skills appropriately
+
+4. **Format Suggestions**:
+   - Recommend industry-appropriate formatting
+   - Suggest section ordering for maximum impact
+   - Note any industry-specific conventions
+
+5. **Industry Insights**:
+   - Current hiring trends in ${targetIndustry}
+   - Most valued skills for this industry
+   - Common resume mistakes for this industry
+
+Provide the customized resume and detailed insights.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Industry customization failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        customizedResume: resumeData,
+        industryKeywords: ["[MOCK] " + targetIndustry, "[MOCK] Industry term 1", "[MOCK] Industry term 2"],
+        formattingTips: ["[MOCK] Use industry-standard sections", "[MOCK] Highlight relevant certifications"],
+        industryInsights: {
+          trends: ["[MOCK] Digital transformation is key", "[MOCK] Remote work emphasis"],
+          valuedSkills: ["[MOCK] Communication", "[MOCK] Technical Skills", "[MOCK] Leadership"],
+          commonMistakes: ["[MOCK] Using generic language", "[MOCK] Missing industry keywords"],
+        },
+        changes: [
+          {
+            section: "summary",
+            change: "[MOCK] Would add industry-specific terminology",
+            reason: "[MOCK] Better alignment with industry expectations",
+          },
+        ],
       };
     }
     throw error;

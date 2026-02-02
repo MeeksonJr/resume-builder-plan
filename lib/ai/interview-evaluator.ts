@@ -28,7 +28,7 @@ export interface AnswerContext {
     question: string;
     questionType: string;
     answer: string;
-    difficulty: string;
+    difficulty?: string;
 }
 
 export async function evaluateInterviewAnswer(
@@ -37,7 +37,7 @@ export async function evaluateInterviewAnswer(
     const prompt = `You are an expert interview coach evaluating a candidate's answer to an interview question.
 
 Question Type: ${context.questionType}
-Difficulty: ${context.difficulty}
+Difficulty: ${context.difficulty || "Standard"}
 Question: ${context.question}
 
 Candidate's Answer: ${context.answer}

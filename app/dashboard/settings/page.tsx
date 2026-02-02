@@ -6,6 +6,7 @@ import { ProfileSettings } from "@/components/settings/profile-settings"
 import { AppearanceSettings } from "@/components/settings/appearance-settings"
 import { SecuritySettings } from "@/components/settings/security-settings"
 import { DataSettings } from "@/components/settings/data-settings"
+import { CareerSettings } from "@/components/settings/career-settings"
 
 export const metadata = {
     title: "Settings | ResumeForge",
@@ -48,6 +49,14 @@ export default async function SettingsPage() {
                 description="Update your personal information and avatar."
             >
                 <ProfileSettings profile={profile} user={user} />
+            </SettingsTab>
+
+            <SettingsTab
+                value="career"
+                title="Career Preferences"
+                description="Set your target role, industry, and career goals for personalized AI assistance."
+            >
+                <CareerSettings profile={profile} />
             </SettingsTab>
 
             <SettingsTab

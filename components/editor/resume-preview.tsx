@@ -1,3 +1,5 @@
+"use client";
+
 import React, { forwardRef } from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { ModernTemplate } from "./templates/modern-template";

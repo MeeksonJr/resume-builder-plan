@@ -58,10 +58,10 @@ const navItems = [
     },
     {
         title: "Resumes",
-        href: "/dashboard",
+        href: "/dashboard/resumes",
         icon: FileText,
         items: [
-            { title: "All Resumes", href: "/dashboard" },
+            { title: "All Resumes", href: "/dashboard/resumes" },
             { title: "Create New", href: "/dashboard/resume/new" },
             { title: "Smart Import", href: "/dashboard/import" },
         ],

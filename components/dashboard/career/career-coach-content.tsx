@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     BrainCircuit,
     Target,
@@ -14,20 +15,60 @@ import {
     AlertCircle,
     Loader2,
     Sparkles,
-    BookOpen
+    BookOpen,
+    Save,
+    History,
+    RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { formatDistanceToNow } from "date-fns";
 
 interface CareerCoachContentProps {
     profile: any;
     resumes: any[];
 }
 
+interface CareerAnalysis {
+    id?: string;
+    match_percentage: number;
+    strengths: string[];
+    gaps: string[];
+    roadmap: { timeframe: string; action: string; description: string }[];
+    project_ideas: { title: string; difficulty: string; description: string; focus_area: string }[];
+    market_trend: string;
+    hiring_tip: string;
+    created_at?: string;
+}
+
 export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [analysis, setAnalysis] = useState<any | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [analysis, setAnalysis] = useState<CareerAnalysis | null>(null);
+    const [savedAnalyses, setSavedAnalyses] = useState<CareerAnalysis[]>([]);
     const [selectedResumeId, setSelectedResumeId] = useState(resumes[0]?.id || "");
+
+    // Load saved analyses on mount
+    useEffect(() => {
+        loadSavedAnalyses();
+    }, []);
+
+    const loadSavedAnalyses = async () => {
+        const supabase = createClient();
+        const { data } = await supabase
+            .from("career_analyses")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+        if (data && data.length > 0) {
+            setSavedAnalyses(data);
+            // Set the most recent as current if no analysis is loaded
+            if (!analysis) {
+                setAnalysis(data[0]);
+            }
+        }
+    };
 
     const runAnalysis = async () => {
         if (!profile.target_role) {
@@ -61,6 +102,46 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
         }
     };
 
+    const saveAnalysis = async () => {
+        if (!analysis) return;
+
+        setIsSaving(true);
+        try {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) throw new Error("Not authenticated");
+
+            const { data, error } = await supabase
+                .from("career_analyses")
+                .insert({
+                    user_id: user.id,
+                    target_role: profile.target_role,
+                    target_industry: profile.target_industry,
+                    match_percentage: analysis.match_percentage,
+                    strengths: analysis.strengths,
+                    gaps: analysis.gaps,
+                    roadmap: analysis.roadmap,
+                    project_ideas: analysis.project_ideas,
+                    market_trend: analysis.market_trend,
+                    hiring_tip: analysis.hiring_tip,
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            setAnalysis({ ...analysis, id: data.id, created_at: data.created_at });
+            await loadSavedAnalyses();
+            toast.success("Analysis saved!");
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.message || "Failed to save analysis");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     if (!profile.target_role) {
         return (
             <Card className="border-dashed border-2 py-12 flex flex-col items-center justify-center text-center">
@@ -78,8 +159,49 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="col-span-1 md:col-span-2">
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center gap-3">
+                <Button onClick={runAnalysis} disabled={isLoading} className="gap-2">
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    {analysis ? "Run New Analysis" : "Start Analysis"}
+                </Button>
+                {analysis && !analysis.id && (
+                    <Button onClick={saveAnalysis} disabled={isSaving} variant="outline" className="gap-2">
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        Save Results
+                    </Button>
+                )}
+                {analysis?.id && (
+                    <Badge variant="secondary" className="gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Saved {analysis.created_at && formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+                    </Badge>
+                )}
+            </div>
+
+            {/* Saved Analyses Quick Access */}
+            {savedAnalyses.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                    <span className="text-sm text-muted-foreground flex items-center gap-1 shrink-0">
+                        <History className="h-4 w-4" />
+                        Previous:
+                    </span>
+                    {savedAnalyses.slice(0, 5).map((saved) => (
+                        <Button
+                            key={saved.id}
+                            variant={analysis?.id === saved.id ? "secondary" : "ghost"}
+                            size="sm"
+                            onClick={() => setAnalysis(saved)}
+                            className="shrink-0"
+                        >
+                            {saved.match_percentage}% • {formatDistanceToNow(new Date(saved.created_at!), { addSuffix: true })}
+                        </Button>
+                    ))}
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="col-span-1 lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Target className="h-5 w-5 text-primary" />
@@ -103,29 +225,37 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                                     <Progress value={analysis.match_percentage} className="h-3" />
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-bold uppercase tracking-wider text-green-600 flex items-center gap-2">
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-bold uppercase tracking-wider text-green-600 dark:text-green-400 flex items-center gap-2">
                                             <CheckCircle2 className="h-4 w-4" />
                                             Core Strengths
                                         </h3>
                                         <div className="flex flex-wrap gap-2">
                                             {analysis.strengths.map((s: string, i: number) => (
-                                                <Badge key={i} variant="secondary" className="bg-green-500/10 text-green-700 hover:bg-green-500/20 border-green-200">
-                                                    {s}
+                                                <Badge
+                                                    key={i}
+                                                    variant="secondary"
+                                                    className="bg-green-500/10 text-green-700 dark:text-green-300 hover:bg-green-500/20 border border-green-500/20 max-w-full"
+                                                >
+                                                    <span className="truncate">{s}</span>
                                                 </Badge>
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-bold uppercase tracking-wider text-orange-600 flex items-center gap-2">
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 flex items-center gap-2">
                                             <AlertCircle className="h-4 w-4" />
                                             Critical Skill Gaps
                                         </h3>
                                         <div className="flex flex-wrap gap-2">
                                             {analysis.gaps.map((g: string, i: number) => (
-                                                <Badge key={i} variant="secondary" className="bg-orange-500/10 text-orange-700 hover:bg-orange-500/20 border-orange-200">
-                                                    {g}
+                                                <Badge
+                                                    key={i}
+                                                    variant="secondary"
+                                                    className="bg-orange-500/10 text-orange-700 dark:text-orange-300 hover:bg-orange-500/20 border border-orange-500/20 max-w-full"
+                                                >
+                                                    <span className="truncate">{g}</span>
                                                 </Badge>
                                             ))}
                                         </div>
@@ -159,16 +289,18 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                     </CardHeader>
                     <CardContent>
                         {analysis ? (
-                            <div className="space-y-4">
-                                {analysis.roadmap.map((step: any, i: number) => (
-                                    <div key={i} className="relative pl-6 pb-4 border-l border-primary/30 last:border-0 last:pb-0">
-                                        <div className="absolute left-[-5px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                                        <p className="text-xs font-bold text-primary uppercase">{step.timeframe}</p>
-                                        <h4 className="text-sm font-bold">{step.action}</h4>
-                                        <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
-                                    </div>
-                                ))}
-                            </div>
+                            <ScrollArea className="h-[280px] pr-4">
+                                <div className="space-y-4">
+                                    {analysis.roadmap.map((step: any, i: number) => (
+                                        <div key={i} className="relative pl-6 pb-4 border-l border-primary/30 last:border-0 last:pb-0">
+                                            <div className="absolute left-[-5px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                                            <p className="text-xs font-bold text-primary uppercase">{step.timeframe}</p>
+                                            <h4 className="text-sm font-bold">{step.action}</h4>
+                                            <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-10 text-center opacity-50">
                                 <p className="text-xs font-medium">Your step-by-step career roadmap will appear here.</p>
@@ -179,23 +311,27 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
             </div>
 
             {analysis && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">Project Suggestions</CardTitle>
                             <CardDescription>Actionable projects to bridge your skill gaps.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            {analysis.project_ideas.map((p: any, i: number) => (
-                                <div key={i} className="p-4 rounded-xl border bg-card/50 space-y-2">
-                                    <h4 className="font-bold flex items-center gap-2">
-                                        {p.title}
-                                        <Badge variant="outline" className="text-[10px]">{p.difficulty}</Badge>
-                                    </h4>
-                                    <p className="text-xs text-muted-foreground">{p.description}</p>
-                                    <p className="text-[10px] font-medium text-primary">Key Focus: {p.focus_area}</p>
+                        <CardContent>
+                            <ScrollArea className="h-[260px] pr-4">
+                                <div className="space-y-4">
+                                    {analysis.project_ideas.map((p: any, i: number) => (
+                                        <div key={i} className="p-4 rounded-xl border bg-card/50 space-y-2">
+                                            <h4 className="font-bold flex items-center gap-2 flex-wrap">
+                                                <span className="break-words">{p.title}</span>
+                                                <Badge variant="outline" className="text-[10px] shrink-0">{p.difficulty}</Badge>
+                                            </h4>
+                                            <p className="text-xs text-muted-foreground">{p.description}</p>
+                                            <p className="text-[10px] font-medium text-primary break-words">Key Focus: {p.focus_area}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            </ScrollArea>
                         </CardContent>
                     </Card>
 
@@ -207,16 +343,16 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                         <CardContent className="space-y-4">
                             <div className="p-4 rounded-xl border bg-accent/30 flex items-start gap-4">
                                 <TrendingUp className="h-5 w-5 text-primary shrink-0 mt-1" />
-                                <div className="space-y-1">
+                                <div className="space-y-1 min-w-0">
                                     <h4 className="text-sm font-bold">Industry Trend</h4>
-                                    <p className="text-xs text-muted-foreground">{analysis.market_trend}</p>
+                                    <p className="text-xs text-muted-foreground break-words">{analysis.market_trend}</p>
                                 </div>
                             </div>
                             <div className="p-4 rounded-xl border bg-accent/30 flex items-start gap-4">
                                 <ArrowRight className="h-5 w-5 text-primary shrink-0 mt-1" />
-                                <div className="space-y-1">
+                                <div className="space-y-1 min-w-0">
                                     <h4 className="text-sm font-bold">Hiring Tip</h4>
-                                    <p className="text-xs text-muted-foreground">{analysis.hiring_tip}</p>
+                                    <p className="text-xs text-muted-foreground break-words">{analysis.hiring_tip}</p>
                                 </div>
                             </div>
                         </CardContent>

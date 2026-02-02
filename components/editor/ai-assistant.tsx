@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, X, Loader2, Check, RefreshCw, Plus, ClipboardCopy, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Sparkles, X, Loader2, Check, RefreshCw, Plus, ClipboardCopy, ArrowUpRight, ChevronDown, Target, Zap, Palette, Building2 } from "lucide-react";
 import { useResumeStore, WorkExperience } from "@/lib/stores/resume-store";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { JobMatchCard, BulkOptimizeDialog, ToneSelector, IndustrySelector } from "@/components/editor/ai";
 
 interface AIAssistantProps {
     onClose: () => void;
@@ -30,7 +31,7 @@ interface AIAssistantProps {
 
 export function AIAssistant({ onClose }: AIAssistantProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve" | "ats" | "keywords">("menu");
+    const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve" | "ats" | "keywords" | "job-match" | "tone" | "industry">("menu");
     const [jobDescription, setJobDescription] = useState("");
     const [textToImprove, setTextToImprove] = useState("");
     const [improvedText, setImprovedText] = useState("");
@@ -335,6 +336,9 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                     {mode === "results" && "Analysis results"}
                     {mode === "improve" && "Improve any text for your resume"}
                     {mode === "keywords" && "Keyword Matcher"}
+                    {mode === "job-match" && "Match your resume against a job posting"}
+                    {mode === "tone" && "Adjust the tone of your content"}
+                    {mode === "industry" && "Customize for a specific industry"}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden flex flex-col gap-4">
@@ -388,6 +392,35 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             >
                                 <Sparkles className="mr-2 h-4 w-4" />
                                 Keyword Matcher
+                            </Button>
+
+                            {/* Phase 35: AI Power-ups */}
+                            <div className="border-t pt-2 mt-2">
+                                <p className="text-xs text-muted-foreground mb-2 font-medium">AI Power-ups</p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start"
+                                onClick={() => setMode("job-match")}
+                            >
+                                <Target className="mr-2 h-4 w-4 text-blue-500" />
+                                Job Match Score
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start"
+                                onClick={() => setMode("tone")}
+                            >
+                                <Palette className="mr-2 h-4 w-4 text-purple-500" />
+                                Tone Adjustment
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start"
+                                onClick={() => setMode("industry")}
+                            >
+                                <Building2 className="mr-2 h-4 w-4 text-green-500" />
+                                Industry Customize
                             </Button>
                         </div>
                     </div>
@@ -721,6 +754,121 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             </Button>
                             <Button onClick={applyTailoring} className="flex-1">
                                 Apply Changes
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Phase 35: Job Match Mode */}
+                {mode === "job-match" && (
+                    <div className="flex flex-col h-full gap-4 overflow-hidden">
+                        <ScrollArea className="flex-1">
+                            <div className="pr-4">
+                                <JobMatchCard
+                                    resumeData={getResumeData()}
+                                    onApplyRecommendation={(rec) => toast.info(rec)}
+                                />
+                            </div>
+                        </ScrollArea>
+                        <div className="pt-2 border-t">
+                            <Button variant="outline" onClick={() => setMode("menu")} className="w-full">
+                                Back to Menu
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Phase 35: Tone Adjustment Mode */}
+                {mode === "tone" && (
+                    <div className="flex flex-col h-full gap-4 overflow-hidden">
+                        <ScrollArea className="flex-1">
+                            <div className="pr-4">
+                                <ToneSelector
+                                    content={profile?.summary || ""}
+                                    scope="selected"
+                                    onApply={(content) => {
+                                        if (typeof content === "string") {
+                                            updateProfile({ summary: content });
+                                            toast.success("Content updated with new tone");
+                                        }
+                                        setMode("menu");
+                                    }}
+                                />
+                            </div>
+                        </ScrollArea>
+                        <div className="pt-2 border-t">
+                            <Button variant="outline" onClick={() => setMode("menu")} className="w-full">
+                                Back to Menu
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Phase 35: Industry Customization Mode */}
+                {mode === "industry" && (
+                    <div className="flex flex-col h-full gap-4 overflow-hidden">
+                        <ScrollArea className="flex-1">
+                            <div className="pr-4">
+                                <IndustrySelector
+                                    resumeData={getResumeData()}
+                                    onApply={(customizedResume) => {
+                                        // Apply the customized resume data
+                                        let changesApplied = 0;
+
+                                        console.log("Applying customized resume:", customizedResume);
+
+                                        // Update summary if provided
+                                        if (customizedResume.personalInfo?.summary) {
+                                            updateProfile({ summary: customizedResume.personalInfo.summary });
+                                            changesApplied++;
+                                        }
+
+                                        // Add new skills from the customized resume
+                                        // AI returns skills as [{category, items: string[]}]
+                                        if (customizedResume.skills && Array.isArray(customizedResume.skills)) {
+                                            const existingSkillNames = new Set(skills.map(s => s.name.toLowerCase()));
+                                            customizedResume.skills.forEach((skillGroup: any) => {
+                                                const category = skillGroup.category || "Industry";
+                                                const items = skillGroup.items || [];
+                                                items.forEach((skillName: string) => {
+                                                    if (skillName && !existingSkillNames.has(skillName.toLowerCase())) {
+                                                        addSkill({
+                                                            name: skillName,
+                                                            category: category,
+                                                            proficiency_level: 3
+                                                        });
+                                                        existingSkillNames.add(skillName.toLowerCase());
+                                                        changesApplied++;
+                                                    }
+                                                });
+                                            });
+                                        }
+
+                                        // Update work experience highlights if provided
+                                        if (customizedResume.workExperience && Array.isArray(customizedResume.workExperience)) {
+                                            customizedResume.workExperience.forEach((exp: any, index: number) => {
+                                                if (workExperiences[index] && exp.highlights && Array.isArray(exp.highlights)) {
+                                                    updateWorkExperience(workExperiences[index].id, {
+                                                        highlights: exp.highlights
+                                                    });
+                                                    changesApplied++;
+                                                }
+                                            });
+                                        }
+
+                                        if (changesApplied > 0) {
+                                            toast.success(`Industry customization applied! ${changesApplied} changes made.`);
+                                        } else {
+                                            toast.info("No changes to apply. The AI suggestions may already match your resume.");
+                                        }
+                                        setMode("menu");
+                                    }}
+                                />
+                            </div>
+                        </ScrollArea>
+                        <div className="pt-2 border-t">
+                            <Button variant="outline" onClick={() => setMode("menu")} className="w-full">
+                                Back to Menu
                             </Button>
                         </div>
                     </div>
