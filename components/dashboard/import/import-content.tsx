@@ -1,327 +1,272 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-    Linkedin,
-    Github,
-    FileJson,
-    Loader2,
-    Upload,
-    CheckCircle2,
-    Star,
-    GitFork,
-    Code
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Linkedin, Github, FileJson, Loader2, Sparkles, Plus, AlertCircle, Terminal, UserSquare2, CheckCircle2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ImportContentProps {
-    resumes: { id: string; title: string }[];
+    resumes: any[];
 }
 
 export function ImportContent({ resumes }: ImportContentProps) {
+    const [activeTab, setActiveTab] = useState("linkedin");
+    const [loading, setLoading] = useState(false);
+    const [linkedinData, setLinkedinData] = useState("");
+    const [githubUrl, setGithubUrl] = useState("");
+    const [selectedResumeId, setSelectedResumeId] = useState("");
+    const supabase = createClient();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
 
-    // LinkedIn state
-    const [linkedinText, setLinkedinText] = useState("");
-
-    // GitHub state
-    const [githubUsername, setGithubUsername] = useState("");
-    const [githubRepos, setGithubRepos] = useState<any[]>([]);
-    const [selectedResume, setSelectedResume] = useState(resumes[0]?.id || "");
-    const [isLoadingRepos, setIsLoadingRepos] = useState(false);
-
-    const handleLinkedInImport = async () => {
-        if (!linkedinText.trim()) {
-            toast.error("Please paste your LinkedIn profile text");
-            return;
-        }
-
-        setIsLoading(true);
+    const handleLinkedinImport = async () => {
+        if (!linkedinData) return;
+        setLoading(true);
         try {
             const response = await fetch("/api/ai/import/linkedin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ linkedinText }),
+                body: JSON.stringify({ text: linkedinData }),
             });
 
             if (!response.ok) throw new Error("Import failed");
 
-            const data = await response.json();
-            toast.success("LinkedIn profile imported successfully!");
-            router.push(`/dashboard/resume/${data.resumeId}/edit`);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to import LinkedIn profile");
+            const resumeData = await response.json();
+
+            // Create the resume in database
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("Not authenticated");
+
+            const { data, error } = await supabase
+                .from("resumes")
+                .insert({
+                    user_id: user.id,
+                    title: `Imported from LinkedIn (${new Date().toLocaleDateString()})`,
+                    content: resumeData,
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            toast.success("Resume imported successfully!");
+            router.push(`/editor/${data.id}`);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to import from LinkedIn");
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    const fetchGitHubRepos = async () => {
-        if (!githubUsername.trim()) {
-            toast.error("Please enter a GitHub username");
+    const handleGithubImport = async () => {
+        if (!githubUrl || !selectedResumeId) {
+            toast.error("Please provide GitHub URL and select a resume");
             return;
         }
-
-        setIsLoadingRepos(true);
-        try {
-            const response = await fetch(`/api/github/repos?username=${githubUsername}`);
-            if (!response.ok) throw new Error("Failed to fetch repos");
-
-            const repos = await response.json();
-            setGithubRepos(repos);
-            toast.success(`Found ${repos.length} repositories`);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to fetch GitHub repositories");
-        } finally {
-            setIsLoadingRepos(false);
-        }
-    };
-
-    const importGitHubProject = async (repo: any) => {
-        if (!selectedResume) {
-            toast.error("Please select a resume first");
-            return;
-        }
-
-        setIsLoading(true);
+        setLoading(true);
         try {
             const response = await fetch("/api/ai/import/github", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    resumeId: selectedResume,
-                    repoFullName: repo.fullName,
-                    repoName: repo.name,
-                    repoDescription: repo.description,
-                    repoLanguage: repo.language,
-                    repoUrl: repo.url,
+                    url: githubUrl,
+                    resumeId: selectedResumeId
                 }),
             });
 
-            if (!response.ok) throw new Error("Import failed");
+            if (!response.ok) throw new Error("GitHub import failed");
 
-            toast.success(`${repo.name} added to your resume!`);
-            router.push(`/dashboard/resume/${selectedResume}/edit#projects`);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to import GitHub project");
+            toast.success("GitHub projects successfully added to your resume!");
+            router.push(`/editor/${selectedResumeId}`);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to import from GitHub");
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <Tabs defaultValue="linkedin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="linkedin" className="gap-2">
+        <Tabs defaultValue="linkedin" value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+            <TabsList className="bg-slate-950/40 backdrop-blur-md border border-primary/5 p-1 h-14 rounded-2xl grid grid-cols-2 max-w-[400px]">
+                <TabsTrigger value="linkedin" className="rounded-xl data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-black uppercase tracking-widest text-[10px] gap-2 transition-all">
                     <Linkedin className="h-4 w-4" />
                     LinkedIn
                 </TabsTrigger>
-                <TabsTrigger value="github" className="gap-2">
+                <TabsTrigger value="github" className="rounded-xl data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-black uppercase tracking-widest text-[10px] gap-2 transition-all">
                     <Github className="h-4 w-4" />
                     GitHub
                 </TabsTrigger>
-                <TabsTrigger value="json" className="gap-2">
-                    <FileJson className="h-4 w-4" />
-                    JSON Resume
-                </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="linkedin" className="mt-6 space-y-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Linkedin className="h-5 w-5 text-blue-600" />
-                            Import from LinkedIn
-                        </CardTitle>
-                        <CardDescription>
-                            Paste your LinkedIn profile text or upload a PDF export to create a new resume instantly.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>LinkedIn Profile Text</Label>
-                            <Textarea
-                                placeholder="Copy your LinkedIn profile text and paste it here..."
-                                className="min-h-[300px] font-mono text-xs"
-                                value={linkedinText}
-                                onChange={(e) => setLinkedinText(e.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                💡 Tip: Go to your LinkedIn profile, select all text (Ctrl+A), and paste here.
-                            </p>
-                        </div>
-                        <Button
-                            onClick={handleLinkedInImport}
-                            disabled={isLoading || !linkedinText.trim()}
-                            className="w-full gap-2"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Importing...
-                                </>
-                            ) : (
-                                <>
-                                    <Upload className="h-4 w-4" />
-                                    Import LinkedIn Profile
-                                </>
-                            )}
-                        </Button>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-
-            <TabsContent value="github" className="mt-6 space-y-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Github className="h-5 w-5" />
-                            Import from GitHub
-                        </CardTitle>
-                        <CardDescription>
-                            Add your best GitHub projects to your resume with AI-generated descriptions.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>GitHub Username</Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        placeholder="octocat"
-                                        value={githubUsername}
-                                        onChange={(e) => setGithubUsername(e.target.value)}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <TabsContent value="linkedin" className="m-0">
+                        <Card className="bg-slate-950/40 backdrop-blur-xl border-primary/5 rounded-[32px] overflow-hidden shadow-2xl">
+                            <div className="h-24 bg-gradient-to-br from-blue-600/10 via-slate-900 to-transparent border-b border-primary/5 flex items-center px-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-blue-500/10 shadow-inner">
+                                        <Linkedin className="h-6 w-6 text-blue-400" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black uppercase tracking-tight">LinkedIn Synthesizer</h2>
+                                        <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">Construct a professional profile from social data</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <CardContent className="p-10 space-y-8">
+                                <div className="space-y-4">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Profile Data Corpus</Label>
+                                    <Textarea
+                                        placeholder="Paste your LinkedIn profile text or PDF export content here..."
+                                        className="min-h-[300px] bg-slate-900/30 border-primary/10 rounded-2xl p-6 font-medium text-muted-foreground/80 focus:ring-primary/20 placeholder:text-muted-foreground/20 resize-none transition-all leading-relaxed"
+                                        value={linkedinData}
+                                        onChange={(e) => setLinkedinData(e.target.value)}
                                     />
-                                    <Button
-                                        onClick={fetchGitHubRepos}
-                                        disabled={isLoadingRepos}
-                                        variant="secondary"
-                                    >
-                                        {isLoadingRepos ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                    <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
+                                        <AlertCircle className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
+                                        <p className="text-xs font-medium text-blue-400/80 leading-relaxed">
+                                            For best results, go to your LinkedIn profile {"->"} More {"->"} Save to PDF. Open the PDF, copy all text, and paste it above. Our AI will automatically structure it into a premium resume.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    onClick={handleLinkedinImport}
+                                    disabled={loading || !linkedinData}
+                                    className="w-full h-16 rounded-[20px] font-black uppercase tracking-widest text-sm relative group overflow-hidden shadow-2xl shadow-blue-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all bg-blue-600 hover:bg-blue-500"
+                                >
+                                    <div className="relative flex items-center justify-center gap-3">
+                                        {loading ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                <span>Parsing Network Data...</span>
+                                            </>
                                         ) : (
-                                            "Fetch Repos"
+                                            <>
+                                                <Sparkles className="h-5 w-5" />
+                                                <span>Execute LinkedIn Import</span>
+                                            </>
                                         )}
-                                    </Button>
+                                    </div>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="github" className="m-0">
+                        <Card className="bg-slate-950/40 backdrop-blur-xl border-primary/5 rounded-[32px] overflow-hidden shadow-2xl">
+                            <div className="h-24 bg-gradient-to-br from-slate-400/10 via-slate-900 to-transparent border-b border-primary/5 flex items-center px-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-white/5 shadow-inner border border-white/5">
+                                        <Github className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black uppercase tracking-tight">Project Ingestor</h2>
+                                        <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">Import technical repositories into your resume</p>
+                                    </div>
                                 </div>
                             </div>
+                            <CardContent className="p-10 space-y-10">
+                                <div className="grid gap-10 md:grid-cols-2">
+                                    <div className="space-y-4">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Entity Pointer</Label>
+                                        <div className="relative group">
+                                            <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                                            <Input
+                                                placeholder="github.com/username"
+                                                className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl pl-11 font-bold focus:ring-primary/20 transition-all"
+                                                value={githubUrl}
+                                                onChange={(e) => setGithubUrl(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
 
-                            {resumes.length > 0 && (
-                                <div className="space-y-2">
-                                    <Label>Add projects to:</Label>
-                                    <Select value={selectedResume} onValueChange={setSelectedResume}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {resumes.map((resume) => (
-                                                <SelectItem key={resume.id} value={resume.id}>
-                                                    {resume.title}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            )}
-                        </div>
-
-                        {githubRepos.length > 0 && (
-                            <div className="space-y-3">
-                                <h3 className="text-sm font-semibold">Your Repositories</h3>
-                                <div className="grid gap-3 max-h-[500px] overflow-y-auto">
-                                    {githubRepos.map((repo) => (
-                                        <Card key={repo.id} className="p-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="space-y-2 flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <h4 className="font-semibold text-sm">{repo.name}</h4>
-                                                        {repo.language && (
-                                                            <Badge variant="outline" className="text-xs">
-                                                                <Code className="h-3 w-3 mr-1" />
-                                                                {repo.language}
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground line-clamp-2">
-                                                        {repo.description || "No description"}
-                                                    </p>
-                                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                                        <span className="flex items-center gap-1">
-                                                            <Star className="h-3 w-3" />
-                                                            {repo.stars}
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <GitFork className="h-3 w-3" />
-                                                            {repo.forks}
-                                                        </span>
-                                                    </div>
+                                    <div className="space-y-4">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Context Destination</Label>
+                                        <Select
+                                            value={selectedResumeId}
+                                            onValueChange={setSelectedResumeId}
+                                        >
+                                            <SelectTrigger className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl font-bold transition-all focus:ring-primary/20">
+                                                <div className="flex items-center gap-2">
+                                                    <UserSquare2 className="h-4 w-4 text-primary" />
+                                                    <SelectValue placeholder="Select target resume" />
                                                 </div>
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => importGitHubProject(repo)}
-                                                    disabled={isLoading}
-                                                    className="shrink-0"
-                                                >
-                                                    {isLoading ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        <>
-                                                            <CheckCircle2 className="h-4 w-4 mr-1" />
-                                                            Add
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </Card>
-                                    ))}
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-slate-950 border-primary/10 rounded-2xl">
+                                                {resumes.map(r => (
+                                                    <SelectItem key={r.id} value={r.id} className="font-bold text-xs py-3 focus:bg-primary/10 rounded-xl">
+                                                        {r.title}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </TabsContent>
 
-            <TabsContent value="json" className="mt-6 space-y-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileJson className="h-5 w-5 text-orange-600" />
-                            JSON Resume Import
-                        </CardTitle>
-                        <CardDescription>
-                            Import from the JSON Resume standard format or export your current resume.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="p-6 border-2 border-dashed rounded-lg text-center space-y-2">
-                            <FileJson className="h-12 w-12 mx-auto text-muted-foreground" />
-                            <p className="text-sm font-medium">Coming Soon</p>
-                            <p className="text-xs text-muted-foreground">
-                                Support for JSON Resume import/export will be available in the next update.
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </TabsContent>
+                                <div className="p-6 rounded-[28px] bg-white/5 border border-white/5 space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">
+                                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                        Automation Scope
+                                    </h4>
+                                    <ul className="grid grid-cols-2 gap-4 text-[11px] font-bold text-muted-foreground/60">
+                                        <li className="flex items-center gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-primary" />
+                                            Repository descriptions
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-primary" />
+                                            Primary tech stacks
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-primary" />
+                                            Star counts & impact
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="h-1 w-1 rounded-full bg-primary" />
+                                            Live deployment links
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <Button
+                                    onClick={handleGithubImport}
+                                    disabled={loading || !githubUrl || !selectedResumeId}
+                                    className="w-full h-16 rounded-[20px] font-black uppercase tracking-widest text-sm relative group overflow-hidden shadow-2xl shadow-primary/10 hover:scale-[1.01] active:scale-[0.99] transition-all bg-white text-black hover:bg-slate-200"
+                                >
+                                    <div className="relative flex items-center justify-center gap-3">
+                                        {loading ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                <span>Ingesting Codebase Data...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Github className="h-5 w-5" />
+                                                <span>Initialize Repository Import</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </motion.div>
+            </AnimatePresence>
         </Tabs>
     );
 }

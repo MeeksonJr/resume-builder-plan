@@ -16,14 +16,16 @@ import {
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface RichTextEditorProps {
     content: string;
     onChange: (content: string) => void;
     placeholder?: string;
+    className?: string;
 }
 
-export function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, placeholder, className }: RichTextEditorProps) {
     const editor = useEditor({
         extensions: [
             StarterKit.configure({
@@ -55,7 +57,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
     }
 
     return (
-        <div className="flex flex-col w-full border rounded-md focus-within:ring-1 focus-within:ring-ring">
+        <div className={cn("flex flex-col w-full border rounded-md focus-within:ring-1 focus-within:ring-ring", className)}>
             <div className="flex flex-wrap items-center gap-1 p-1 border-b bg-muted/30">
                 <Toggle
                     size="sm"

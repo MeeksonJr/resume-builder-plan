@@ -21,9 +21,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Sparkles, ChevronLeft } from "lucide-react";
+import { Loader2, Sparkles, ChevronLeft, Brain, Briefcase, User, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function NewCoverLetterPage() {
     const router = useRouter();
@@ -92,40 +93,58 @@ export default function NewCoverLetterPage() {
     };
 
     return (
-        <div className="mx-auto max-w-3xl space-y-6">
-            <Button variant="ghost" asChild className="mb-2">
-                <Link href="/dashboard/cover-letters">
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Back to list
-                </Link>
-            </Button>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto max-w-4xl space-y-10"
+        >
+            <div className="flex items-center justify-between">
+                <Button variant="ghost" asChild className="hover:bg-slate-900 rounded-xl px-4 transition-all group">
+                    <Link href="/dashboard/cover-letters">
+                        <ChevronLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-bold text-xs uppercase tracking-widest text-muted-foreground group-hover:text-white">All Letters</span>
+                    </Link>
+                </Button>
+            </div>
 
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">New Cover Letter</h1>
-                <p className="text-muted-foreground">
-                    Tailor your cover letter to a specific job using your resume data.
+            <div className="space-y-2 px-1">
+                <h1 className="text-4xl font-black uppercase tracking-tight text-white flex items-center gap-3">
+                    Tailored Letter
+                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                </h1>
+                <p className="text-muted-foreground/80 font-bold max-w-2xl">
+                    Our AI engineers a professional narrative by synthesizing your resume with specific job requirements.
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Job Details</CardTitle>
-                        <CardDescription>
-                            Information about the position you're applying for.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>Select Base Resume</Label>
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <Card className="border-primary/5 bg-slate-950/60 backdrop-blur-2xl rounded-[32px] overflow-hidden shadow-2xl">
+                    <div className="h-24 bg-gradient-to-br from-primary/10 via-slate-900 to-transparent border-b border-primary/5 flex items-center px-10">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-primary/10 shadow-inner">
+                                <Sparkles className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black uppercase tracking-tight">AI Generation Engine</h2>
+                                <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">Configure your targeting parameters</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <CardContent className="p-10 space-y-10">
+                        <div className="grid gap-8 md:grid-cols-2">
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Context</Label>
                                 <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-                                    <SelectTrigger className="min-h-[44px]">
-                                        <SelectValue placeholder="Select a resume" />
+                                    <SelectTrigger className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 transition-all font-bold">
+                                        <div className="flex items-center gap-2">
+                                            <Briefcase className="h-4 w-4 text-primary" />
+                                            <SelectValue placeholder="Select a resume" />
+                                        </div>
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-slate-900 border-primary/10 rounded-2xl">
                                         {resumes.map((resume) => (
-                                            <SelectItem key={resume.id} value={resume.id}>
+                                            <SelectItem key={resume.id} value={resume.id} className="focus:bg-primary/10 rounded-xl py-3 font-bold">
                                                 {resume.title}
                                             </SelectItem>
                                         ))}
@@ -133,84 +152,103 @@ export default function NewCoverLetterPage() {
                                 </Select>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label>Writing Tone</Label>
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Aesthetics & Tone</Label>
                                 <Select value={tone} onValueChange={setTone}>
-                                    <SelectTrigger className="min-h-[44px]">
-                                        <SelectValue placeholder="Select tone" />
+                                    <SelectTrigger className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 transition-all font-bold">
+                                        <div className="flex items-center gap-2 text-primary">
+                                            <Brain className="h-4 w-4" />
+                                            <SelectValue placeholder="Select tone" />
+                                        </div>
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="professional">Professional</SelectItem>
-                                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
-                                        <SelectItem value="concise">Concise</SelectItem>
-                                        <SelectItem value="creative">Creative</SelectItem>
+                                    <SelectContent className="bg-slate-900 border-primary/10 rounded-2xl">
+                                        <SelectItem value="professional" className="focus:bg-primary/10 rounded-xl py-3 font-bold">Professional (Standard)</SelectItem>
+                                        <SelectItem value="enthusiastic" className="focus:bg-primary/10 rounded-xl py-3 font-bold">Enthusiastic (Hyped)</SelectItem>
+                                        <SelectItem value="concise" className="focus:bg-primary/10 rounded-xl py-3 font-bold">Concise (Direct)</SelectItem>
+                                        <SelectItem value="creative" className="focus:bg-primary/10 rounded-xl py-3 font-bold">Creative (Storytelling)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="jobTitle">Job Title</Label>
-                                <Input
-                                    id="jobTitle"
-                                    value={formData.jobTitle}
-                                    onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                                    placeholder="e.g. Senior Frontend Engineer"
-                                    className="min-h-[44px]"
-                                />
+                        <div className="grid gap-8 md:grid-cols-2">
+                            <div className="space-y-3">
+                                <Label htmlFor="jobTitle" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Target Role</Label>
+                                <div className="relative group">
+                                    <Input
+                                        id="jobTitle"
+                                        value={formData.jobTitle}
+                                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                                        placeholder="Senior Frontend Engineer"
+                                        className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 pl-4 font-bold placeholder:text-muted-foreground/30 transition-all group-hover:border-primary/20"
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="companyName">Company Name</Label>
-                                <Input
-                                    id="companyName"
-                                    value={formData.companyName}
-                                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                    placeholder="e.g. Acme Corp"
-                                    className="min-h-[44px]"
-                                />
+                            <div className="space-y-3">
+                                <Label htmlFor="companyName" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Hiring Entity</Label>
+                                <div className="relative group">
+                                    <Input
+                                        id="companyName"
+                                        value={formData.companyName}
+                                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                                        placeholder="SpaceX"
+                                        className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 pl-4 font-bold placeholder:text-muted-foreground/30 transition-all group-hover:border-primary/20"
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="recipientName">Hiring Manager Name (Optional)</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="recipientName" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Hiring Lead (Optional)</Label>
                             <Input
                                 id="recipientName"
                                 value={formData.recipientName}
                                 onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                                placeholder="e.g. Jane Smith"
-                                className="min-h-[44px]"
+                                placeholder="Ms. Elena Vance"
+                                className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 pl-4 font-bold placeholder:text-muted-foreground/30 transition-all"
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="jobDescription">Job Description</Label>
+                        <div className="space-y-3 border-t border-primary/5 pt-8">
+                            <Label htmlFor="jobDescription" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 flex items-center justify-between">
+                                Job Description
+                                <span className="text-primary opacity-60">REQUIRED</span>
+                            </Label>
                             <Textarea
                                 id="jobDescription"
                                 value={formData.jobDescription}
                                 onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
-                                placeholder="Paste the job description here..."
-                                className="min-h-[200px]"
+                                placeholder="Paste the requirement text here. Our AI will extract keywords and align your narrative..."
+                                className="min-h-[250px] bg-slate-900/30 border-primary/10 rounded-2xl p-6 font-medium text-muted-foreground/80 focus:ring-primary/20 placeholder:text-muted-foreground/20 resize-none transition-all leading-relaxed"
                                 required
                             />
                         </div>
                     </CardContent>
-                </Card>
 
-                <Button type="submit" className="w-full min-h-[44px] gap-2" disabled={loading}>
-                    {loading ? (
-                        <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Generating Cover Letter...
-                        </>
-                    ) : (
-                        <>
-                            <Sparkles className="h-4 w-4" />
-                            Generate with AI
-                        </>
-                    )}
-                </Button>
+                    <div className="px-10 pb-10">
+                        <Button
+                            type="submit"
+                            disabled={loading || !formData.jobDescription}
+                            className="w-full h-16 rounded-[20px] font-black uppercase tracking-widest text-sm relative group overflow-hidden shadow-2xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary opacity-100 group-hover:opacity-90 transition-opacity" />
+                            <div className="relative flex items-center justify-center gap-3">
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        <span>Engineering Narrative...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="h-5 w-5" />
+                                        <span>Initialize Synthesis</span>
+                                    </>
+                                )}
+                            </div>
+                        </Button>
+                    </div>
+                </Card>
             </form>
-        </div>
+        </motion.div>
     );
 }

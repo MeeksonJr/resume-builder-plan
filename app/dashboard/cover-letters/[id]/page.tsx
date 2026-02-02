@@ -17,11 +17,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, Download, FileDown, Save, Loader2 } from "lucide-react";
+import { ChevronLeft, Download, FileDown, Save, Loader2, Info, Building2, Briefcase, Calendar, Layout } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useReactToPrint } from "react-to-print";
+import { Label } from "@/components/ui/label";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profile: any, template: string }>(({ content, profile, template }, ref) => {
     const isClassic = template === "classic";
@@ -38,15 +40,15 @@ const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profi
                     <div className={`mt-2 text-sm text-gray-600 ${isClassic ? 'flex justify-center gap-3' : 'space-y-1'}`}>
                         <span>{profile.location}</span>
                         {!isClassic && <br />}
-                        {isClassic && <span>|</span>}
+                        {isClassic && <span className="mx-1">|</span>}
                         <span>{profile.phone}</span>
                         {!isClassic && <br />}
-                        {isClassic && <span>|</span>}
+                        {isClassic && <span className="mx-1">|</span>}
                         <span>{profile.email}</span>
                         {profile.website_url && (
                             <>
                                 {!isClassic && <br />}
-                                {isClassic && <span>|</span>}
+                                {isClassic && <span className="mx-1">|</span>}
                                 <span>{profile.website_url}</span>
                             </>
                         )}
@@ -71,11 +73,10 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
     const [coverLetter, setCoverLetter] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [coverLetterTemplate, setCoverLetterTemplate] = useState<string>("modern");
+    const [isEdited, setIsEdited] = useState(false);
     const componentRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = useReactToPrint({
-        // For react-to-print v3+ the argument might be different, but content: () => ref.current is standard for v2
-        // If it throws lint errors, we might need to cast or check v3 syntax
         contentRef: componentRef,
         documentTitle: coverLetter?.title || "Cover Letter",
     } as any);
@@ -121,6 +122,7 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
 
             if (error) throw error;
             toast.success("Cover letter saved!");
+            setIsEdited(false);
         } catch (error) {
             toast.error("Failed to save cover letter");
         } finally {
@@ -138,87 +140,139 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
 
     if (!coverLetter) {
         return (
-            <div className="text-center py-20">
-                <h2 className="text-2xl font-bold">Cover letter not found</h2>
-                <Button asChild variant="link">
-                    <Link href="/dashboard/cover-letters">Back to list</Link>
+            <div className="text-center py-20 bg-slate-950/40 backdrop-blur-xl rounded-[32px] border border-primary/5 mx-auto max-w-lg mt-20">
+                <Info className="h-12 w-12 text-primary/40 mx-auto mb-4" />
+                <h2 className="text-2xl font-black uppercase tracking-tight">Letter not found</h2>
+                <Button asChild variant="link" className="text-primary font-bold">
+                    <Link href="/dashboard/cover-letters">Return to Dashboard</Link>
                 </Button>
             </div>
         );
     }
 
     return (
-        <div className="mx-auto max-w-4xl space-y-6">
-            <div className="flex items-center justify-between">
-                <Button variant="ghost" asChild>
-                    <Link href="/dashboard/cover-letters">
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        Back to list
-                    </Link>
-                </Button>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => handlePrint()}>
-                        <Download className="h-4 w-4" />
-                        Download PDF
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mx-auto max-w-6xl space-y-8"
+        >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" asChild className="hover:bg-slate-900 rounded-xl px-3 group">
+                        <Link href="/dashboard/cover-letters">
+                            <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                        </Link>
                     </Button>
-                    <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-2xl font-black uppercase tracking-tight text-white line-clamp-1">
+                                {coverLetter.title}
+                            </h1>
+                            <AnimatePresence>
+                                {isEdited && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.5 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.5 }}
+                                        className="h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                                    />
+                                )}
+                            </AnimatePresence>
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
+                            <Calendar className="h-3 w-3" />
+                            Rendered {format(new Date(coverLetter.created_at), "PPP")}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex gap-3">
+                    <Button variant="outline" size="sm" className="h-11 px-5 rounded-xl border-primary/10 bg-slate-900/50 hover:bg-primary/5 font-black uppercase tracking-widest text-[10px] gap-2 transition-all shadow-xl" onClick={() => handlePrint()}>
+                        <Download className="h-4 w-4" />
+                        Export PDF
+                    </Button>
+                    <Button onClick={handleSave} disabled={saving || !isEdited} size="sm" className="h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] gap-2 shadow-xl shadow-primary/20 transition-all">
                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        Save Changes
+                        Sync Changes
                     </Button>
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Edit Content</CardTitle>
+            <div className="grid gap-8 lg:grid-cols-4">
+                <Card className="lg:col-span-3 border-primary/5 bg-slate-950/60 backdrop-blur-2xl rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
+                    <CardHeader className="border-b border-primary/5 bg-slate-900/40 px-8 py-5">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Letter Manuscript</CardTitle>
+                            <div className="flex items-center gap-2">
+                                <span className={`h-1.5 w-1.5 rounded-full ${isEdited ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                                <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/40">{isEdited ? 'Unsaved Changes' : 'Synced'}</span>
+                            </div>
+                        </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0 flex-1">
                         <RichTextEditor
                             content={coverLetter.content}
-                            onChange={(content) => setCoverLetter({ ...coverLetter, content })}
+                            onChange={(content) => {
+                                setCoverLetter({ ...coverLetter, content });
+                                setIsEdited(true);
+                            }}
+                            className="border-0 focus-within:ring-0 min-h-[600px] p-8"
                             placeholder="Your cover letter content..."
                         />
                     </CardContent>
                 </Card>
 
                 <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="text-xs font-semibold uppercase text-muted-foreground">Template</label>
+                    <Card className="border-primary/5 bg-slate-950/40 backdrop-blur-xl rounded-[24px] shadow-xl overflow-hidden">
+                        <div className="bg-primary/5 border-b border-primary/5 px-6 py-4">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                <Layout className="h-3 w-3" />
+                                Configuration
+                            </h3>
+                        </div>
+                        <CardContent className="p-6 space-y-6">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Layout Engine</Label>
                                 <Select value={coverLetterTemplate} onValueChange={setCoverLetterTemplate}>
-                                    <SelectTrigger className="mt-1 h-9">
+                                    <SelectTrigger className="h-10 bg-slate-900/50 border-primary/10 rounded-xl focus:ring-primary/20 font-bold transition-all">
                                         <SelectValue placeholder="Select template" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="modern">Modern</SelectItem>
-                                        <SelectItem value="classic">Classic</SelectItem>
-                                        <SelectItem value="minimal">Minimal</SelectItem>
+                                    <SelectContent className="bg-slate-900 border-primary/10 rounded-xl">
+                                        <SelectItem value="modern" className="focus:bg-primary/10 rounded-lg py-2 font-bold">Modern (Clean)</SelectItem>
+                                        <SelectItem value="classic" className="focus:bg-primary/10 rounded-lg py-2 font-bold">Classic (Serif)</SelectItem>
+                                        <SelectItem value="minimal" className="focus:bg-primary/10 rounded-lg py-2 font-bold">Minimal (Focus)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div>
-                                <label className="text-xs font-semibold uppercase text-muted-foreground">Title</label>
-                                <p className="font-medium">{coverLetter.title}</p>
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold uppercase text-muted-foreground">Company</label>
-                                <p>{coverLetter.company_name || "Not specified"}</p>
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold uppercase text-muted-foreground">Role</label>
-                                <p>{coverLetter.job_title || "Not specified"}</p>
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold uppercase text-muted-foreground">Created</label>
-                                <p className="text-sm">{format(new Date(coverLetter.created_at), "PPP")}</p>
+
+                            <div className="space-y-4 pt-4 border-t border-primary/5">
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Target</Label>
+                                    <div className="flex items-center gap-2 text-white font-bold group">
+                                        <Building2 className="h-3.5 w-3.5 text-primary opacity-60 group-hover:opacity-100 transition-all" />
+                                        <p className="text-sm truncate">{coverLetter.company_name || "Enterprise"}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Role</Label>
+                                    <div className="flex items-center gap-2 text-white font-bold group">
+                                        <Briefcase className="h-3.5 w-3.5 text-primary opacity-60 group-hover:opacity-100 transition-all" />
+                                        <p className="text-sm truncate">{coverLetter.job_title || "Professional"}</p>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
+
+                    <div className="p-6 rounded-[24px] border border-primary/5 bg-slate-950/20 backdrop-blur-sm">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-3 flex items-center gap-1.5">
+                            <Info className="h-3 w-3" />
+                            Live Synthesis
+                        </h4>
+                        <p className="text-[11px] font-medium text-muted-foreground/60 leading-relaxed italic">
+                            Changes saved here are synced to your database but won't affect the original resume source material.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -226,6 +280,6 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
             <div className="hidden">
                 <PrintableCoverLetter ref={componentRef} content={coverLetter.content} profile={profile} template={coverLetterTemplate} />
             </div>
-        </div>
+        </motion.div>
     );
 }

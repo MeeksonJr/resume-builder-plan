@@ -5,8 +5,9 @@ import { createClient } from "@/lib/supabase/client";
 import { TrackerBoard } from "@/components/dashboard/tracker/tracker-board";
 import { AddApplicationDialog } from "@/components/dashboard/tracker/add-application-dialog";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, List } from "lucide-react";
+import { Plus, LayoutGrid, List, Briefcase, Workflow, Activity } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TrackerPage() {
     const [applications, setApplications] = useState<any[]>([]);
@@ -60,32 +61,52 @@ export default function TrackerPage() {
     };
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Job Tracker</h1>
-                    <p className="text-muted-foreground">Manage your job applications and move them through the pipeline.</p>
+        <div className="space-y-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-black uppercase tracking-tight md:text-4xl text-white flex items-center gap-3">
+                        Job Tracker
+                        <div className="h-6 w-[2px] bg-primary/20 rotate-12" />
+                        <Activity className="h-6 w-6 text-primary/40" />
+                    </h1>
+                    <p className="text-muted-foreground/80 font-bold flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        Manage your job applications and move them through the pipeline.
+                    </p>
                 </div>
                 <AddApplicationDialog onSave={fetchApplications}>
-                    <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
+                    <Button className="h-12 px-6 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all gap-2">
+                        <Plus className="h-5 w-5" />
                         Add Application
                     </Button>
                 </AddApplicationDialog>
             </div>
 
-            {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-[500px] bg-muted rounded-xl" />
-                    ))}
-                </div>
-            ) : (
-                <TrackerBoard
-                    applications={applications}
-                    onUpdateStatus={handleUpdateStatus}
-                />
-            )}
+            <AnimatePresence mode="wait">
+                {isLoading ? (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    >
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-[600px] bg-slate-950/20 backdrop-blur-md rounded-[32px] border border-primary/5 animate-pulse" />
+                        ))}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                    >
+                        <TrackerBoard
+                            applications={applications}
+                            onUpdateStatus={handleUpdateStatus}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
