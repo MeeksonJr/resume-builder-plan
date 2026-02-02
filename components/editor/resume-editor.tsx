@@ -453,7 +453,7 @@ export function ResumeEditor({
             <span className="hidden sm:inline">Save</span>
           </Button>
           <select
-            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-9 rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
           >
@@ -517,8 +517,10 @@ export function ResumeEditor({
                 </div>
               </TabsContent>
               <TabsContent value="preview" className="flex-1 overflow-hidden">
-                <div className="h-full overflow-y-auto bg-muted/30 p-4">
-                  <ResumePreview />
+                <div className="h-full overflow-y-auto" style={{ backgroundColor: 'hsl(var(--muted) / 0.3)' }}>
+                  <div className="p-4">
+                    <ResumePreview />
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
@@ -536,8 +538,10 @@ export function ResumeEditor({
                 <>
                   <ResizableHandle withHandle />
                   <ResizablePanel defaultSize={50} minSize={30} id="preview-panel">
-                    <div className="h-full overflow-y-auto bg-muted/30 p-4">
-                      <ResumePreview />
+                    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'hsl(var(--muted) / 0.3)' }}>
+                      <div className="p-4">
+                        <ResumePreview />
+                      </div>
                     </div>
                   </ResizablePanel>
                 </>
