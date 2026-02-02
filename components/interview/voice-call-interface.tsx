@@ -11,11 +11,11 @@ import { toast } from "sonner";
 interface VoiceCallInterfaceProps {
     session: any;
     questions: any[];
-    onComplete: () => void;
+    onComplete: (transcript: any[]) => void;
 }
 
 export function VoiceCallInterface({ session, questions, onComplete }: VoiceCallInterfaceProps) {
-    const { state, connect, disconnect, isMicOn, volume } = useGeminiLive({
+    const { state, connect, disconnect, isMicOn, volume, transcript } = useGeminiLive({
         onDisconnect: () => {
             console.log("Disconnected");
         }
@@ -47,13 +47,14 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
             Start by introducing yourself briefly and asking the first question.
         `;
 
+        // Request user audio transcription if possible?
         connect(apiKey, context);
         setIsStarted(true);
     };
 
     const handleEndCall = () => {
         disconnect();
-        onComplete();
+        onComplete(transcript);
     };
 
     return (

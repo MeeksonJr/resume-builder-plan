@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PracticeInterface } from "@/components/interview";
 import { VoiceCallInterface } from "@/components/interview/voice-call-interface";
+import { VoiceInterviewResults } from "@/components/interview/voice-interview-results";
 
 export default async function PracticeSessionPage({
     params,
@@ -37,28 +38,47 @@ export default async function PracticeSessionPage({
         .order("sort_order");
 
     // Server Action to mark session complete
-    async function finishSession() {
+    async function finishSession(transcript: any[] = []) {
         "use server";
         const sb = await createClient();
         await sb
             .from("interview_sessions")
-            .update({ completed_at: new Date().toISOString() })
+            .update({
+                completed_at: new Date().toISOString(),
+                transcript: transcript
+            })
             .eq("id", sessionId);
 
         redirect(`/dashboard/interview-prep/${sessionId}?finished=true`);
     }
 
+    // Voice Mode Handling
     if (session.session_mode === 'voice') {
+        if (!session.completed_at) {
+            return (
+                <VoiceCallInterface
+                    session={session}
+                    questions={questions || []}
+                    onComplete={finishSession}
+                />
+            );
+        }
+
+        // Show Results for Voice Session
         return (
-            <VoiceCallInterface
-                session={session}
-                questions={questions || []}
-                onComplete={finishSession}
-            />
+            <div className="container max-w-4xl mx-auto p-6">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold tracking-tight">Interview Results</h1>
+                    <p className="text-muted-foreground mt-2">
+                        Here is the analysis of your simulated voice interview.
+                    </p>
+                </div>
+                <VoiceInterviewResults session={session} />
+            </div>
         );
     }
 
-    // If session is completed, fetch answers server-side for immediate results display
+    // If session is completed (TEXT mode), fetch answers server-side for immediate results display
     let initialAnswers = [];
     if (session.completed_at) {
         const { data: answers } = await supabase
