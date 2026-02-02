@@ -62,7 +62,11 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         languages,
         updateProfile,
         addSkill,
+        addWorkExperience,
         updateWorkExperience,
+        addEducation,
+        updateEducation,
+        addProject,
         updateProject
     } = useResumeStore();
 
@@ -818,22 +822,19 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                         const changeDetails: string[] = [];
 
                                         console.log("Applying customized resume:", customizedResume);
-                                        console.log("Current profile:", profile);
-                                        console.log("Current projects:", projects);
 
-                                        // Update summary if provided and different
+                                        // === SUMMARY ===
                                         if (customizedResume.personalInfo?.summary) {
                                             const newSummary = customizedResume.personalInfo.summary;
                                             const currentSummary = profile?.summary || "";
-                                            console.log("Comparing summaries:", { newSummary, currentSummary });
                                             if (newSummary !== currentSummary) {
                                                 updateProfile({ summary: newSummary });
                                                 changesApplied++;
-                                                changeDetails.push("Summary updated");
+                                                changeDetails.push("Summary");
                                             }
                                         }
 
-                                        // Add new skills from the customized resume
+                                        // === SKILLS ===
                                         // AI returns skills as [{category, items: string[]}]
                                         if (customizedResume.skills && Array.isArray(customizedResume.skills)) {
                                             const existingSkillNames = new Set(skills.map(s => s.name.toLowerCase()));
@@ -855,41 +856,119 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                             });
                                             if (skillsAdded > 0) {
                                                 changesApplied += skillsAdded;
-                                                changeDetails.push(`${skillsAdded} skills added`);
+                                                changeDetails.push(`${skillsAdded} skills`);
                                             }
                                         }
 
-                                        // Update work experience highlights if provided
+                                        // === WORK EXPERIENCE ===
                                         if (customizedResume.workExperience && Array.isArray(customizedResume.workExperience)) {
+                                            let expChanges = 0;
                                             customizedResume.workExperience.forEach((exp: any, index: number) => {
-                                                if (workExperiences[index] && exp.highlights && Array.isArray(exp.highlights)) {
-                                                    updateWorkExperience(workExperiences[index].id, {
-                                                        highlights: exp.highlights
+                                                if (workExperiences[index]) {
+                                                    // Update existing experience
+                                                    const updates: any = {};
+                                                    if (exp.highlights && Array.isArray(exp.highlights) && exp.highlights.length > 0) {
+                                                        updates.highlights = exp.highlights;
+                                                    }
+                                                    if (exp.description && exp.description !== workExperiences[index].description) {
+                                                        updates.description = exp.description;
+                                                    }
+                                                    if (Object.keys(updates).length > 0) {
+                                                        updateWorkExperience(workExperiences[index].id, updates);
+                                                        expChanges++;
+                                                    }
+                                                } else if (exp.company && exp.position) {
+                                                    // Add new experience if it has required fields
+                                                    addWorkExperience({
+                                                        company: exp.company,
+                                                        position: exp.position,
+                                                        location: exp.location || null,
+                                                        start_date: exp.startDate || null,
+                                                        end_date: exp.endDate || null,
+                                                        is_current: exp.isCurrent || false,
+                                                        description: exp.description || null,
+                                                        highlights: exp.highlights || []
                                                     });
-                                                    changesApplied++;
-                                                    changeDetails.push(`Experience ${index + 1} highlights updated`);
+                                                    expChanges++;
                                                 }
                                             });
+                                            if (expChanges > 0) {
+                                                changesApplied += expChanges;
+                                                changeDetails.push(`${expChanges} experience(s)`);
+                                            }
                                         }
 
-                                        // Update project highlights if provided
+                                        // === EDUCATION ===
+                                        if (customizedResume.education && Array.isArray(customizedResume.education)) {
+                                            let eduChanges = 0;
+                                            customizedResume.education.forEach((edu: any, index: number) => {
+                                                if (education[index]) {
+                                                    // Update existing education
+                                                    const updates: any = {};
+                                                    if (edu.highlights && Array.isArray(edu.highlights) && edu.highlights.length > 0) {
+                                                        updates.highlights = edu.highlights;
+                                                    }
+                                                    if (Object.keys(updates).length > 0) {
+                                                        updateEducation(education[index].id, updates);
+                                                        eduChanges++;
+                                                    }
+                                                } else if (edu.institution) {
+                                                    // Add new education if it has required fields
+                                                    addEducation({
+                                                        institution: edu.institution,
+                                                        degree: edu.degree || null,
+                                                        field_of_study: edu.fieldOfStudy || edu.field || null,
+                                                        location: edu.location || null,
+                                                        start_date: edu.startDate || null,
+                                                        end_date: edu.endDate || null,
+                                                        gpa: edu.gpa || null,
+                                                        highlights: edu.highlights || []
+                                                    });
+                                                    eduChanges++;
+                                                }
+                                            });
+                                            if (eduChanges > 0) {
+                                                changesApplied += eduChanges;
+                                                changeDetails.push(`${eduChanges} education(s)`);
+                                            }
+                                        }
+
+                                        // === PROJECTS ===
                                         if (customizedResume.projects && Array.isArray(customizedResume.projects)) {
+                                            let projChanges = 0;
                                             customizedResume.projects.forEach((proj: any, index: number) => {
                                                 if (projects[index]) {
+                                                    // Update existing project
                                                     const updates: any = {};
-                                                    if (proj.highlights && Array.isArray(proj.highlights)) {
+                                                    if (proj.highlights && Array.isArray(proj.highlights) && proj.highlights.length > 0) {
                                                         updates.highlights = proj.highlights;
                                                     }
                                                     if (proj.description && proj.description !== projects[index].description) {
                                                         updates.description = proj.description;
                                                     }
+                                                    if (proj.technologies && Array.isArray(proj.technologies)) {
+                                                        updates.technologies = proj.technologies;
+                                                    }
                                                     if (Object.keys(updates).length > 0) {
                                                         updateProject(projects[index].id, updates);
-                                                        changesApplied++;
-                                                        changeDetails.push(`Project "${projects[index].name}" updated`);
+                                                        projChanges++;
                                                     }
+                                                } else if (proj.name || proj.title) {
+                                                    // Add new project if it has required fields
+                                                    addProject({
+                                                        name: proj.name || proj.title,
+                                                        description: proj.description || null,
+                                                        technologies: proj.technologies || [],
+                                                        url: proj.url || null,
+                                                        highlights: proj.highlights || []
+                                                    });
+                                                    projChanges++;
                                                 }
                                             });
+                                            if (projChanges > 0) {
+                                                changesApplied += projChanges;
+                                                changeDetails.push(`${projChanges} project(s)`);
+                                            }
                                         }
 
                                         console.log("Changes applied:", { changesApplied, changeDetails });
