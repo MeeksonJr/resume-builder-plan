@@ -283,6 +283,10 @@ export default function PortfolioManagementPage() {
                         <Search className="h-4 w-4" />
                         SEO & Social
                     </TabsTrigger>
+                    <TabsTrigger value="share" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                        <Share2 className="h-4 w-4" />
+                        Share
+                    </TabsTrigger>
                     <TabsTrigger value="appearance" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
                         <Palette className="h-4 w-4" />
                         Visuals
@@ -309,6 +313,66 @@ export default function PortfolioManagementPage() {
                         Insights
                     </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="share" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
+                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                        <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
+                            <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-primary/10">
+                                    <Share2 className="h-4 w-4 text-primary" />
+                                </div>
+                                Public Access & Sharing
+                            </CardTitle>
+                            <CardDescription className="font-medium">Manage how others view and access your portfolio.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 space-y-8">
+                            <div className="flex items-center justify-between p-6 rounded-2xl border border-primary/10 bg-primary/5">
+                                <div className="space-y-1">
+                                    <h4 className="font-bold text-foreground">Public Access</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Allow anyone with the link to view your portfolio.
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className={cn("text-xs font-bold uppercase tracking-wider", portfolio.is_public ? "text-green-500" : "text-muted-foreground")}>
+                                        {portfolio.is_public ? "Live" : "Private"}
+                                    </span>
+                                    <Button
+                                        variant={portfolio.is_public ? "default" : "outline"}
+                                        onClick={() => setPortfolio({ ...portfolio, is_public: !portfolio.is_public })}
+                                        className={cn("w-24 font-bold", portfolio.is_public ? "bg-green-600 hover:bg-green-700 text-white" : "")}
+                                    >
+                                        {portfolio.is_public ? "Enabled" : "Disabled"}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Your Public Link</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        readOnly
+                                        value={`https://resumebuilder.ai/p/${portfolio.slug}`}
+                                        className="font-mono bg-slate-950/50 border-primary/10"
+                                    />
+                                    <Button variant="outline" onClick={() => {
+                                        navigator.clipboard.writeText(`https://resumebuilder.ai/p/${portfolio.slug}`);
+                                        toast.success("Link copied to clipboard");
+                                    }}>
+                                        <LinkIcon className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="secondary" asChild>
+                                        <a href={`/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer">
+                                            <ExternalLink className="h-4 w-4 gap-2" />
+                                            View Live
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
+
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
                 <TabsContent value="general" className="mt-0 space-y-8 animate-in slide-in-from-bottom-2 duration-500">
                     <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl group overflow-hidden">

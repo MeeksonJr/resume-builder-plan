@@ -313,7 +313,7 @@ export function ResumeEditor({
         certifications: store.certifications,
         languages: store.languages,
         sectionOrder: store.sectionOrder,
-      });
+      }, store.visualConfig?.accentColor || "#000000");
       toast.success("Word document generated", { id: loadingToast });
     } catch (error) {
       console.error(error);
@@ -565,8 +565,8 @@ export function ResumeEditor({
         )}
       </div>
 
-      {/* Hidden Print Preview */}
-      <div className="hidden">
+      {/* Hidden Print Preview - Positioned off-screen to ensure react-to-print captures it */}
+      <div style={{ position: "absolute", left: "-10000px", top: 0 }}>
         <ResumePreview ref={printRef} />
       </div>
 

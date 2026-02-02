@@ -71,8 +71,11 @@ function renderRichText(html: string): (Paragraph | TextRun)[] {
     return elements;
 }
 
-export async function exportToDocx(data: ResumeData) {
+export async function exportToDocx(data: ResumeData, accentColor: string = "000000") {
     const { profile, workExperiences, education, skills, projects, certifications, languages, sectionOrder } = data;
+
+    // Clean hex color for docx (remove #)
+    const color = accentColor.replace("#", "");
 
     const items: Paragraph[] = [];
 
@@ -85,6 +88,7 @@ export async function exportToDocx(data: ResumeData) {
                     text: profile.full_name || "Untitled Resume",
                     bold: true,
                     size: 32,
+                    color: color,
                 }),
             ],
         }),
@@ -126,7 +130,15 @@ export async function exportToDocx(data: ResumeData) {
             new Paragraph({ text: "", spacing: { before: 200 } }),
             new Paragraph({
                 heading: HeadingLevel.HEADING_2,
-                children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24 })],
+                children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24, color: color })],
+                border: {
+                    bottom: {
+                        color: color,
+                        space: 1,
+                        style: "single",
+                        size: 6,
+                    },
+                },
             })
         );
 
@@ -146,7 +158,15 @@ export async function exportToDocx(data: ResumeData) {
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
-                            children: [new TextRun({ text: "EXPERIENCE", bold: true, size: 24 })],
+                            children: [new TextRun({ text: "EXPERIENCE", bold: true, size: 24, color: color })],
+                            border: {
+                                bottom: {
+                                    color: color,
+                                    space: 1,
+                                    style: "single",
+                                    size: 6,
+                                },
+                            },
                         })
                     );
                     workExperiences.forEach(exp => {
@@ -184,7 +204,15 @@ export async function exportToDocx(data: ResumeData) {
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
-                            children: [new TextRun({ text: "EDUCATION", bold: true, size: 24 })],
+                            children: [new TextRun({ text: "EDUCATION", bold: true, size: 24, color: color })],
+                            border: {
+                                bottom: {
+                                    color: color,
+                                    space: 1,
+                                    style: "single",
+                                    size: 6,
+                                },
+                            },
                         })
                     );
                     education.forEach(edu => {
@@ -215,7 +243,15 @@ export async function exportToDocx(data: ResumeData) {
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
-                            children: [new TextRun({ text: "SKILLS", bold: true, size: 24 })],
+                            children: [new TextRun({ text: "SKILLS", bold: true, size: 24, color: color })],
+                            border: {
+                                bottom: {
+                                    color: color,
+                                    space: 1,
+                                    style: "single",
+                                    size: 6,
+                                },
+                            },
                         }),
                         new Paragraph({
                             spacing: { before: 100 },
@@ -231,7 +267,15 @@ export async function exportToDocx(data: ResumeData) {
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
-                            children: [new TextRun({ text: "CERTIFICATIONS", bold: true, size: 24 })],
+                            children: [new TextRun({ text: "CERTIFICATIONS", bold: true, size: 24, color: color })],
+                            border: {
+                                bottom: {
+                                    color: color,
+                                    space: 1,
+                                    style: "single",
+                                    size: 6,
+                                },
+                            },
                         })
                     );
                     certifications.forEach(cert => {
@@ -258,7 +302,15 @@ export async function exportToDocx(data: ResumeData) {
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
-                            children: [new TextRun({ text: "PROJECTS", bold: true, size: 24 })],
+                            children: [new TextRun({ text: "PROJECTS", bold: true, size: 24, color: color })],
+                            border: {
+                                bottom: {
+                                    color: color,
+                                    space: 1,
+                                    style: "single",
+                                    size: 6,
+                                },
+                            },
                         })
                     );
                     projects.forEach(proj => {
@@ -297,7 +349,15 @@ export async function exportToDocx(data: ResumeData) {
                         new Paragraph({ text: "", spacing: { before: 200 } }),
                         new Paragraph({
                             heading: HeadingLevel.HEADING_2,
-                            children: [new TextRun({ text: "LANGUAGES", bold: true, size: 24 })],
+                            children: [new TextRun({ text: "LANGUAGES", bold: true, size: 24, color: color })],
+                            border: {
+                                bottom: {
+                                    color: color,
+                                    space: 1,
+                                    style: "single",
+                                    size: 6,
+                                },
+                            },
                         }),
                         new Paragraph({
                             spacing: { before: 100 },
