@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, CheckCircle, PlayCircle } from "lucide-react";
@@ -109,23 +110,20 @@ export function HeroSection() {
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-indigo-500/30 transition-all duration-1000" />
 
                         <div className="rounded-xl border border-white/5 bg-slate-950 aspect-[16/10] overflow-hidden relative">
-                            {/* Placeholder for Screenshot */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <span className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">Dashboard Interface</span>
-                                    <div className="mt-4 flex gap-4 opacity-50 justify-center">
-                                        <div className="w-32 h-20 bg-slate-800 rounded-lg animate-pulse delay-75" />
-                                        <div className="w-32 h-20 bg-slate-800 rounded-lg animate-pulse delay-150" />
-                                        <div className="w-32 h-20 bg-slate-800 rounded-lg animate-pulse delay-300" />
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Dashboard Screenshot */}
+                            <Image
+                                src="/dashboard-preview.png"
+                                alt="Resume Builder Dashboard Interface"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
 
                             {/* Fake UI Elements for visual interest */}
-                            <div className="absolute top-0 left-0 right-0 h-12 border-b border-white/5 bg-slate-900/50 flex items-center px-4 gap-2">
-                                <div className="w-3 h-3 rounded-full bg-red-500/20" />
-                                <div className="w-3 h-3 rounded-full bg-yellow-500/20" />
-                                <div className="w-3 h-3 rounded-full bg-green-500/20" />
+                            <div className="absolute top-0 left-0 right-0 h-12 border-b border-white/5 bg-slate-900/80 backdrop-blur-sm flex items-center px-4 gap-2">
+                                <div className="w-3 h-3 rounded-full bg-red-500/50" />
+                                <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+                                <div className="w-3 h-3 rounded-full bg-green-500/50" />
                             </div>
                         </div>
                     </div>

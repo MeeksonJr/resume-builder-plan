@@ -40,8 +40,7 @@ export const metadata: Metadata = {
       },
     ],
     apple: "/apple-icon.png",
-  },
-  generator: 'v0.app'
+  }
 };
 
 export const viewport: Viewport = {
