@@ -1,0 +1,22 @@
+[project]
+id = "resume-builder-plan"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+
+[auth.email.template.confirmation]
+subject = "Confirm Your Signup"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset Your Password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirm Email Change"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.reauthentication]
+subject = "Confirm Reauthentication"
+content_path = "./supabase/templates/reauthentication.html"
