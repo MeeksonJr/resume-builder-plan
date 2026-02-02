@@ -131,7 +131,7 @@ export function ProjectsForm() {
                             strategy={verticalListSortingStrategy}
                         >
                             {projects.map((proj, index) => (
-                                <SortableAccordionItem key={proj.id} id={proj.id} value={proj.id} className="border rounded-lg px-4 bg-white">
+                                <SortableAccordionItem key={proj.id} id={proj.id} value={proj.id} className="border rounded-lg px-4 bg-card">
                                     <div className="flex items-center py-2">
                                         <SortableDragHandle className="mr-2" />
                                         <AccordionTrigger className="flex-1 hover:no-underline py-2">

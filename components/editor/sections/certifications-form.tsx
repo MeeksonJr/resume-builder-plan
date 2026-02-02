@@ -94,7 +94,7 @@ export function CertificationsForm() {
                             strategy={verticalListSortingStrategy}
                         >
                             {certifications.map((cert, index) => (
-                                <SortableAccordionItem key={cert.id} id={cert.id} value={cert.id} className="border rounded-lg px-4 bg-white">
+                                <SortableAccordionItem key={cert.id} id={cert.id} value={cert.id} className="border rounded-lg px-4 bg-card">
                                     <div className="flex items-center py-2">
                                         <SortableDragHandle className="mr-2" />
                                         <AccordionTrigger className="flex-1 hover:no-underline py-2">

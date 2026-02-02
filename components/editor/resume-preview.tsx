@@ -48,9 +48,11 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     return (
         <div
             ref={ref}
-            className="print:shadow-none h-full bg-white text-black min-h-[1056px]"
+            className="print:shadow-none h-full bg-white text-black min-h-[1056px] isolate"
             dir={isRtl ? "rtl" : "ltr"}
             lang={language}
+            data-theme="light"
+            style={{ colorScheme: "light" }}
         >
             {renderTemplate()}
         </div>

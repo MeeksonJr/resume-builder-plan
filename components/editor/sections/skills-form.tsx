@@ -93,7 +93,7 @@ export function SkillsForm() {
                     {skills.map((skill) => (
                         <Badge key={skill.id} variant="secondary" className="px-3 py-1 gap-2">
                             <input
-                                className="bg-transparent border-none outline-none w-24 text-sm font-medium"
+                                className="bg-transparent border-none outline-none w-24 text-sm font-medium text-foreground"
                                 value={skill.name}
                                 onChange={(e) => updateSkill(skill.id, { name: e.target.value })}
                             />
@@ -116,7 +116,7 @@ export function SkillsForm() {
                         <div className="grid gap-4 sm:grid-cols-2">
                             <SortableContext items={skills} strategy={rectSortingStrategy}>
                                 {skills.map((skill) => (
-                                    <SortableItem key={skill.id} id={skill.id} className="border rounded-md bg-white pr-2">
+                                    <SortableItem key={skill.id} id={skill.id} className="border rounded-md bg-card text-card-foreground pr-2">
                                         <div className="flex gap-2 items-center p-2 pl-0">
                                             <div className="flex-1 space-y-2">
                                                 <Label className="text-xs">Skill Name</Label>

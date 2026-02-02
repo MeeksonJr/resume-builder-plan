@@ -109,7 +109,7 @@ export function LanguagesForm() {
                         <div className="grid gap-4 sm:grid-cols-2">
                             <SortableContext items={languages} strategy={rectSortingStrategy}>
                                 {languages.map((lang) => (
-                                    <SortableItem key={lang.id} id={lang.id} className="border rounded-md bg-white pr-2">
+                                    <SortableItem key={lang.id} id={lang.id} className="border rounded-md bg-card pr-2">
                                         <div className="flex gap-2 items-center p-2 pl-0">
                                             <div className="flex-1 space-y-2">
                                                 <Label className="text-xs">Language</Label>
