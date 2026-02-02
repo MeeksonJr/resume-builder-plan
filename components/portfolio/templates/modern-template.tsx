@@ -54,6 +54,7 @@ interface ModernTemplateProps {
     profile: any
     testimonials: any[]
     accentColor?: string
+    layoutStyle?: string
 }
 
 export function ModernTemplate({
@@ -63,6 +64,7 @@ export function ModernTemplate({
     profile,
     testimonials,
     accentColor = "#3b82f6",
+    layoutStyle = "professional",
 }: ModernTemplateProps) {
     const [selectedResume, setSelectedResume] = React.useState<any>(null)
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
@@ -88,6 +90,7 @@ export function ModernTemplate({
 
             {/* Enhanced Hero Section */}
             <section className="relative overflow-hidden border-b glass-border">
+                {/* ... existing hero code ... */}
                 {/* Animated Background */}
                 <div className="absolute inset-0 opacity-10" style={{ background: `linear-gradient(135deg, ${accentColor}, transparent)` }} />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
@@ -164,7 +167,7 @@ export function ModernTemplate({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.6 }}
-                        className="flex flex-wrap items-center gap-4"
+                        className="flex flex-wrap items-center gap-4 mt-8"
                     >
                         {portfolio?.email && (
                             <Button size="lg" className="rounded-2xl gap-2 font-black text-base group shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all" asChild>
@@ -213,336 +216,386 @@ export function ModernTemplate({
                 <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </section>
 
-            <div className="relative z-10">
-                {/* Skills Section */}
-                {skills.length > 0 && (
-                    <section className="container max-w-6xl mx-auto px-6 py-20">
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-4">
-                                <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 p-4 shadow-lg">
-                                    <Code className="h-7 w-7 text-primary" />
-                                </div>
-                                <div>
-                                    <h2 className="text-4xl font-heading font-black">Skills & Expertise</h2>
-                                    <p className="text-muted-foreground text-lg">Technologies I work with</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                                {skills.map((skill: string, i: number) => (
-                                    <Badge
-                                        key={i}
-                                        variant="secondary"
-                                        className="px-5 py-2.5 text-base font-bold bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border border-primary/20 rounded-2xl transition-all hover:scale-110 hover:shadow-lg cursor-default"
-                                    >
-                                        {skill}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* Featured Resumes Section */}
-                {resumes && resumes.length > 0 && (
-                    <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
-                        <div className="space-y-10">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 p-4 shadow-lg">
-                                        <FileText className="h-7 w-7 text-purple-600" />
+            <div className={cn(
+                "container max-w-6xl mx-auto px-6 py-20",
+                layoutStyle === 'creative' && "grid lg:grid-cols-[1fr,300px] gap-12"
+            )}>
+                <div className="space-y-20">
+                    <div className="relative z-10 space-y-20">
+                        {/* Skills Section */}
+                        {skills.length > 0 && (
+                            <section>
+                                <div className="space-y-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 p-4 shadow-lg">
+                                            <Code className="h-7 w-7 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-4xl font-heading font-black">Skills & Expertise</h2>
+                                            <p className="text-muted-foreground text-lg">Technologies I work with</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="text-4xl font-heading font-black">Featured Resumes</h2>
-                                        <p className="text-muted-foreground text-lg">Professional experience documents</p>
+                                    <div className="flex flex-wrap gap-3">
+                                        {skills.map((skill: string, i: number) => (
+                                            <Badge
+                                                key={i}
+                                                variant="secondary"
+                                                className="px-5 py-2.5 text-base font-bold bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border border-primary/20 rounded-2xl transition-all hover:scale-110 hover:shadow-lg cursor-default"
+                                            >
+                                                {skill}
+                                            </Badge>
+                                        ))}
                                     </div>
                                 </div>
-                                <Badge variant="outline" className="text-base px-4 py-2 font-bold">
-                                    {resumes.length} {resumes.length === 1 ? "Resume" : "Resumes"}
-                                </Badge>
-                            </div>
+                            </section>
+                        )}
 
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {resumes.slice(0, 6).map((resume: any) => (
-                                    <Card
-                                        key={resume.id}
-                                        className="glass-card group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden relative"
-                                        onClick={() => setSelectedResume(resume)}
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="p-7 space-y-5 relative">
-                                            <div className="flex items-start justify-between">
-                                                <div className="rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 p-4">
-                                                    <FileText className="h-7 w-7 text-purple-600" />
-                                                </div>
-                                                <Sparkles className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-                                            <div className="space-y-3">
-                                                <h3 className="text-xl font-heading font-black group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-                                                    {resume.title || "My Resume"}
-                                                </h3>
-                                                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4" />
-                                                    Updated {new Date(resume.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </p>
-                                            </div>
-                                            <Button variant="outline" className="w-full rounded-xl gap-2 font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-all" size="lg">
-                                                <ExternalLink className="h-4 w-4" />
-                                                View Full Resume
-                                            </Button>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* Projects Section */}
-                {projects && projects.length > 0 && (
-                    <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
-                        <div className="space-y-10">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/10 p-4 shadow-lg">
-                                        <Briefcase className="h-7 w-7 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-4xl font-heading font-black">Featured Projects</h2>
-                                        <p className="text-muted-foreground text-lg">Showcasing my best work</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid gap-8 md:grid-cols-2">
-                                {projects.map((project: any, index: number) => (
-                                    <Card
-                                        key={project.id}
-                                        className="glass-card group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="p-8 space-y-6 relative">
-                                            <div className="space-y-4">
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <h3 className="text-2xl font-heading font-black group-hover:text-primary transition-colors leading-tight">
-                                                        {project.title || project.name}
-                                                    </h3>
-                                                    <div className="shrink-0 p-2 rounded-lg bg-primary/10">
-                                                        <Zap className="h-5 w-5 text-primary" />
-                                                    </div>
-                                                </div>
-                                                <p className="text-muted-foreground leading-relaxed text-base">
-                                                    {project.description}
-                                                </p>
-                                            </div>
-
-                                            {project.technologies && project.technologies.length > 0 && (
-                                                <div className="flex flex-wrap gap-2">
-                                                    {project.technologies.map((tech: string, i: number) => (
-                                                        <Badge key={i} variant="outline" className="text-xs font-semibold px-3 py-1 rounded-lg">
-                                                            {tech}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {project.url && (
-                                                <Button className="w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80 font-bold h-12 group-hover:shadow-lg transition-all" size="lg" asChild>
-                                                    <a href={project.url} target="_blank" rel="noopener noreferrer">
-                                                        View Project
-                                                        <ExternalLink className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                                    </a>
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* Experience Section */}
-                {resumes && resumes.length > 0 && resumes[0]?.work_experiences && resumes[0].work_experiences.length > 0 && (
-                    <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
-                        <div className="space-y-10">
-                            <div className="flex items-center gap-4">
-                                <div className="rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-500/10 p-4 shadow-lg">
-                                    <Award className="h-7 w-7 text-orange-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-4xl font-heading font-black">Work Experience</h2>
-                                    <p className="text-muted-foreground text-lg">Professional journey</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6">
-                                {resumes[0].work_experiences.slice(0, 5).map((exp: any, index: number) => (
-                                    <Card key={exp.id} className="glass-card p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="flex gap-8 relative">
-                                            <div className="flex flex-col items-center">
-                                                <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/10 p-4 border-2 border-primary/20 shadow-lg">
-                                                    <Briefcase className="h-6 w-6 text-primary" />
-                                                </div>
-                                                {index < resumes[0].work_experiences.length - 1 && (
-                                                    <div className="flex-1 w-0.5 bg-gradient-to-b from-primary/20 via-primary/10 to-transparent mt-6 min-h-[60px]" />
-                                                )}
-                                            </div>
-                                            <div className="flex-1 space-y-4 pb-2">
-                                                <div className="space-y-2">
-                                                    <h3 className="text-2xl font-heading font-black group-hover:text-primary transition-colors">{exp.job_title}</h3>
-                                                    <p className="text-lg font-bold text-primary">{exp.company}</p>
-                                                    <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                                        <Calendar className="h-4 w-4" />
-                                                        {exp.start_date} - {exp.end_date || "Present"}
-                                                    </p>
-                                                </div>
-                                                {exp.description && (
-                                                    <p className="text-base text-muted-foreground leading-relaxed">
-                                                        {exp.description}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* Testimonials */}
-                {testimonials && testimonials.length > 0 && (
-                    <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
-                        <div className="space-y-10">
-                            <div className="flex items-center gap-4">
-                                <div className="rounded-2xl bg-gradient-to-br from-pink-500/20 to-pink-500/10 p-4 shadow-lg">
-                                    <MessageSquare className="h-7 w-7 text-pink-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-4xl font-heading font-black">What People Say</h2>
-                                    <p className="text-muted-foreground text-lg">Testimonials from colleagues and clients</p>
-                                </div>
-                            </div>
-
-                            <div className="grid gap-8 md:grid-cols-2">
-                                {testimonials.map((testimonial: any) => (
-                                    <Card key={testimonial.id} className="glass-card p-10 relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                                        <Quote className="absolute top-6 right-6 h-16 w-16 text-primary/10 group-hover:text-primary/20 group-hover:scale-110 transition-all" />
-                                        <div className="space-y-6 relative">
-                                            <div className="flex items-center gap-1.5">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
-                                                ))}
-                                            </div>
-                                            <p className="text-lg text-foreground/90 italic leading-relaxed font-medium">
-                                                "{testimonial.content}"
-                                            </p>
-                                            <div className="flex items-center gap-4 pt-6 border-t">
-                                                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center font-black text-primary text-xl shadow-lg">
-                                                    {testimonial.author_name?.[0] || "?"}
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-lg">{testimonial.author_name}</p>
-                                                    <p className="text-sm text-muted-foreground">{testimonial.author_title}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                )}
-
-                {/* Contact Form Section */}
-                <section className="container max-w-6xl mx-auto px-6 py-24 border-t glass-border">
-                    <div className="grid gap-16 md:grid-cols-2">
-                        {/* Left Side - Info */}
-                        <div className="space-y-8">
-                            <div className="space-y-4">
-                                <div className="inline-flex items-center justify-center p-5 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/10 shadow-xl">
-                                    <Sparkles className="h-10 w-10 text-primary" />
-                                </div>
-                                <h2 className="text-5xl font-heading font-black">Let's Work Together</h2>
-                                <p className="text-muted-foreground text-xl leading-relaxed">
-                                    Have an opportunity in mind? I'd love to hear from you. Send me a message and let's create something amazing together.
-                                </p>
-                            </div>
-
-                            {/* Contact Info Cards */}
-                            <div className="space-y-4">
-                                {portfolio?.email && (
-                                    <Card className="glass-card p-6">
+                        {/* Featured Resumes Section */}
+                        {resumes && resumes.length > 0 && (
+                            <section className={cn("glass-border pt-10", skills.length > 0 ? "border-t" : "pt-0 border-t-0")}>
+                                <div className="space-y-10">
+                                    <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            <div className="rounded-xl bg-primary/10 p-3">
-                                                <Mail className="h-6 w-6 text-primary" />
+                                            <div className="rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 p-4 shadow-lg">
+                                                <FileText className="h-7 w-7 text-purple-600" />
                                             </div>
                                             <div>
-                                                <div className="font-bold text-sm text-muted-foreground">Email</div>
-                                                <a href={`mailto:${portfolio.email}`} className="text-base font-semibold hover:text-primary transition-colors">
-                                                    {portfolio.email}
-                                                </a>
+                                                <h2 className="text-4xl font-heading font-black">Featured Resumes</h2>
+                                                <p className="text-muted-foreground text-lg">Professional experience documents</p>
                                             </div>
                                         </div>
-                                    </Card>
-                                )}
+                                        <Badge variant="outline" className="text-base px-4 py-2 font-bold">
+                                            {resumes.length} {resumes.length === 1 ? "Resume" : "Resumes"}
+                                        </Badge>
+                                    </div>
 
-                                {portfolio?.social_links?.linkedin && (
-                                    <Card className="glass-card p-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="rounded-xl bg-blue-500/10 p-3">
-                                                <Linkedin className="h-6 w-6 text-blue-600" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="font-bold text-sm text-muted-foreground">LinkedIn</div>
-                                                <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="text-base font-semibold hover:text-primary transition-colors">
-                                                    Connect with me
-                                                </a>
-                                            </div>
+                                    <div className={cn(
+                                        "grid gap-6",
+                                        layoutStyle === 'creative' ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                                    )}>
+                                        {resumes.slice(0, 6).map((resume: any) => (
+                                            <Card
+                                                key={resume.id}
+                                                className="glass-card group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden relative"
+                                                onClick={() => setSelectedResume(resume)}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="p-7 space-y-5 relative">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 p-4">
+                                                            <FileText className="h-7 w-7 text-purple-600" />
+                                                        </div>
+                                                        <Sparkles className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <h3 className="text-xl font-heading font-black group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                                                            {resume.title || "My Resume"}
+                                                        </h3>
+                                                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4" />
+                                                            Updated {new Date(resume.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                    <Button variant="outline" className="w-full rounded-xl gap-2 font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-all" size="lg">
+                                                        <ExternalLink className="h-4 w-4" />
+                                                        View Full Resume
+                                                    </Button>
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+                    </div>
+
+                    {/* Projects Section */}
+                    {projects && projects.length > 0 && (
+                        <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
+                            <div className="space-y-10">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/10 p-4 shadow-lg">
+                                            <Briefcase className="h-7 w-7 text-blue-600" />
                                         </div>
-                                    </Card>
-                                )}
+                                        <div>
+                                            <h2 className="text-4xl font-heading font-black">Featured Projects</h2>
+                                            <p className="text-muted-foreground text-lg">Showcasing my best work</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                {portfolio?.booking_url && (
-                                    <Card className="glass-card p-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="rounded-xl bg-green-500/10 p-3">
-                                                <Calendar className="h-6 w-6 text-green-600" />
+                                <div className="grid gap-8 md:grid-cols-2">
+                                    {projects.map((project: any, index: number) => (
+                                        <Card
+                                            key={project.id}
+                                            className="glass-card group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="p-8 space-y-6 relative">
+                                                <div className="space-y-4">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <h3 className="text-2xl font-heading font-black group-hover:text-primary transition-colors leading-tight">
+                                                            {project.title || project.name}
+                                                        </h3>
+                                                        <div className="shrink-0 p-2 rounded-lg bg-primary/10">
+                                                            <Zap className="h-5 w-5 text-primary" />
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-muted-foreground leading-relaxed text-base">
+                                                        {project.description}
+                                                    </p>
+                                                </div>
+
+                                                {project.technologies && project.technologies.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {project.technologies.map((tech: string, i: number) => (
+                                                            <Badge key={i} variant="outline" className="text-xs font-semibold px-3 py-1 rounded-lg">
+                                                                {tech}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {project.url && (
+                                                    <Button className="w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80 font-bold h-12 group-hover:shadow-lg transition-all" size="lg" asChild>
+                                                        <a href={project.url} target="_blank" rel="noopener noreferrer">
+                                                            View Project
+                                                            <ExternalLink className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                                        </a>
+                                                    </Button>
+                                                )}
                                             </div>
-                                            <div className="flex-1">
-                                                <div className="font-bold text-sm text-muted-foreground">Schedule a Call</div>
-                                                <a href={portfolio.booking_url} target="_blank" rel="noopener noreferrer" className="text-base font-semibold hover:text-primary transition-colors">
-                                                    Book a meeting
-                                                </a>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Experience Section */}
+                    {resumes && resumes.length > 0 && resumes[0]?.work_experiences && resumes[0].work_experiences.length > 0 && (
+                        <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
+                            <div className="space-y-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-500/10 p-4 shadow-lg">
+                                        <Award className="h-7 w-7 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-4xl font-heading font-black">Work Experience</h2>
+                                        <p className="text-muted-foreground text-lg">Professional journey</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {resumes[0].work_experiences.slice(0, 5).map((exp: any, index: number) => (
+                                        <Card key={exp.id} className="glass-card p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="flex gap-8 relative">
+                                                <div className="flex flex-col items-center">
+                                                    <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/10 p-4 border-2 border-primary/20 shadow-lg">
+                                                        <Briefcase className="h-6 w-6 text-primary" />
+                                                    </div>
+                                                    {index < resumes[0].work_experiences.length - 1 && (
+                                                        <div className="flex-1 w-0.5 bg-gradient-to-b from-primary/20 via-primary/10 to-transparent mt-6 min-h-[60px]" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 space-y-4 pb-2">
+                                                    <div className="space-y-2">
+                                                        <h3 className="text-2xl font-heading font-black group-hover:text-primary transition-colors">{exp.job_title}</h3>
+                                                        <p className="text-lg font-bold text-primary">{exp.company}</p>
+                                                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4" />
+                                                            {exp.start_date} - {exp.end_date || "Present"}
+                                                        </p>
+                                                    </div>
+                                                    {exp.description && (
+                                                        <p className="text-base text-muted-foreground leading-relaxed">
+                                                            {exp.description}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Testimonials */}
+                    {testimonials && testimonials.length > 0 && (
+                        <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
+                            <div className="space-y-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="rounded-2xl bg-gradient-to-br from-pink-500/20 to-pink-500/10 p-4 shadow-lg">
+                                        <MessageSquare className="h-7 w-7 text-pink-600" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-4xl font-heading font-black">What People Say</h2>
+                                        <p className="text-muted-foreground text-lg">Testimonials from colleagues and clients</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-8 md:grid-cols-2">
+                                    {testimonials.map((testimonial: any) => (
+                                        <Card key={testimonial.id} className="glass-card p-10 relative overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                                            <Quote className="absolute top-6 right-6 h-16 w-16 text-primary/10 group-hover:text-primary/20 group-hover:scale-110 transition-all" />
+                                            <div className="space-y-6 relative">
+                                                <div className="flex items-center gap-1.5">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                                                    ))}
+                                                </div>
+                                                <p className="text-lg text-foreground/90 italic leading-relaxed font-medium">
+                                                    "{testimonial.content}"
+                                                </p>
+                                                <div className="flex items-center gap-4 pt-6 border-t">
+                                                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center font-black text-primary text-xl shadow-lg">
+                                                        {testimonial.author_name?.[0] || "?"}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-lg">{testimonial.author_name}</p>
+                                                        <p className="text-sm text-muted-foreground">{testimonial.author_title}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Contact Form Section */}
+                    <section className="container max-w-6xl mx-auto px-6 py-24 border-t glass-border">
+                        <div className="grid gap-16 md:grid-cols-2">
+                            {/* Left Side - Info */}
+                            <div className="space-y-8">
+                                <div className="space-y-4">
+                                    <div className="inline-flex items-center justify-center p-5 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/10 shadow-xl">
+                                        <Sparkles className="h-10 w-10 text-primary" />
+                                    </div>
+                                    <h2 className="text-5xl font-heading font-black">Let's Work Together</h2>
+                                    <p className="text-muted-foreground text-xl leading-relaxed">
+                                        Have an opportunity in mind? I'd love to hear from you. Send me a message and let's create something amazing together.
+                                    </p>
+                                </div>
+
+                                {/* Contact Info Cards */}
+                                <div className="space-y-4">
+                                    {portfolio?.email && (
+                                        <Card className="glass-card p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="rounded-xl bg-primary/10 p-3">
+                                                    <Mail className="h-6 w-6 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-sm text-muted-foreground">Email</div>
+                                                    <a href={`mailto:${portfolio.email}`} className="text-base font-semibold hover:text-primary transition-colors">
+                                                        {portfolio.email}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    )}
+
+                                    {portfolio?.social_links?.linkedin && (
+                                        <Card className="glass-card p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="rounded-xl bg-blue-500/10 p-3">
+                                                    <Linkedin className="h-6 w-6 text-blue-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="font-bold text-sm text-muted-foreground">LinkedIn</div>
+                                                    <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="text-base font-semibold hover:text-primary transition-colors">
+                                                        Connect with me
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    )}
+
+                                    {portfolio?.booking_url && (
+                                        <Card className="glass-card p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="rounded-xl bg-green-500/10 p-3">
+                                                    <Calendar className="h-6 w-6 text-green-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="font-bold text-sm text-muted-foreground">Schedule a Call</div>
+                                                    <a href={portfolio.booking_url} target="_blank" rel="noopener noreferrer" className="text-base font-semibold hover:text-primary transition-colors">
+                                                        Book a meeting
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    )}
+                                </div>
+
+                                {/* CTA Card */}
+                                {portfolio?.open_to_work && (
+                                    <Card className="glass-card p-8 relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5" />
+                                        <div className="relative space-y-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
+                                                <span className="text-sm font-bold text-green-600">Available Now</span>
+                                            </div>
+                                            <h3 className="text-2xl font-heading font-black">Open for Opportunities</h3>
+                                            <p className="text-muted-foreground leading-relaxed">
+                                                I'm currently looking for new challenges. If you think I'd be a good fit for your team, let's talk!
+                                            </p>
                                         </div>
                                     </Card>
                                 )}
                             </div>
 
-                            {/* CTA Card */}
-                            {portfolio?.open_to_work && (
-                                <Card className="glass-card p-8 relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5" />
-                                    <div className="relative space-y-3">
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
-                                            <span className="text-sm font-bold text-green-600">Available Now</span>
-                                        </div>
-                                        <h3 className="text-2xl font-heading font-black">Open for Opportunities</h3>
-                                        <p className="text-muted-foreground leading-relaxed">
-                                            I'm currently looking for new challenges. If you think I'd be a good fit for your team, let's talk!
-                                        </p>
-                                    </div>
-                                </Card>
-                            )}
+                            {/* Right Side - Contact Form */}
+                            <ContactForm portfolioId={portfolio.id} />
                         </div>
+                    </section>
+                </div>
 
-                        {/* Right Side - Contact Form */}
-                        <ContactForm portfolioId={portfolio.id} />
-                    </div>
-                </section>
+
+                {/* Sidebar for Creative Style */}
+                {layoutStyle === 'creative' && (
+                    <aside className="space-y-10">
+                        <div className="sticky top-24 space-y-10">
+                            <div className="p-6 rounded-3xl bg-primary text-primary-foreground space-y-4 shadow-xl shadow-primary/20">
+                                <h4 className="text-xl font-black">Let's Connect!</h4>
+                                <p className="text-sm opacity-90 leading-relaxed font-medium">
+                                    Looking for your next star developer or collaborator?
+                                </p>
+                                <Button
+                                    variant="secondary"
+                                    className="w-full rounded-2xl font-bold"
+                                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                                >
+                                    Send Message
+                                </Button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <p className="text-sm font-black uppercase tracking-widest text-muted-foreground px-2">Socials</p>
+                                <div className="flex flex-col gap-2">
+                                    {portfolio.social_links?.linkedin && (
+                                        <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+                                            <Linkedin className="h-5 w-5 text-blue-500" />
+                                            <span className="text-sm font-medium">LinkedIn</span>
+                                        </a>
+                                    )}
+                                    {portfolio.social_links?.github && (
+                                        <a href={portfolio.social_links.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+                                            <Github className="h-5 w-5" />
+                                            <span className="text-sm font-medium">GitHub</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                )}
             </div>
 
             {/* Full Resume Preview Modal */}
@@ -711,6 +764,24 @@ export function ModernTemplate({
                     )}
                 </DialogContent>
             </Dialog>
+            {/* Footer */}
+            <footer className="border-t glass-border py-12 relative z-10 bg-background/50 backdrop-blur-sm">
+                <div className="container max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <p className="text-sm text-muted-foreground font-medium">
+                        &copy; {new Date().getFullYear()} {displayName}. All rights reserved.
+                    </p>
+                    <div className="flex items-center gap-6">
+                        {portfolio?.social_links?.email && (
+                            <a href={`mailto:${portfolio.social_links.email}`} className="text-muted-foreground hover:text-primary transition-colors">
+                                <Mail className="h-5 w-5" />
+                            </a>
+                        )}
+                        <a href="https://resumebuilder.ai" target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:underline">
+                            Build your own portfolio
+                        </a>
+                    </div>
+                </div>
+            </footer>
         </div >
     )
 }

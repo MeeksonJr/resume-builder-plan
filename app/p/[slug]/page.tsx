@@ -14,6 +14,9 @@ interface PortfolioPageProps {
     }>;
 }
 
+// Define metadataBase for resolving absolute URLs in this route segment
+export const metadataBase = new URL(process.env.NEXT_PUBLIC_APP_URL || "https://resumebuilder.ai");
+
 export async function generateMetadata({ params }: PortfolioPageProps): Promise<Metadata> {
     const { slug } = await params;
     const supabase = await createClient();
@@ -103,12 +106,24 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
     const featuredResumes = (portfolio.featured_resumes || [])
         .map((id: string) => resumes?.find((r) => r.id === id))
         .filter(Boolean);
-    const featuredProjects = featuredProjectIds.length > 0
-        ? (projects || []).filter((p) => featuredProjectIds.includes(p.id))
-        : (projects || []).slice(0, 6); // Show first 6 if no featured selected
+
+    // Improved project filtering
+    let featuredProjects = [];
+    if (featuredProjectIds.length > 0 && projects) {
+        featuredProjects = projects.filter((p) => featuredProjectIds.includes(p.id));
+    }
+
+    // Fallback: If filtering resulted in 0 projects (but user has projects), 
+    // AND they haven't explicitly selected an empty list (i.e., if featuredProjectIds was empty to begin with),
+    // show the latest ones.
+    if (featuredProjects.length === 0 && (!featuredProjectIds.length || featuredProjectIds.length === 0)) {
+        featuredProjects = (projects || []).slice(0, 6);
+    }
 
     // 5. Select template based on portfolio setting
     const template = portfolio.template || "modern";
+    const layoutStyle = portfolio.theme_settings?.style || "professional";
+
     const templateProps = {
         portfolio,
         resumes: featuredResumes.length > 0 ? featuredResumes : (resumes || []),
@@ -116,6 +131,7 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
         profile: profile || { email: portfolio.user_id },
         testimonials: testimonials || [],
         accentColor: portfolio.accent_color || "#3b82f6",
+        layoutStyle, // Passing the layout style
     };
 
     // 6. Render the selected template

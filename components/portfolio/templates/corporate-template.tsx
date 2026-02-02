@@ -34,6 +34,7 @@ interface CorporateTemplateProps {
     profile: any
     testimonials: any[]
     accentColor?: string
+    layoutStyle?: string
 }
 
 export function CorporateTemplate({
@@ -43,6 +44,7 @@ export function CorporateTemplate({
     profile,
     testimonials,
     accentColor = "#3b82f6",
+    layoutStyle = "professional",
 }: CorporateTemplateProps) {
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
     const bio = portfolio?.bio || "Building amazing digital experiences."

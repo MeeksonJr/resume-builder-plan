@@ -34,6 +34,7 @@ interface MinimalTemplateProps {
     profile: any
     testimonials: any[]
     accentColor?: string
+    layoutStyle?: string
 }
 
 export function MinimalTemplate({
@@ -43,6 +44,7 @@ export function MinimalTemplate({
     profile,
     testimonials,
     accentColor = "#3b82f6",
+    layoutStyle = "professional",
 }: MinimalTemplateProps) {
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
     const bio = portfolio?.bio || "Building amazing digital experiences."
