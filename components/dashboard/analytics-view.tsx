@@ -74,10 +74,11 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
     };
 
     useEffect(() => {
-        if (resumes.length > 0 && !insights) {
+        if (resumes.length > 0 && !insights && !isLoadingInsights) {
             fetchInsights();
         }
-    }, [resumes.length]);
+    }, [resumes.length, insights, isLoadingInsights]);
+
 
     // Prepare chart data for last 7 days
     const last7Days = eachDayOfInterval({
@@ -101,7 +102,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
     return (
         <div className="space-y-8 px-4 md:px-0">
             <div className="grid gap-6 md:grid-cols-4">
-                <Card className="glass-card bg-white/40 dark:bg-slate-950/40 border-none transition-all hover:scale-[1.02] duration-300">
+                <Card className="bg-white dark:bg-slate-950 border transition-all hover:shadow-md duration-300">
+
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-black uppercase tracking-widest text-primary/60">Total Views</CardTitle>
                         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -114,7 +116,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                     </CardContent>
                 </Card>
 
-                <Card className="glass-card bg-white/40 dark:bg-slate-950/40 border-none transition-all hover:scale-[1.02] duration-300">
+                <Card className="bg-white dark:bg-slate-950 border transition-all hover:shadow-md duration-300">
+
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-black uppercase tracking-widest text-primary/60">Success Rate</CardTitle>
                         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -127,7 +130,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                     </CardContent>
                 </Card>
 
-                <Card className="glass-card bg-white/40 dark:bg-slate-950/40 border-none transition-all hover:scale-[1.02] duration-300">
+                <Card className="bg-white dark:bg-slate-950 border transition-all hover:shadow-md duration-300">
+
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-black uppercase tracking-widest text-primary/60">Top Performer</CardTitle>
                         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -144,7 +148,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                     </CardContent>
                 </Card>
 
-                <Card className="glass-card bg-white/40 dark:bg-slate-950/40 border-none transition-all hover:scale-[1.02] duration-300">
+                <Card className="bg-white dark:bg-slate-950 border transition-all hover:shadow-md duration-300">
+
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-black uppercase tracking-widest text-primary/60">Pulse</CardTitle>
                         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -162,7 +167,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                 </Card>
             </div>
 
-            <Card className="glass-card bg-white/50 dark:bg-slate-950/50 border-white/60 dark:border-white/5 shadow-2xl">
+            <Card className="bg-white dark:bg-slate-950 border shadow-md">
+
                 <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                         <div>
@@ -243,7 +249,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
 
             {/* AI Insights Section */}
             <div className="grid gap-6 md:grid-cols-3">
-                <Card className="md:col-span-2 overflow-hidden glass-card bg-black/5 dark:bg-white/5 border-primary/20 relative rounded-3xl group">
+                <Card className="md:col-span-2 overflow-hidden bg-white dark:bg-slate-950 border relative rounded-3xl group">
+
                     <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transition-transform duration-700 group-hover:scale-125 group-hover:rotate-12">
                         <BrainCircuit className="h-32 w-32 text-primary" />
                     </div>
@@ -261,7 +268,7 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                                 size="sm"
                                 onClick={fetchInsights}
                                 disabled={isLoadingInsights}
-                                className="h-10 px-4 glass-border glass hover:bg-primary hover:text-primary-foreground font-bold transition-all rounded-xl shadow-lg active:scale-95"
+                                className="h-10 px-4 border border-border hover:bg-primary hover:text-primary-foreground font-bold transition-all rounded-xl shadow-sm active:scale-95"
                             >
                                 <TrendingUp className="h-4 w-4 mr-2" />
                                 Re-Analyze
@@ -291,7 +298,8 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                                     <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Strategic Roadmap</h4>
                                     <div className="grid gap-3 sm:grid-cols-2">
                                         {insights.insights.map((insight: string, idx: number) => (
-                                            <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl glass-border glass bg-white/20 dark:bg-black/20 hover:scale-[1.02] transition-transform">
+                                            <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl border bg-muted/30 dark:bg-slate-900/30 hover:bg-muted/50 transition-colors">
+
                                                 <div className="h-8 w-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 font-black text-sm shadow-lg shadow-primary/20">
                                                     {idx + 1}
                                                 </div>
