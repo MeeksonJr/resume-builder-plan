@@ -56,7 +56,11 @@ export default async function PortfoliosDirectoryPage({
             break;
     }
 
-    const { data: portfolios } = await query;
+    const { data: portfolios, error } = await query;
+
+    if (error) {
+        console.error("Error fetching portfolios:", error);
+    }
 
     // Separate featured portfolios
     const featuredPortfolios = portfolios?.filter((p) => p.featured) || [];

@@ -81,7 +81,16 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
 
     // 3. Increment view count (fire and forget)
     try {
-        await supabase.rpc("increment_portfolio_views", { portfolio_id_param: portfolio.id });
+        const headersList = await import("next/headers").then((h) => h.headers());
+        const referrer = headersList.get("referer") || "direct";
+        const userAgent = headersList.get("user-agent") || "unknown";
+
+        await supabase.rpc("increment_portfolio_views", {
+            portfolio_id_param: portfolio.id,
+            referrer_param: referrer,
+            path_param: `/p/${slug}`,
+            user_agent_param: userAgent
+        });
     } catch (error) {
         console.error("Failed to increment view count:", error);
     }
