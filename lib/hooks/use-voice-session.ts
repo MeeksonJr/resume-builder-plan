@@ -26,7 +26,6 @@ export function useVoiceSession({
 }: UseVoiceSessionProps) {
     const [state, setState] = useState<VoiceSessionState>("idle");
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [transcriptHistory, setTranscriptHistory] = useState<string[]>([]);
 
     // Hooks
     const {
@@ -64,22 +63,13 @@ export function useVoiceSession({
     useEffect(() => {
         if (!mounted.current) return;
 
-        const handleIntroEnd = () => {
-            console.log("Intro ended, switching to speaking");
-            setState("speaking");
-        };
-
         const handleQuestionEnd = () => {
             console.log("Question ended, switching to listening");
             setState("listening");
         };
 
         switch (state) {
-            case "intro":
-                speak("Hello! I'm your AI interviewer today. I'll be asking you a few questions. Let's get started.", {
-                    onEnd: handleIntroEnd
-                });
-                break;
+            // NOTE: 'intro' is handled directly in startSession to satisfy Autoplay Policy
 
             case "speaking":
                 if (currentQuestion) {
@@ -105,6 +95,14 @@ export function useVoiceSession({
     // Manual triggers
     const startSession = () => {
         setState("intro");
+        // Trigger speech DIRECTLY from user interaction event (Click)
+        // This is critical for browser Autoplay policies
+        speak("Hello! I'm your AI interviewer today. I'll be asking you a few questions. Let's get started.", {
+            onEnd: () => {
+                console.log("Intro ended, switching to speaking");
+                setState("speaking");
+            }
+        });
     };
 
     const submitAnswer = async () => {
