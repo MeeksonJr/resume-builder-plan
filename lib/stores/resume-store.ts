@@ -457,6 +457,24 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       mapToDb: (item: any) => any,
       updateLocalState: (id: string, newId: string) => void
     ) => {
+      const currentIds = collection
+        .filter((item) => !item.id.startsWith("temp-"))
+        .map((item) => item.id);
+
+      // 1. Reconciliation: Delete orphaned records
+      if (currentIds.length > 0) {
+        await supabase
+          .from(tableName)
+          .delete()
+          .eq("resume_id", state.resumeId)
+          .not("id", "in", currentIds);
+      } else {
+        await supabase
+          .from(tableName)
+          .delete()
+          .eq("resume_id", state.resumeId);
+      }
+
       const errors: any[] = [];
       for (const item of collection) {
         const dbItem = mapToDb(item);
