@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ const POSTS = [
         category: "Job Search",
         date: "Feb 2, 2026",
         readTime: "5 min read",
+        image: "/blog-ats-hero.png",
     },
     {
         slug: "mastering-voice-interviews",
@@ -22,6 +24,7 @@ const POSTS = [
         category: "Interview Prep",
         date: "Jan 28, 2026",
         readTime: "8 min read",
+        image: "/blog-voice-interview-hero.png",
     },
     {
         slug: "resume-layout-tips",
@@ -30,6 +33,7 @@ const POSTS = [
         category: "Resume Tips",
         date: "Jan 20, 2026",
         readTime: "4 min read",
+        image: "/blog-resume-layout-hero.png",
     },
     {
         slug: "salary-negotiation",
@@ -38,6 +42,7 @@ const POSTS = [
         category: "Career Growth",
         date: "Jan 15, 2026",
         readTime: "6 min read",
+        image: "/dashboard-preview.png",
     },
 ];
 
@@ -58,7 +63,14 @@ export default function BlogIndex() {
                     {POSTS.map((post) => (
                         <Link key={post.slug} href={`/blog/${post.slug}`} className="group">
                             <Card className="h-full border-border/50 bg-card/50 hover:bg-card hover:border-border transition-all hover:shadow-lg overflow-hidden">
-                                <div className="h-48 bg-slate-100/10 w-full animate-pulse group-hover:bg-slate-100/20 transition-colors" /> {/* Placeholder Image */}
+                                <div className="relative h-48 w-full overflow-hidden">
+                                    <Image
+                                        src={post.image}
+                                        alt={post.title}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                </div>
                                 <CardHeader>
                                     <div className="flex items-center justify-between mb-2">
                                         <Badge variant="outline" className="rounded-full">{post.category}</Badge>

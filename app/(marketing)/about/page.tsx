@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Target, Heart, Zap, Shield, Users, TrendingUp } from "lucide-react";
 
@@ -104,6 +105,57 @@ export default function AboutPage() {
                             Today, we're proud to help over 1,200 job seekers land roles at companies like Google,
                             Amazon, and hundreds of startups. But we're just getting started.
                         </p>
+                    </div>
+                </motion.div>
+
+                {/* Founder Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                    className="max-w-4xl mx-auto mb-24"
+                >
+                    <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-white">
+                        Meet the Founder
+                    </h2>
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-white/10 p-8 md:p-12">
+                        <div className="flex flex-col md:flex-row items-center gap-8">
+                            {/* Photo */}
+                            <div className="relative shrink-0">
+                                <div className="w-48 h-48 md:w-56 md:h-56 rounded-2xl overflow-hidden border-4 border-white/10 shadow-2xl">
+                                    <Image
+                                        src="/Photo.avif"
+                                        alt="Mohamed L. Datt - Founder & Developer"
+                                        width={224}
+                                        height={224}
+                                        className="object-cover w-full h-full"
+                                    />
+                                </div>
+                                {/* Decorative glow */}
+                                <div className="absolute -inset-4 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl blur-2xl -z-10" />
+                            </div>
+
+                            {/* Bio */}
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                                    Mohamed L. Datt
+                                </h3>
+                                <p className="text-lg text-primary mb-4 font-medium">
+                                    Founder & Lead Developer
+                                </p>
+                                <p className="text-slate-300 leading-relaxed mb-4">
+                                    A passionate software engineer and entrepreneur dedicated to democratizing access to
+                                    career development tools. With years of experience in AI and full-stack development,
+                                    Mohamed built ResumeBuilder to solve the frustrations he experienced firsthand in
+                                    the job market.
+                                </p>
+                                <p className="text-slate-400 leading-relaxed">
+                                    "I believe everyone deserves a fair shot at their dream job. Technology should empower
+                                    people, not gatekeep opportunities. That's why I built this platform—to give job seekers
+                                    the same AI-powered advantages that big companies use."
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
 
