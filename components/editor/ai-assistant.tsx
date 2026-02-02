@@ -62,7 +62,8 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         languages,
         updateProfile,
         addSkill,
-        updateWorkExperience
+        updateWorkExperience,
+        updateProject
     } = useResumeStore();
 
     const handleApplySkill = (skillName: string) => {
@@ -814,19 +815,29 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                     onApply={(customizedResume) => {
                                         // Apply the customized resume data
                                         let changesApplied = 0;
+                                        const changeDetails: string[] = [];
 
                                         console.log("Applying customized resume:", customizedResume);
+                                        console.log("Current profile:", profile);
+                                        console.log("Current projects:", projects);
 
-                                        // Update summary if provided
+                                        // Update summary if provided and different
                                         if (customizedResume.personalInfo?.summary) {
-                                            updateProfile({ summary: customizedResume.personalInfo.summary });
-                                            changesApplied++;
+                                            const newSummary = customizedResume.personalInfo.summary;
+                                            const currentSummary = profile?.summary || "";
+                                            console.log("Comparing summaries:", { newSummary, currentSummary });
+                                            if (newSummary !== currentSummary) {
+                                                updateProfile({ summary: newSummary });
+                                                changesApplied++;
+                                                changeDetails.push("Summary updated");
+                                            }
                                         }
 
                                         // Add new skills from the customized resume
                                         // AI returns skills as [{category, items: string[]}]
                                         if (customizedResume.skills && Array.isArray(customizedResume.skills)) {
                                             const existingSkillNames = new Set(skills.map(s => s.name.toLowerCase()));
+                                            let skillsAdded = 0;
                                             customizedResume.skills.forEach((skillGroup: any) => {
                                                 const category = skillGroup.category || "Industry";
                                                 const items = skillGroup.items || [];
@@ -838,10 +849,14 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                                             proficiency_level: 3
                                                         });
                                                         existingSkillNames.add(skillName.toLowerCase());
-                                                        changesApplied++;
+                                                        skillsAdded++;
                                                     }
                                                 });
                                             });
+                                            if (skillsAdded > 0) {
+                                                changesApplied += skillsAdded;
+                                                changeDetails.push(`${skillsAdded} skills added`);
+                                            }
                                         }
 
                                         // Update work experience highlights if provided
@@ -852,14 +867,37 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                                                         highlights: exp.highlights
                                                     });
                                                     changesApplied++;
+                                                    changeDetails.push(`Experience ${index + 1} highlights updated`);
                                                 }
                                             });
                                         }
 
+                                        // Update project highlights if provided
+                                        if (customizedResume.projects && Array.isArray(customizedResume.projects)) {
+                                            customizedResume.projects.forEach((proj: any, index: number) => {
+                                                if (projects[index]) {
+                                                    const updates: any = {};
+                                                    if (proj.highlights && Array.isArray(proj.highlights)) {
+                                                        updates.highlights = proj.highlights;
+                                                    }
+                                                    if (proj.description && proj.description !== projects[index].description) {
+                                                        updates.description = proj.description;
+                                                    }
+                                                    if (Object.keys(updates).length > 0) {
+                                                        updateProject(projects[index].id, updates);
+                                                        changesApplied++;
+                                                        changeDetails.push(`Project "${projects[index].name}" updated`);
+                                                    }
+                                                }
+                                            });
+                                        }
+
+                                        console.log("Changes applied:", { changesApplied, changeDetails });
+
                                         if (changesApplied > 0) {
-                                            toast.success(`Industry customization applied! ${changesApplied} changes made.`);
+                                            toast.success(`Applied: ${changeDetails.join(", ")}`);
                                         } else {
-                                            toast.info("No changes to apply. The AI suggestions may already match your resume.");
+                                            toast.info("No changes to apply - your resume already matches the AI suggestions.");
                                         }
                                         setMode("menu");
                                     }}

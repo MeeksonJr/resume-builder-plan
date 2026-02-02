@@ -526,8 +526,8 @@ export function ResumeEditor({
 
           {/* Desktop: Resizable panels */}
           <div className="hidden h-full md:block">
-            <ResizablePanelGroup direction="horizontal">
-              <ResizablePanel defaultSize={showPreview ? 50 : 100} minSize={30}>
+            <ResizablePanelGroup direction="horizontal" id="resume-editor-panel-group">
+              <ResizablePanel defaultSize={showPreview ? 50 : 100} minSize={30} id="editor-panel">
                 <div className="h-full overflow-y-auto p-4">
                   <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
                 </div>
@@ -535,7 +535,7 @@ export function ResumeEditor({
               {showPreview && (
                 <>
                   <ResizableHandle withHandle />
-                  <ResizablePanel defaultSize={50} minSize={30}>
+                  <ResizablePanel defaultSize={50} minSize={30} id="preview-panel">
                     <div className="h-full overflow-y-auto bg-muted/30 p-4">
                       <ResumePreview />
                     </div>

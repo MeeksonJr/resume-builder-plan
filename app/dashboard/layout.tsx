@@ -29,7 +29,9 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar user={user} profile={profile} />
+      <div suppressHydrationWarning>
+        <AppSidebar user={user} profile={profile} />
+      </div>
       <SidebarInset className="bg-background/50">
         <TopNav />
         <CommandMenu />
