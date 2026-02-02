@@ -1,0 +1,1 @@
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS accent_color TEXT;

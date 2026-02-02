@@ -28,7 +28,9 @@ import {
     Mail,
     Trophy,
     Sparkles,
-    Briefcase
+    Briefcase,
+    Share2,
+    Search
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
@@ -99,7 +101,11 @@ export default function PortfolioManagementPage() {
                     is_public: true,
                     open_to_work: false,
                     booking_url: "",
-                    template: "modern"
+                    template: "modern",
+                    seo_title: "",
+                    seo_description: "",
+                    og_image_url: "",
+                    accent_color: "#3b82f6"
                 };
             }
             setPortfolio(currentPortfolio);
@@ -272,6 +278,10 @@ export default function PortfolioManagementPage() {
                     <TabsTrigger value="social" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
                         <Globe className="h-4 w-4" />
                         Social
+                    </TabsTrigger>
+                    <TabsTrigger value="seo" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                        <Search className="h-4 w-4" />
+                        SEO & Social
                     </TabsTrigger>
                     <TabsTrigger value="appearance" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
                         <Palette className="h-4 w-4" />
@@ -477,6 +487,105 @@ export default function PortfolioManagementPage() {
                     </Card>
                 </TabsContent>
 
+                <TabsContent value="seo" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
+                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                        <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
+                            <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-primary/10">
+                                    <Search className="h-4 w-4 text-primary" />
+                                </div>
+                                Discovery & Social Sharing (SEO)
+                            </CardTitle>
+                            <CardDescription className="font-medium">Optimize how your portfolio appears in search engines and on social media platforms.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 space-y-8">
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="seo_title" className="flex items-center gap-2">
+                                        Meta Title
+                                        <Badge variant="outline" className="text-[10px] font-black tracking-widest border-primary/10 text-muted-foreground">Title Tag</Badge>
+                                    </Label>
+                                    <Input
+                                        id="seo_title"
+                                        className="rounded-xl border-primary/10"
+                                        placeholder="e.g. John Doe | Senior Full Stack Engineer"
+                                        value={portfolio.seo_title || ""}
+                                        onChange={(e) => setPortfolio({ ...portfolio, seo_title: e.target.value })}
+                                        maxLength={60}
+                                    />
+                                    <p className="text-[10px] text-muted-foreground/60 font-medium">Recommended: Under 60 characters for best display in search results.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="seo_description" className="flex items-center gap-2">
+                                        Meta Description
+                                        <Badge variant="outline" className="text-[10px] font-black tracking-widest border-primary/10 text-muted-foreground">Snippet</Badge>
+                                    </Label>
+                                    <Textarea
+                                        id="seo_description"
+                                        className="rounded-xl border-primary/10 min-h-[100px]"
+                                        placeholder="Professional portfolio of John Doe, featuring high-impact engineering projects and multi-stack expertise."
+                                        value={portfolio.seo_description || ""}
+                                        onChange={(e) => setPortfolio({ ...portfolio, seo_description: e.target.value })}
+                                        maxLength={160}
+                                    />
+                                    <p className="text-[10px] text-muted-foreground/60 font-medium">Recommended: Between 150-160 characters to optimize search snippets.</p>
+                                </div>
+
+                                <div className="space-y-4 pt-6 border-t border-primary/5">
+                                    <Label htmlFor="og_image_url" className="flex items-center gap-2">
+                                        <Share2 className="h-4 w-4 text-primary" />
+                                        Social Preview Image (OpenGraph URL)
+                                    </Label>
+                                    <div className="flex gap-4">
+                                        <div className="flex-1 space-y-2">
+                                            <Input
+                                                id="og_image_url"
+                                                className="rounded-xl border-primary/10"
+                                                placeholder="https://example.com/my-preview.jpg"
+                                                value={portfolio.og_image_url || ""}
+                                                onChange={(e) => setPortfolio({ ...portfolio, og_image_url: e.target.value })}
+                                            />
+                                            <p className="text-[10px] text-muted-foreground/60 font-medium italic">Provide a link to a high-quality (1200x630) image that represents your brand.</p>
+                                        </div>
+                                        {portfolio.og_image_url && (
+                                            <div className="group relative h-20 w-36 rounded-xl border border-primary/5 bg-slate-900/50 overflow-hidden shrink-0">
+                                                <img
+                                                    src={portfolio.og_image_url}
+                                                    alt="SEO Preview"
+                                                    className="h-full w-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                                                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <span className="text-[8px] font-black uppercase text-white/20">Preview</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 p-6 rounded-[24px] border border-primary/5 bg-primary/5 space-y-4">
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    Live Preview Simulation
+                                </h4>
+                                <div className="space-y-2">
+                                    <p className="text-[#1a0dab] text-lg font-medium hover:underline cursor-pointer leading-tight truncate">
+                                        {portfolio.seo_title || portfolio.full_name || "Untitled Portfolio"}
+                                    </p>
+                                    <p className="text-[#006621] text-xs font-medium truncate mb-1">
+                                        {`https://resumebuilder.ai/p/${portfolio.slug}`}
+                                    </p>
+                                    <p className="text-gray-400 text-xs line-clamp-2 max-w-lg leading-relaxed">
+                                        {portfolio.seo_description || portfolio.bio?.slice(0, 150) || "Explore my professional portfolio, projects, and career highlights..."}
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
                 <TabsContent value="appearance" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
                     <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
@@ -489,25 +598,54 @@ export default function PortfolioManagementPage() {
                             <CardDescription className="font-medium">Choose how your portfolio looks to the world.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8 space-y-10">
-                            <div className="space-y-4">
-                                <Label>Color Theme</Label>
-                                <div className="flex flex-wrap gap-3">
-                                    {["primary", "blue", "purple", "emerald", "rose", "slate"].map((c) => (
-                                        <Button
-                                            key={c}
-                                            variant={portfolio.theme_settings?.color === c ? "default" : "outline"}
-                                            className="h-10 w-24 capitalize"
-                                            onClick={() => setPortfolio({
-                                                ...portfolio,
-                                                theme_settings: { ...portfolio.theme_settings, color: c }
-                                            })}
-                                        >
-                                            <div className={cn("h-3 w-3 rounded-full mr-2",
-                                                c === "primary" ? "bg-primary" : `bg-${c}-500`
-                                            )} />
-                                            {c}
-                                        </Button>
-                                    ))}
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="flex items-center gap-2">
+                                        <Palette className="h-4 w-4 text-primary" />
+                                        Accent Brilliance
+                                    </Label>
+                                    <p className="text-[10px] text-muted-foreground/60 font-medium mb-3">Define the core signature color for your portfolio layout.</p>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative group">
+                                            <Input
+                                                type="color"
+                                                className="h-14 w-28 p-1 rounded-2xl cursor-pointer bg-slate-900/50 border-primary/10 transition-all hover:bg-slate-900"
+                                                value={portfolio.accent_color || "#3b82f6"}
+                                                onChange={(e) => setPortfolio({ ...portfolio, accent_color: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <Input
+                                                className="h-14 rounded-2xl border-primary/10 bg-slate-950/40 font-mono text-sm"
+                                                placeholder="#3b82f6"
+                                                value={portfolio.accent_color || "#3b82f6"}
+                                                onChange={(e) => setPortfolio({ ...portfolio, accent_color: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 mt-4">
+                                        {[
+                                            { name: "Saphire", hex: "#3b82f6" },
+                                            { name: "Emerald", hex: "#10b981" },
+                                            { name: "Amethyst", hex: "#8b5cf6" },
+                                            { name: "Rose", hex: "#f43f5e" },
+                                            { name: "Amber", hex: "#f59e0b" },
+                                            { name: "Slate", hex: "#64748b" }
+                                        ].map((preset) => (
+                                            <button
+                                                key={preset.hex}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                                                    portfolio.accent_color === preset.hex
+                                                        ? "bg-primary/20 border-primary text-primary"
+                                                        : "bg-slate-900 border-primary/5 text-muted-foreground hover:border-primary/20"
+                                                )}
+                                                onClick={() => setPortfolio({ ...portfolio, accent_color: preset.hex })}
+                                            >
+                                                {preset.name}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
@@ -546,10 +684,10 @@ export default function PortfolioManagementPage() {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {[
-                                        { id: "modern", label: "Modern", desc: "Bold gradients and contemporary design", icon: Sparkles },
-                                        { id: "minimal", label: "Minimalist", desc: "Clean, simple, and focused", icon: Layout },
-                                        { id: "corporate", label: "Corporate", desc: "Professional and traditional", icon: Briefcase },
-                                        { id: "creative", label: "Creative", desc: "Unique and expressive design", icon: Palette },
+                                        { id: "modern", label: "Modern", desc: "Bold gradients and contemporary glassmorphism.", icon: Sparkles, preview: "border-primary/40 bg-gradient-to-br from-primary/20 to-transparent" },
+                                        { id: "minimal", label: "Minimalist", desc: "Clean typography and maximum whitespace focus.", icon: Layout, preview: "border-primary/10 bg-slate-950" },
+                                        { id: "corporate", label: "Corporate", desc: "Structured, professional, and industry-standard.", icon: Briefcase, preview: "border-primary/20 bg-slate-900" },
+                                        { id: "creative", label: "Creative", desc: "Playful, unique, and highly expressive.", icon: Palette, preview: "border-primary/30 bg-primary/5" },
                                     ].map((template) => {
                                         const Icon = template.icon;
                                         const isSelected = (portfolio.template || "modern") === template.id;
@@ -557,9 +695,9 @@ export default function PortfolioManagementPage() {
                                             <div
                                                 key={template.id}
                                                 className={cn(
-                                                    "p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-xl group",
+                                                    "flex flex-col border-2 rounded-3xl cursor-pointer transition-all duration-500 hover:shadow-2xl group overflow-hidden",
                                                     isSelected
-                                                        ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.1)] ring-1 ring-primary/30"
+                                                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(var(--primary),0.1)] ring-1 ring-primary/20"
                                                         : "border-primary/5 bg-slate-900/40 hover:border-primary/40"
                                                 )}
                                                 onClick={() => setPortfolio({
@@ -567,22 +705,19 @@ export default function PortfolioManagementPage() {
                                                     template: template.id
                                                 })}
                                             >
-                                                <div className="space-y-4">
+                                                <div className={cn("h-32 w-full border-b border-primary/5 relative overflow-hidden", template.preview)}>
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                                                        <Icon className="h-20 w-20" />
+                                                    </div>
+                                                </div>
+                                                <div className="p-5 space-y-4">
                                                     <div className="flex items-center justify-between">
-                                                        <div className={cn(
-                                                            "p-2.5 rounded-xl transition-colors",
-                                                            isSelected ? "bg-primary/20 text-primary" : "bg-slate-800 text-muted-foreground group-hover:bg-slate-700"
-                                                        )}>
-                                                            <Icon className="h-5 w-5" />
-                                                        </div>
+                                                        <p className="font-black uppercase tracking-tight text-sm mb-1">{template.label}</p>
                                                         {isSelected && (
-                                                            <Badge variant="default" className="text-[10px] font-black uppercase tracking-widest bg-primary text-white border-none">Active</Badge>
+                                                            <Badge variant="default" className="text-[9px] font-black uppercase tracking-widest bg-primary text-white border-none px-2 h-5">Selected</Badge>
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <p className="font-black uppercase tracking-tight text-sm mb-1">{template.label}</p>
-                                                        <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">{template.desc}</p>
-                                                    </div>
+                                                    <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">{template.desc}</p>
                                                 </div>
                                             </div>
                                         );
@@ -850,7 +985,7 @@ export default function PortfolioManagementPage() {
                                         <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.4)" dy={10} fontStyle="bold" />
                                         <YAxis fontSize={11} tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.4)" dx={-10} fontStyle="bold" />
                                         <Tooltip
-                                            contentStyle={{ backgroundColor: '#020617', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '16px', borderShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '12px' }}
+                                            contentStyle={{ backgroundColor: '#020617', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '12px' }}
                                             itemStyle={{ color: 'hsl(var(--primary))', fontWeight: 'bold' }}
                                             labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px', textTransform: 'uppercase', fontSize: '10px', fontWeight: 'black' }}
                                         />

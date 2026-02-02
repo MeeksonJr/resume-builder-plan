@@ -1,0 +1,1 @@
+ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS seo_title TEXT; ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS seo_description TEXT; ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS og_image_url TEXT;

@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { motion } from "framer-motion"
+import { hexToHsl } from "@/lib/utils"
 import {
     Github,
     Linkedin,
@@ -31,6 +33,7 @@ interface CreativeTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    accentColor?: string
 }
 
 export function CreativeTemplate({
@@ -39,12 +42,18 @@ export function CreativeTemplate({
     projects,
     profile,
     testimonials,
+    accentColor = "#3b82f6",
 }: CreativeTemplateProps) {
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
     const bio = portfolio?.bio || "Building amazing digital experiences."
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-yellow-50 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950">
+        <div
+            className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background relative overflow-x-hidden"
+            style={{
+                ['--primary' as any]: hexToHsl(accentColor),
+            }}
+        >
             {/* Vibrant Hero */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-orange-500/20" />
@@ -55,15 +64,18 @@ export function CreativeTemplate({
 
                 <div className="relative container max-w-6xl mx-auto px-6 py-24">
                     <div className="max-w-3xl space-y-8">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-500/10 to-orange-500/10 border border-pink-500/20">
-                            <Sparkles className="h-4 w-4 text-pink-600" />
-                            <span className="text-sm font-bold text-pink-600 dark:text-pink-400">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-bold text-primary">
                                 Creative Professional
                             </span>
                         </div>
 
                         <h1 className="text-6xl md:text-7xl font-black tracking-tight">
-                            <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-orange-600 bg-clip-text text-transparent">
+                            <span
+                                className="bg-clip-text text-transparent"
+                                style={{ backgroundImage: `linear-gradient(to r, ${accentColor}, #8b5cf6, #f97316)` }}
+                            >
                                 {displayName}
                             </span>
                         </h1>
@@ -316,7 +328,7 @@ export function CreativeTemplate({
                     <p className="text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} {displayName}. All rights reserved.</p>
                 </div>
             </footer>
-        </div>
+        </div >
     )
 }
 

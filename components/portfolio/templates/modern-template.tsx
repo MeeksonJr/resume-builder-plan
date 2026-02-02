@@ -42,9 +42,10 @@ import {
     Loader2,
 } from "lucide-react"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { cn, hexToHsl } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
+import { motion } from "framer-motion"
 
 interface ModernTemplateProps {
     portfolio: any
@@ -52,6 +53,7 @@ interface ModernTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    accentColor?: string
 }
 
 export function ModernTemplate({
@@ -60,6 +62,7 @@ export function ModernTemplate({
     projects,
     profile,
     testimonials,
+    accentColor = "#3b82f6",
 }: ModernTemplateProps) {
     const [selectedResume, setSelectedResume] = React.useState<any>(null)
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
@@ -67,17 +70,26 @@ export function ModernTemplate({
     const skills = portfolio?.skills || []
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background relative">
+        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background relative" style={{
+            ['--primary' as any]: accentColor.startsWith('#') ? accentColor : `hsl(var(--${accentColor}))`,
+            ['--accent-foreground' as any]: '#ffffff'
+        }}>
             {/* Floating orbs background effect */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-700" />
+                <div
+                    className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse opacity-20"
+                    style={{ backgroundColor: accentColor }}
+                />
+                <div
+                    className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse delay-700 opacity-20"
+                    style={{ backgroundColor: accentColor }}
+                />
             </div>
 
             {/* Enhanced Hero Section */}
             <section className="relative overflow-hidden border-b glass-border">
                 {/* Animated Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+                <div className="absolute inset-0 opacity-10" style={{ background: `linear-gradient(135deg, ${accentColor}, transparent)` }} />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
 
                 <div className="container relative max-w-6xl mx-auto px-6 py-24 md:py-32">
@@ -110,74 +122,93 @@ export function ModernTemplate({
                         </p>
 
                         {/* Stats Row */}
-                        <div className="flex flex-wrap items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                        <div className="flex flex-wrap items-center gap-6">
                             {portfolio?.location && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="flex items-center gap-2 text-muted-foreground"
+                                >
                                     <MapPin className="h-5 w-5 text-primary" />
                                     <span className="text-base font-medium">{portfolio.location}</span>
-                                </div>
+                                </motion.div>
                             )}
                             {portfolio?.view_count > 0 && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="flex items-center gap-2 text-muted-foreground"
+                                >
                                     <TrendingUp className="h-5 w-5 text-primary" />
                                     <span className="text-base font-medium">{portfolio.view_count.toLocaleString()} views</span>
-                                </div>
+                                </motion.div>
                             )}
                             {projects.length > 0 && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 }}
+                                    className="flex items-center gap-2 text-muted-foreground"
+                                >
                                     <Briefcase className="h-5 w-5 text-primary" />
                                     <span className="text-base font-medium">{projects.length} projects</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Social Links & CTA */}
-                        <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
-                            {portfolio?.email && (
-                                <Button size="lg" className="rounded-2xl gap-2 bg-gradient-to-r from-primary via-primary to-primary/80 hover:shadow-2xl hover:shadow-primary/20 transition-all h-14 px-8 font-black text-base group" asChild>
-                                    <a href={`mailto:${portfolio.email}`}>
-                                        <Mail className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                                        Get in Touch
-                                    </a>
-                                </Button>
-                            )}
-
-                            {portfolio?.social_links?.linkedin && (
-                                <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
-                                    <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer">
-                                        <Linkedin className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                        LinkedIn
-                                    </a>
-                                </Button>
-                            )}
-                            {portfolio?.social_links?.github && (
-                                <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
-                                    <a href={portfolio.social_links.github} target="_blank" rel="noopener noreferrer">
-                                        <Github className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                        GitHub
-                                    </a>
-                                </Button>
-                            )}
-                            {portfolio?.social_links?.twitter && (
-                                <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
-                                    <a href={portfolio.social_links.twitter} target="_blank" rel="noopener noreferrer">
-                                        <Twitter className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                        Twitter
-                                    </a>
-                                </Button>
-                            )}
-                            {portfolio?.social_links?.website && (
-                                <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
-                                    <a href={portfolio.social_links.website} target="_blank" rel="noopener noreferrer">
-                                        <Globe className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                        Website
-                                    </a>
-                                </Button>
+                                </motion.div>
                             )}
                         </div>
                     </div>
-                </div>
 
+                    {/* Social Links & CTA */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="flex flex-wrap items-center gap-4"
+                    >
+                        {portfolio?.email && (
+                            <Button size="lg" className="rounded-2xl gap-2 font-black text-base group shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all" asChild>
+                                <a href={`mailto:${portfolio.email}`}>
+                                    <Mail className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                                    Get in Touch
+                                </a>
+                            </Button>
+                        )}
+
+                        {portfolio?.social_links?.linkedin && (
+                            <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
+                                <a href={portfolio.social_links.linkedin} target="_blank" rel="noopener noreferrer">
+                                    <Linkedin className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                    LinkedIn
+                                </a>
+                            </Button>
+                        )}
+                        {portfolio?.social_links?.github && (
+                            <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
+                                <a href={portfolio.social_links.github} target="_blank" rel="noopener noreferrer">
+                                    <Github className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                    GitHub
+                                </a>
+                            </Button>
+                        )}
+                        {portfolio?.social_links?.twitter && (
+                            <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
+                                <a href={portfolio.social_links.twitter} target="_blank" rel="noopener noreferrer">
+                                    <Twitter className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                    Twitter
+                                </a>
+                            </Button>
+                        )}
+                        {portfolio?.social_links?.website && (
+                            <Button variant="outline" size="lg" className="rounded-2xl gap-2 h-14 px-6 font-bold hover:bg-primary/10 hover:border-primary/50 transition-all group" asChild>
+                                <a href={portfolio.social_links.website} target="_blank" rel="noopener noreferrer">
+                                    <Globe className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                    Website
+                                </a>
+                            </Button>
+                        )}
+                    </motion.div>
+                </div>
                 {/* Bottom gradient fade */}
                 <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </section>
@@ -680,7 +711,7 @@ export function ModernTemplate({
                     )}
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     )
 }
 

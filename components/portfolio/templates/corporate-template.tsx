@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { motion } from "framer-motion"
+import { hexToHsl } from "@/lib/utils"
 import {
     Github,
     Linkedin,
@@ -31,6 +33,7 @@ interface CorporateTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    accentColor?: string
 }
 
 export function CorporateTemplate({
@@ -39,6 +42,7 @@ export function CorporateTemplate({
     projects,
     profile,
     testimonials,
+    accentColor = "#3b82f6",
 }: CorporateTemplateProps) {
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
     const bio = portfolio?.bio || "Building amazing digital experiences."
@@ -46,7 +50,12 @@ export function CorporateTemplate({
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
             {/* Professional Header */}
-            <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+            <header
+                className="text-white relative overflow-hidden"
+                style={{ backgroundColor: accentColor }}
+            >
+                {/* Subtle pattern overlay */}
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_2px_2px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-[length:24px_24px]" />
                 <div className="container max-w-6xl mx-auto px-6 py-16">
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-2 space-y-4">
@@ -118,16 +127,23 @@ export function CorporateTemplate({
                     <div className="md:col-span-2 space-y-8">
                         {/* Professional Experience */}
                         {resumes && resumes.length > 0 && resumes[0]?.work_experiences && (
-                            <section>
-                                <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-blue-600">
-                                    <Briefcase className="h-6 w-6 text-blue-600" />
+                            <motion.section
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <div
+                                    className="flex items-center gap-3 mb-6 pb-3 border-b-2"
+                                    style={{ borderColor: accentColor }}
+                                >
+                                    <Briefcase className="h-6 w-6" style={{ color: accentColor }} />
                                     <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
                                         Professional Experience
                                     </h2>
                                 </div>
                                 <div className="space-y-6">
                                     {resumes[0].work_experiences.map((exp: any) => (
-                                        <Card key={exp.id} className="p-6 border-l-4 border-l-blue-600">
+                                        <Card key={exp.id} className="p-6 border-l-4" style={{ borderLeftColor: accentColor }}>
                                             <div className="space-y-3">
                                                 <div>
                                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
@@ -149,7 +165,7 @@ export function CorporateTemplate({
                                         </Card>
                                     ))}
                                 </div>
-                            </section>
+                            </motion.section>
                         )}
 
                         {/* Key Projects */}
@@ -162,7 +178,7 @@ export function CorporateTemplate({
                                     </h2>
                                 </div>
                                 <div className="space-y-6">
-                                    {projects.map((project) => (
+                                    {projects.map((project: any) => (
                                         <Card key={project.id} className="p-6">
                                             <div className="space-y-3">
                                                 <div className="flex items-start justify-between gap-4">
@@ -207,7 +223,7 @@ export function CorporateTemplate({
                                     </h2>
                                 </div>
                                 <div className="space-y-4">
-                                    {testimonials.map((testimonial) => (
+                                    {testimonials.map((testimonial: any) => (
                                         <Card key={testimonial.id} className="p-6 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                                             <div className="space-y-3">
                                                 <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed">

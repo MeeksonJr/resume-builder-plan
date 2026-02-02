@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { motion } from "framer-motion"
+import { hexToHsl } from "@/lib/utils"
 import {
     Github,
     Linkedin,
@@ -31,6 +33,7 @@ interface MinimalTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    accentColor?: string
 }
 
 export function MinimalTemplate({
@@ -39,15 +42,21 @@ export function MinimalTemplate({
     projects,
     profile,
     testimonials,
+    accentColor = "#3b82f6",
 }: MinimalTemplateProps) {
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
     const bio = portfolio?.bio || "Building amazing digital experiences."
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950">
+        <div className="min-h-screen bg-white dark:bg-slate-950" style={{
+            ['--primary' as any]: hexToHsl(accentColor),
+        }}>
             <div className="container max-w-4xl mx-auto px-6 py-16">
                 {/* Header */}
-                <header className="space-y-8 pb-12 border-b border-slate-200 dark:border-slate-800">
+                <header
+                    className="space-y-8 pb-12 border-b-4"
+                    style={{ borderColor: accentColor }}
+                >
                     <div className="space-y-4">
                         <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             {displayName}
@@ -77,7 +86,7 @@ export function MinimalTemplate({
                             </div>
                         )}
                         {portfolio?.open_to_work && (
-                            <Badge variant="outline" className="border-green-600 text-green-600">
+                            <Badge variant="outline" className="text-primary border-primary">
                                 Available for Work
                             </Badge>
                         )}
@@ -133,14 +142,19 @@ export function MinimalTemplate({
                 </header>
 
                 {/* About */}
-                <section className="py-12 space-y-4">
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="py-12 space-y-4"
+                >
                     <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-slate-50">
                         About
                     </h2>
                     <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
                         {bio}
                     </p>
-                </section>
+                </motion.section>
 
                 <Separator className="my-12" />
 

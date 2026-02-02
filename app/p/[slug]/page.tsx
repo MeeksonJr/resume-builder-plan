@@ -19,14 +19,15 @@ export async function generateMetadata({ params }: PortfolioPageProps): Promise<
     const supabase = await createClient();
     const { data: portfolio } = await supabase
         .from("portfolios")
-        .select("full_name, bio, tagline")
+        .select("full_name, bio, tagline, seo_title, seo_description, og_image_url")
         .eq("slug", slug)
         .single();
 
     if (!portfolio) return { title: "Portfolio Not Found" };
 
-    const title = `${portfolio.full_name || slug} - Professional Portfolio`;
-    const description = portfolio.bio || portfolio.tagline || "Professional career portfolio and showcase.";
+    const title = portfolio.seo_title || `${portfolio.full_name || slug} - Professional Portfolio`;
+    const description = portfolio.seo_description || portfolio.bio || portfolio.tagline || "Professional career portfolio and showcase.";
+    const ogImage = portfolio.og_image_url;
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://yourdomain.com";
 
@@ -38,11 +39,13 @@ export async function generateMetadata({ params }: PortfolioPageProps): Promise<
             description,
             type: "profile",
             url: `${baseUrl}/p/${slug}`,
+            images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : undefined,
         },
         twitter: {
             card: "summary_large_image",
             title,
             description,
+            images: ogImage ? [ogImage] : undefined,
         },
     };
 }
@@ -112,6 +115,7 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
         projects: featuredProjects,
         profile: profile || { email: portfolio.user_id },
         testimonials: testimonials || [],
+        accentColor: portfolio.accent_color || "#3b82f6",
     };
 
     // 6. Render the selected template
