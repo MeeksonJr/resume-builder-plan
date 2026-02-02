@@ -67,79 +67,73 @@ export default async function PortfoliosDirectoryPage({
     const regularPortfolios = portfolios?.filter((p) => !p.featured) || [];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden border-b glass-border bg-background/60 backdrop-blur-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
-                <div className="container relative max-w-7xl mx-auto px-6 py-20">
-                    <div className="max-w-3xl space-y-6">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                            <Sparkles className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-bold text-primary">Discover Talent</span>
-                        </div>
 
-                        <h1 className="text-5xl md:text-6xl font-heading font-black tracking-tight gradient-text">
-                            Professional Directory
-                        </h1>
-                        <p className="text-xl text-muted-foreground leading-relaxed">
-                            Explore portfolios from talented professionals. Find your next hire or collaborator.
-                        </p>
-                    </div>
+        <div className="container max-w-7xl mx-auto px-6 py-8 space-y-8">
+            <div className="flex flex-col gap-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 w-fit rounded-full bg-primary/10 border border-primary/20">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-bold text-primary">Discover Talent</span>
+                </div>
+                <h1 className="text-3xl font-heading font-black tracking-tight">
+                    Professional Directory
+                </h1>
+                <p className="text-muted-foreground text-lg max-w-2xl">
+                    Explore portfolios from talented professionals. Find your next hire or collaborator.
+                </p>
+            </div>
 
-                    {/* Search and Filters */}
-                    <div className="mt-10 flex flex-col lg:flex-row gap-4">
-                        <form className="relative flex-1" action="/dashboard/portfolios">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input
-                                name="q"
-                                defaultValue={q}
-                                placeholder="Search by name, role, or skills..."
-                                className="pl-12 h-14 rounded-2xl glass-border text-lg"
-                            />
-                            {sort && <input type="hidden" name="sort" value={sort} />}
-                            {status && <input type="hidden" name="status" value={status} />}
-                        </form>
+            {/* Search and Filters */}
+            <div className="flex flex-col lg:flex-row gap-4">
+                <form className="relative flex-1" action="/dashboard/portfolios">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        name="q"
+                        defaultValue={q}
+                        placeholder="Search by name, role, or skills..."
+                        className="pl-12 h-14 rounded-2xl glass-border text-lg"
+                    />
+                    {sort && <input type="hidden" name="sort" value={sort} />}
+                    {status && <input type="hidden" name="status" value={status} />}
+                </form>
 
-                        <div className="flex gap-3">
-                            <Select defaultValue={sort}>
-                                <SelectTrigger className="w-[180px] h-14 rounded-2xl glass-border">
-                                    <SelectValue placeholder="Sort by" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="recent">Most Recent</SelectItem>
-                                    <SelectItem value="popular">Most Popular</SelectItem>
-                                    <SelectItem value="name">Name (A-Z)</SelectItem>
-                                </SelectContent>
-                            </Select>
+                <div className="flex gap-3">
+                    <Select defaultValue={sort}>
+                        <SelectTrigger className="w-[180px] h-14 rounded-2xl glass-border">
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="recent">Most Recent</SelectItem>
+                            <SelectItem value="popular">Most Popular</SelectItem>
+                            <SelectItem value="name">Name (A-Z)</SelectItem>
+                        </SelectContent>
+                    </Select>
 
-                            <Button
-                                variant={status === "open" ? "default" : "outline"}
-                                className="h-14 rounded-2xl font-bold px-6"
-                                asChild
-                            >
-                                <a href={`/dashboard/portfolios${status === "open" ? "" : "?status=open"}${q ? `&q=${q}` : ""}${sort && sort !== "recent" ? `&sort=${sort}` : ""}`}>
-                                    {status === "open" ? "Showing: " : ""}Open to Work
-                                </a>
-                            </Button>
+                    <Button
+                        variant={status === "open" ? "default" : "outline"}
+                        className="h-14 rounded-2xl font-bold px-6"
+                        asChild
+                    >
+                        <a href={`/dashboard/portfolios${status === "open" ? "" : "?status=open"}${q ? `&q=${q}` : ""}${sort && sort !== "recent" ? `&sort=${sort}` : ""}`}>
+                            {status === "open" ? "Showing: " : ""}Open to Work
+                        </a>
+                    </Button>
 
-                            {(q || status || (sort && sort !== "recent")) && (
-                                <Button
-                                    variant="ghost"
-                                    className="h-14 rounded-2xl font-bold"
-                                    asChild
-                                >
-                                    <a href="/dashboard/portfolios">Clear All</a>
-                                </Button>
-                            )}
-                        </div>
-                    </div>
+                    {(q || status || (sort && sort !== "recent")) && (
+                        <Button
+                            variant="ghost"
+                            className="h-14 rounded-2xl font-bold"
+                            asChild
+                        >
+                            <a href="/dashboard/portfolios">Clear All</a>
+                        </Button>
+                    )}
                 </div>
             </div>
 
             {/* Content Section */}
-            <div className="container max-w-7xl mx-auto px-6 py-12">
+            <div className="space-y-12">
                 {/* Results Count */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between">
                     <p className="text-muted-foreground font-medium">
                         {featuredPortfolios.length + regularPortfolios.length === 0 ? (
                             "No portfolios found"
@@ -154,8 +148,8 @@ export default async function PortfoliosDirectoryPage({
 
                 {/* Featured Portfolios */}
                 {featuredPortfolios.length > 0 && (
-                    <div className="mb-12">
-                        <div className="flex items-center gap-2 mb-6">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-2">
                             <Sparkles className="h-5 w-5 text-primary" />
                             <h2 className="text-2xl font-heading font-black">Featured Professionals</h2>
                         </div>
@@ -169,9 +163,9 @@ export default async function PortfoliosDirectoryPage({
 
                 {/* Regular Portfolios */}
                 {regularPortfolios.length > 0 && (
-                    <div>
+                    <div className="space-y-6">
                         {featuredPortfolios.length > 0 && (
-                            <h2 className="text-xl font-heading font-black mb-6">All Portfolios</h2>
+                            <h2 className="text-xl font-heading font-black">All Portfolios</h2>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {regularPortfolios.map((portfolio) => (
@@ -202,3 +196,4 @@ export default async function PortfoliosDirectoryPage({
         </div>
     );
 }
+
