@@ -24,6 +24,7 @@ import {
     Calendar
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -341,7 +342,14 @@ export function PortfolioView({ portfolio, resumes, projects, profile, testimoni
                                     </div>
                                     <div className="flex items-center gap-4 mt-8 pt-6 border-t">
                                         {t.avatar_url ? (
-                                            <img src={t.avatar_url} alt={t.name} className="h-12 w-12 rounded-full object-cover border-2 border-background shadow-sm" />
+                                            <Image
+                                                src={t.avatar_url}
+                                                alt={t.name}
+                                                width={48}
+                                                height={48}
+                                                className="rounded-full object-cover border-2 border-background shadow-sm"
+                                                unoptimized
+                                            />
                                         ) : (
                                             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                                                 {t.name[0]}

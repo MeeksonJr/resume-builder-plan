@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -614,11 +615,13 @@ export default function PortfolioManagementPage() {
                                         </div>
                                         {portfolio.og_image_url && (
                                             <div className="group relative h-20 w-36 rounded-xl border border-primary/5 bg-slate-900/50 overflow-hidden shrink-0">
-                                                <img
+                                                <Image
                                                     src={portfolio.og_image_url}
                                                     alt="SEO Preview"
-                                                    className="h-full w-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                                                    fill
+                                                    className="object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                                                     onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                    unoptimized // For external URLs until domain is configured
                                                 />
                                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                     <span className="text-[8px] font-black uppercase text-white/20">Preview</span>

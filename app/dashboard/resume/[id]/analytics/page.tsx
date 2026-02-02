@@ -5,20 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    Cell,
-    PieChart,
-    Pie
-} from "recharts";
+import dynamic from "next/dynamic";
+
+const TrafficChart = dynamic(() => import("@/components/analytics/charts").then(mod => mod.TrafficChart), {
+    loading: () => <div className="h-[300px] w-full flex items-center justify-center bg-muted/20 animate-pulse rounded-xl">Loading Chart...</div>
+});
+
+const DeviceChart = dynamic(() => import("@/components/analytics/charts").then(mod => mod.DeviceChart), {
+    loading: () => <div className="h-[200px] w-full flex items-center justify-center bg-muted/20 animate-pulse rounded-xl">Loading...</div>
+});
 import {
     ArrowLeft,
     BarChart3,
@@ -42,7 +37,7 @@ import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { format, subDays, startOfDay, isWithinInterval } from "date-fns";
+import { format, subDays, startOfDay, isWithinInterval, differenceInHours } from "date-fns";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -54,12 +49,35 @@ export default function ResumeAnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const [atsData, setAtsData] = useState<any>(null);
     const [loadingATS, setLoadingATS] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-    const fetchATSScore = useCallback(async (resumeId: string) => {
+    const fetchATSScore = useCallback(async (resumeId: string, force: boolean = false) => {
         setLoadingATS(true);
         const supabase = createClient();
         try {
-            // Fetch all resume parts
+            // 1. Check Cache (if not forced)
+            if (!force) {
+                const { data: cache } = await supabase
+                    .from("resume_ats_cache")
+                    .select("*")
+                    .eq("resume_id", resumeId)
+                    .order("created_at", { ascending: false }) // Get latest
+                    .limit(1)
+                    .single();
+
+                if (cache) {
+                    const hoursSinceUpdate = differenceInHours(new Date(), new Date(cache.created_at));
+                    if (hoursSinceUpdate < 24) {
+                        console.log("Using cached ATS data");
+                        setAtsData(cache.analysis_data);
+                        setLastUpdated(new Date(cache.created_at));
+                        setLoadingATS(false);
+                        return;
+                    }
+                }
+            }
+
+            // 2. Fetch all resume parts (if no cache or stale/forced)
             const [
                 { data: profile },
                 { data: workExperiences },
@@ -96,9 +114,22 @@ export default function ResumeAnalyticsPage() {
 
             if (!response.ok) throw new Error("ATS Scoring failed");
             const data = await response.json();
+
+            // 3. Save to Cache
+            const { error: cacheError } = await supabase.from("resume_ats_cache").insert({
+                resume_id: resumeId,
+                ats_score: data.score,
+                analysis_data: data
+            });
+
+            if (cacheError) console.error("Failed to cache ATS data:", cacheError);
+
             setAtsData(data);
+            setLastUpdated(new Date());
+
         } catch (err) {
             console.error("ATS Fetch Error:", err);
+            toast.error("Failed to analyze resume");
         } finally {
             setLoadingATS(false);
         }
@@ -247,20 +278,7 @@ export default function ResumeAnalyticsPage() {
                         <CardDescription>Daily views and downloads over the last 30 days</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={last30Days}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                                    <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: 'white', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Line type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} />
-                                    <Line type="monotone" dataKey="downloads" stroke="#10b981" strokeWidth={3} dot={false} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <TrafficChart data={last30Days} />
                     </CardContent>
                 </Card>
 
@@ -270,26 +288,7 @@ export default function ResumeAnalyticsPage() {
                         <CardDescription>Where your visitors are coming from</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center">
-                        <div className="h-[200px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={deviceData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {deviceData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <DeviceChart data={deviceData} />
                         <div className="grid grid-cols-2 gap-4 mt-4 w-full">
                             {deviceData.map((device, idx) => (
                                 <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-muted/30">
@@ -304,11 +303,30 @@ export default function ResumeAnalyticsPage() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Card className="lg:col-span-1 bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl overflow-hidden">
-                    <CardHeader className="border-b bg-primary/5">
+                    <CardHeader className="border-b bg-primary/5 flex flex-row items-center justify-between">
                         <CardTitle className="text-lg font-black flex items-center gap-2">
                             <ShieldCheck className="h-5 w-5 text-primary" />
                             ATS COMPATIBILITY
                         </CardTitle>
+                        {atsData && (
+                            <div className="flex items-center gap-3">
+                                {lastUpdated && (
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                                        Last Updated: {format(lastUpdated, "MMM d, h:mm a")}
+                                    </span>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-xs font-bold gap-1"
+                                    onClick={() => fetchATSScore(id as string, true)}
+                                    disabled={loadingATS}
+                                >
+                                    <Zap className={cn("h-3 w-3", loadingATS ? "text-muted-foreground" : "text-amber-500")} />
+                                    {loadingATS ? "Analyzing..." : "Re-Check"}
+                                </Button>
+                            </div>
+                        )}
                     </CardHeader>
                     <CardContent className="p-8 flex flex-col items-center justify-center space-y-6">
                         {loadingATS ? (
