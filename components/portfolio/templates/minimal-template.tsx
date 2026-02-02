@@ -160,6 +160,38 @@ export function MinimalTemplate({
 
                 <Separator className="my-12" />
 
+                {/* Featured Resumes */}
+                {resumes && resumes.length > 0 && (
+                    <section className="py-12 space-y-8">
+                        <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-slate-50">
+                            Resumes
+                        </h2>
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {resumes.slice(0, 4).map((resume: any) => (
+                                <Card key={resume.id} className="p-6 transition-all hover:shadow-lg border-l-4" style={{ borderLeftColor: accentColor }}>
+                                    <div className="space-y-4">
+                                        <div className="flex items-start justify-between">
+                                            <div className="space-y-1">
+                                                <h3 className="font-semibold text-lg">{resume.title || "Resume"}</h3>
+                                                <p className="text-sm text-slate-500">
+                                                    Updated {new Date(resume.updated_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <a href={`/dashboard/resume/${resume.id}/preview`} target="_blank" rel="noopener noreferrer">
+                                                    View
+                                                </a>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                <Separator className="my-12" />
+
                 {/* Experience */}
                 {resumes && resumes.length > 0 && resumes[0]?.work_experiences && (
                     <section className="py-12 space-y-8">
@@ -316,7 +348,7 @@ export function MinimalTemplate({
                     </div>
                 </footer>
             </div>
-        </div>
+        </div >
     )
 }
 

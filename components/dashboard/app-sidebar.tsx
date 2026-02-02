@@ -91,7 +91,7 @@ const navItems = [
         icon: Globe,
         items: [
             { title: "My Portfolio", href: "/dashboard/portfolio" },
-            { title: "Discovery", href: "/portfolios" },
+            { title: "Discovery", href: "/dashboard/portfolios" },
         ],
     },
 ]

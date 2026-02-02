@@ -25,6 +25,7 @@ import {
     CheckCircle,
     Send,
     Loader2,
+    FileText,
 } from "lucide-react"
 
 interface CorporateTemplateProps {
@@ -168,6 +169,40 @@ export function CorporateTemplate({
                                     ))}
                                 </div>
                             </motion.section>
+                        )}
+
+                        {/* Featured Resumes */}
+                        {resumes && resumes.length > 0 && (
+                            <section>
+                                <div className="flex items-center gap-3 mb-6 pb-3 border-b-2" style={{ borderColor: accentColor }}>
+                                    <FileText className="h-6 w-6" style={{ color: accentColor }} />
+                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+                                        Featured Resumes
+                                    </h2>
+                                </div>
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    {resumes.slice(0, 4).map((resume: any) => (
+                                        <Card key={resume.id} className="p-6 border-l-4 hover:shadow-lg transition-all" style={{ borderLeftColor: accentColor }}>
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                                                        {resume.title || "Resume"}
+                                                    </h3>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                                                        Last updated {new Date(resume.updated_at).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+                                                    <a href={`/dashboard/resume/${resume.id}/preview`} target="_blank" rel="noopener noreferrer">
+                                                        View Resume
+                                                        <ExternalLink className="h-3 w-3" />
+                                                    </a>
+                                                </Button>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </section>
                         )}
 
                         {/* Key Projects */}

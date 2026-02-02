@@ -167,7 +167,7 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               )}
             </Link>
             <Link
-              href="/portfolios"
+              href="/dashboard/portfolios"
               className={cn(
                 "group relative px-3 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5 text-primary/80",
               )}
@@ -313,7 +313,7 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
                 Interview Prep
               </Link>
               <Link
-                href="/portfolios"
+                href="/dashboard/portfolios"
                 className="text-sm font-medium text-primary transition-colors hover:text-primary/80 flex items-center gap-2"
                 onClick={() => setMobileMenuOpen(false)}
               >

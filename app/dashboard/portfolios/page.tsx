@@ -88,7 +88,7 @@ export default async function PortfoliosDirectoryPage({
 
                     {/* Search and Filters */}
                     <div className="mt-10 flex flex-col lg:flex-row gap-4">
-                        <form className="relative flex-1" action="/portfolios">
+                        <form className="relative flex-1" action="/dashboard/portfolios">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input
                                 name="q"
@@ -117,7 +117,7 @@ export default async function PortfoliosDirectoryPage({
                                 className="h-14 rounded-2xl font-bold px-6"
                                 asChild
                             >
-                                <a href={`/portfolios${status === "open" ? "" : "?status=open"}${q ? `&q=${q}` : ""}${sort && sort !== "recent" ? `&sort=${sort}` : ""}`}>
+                                <a href={`/dashboard/portfolios${status === "open" ? "" : "?status=open"}${q ? `&q=${q}` : ""}${sort && sort !== "recent" ? `&sort=${sort}` : ""}`}>
                                     {status === "open" ? "Showing: " : ""}Open to Work
                                 </a>
                             </Button>
@@ -128,7 +128,7 @@ export default async function PortfoliosDirectoryPage({
                                     className="h-14 rounded-2xl font-bold"
                                     asChild
                                 >
-                                    <a href="/portfolios">Clear All</a>
+                                    <a href="/dashboard/portfolios">Clear All</a>
                                 </Button>
                             )}
                         </div>
@@ -194,7 +194,7 @@ export default async function PortfoliosDirectoryPage({
                             </p>
                         </div>
                         <Button variant="default" className="rounded-xl" asChild>
-                            <a href="/portfolios">View All Portfolios</a>
+                            <a href="/dashboard/portfolios">View All Portfolios</a>
                         </Button>
                     </div>
                 )}
