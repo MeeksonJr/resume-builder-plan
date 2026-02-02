@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Send, Loader2 } from "lucide-react";
+import { Mic, MicOff, Send, Loader2, AlertCircle } from "lucide-react";
+import { useSpeechRecognition } from "@/lib/hooks/use-speech-recognition";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AnswerRecorderProps {
     questionId: string;
@@ -9,6 +12,7 @@ interface AnswerRecorderProps {
     onAnswerSubmitted?: (answerId: string) => void;
     disabled?: boolean;
     initialValue?: string;
+    autoStart?: boolean; // Prop to auto-start listening (for Voice Mode)
 }
 
 export function AnswerRecorder({
@@ -17,28 +21,103 @@ export function AnswerRecorder({
     onAnswerSubmitted,
     disabled = false,
     initialValue = "",
+    autoStart = false
 }: AnswerRecorderProps) {
     const [answer, setAnswer] = useState(initialValue);
-    const [isRecording, setIsRecording] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [startTime, setStartTime] = useState<number | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Use our custom hook
+    const {
+        isListening,
+        transcript,
+        interimTranscript,
+        startListening,
+        stopListening,
+        resetTranscript,
+        isSupported,
+        error: micError
+    } = useSpeechRecognition();
 
     useEffect(() => {
         setAnswer(initialValue);
     }, [initialValue]);
 
+    // Auto-start if requested and supported
+    useEffect(() => {
+        if (autoStart && isSupported && !isListening && !disabled) {
+            handleStartRecording();
+        }
+    }, [autoStart, isSupported, questionId]); // Restart when questionId changes if autoStart is true
+
+    // Update answer when transcript changes
+    useEffect(() => {
+        if (transcript) {
+            setAnswer(prev => {
+                // simple logic to append: if prev ends with space, just add. else add space.
+                // But we also need to respect manual edits. 
+                // A better approach for a simple recorder is to just append new segments.
+                // However, continuous listening often clears transcript or keeps it growing.
+                // Our hook generally accumulates 'transcript'.
+                // If we want to allow mixing typing and speaking, it's tricky.
+                // Let's assume 'transcript' grows from empty each session, 
+                // but we want to append it to whatever was typed BEFORE listening started?
+                // Actually, the hook provided accumulates `transcript`. 
+                // Let's just use the transcript as the source of truth WHILE listening? 
+                // No, user might type.
+
+                // Strategy: When listening starts, we remember the "base" text.
+                // Then we setAnswer(base + transcript).
+                // But if user types while listening, it gets messy.
+                // Simple version: Just append new transcript chunks.
+                // The hook provided accumulates. 
+                // Let's try this: 
+                // 1. Capture text before start (in handleStart) -> `baseText`.
+                // 2. setAnswer(baseText + (baseText ? ' ' : '') + transcript)
+
+                return prev;
+            });
+        }
+    }, [transcript]);
+
+    // Refined strategy for mixing typing + speech
+    // We'll use a ref to store the text present when recording started
+    const baseTextRef = useRef("");
+
+    useEffect(() => {
+        if (isListening) {
+            // When transcript updates, update the answer
+            setAnswer(baseTextRef.current + (baseTextRef.current && transcript ? ' ' : '') + transcript);
+        }
+    }, [transcript, isListening]);
+
+
     const handleStartRecording = () => {
-        setIsRecording(true);
+        if (!isSupported) {
+            alert("Speech recognition is not supported in this browser.");
+            return;
+        }
+        baseTextRef.current = answer; // Snapshot current text
+        resetTranscript(); // Clear previous session's transcript
+        startListening();
         setStartTime(Date.now());
     };
 
     const handleStopRecording = () => {
-        setIsRecording(false);
+        stopListening();
+        // Start time remains set to calculate total duration up to this point? 
+        // Or we just rely on total duration at submit. 
+        // Simplification: We only track duration if they continuously record. 
+        // If they toggle, we might lose precision but that's fine for MVP.
     };
 
     const handleSubmit = async () => {
         if (!answer.trim()) return;
+
+        if (isListening) {
+            stopListening();
+        }
 
         setIsSubmitting(true);
         try {
@@ -53,7 +132,7 @@ export function AnswerRecorder({
                     questionId,
                     sessionId,
                     answerText: answer,
-                    answerDuration: duration,
+                    answerDuration: duration || 0, // Default to 0 if manual typing
                 }),
             });
 
@@ -66,13 +145,13 @@ export function AnswerRecorder({
             // Clear the answer and reset state
             setAnswer("");
             setStartTime(null);
+            resetTranscript();
 
             if (onAnswerSubmitted && data.answer?.id) {
                 onAnswerSubmitted(data.answer.id);
             }
         } catch (error) {
             console.error("Error submitting answer:", error);
-            alert("Failed to submit answer. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -90,15 +169,37 @@ export function AnswerRecorder({
             textareaRef.current.style.height = "auto";
             textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
         }
-    }, [answer]);
+    }, [answer, interimTranscript]);
 
     return (
         <div className="space-y-4">
+            {micError && (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{micError}</AlertDescription>
+                </Alert>
+            )}
+
             <div className="relative">
                 <textarea
                     ref={textareaRef}
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
+                    value={isListening ? answer + (interimTranscript ? ' ' + interimTranscript : '') : answer}
+                    onChange={(e) => {
+                        setAnswer(e.target.value);
+                        // If they type while listening, update baseTextRef so transcript appends correctly?
+                        // Or just stop listening?
+                        // For simplicity, do NOT update baseTextRef, just let them type. 
+                        // But if they type, the next transcript update will overwrite their typing if we strictly use baseTextRef + transcript.
+                        // Best UX: Stop listening if they type? Or just let them type and it updates 'answer'. 
+                        if (isListening) {
+                            // If typing occurs, we update baseText to be current value MINUS transcript? 
+                            // Too complex. Let's just update baseText to current value and reset transcript to avoid duplication?
+                            // Or imply that typing pauses sync.
+                            // Let's keep it simple: Typing doesn't stop listening, but might get overwritten.
+                            // Actually, let's update baseTextRef so invalidation doesn't happen.
+                            baseTextRef.current = e.target.value.replace(transcript, '').trim();
+                        }
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder="Type your answer here... (Ctrl+Enter to submit)"
                     disabled={disabled || isSubmitting}
@@ -106,10 +207,10 @@ export function AnswerRecorder({
                     rows={6}
                 />
 
-                {isRecording && (
-                    <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1 bg-red-100 border border-red-300 rounded-full">
+                {isListening && (
+                    <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1 bg-red-100 border border-red-300 rounded-full animate-in fade-in">
                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-sm font-medium text-red-700">Recording</span>
+                        <span className="text-sm font-medium text-red-700">Listening...</span>
                     </div>
                 )}
             </div>
@@ -118,38 +219,39 @@ export function AnswerRecorder({
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={isRecording ? handleStopRecording : handleStartRecording}
-                        disabled={disabled || isSubmitting}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isRecording
-                            ? "bg-red-100 text-red-700 hover:bg-red-200"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        onClick={isListening ? handleStopRecording : handleStartRecording}
+                        disabled={disabled || isSubmitting || !isSupported}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isListening
+                            ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
                             } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        title={!isSupported ? "Speech recognition not supported in this browser" : isListening ? "Stop Recording" : "Start Recording"}
                     >
-                        {isRecording ? (
+                        {isListening ? (
                             <>
                                 <MicOff className="w-4 h-4" />
-                                Stop Timer
+                                Stop Recording
                             </>
                         ) : (
                             <>
                                 <Mic className="w-4 h-4" />
-                                Start Timer
+                                {answer ? "Resume Recording" : "Start Recording"}
                             </>
                         )}
                     </button>
 
-                    {startTime && (
-                        <div className="text-sm text-gray-600">
-                            Time: {Math.floor((Date.now() - (startTime || 0)) / 1000)}s
+                    {isListening && (
+                        <div className="text-sm text-gray-500 animate-pulse">
+                            {interimTranscript ? "Processing..." : "Speak now..."}
                         </div>
                     )}
                 </div>
 
-                <button
+                <Button
                     type="button"
                     onClick={handleSubmit}
                     disabled={!answer.trim() || disabled || isSubmitting}
-                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="gap-2"
                 >
                     {isSubmitting ? (
                         <>
@@ -162,11 +264,11 @@ export function AnswerRecorder({
                             Submit Answer
                         </>
                     )}
-                </button>
+                </Button>
             </div>
 
-            <p className="text-xs text-gray-500">
-                Tip: Use the timer to practice time management. Press Ctrl+Enter to quickly submit.
+            <p className="text-xs text-muted-foreground">
+                {isSupported ? "Tip: You can type or speak your answer. Press Ctrl+Enter to submit." : "Note: Voice recording is not supported in this browser. Please type your answer."}
             </p>
         </div>
     );

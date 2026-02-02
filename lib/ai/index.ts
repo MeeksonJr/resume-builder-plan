@@ -104,7 +104,7 @@ async function withFallback<T>(
 
   const models = [
     { provider: groq, model: "llama-3.3-70b-versatile", name: "Groq" },
-    { provider: google, model: "gemini-2.0-flash-exp", name: "Gemini" },
+    { provider: google, model: "gemini-2.5-flash", name: "Gemini" },
     { provider: openai, model: "gpt-4o-mini", name: "OpenAI" },
   ];
 
@@ -1449,7 +1449,7 @@ Be specific and make the content immediately usable.`,
       });
     });
 
-    return result.object;
+    return result.object as any;
   } catch (error: any) {
     console.warn("[AI] Section auto-complete failed:", error.message);
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
