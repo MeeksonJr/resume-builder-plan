@@ -28,14 +28,14 @@ const testimonials = [
     {
         name: "Mohamed L. Datt",
         role: "Freelance Data Scientist",
-        content: "Best $12/month I've can spend on a resume builder. The cover letter generator alone saved me hours of work.",
+        content: "Best $12/month I can spend on a resume builder. The cover letter generator alone saved me hours of work.",
         rating: 5,
         avatar: "MLD",
     },
     {
         name: "Mohamed L. Datt",
         role: "Freelance Marketing Manager",
-        content: "The public portfolio feature helped me stand out. I can share it on LinkedIn and get 3 recruiter messages in a week.",
+        content: "The public portfolio feature can help me stand out. I can share it on LinkedIn and get 3 recruiter messages in a week. It is pretty fine to customize the template.",
         rating: 5,
         avatar: "MLD",
     },

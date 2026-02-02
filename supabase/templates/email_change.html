@@ -1,61 +1,217 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Email Change</title>
     <style>
+        /* Reset & Base */
         body {
+            margin: 0;
+            padding: 0;
+            background-color: #020617;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 12px;
+        table {
+            border-spacing: 0;
+            width: 100%;
         }
 
+        img {
+            border: 0;
+        }
+
+        /* Layout */
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #020617;
+            padding-bottom: 60px;
+        }
+
+        .main {
+            background-color: #0f172a;
+            margin: 40px auto;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #1e293b;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        /* Header */
         .header {
+            padding: 40px 0 30px;
             text-align: center;
-            margin-bottom: 30px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+
+        .brand-link {
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            width: 48px;
+            border-radius: 14px;
+            margin: 0 auto 16px;
+            display: block;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2px;
+        }
+
+        .brand-name {
+            color: #f8fafc;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin: 0;
+        }
+
+        .brand-tagline {
+            color: #60a5fa;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px 48px;
+            color: #cbd5e1;
+        }
+
+        .title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            color: #94a3b8;
+        }
+
+        /* Button */
+        .btn-container {
+            text-align: center;
+            margin: 32px 0;
         }
 
         .button {
             display: inline-block;
-            padding: 12px 24px;
-            background-color: #3b82f6;
-            color: #fff;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            color: #ffffff !important;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            margin: 20px 0;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .footer {
-            font-size: 12px;
-            color: #888;
+        /* Info Box */
+        .info-box {
+            background-color: rgba(2, 6, 23, 0.6);
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            margin-top: 40px;
+            margin: 24px 0;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .footer p {
+            margin: 8px 0;
+        }
+
+        .footer a {
+            color: #64748b;
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h2 style="color: #1e293b;">Confirm Change of Email</h2>
-        </div>
-        <p>Hello,</p>
-        <p>Follow this link to confirm the update of your email from {{ .Email }} to {{ .NewEmail }}:</p>
-        <p style="text-align: center;">
-            <a href="{{ .ConfirmationURL }}" class="button">Change Email</a>
-        </p>
-        <p>If you didn't request this change, please contact support immediately.</p>
+    <div class="wrapper">
+        <table class="main" role="presentation">
+            <tr>
+                <td class="header">
+                    <table role="presentation" width="100%">
+                        <tr>
+                            <td>
+                                <a href="https://resume-builder-plan.vercel.app/" class="brand-link">
+                                    <img src="https://jlrteuwzpdxpniedzblx.supabase.co/storage/v1/object/public/avatars/apple-icon.png"
+                                        width="48" height="48" alt="ResumeBuilder" class="brand-icon">
+                                    <h1 class="brand-name">ResumeBuilder</h1>
+                                    <div class="brand-tagline">AI Powered Career Suite</div>
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="content">
+                    <h2 class="title">Confirm Email Change</h2>
+                    <p class="text">We received a request to change the email address associated with your account.</p>
+
+                    <div class="info-box">
+                        <div class="info-label">New Email Address</div>
+                        <div class="info-value">{{ .NewEmail }}</div>
+                    </div>
+
+                    <p class="text">Please click the button below to confirm this change. Link expires in 24 hours.</p>
+
+                    <div class="btn-container">
+                        <a href="{{ .ConfirmationURL }}" class="button">Confirm New Email</a>
+                    </div>
+
+                    <p class="text">If you didn&apos;t request this change, please ignore this email or contact support.
+                    </p>
+                </td>
+            </tr>
+        </table>
+
         <div class="footer">
-            &copy; 2026 ResumeBuilder. All rights reserved.
+            <p>&copy; 2026 ResumeBuilder. All rights reserved.</p>
+            <p>
+                <a href="https://resume-builder-plan.vercel.app/">Visit Website</a> &bull;
+                <a href="https://resume-builder-plan.vercel.app/privacy">Privacy Policy</a> &bull;
+                <a href="https://resume-builder-plan.vercel.app/support">Support</a>
+            </p>
         </div>
     </div>
 </body>
