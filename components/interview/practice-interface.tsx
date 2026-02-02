@@ -17,18 +17,23 @@ import { AnswerRecorder } from "@/components/interview/answer-recorder";
 import { EvaluationDisplay } from "@/components/interview/evaluation-display";
 import { AnswerHistory } from "@/components/interview/answer-history";
 import { AnswerComparison } from "@/components/interview/answer-comparison";
+import { InterviewResults } from "@/components/interview/interview-results";
 
 interface PracticeInterfaceProps {
     session: any;
     questions: any[];
+    initialAnswers?: any[];
 }
 
-export function PracticeInterface({ session, questions }: PracticeInterfaceProps) {
+export function PracticeInterface({ session, questions, initialAnswers = [] }: PracticeInterfaceProps) {
     const router = useRouter();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
-    const [answers, setAnswers] = useState<any[]>([]);
+    const [answers, setAnswers] = useState<any[]>(initialAnswers);
+
+    // If session is completed and we have answers, show results immediately
+    const isSessionCompleted = !!session.completed_at;
 
     const [comparisonData, setComparisonData] = useState<{ a1: any, a2: any } | null>(null);
     const [initialAnswerText, setInitialAnswerText] = useState("");
@@ -37,8 +42,10 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
     const progress = ((currentIndex + 1) / questions.length) * 100;
     const answeredCount = answeredQuestions.size;
 
-    // Fetch answers on mount
+    // Fetch answers on mount ONLY if not provided initially
     useEffect(() => {
+        if (initialAnswers.length > 0 || isSessionCompleted) return;
+
         const fetchAnswers = async () => {
             try {
                 const response = await fetch(`/api/interview/answers?sessionId=${session.id}`);
@@ -61,7 +68,7 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
         };
 
         fetchAnswers();
-    }, [session.id, questions]);
+    }, [session.id, questions, initialAnswers.length, isSessionCompleted]);
 
     // Handle answer submission
     const handleAnswerSubmitted = (answerId: string) => {
@@ -111,34 +118,18 @@ export function PracticeInterface({ session, questions }: PracticeInterfaceProps
         }
     };
 
-    if (!currentQuestion) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Session Complete!</CardTitle>
-                    <CardDescription>
-                        You've answered all {questions.length} questions.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        <span className="font-medium">
-                            {answeredCount} / {questions.length} questions answered
-                        </span>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button onClick={() => router.push("/dashboard/interview-prep")}>
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Dashboard
-                        </Button>
-                        <Button variant="outline" onClick={() => setCurrentIndex(0)}>
-                            Review Answers
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+    if (!currentQuestion || isSessionCompleted) {
+        // Enrich answers with question details for the results view
+        const enrichedAnswers = answers.map(answer => {
+            const question = questions.find(q => q.id === answer.question_id);
+            return {
+                ...answer,
+                question_text: question?.question_text || "Unknown Question",
+                question_type: question?.question_type || "General"
+            };
+        });
+
+        return <InterviewResults session={session} answers={enrichedAnswers} />;
     }
 
     return (

@@ -1427,7 +1427,7 @@ export async function autoCompleteSection(
     const result = await withFallback(async (model) => {
       return generateObject({
         model,
-        schema: sectionSchemas[sectionType],
+        schema: sectionSchemas[sectionType] as any,
         prompt: `You are a professional resume writer. Auto-complete the missing parts of this ${sectionType} section.
 
 Existing Resume Data:
@@ -1786,6 +1786,44 @@ Provide the customized resume and detailed insights.`,
           },
         ],
       };
+    }
+    throw error;
+  }
+}
+
+// Generate a suggested answer for an interview question
+export async function generateSuggestedAnswer(
+  question: string,
+  questionType: string,
+  targetRole: string,
+  context?: string
+): Promise<string> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateText({
+        model,
+        prompt: `You are an expert interview coach. Generate a high-quality, "ideal" answer for the following interview question.
+        
+        Question: ${question}
+        Question Type: ${questionType}
+        Target Role: ${targetRole}
+        ${context ? `Context/Key Points to Include: ${context}` : ""}
+        
+        Instructions:
+        - Use the STAR method (Situation, Task, Action, Result) if it is a behavioral question.
+        - Be specific, professional, and concise (approx. 150-200 words).
+        - Focus on highlighting relevant skills for a ${targetRole}.
+        - Do not use placeholders like "[Your Name]". Write it as if you are a strong candidate speaking.
+        
+        Provide ONLY the suggested answer text.`,
+      });
+    });
+
+    return result.text.trim();
+  } catch (error: any) {
+    console.warn("[AI] Suggested answer generation failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return "[MOCK] Ideally, you should structure your answer using the STAR method. Start with a relevant situation, describe the task, explain your specific actions, and end with the positive result. For this question, focus on your problem-solving skills.";
     }
     throw error;
   }

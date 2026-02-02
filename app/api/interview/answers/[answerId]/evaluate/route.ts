@@ -13,9 +13,9 @@ export async function POST(
 
         // Check authentication
         const {
-            data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
+            data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -40,7 +40,7 @@ export async function POST(
       `
             )
             .eq("id", answerId)
-            .eq("user_id", session.user.id)
+            .eq("user_id", user.id)
             .single();
 
         if (fetchError || !answer) {
@@ -81,6 +81,8 @@ export async function POST(
                 weaknesses: evaluation.weaknesses,
                 improvements: evaluation.improvements,
                 overall_feedback: evaluation.overallFeedback,
+                star_breakdown: evaluation.starBreakdown,
+                star_scores: evaluation.scores,
             })
             .select()
             .single();

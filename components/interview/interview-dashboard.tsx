@@ -288,7 +288,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                                 </div>
                                             )}
                                             <Button
-                                                variant="outline"
+                                                variant={session.completed_at ? "default" : "outline"}
                                                 size="sm"
                                                 className="gap-2"
                                                 onClick={(e) => {
@@ -296,8 +296,17 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                                     router.push(`/dashboard/interview-prep/${session.id}`);
                                                 }}
                                             >
-                                                <Play className="h-4 w-4" />
-                                                {session.completed_at ? "Review" : "Continue"}
+                                                {session.completed_at ? (
+                                                    <>
+                                                        <TrendingUp className="h-4 w-4" />
+                                                        View Results
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Play className="h-4 w-4" />
+                                                        Continue
+                                                    </>
+                                                )}
                                             </Button>
                                         </div>
                                     </div>

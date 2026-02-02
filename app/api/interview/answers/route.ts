@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
 
         // Check authentication
         const {
-            data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
+            data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         const { data: answer, error: insertError } = await supabase
             .from("interview_answers")
             .insert({
-                user_id: session.user.id,
+                user_id: user.id,
                 question_id: questionId,
                 session_id: sessionId,
                 answer_text: answerText,
@@ -61,9 +61,9 @@ export async function GET(request: NextRequest) {
 
         // Check authentication
         const {
-            data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) {
+            data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -94,11 +94,14 @@ export async function GET(request: NextRequest) {
           strengths,
           weaknesses,
           improvements,
-          overall_feedback
+          improvements,
+          overall_feedback,
+          star_breakdown,
+          star_scores
         )
       `
             )
-            .eq("user_id", session.user.id)
+            .eq("user_id", user.id)
             .eq("session_id", sessionId)
             .order("created_at", { ascending: true });
 
@@ -110,7 +113,14 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ answers }, { status: 200 });
+        const formattedAnswers = (answers || []).map((answer: any) => ({
+            ...answer,
+            feedback: Array.isArray(answer.interview_feedback)
+                ? answer.interview_feedback[0] || {}
+                : answer.interview_feedback || {}
+        }));
+
+        return NextResponse.json({ answers: formattedAnswers }, { status: 200 });
     } catch (error) {
         console.error("Error in GET /api/interview/answers:", error);
         return NextResponse.json(
