@@ -41,7 +41,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumeId, targetRole, difficulty, questionCount = 12 } = await req.json();
+        const { resumeId, targetRole, difficulty, questionCount = 12, sessionMode = 'text', interviewerVoice } = await req.json();
 
         if (!targetRole || !difficulty) {
             return new NextResponse("Target role and difficulty are required", { status: 400 });
@@ -72,6 +72,8 @@ export async function POST(req: Request) {
                 target_role: targetRole,
                 difficulty,
                 question_count: selectedQuestions.length,
+                session_mode: sessionMode,
+                interviewer_voice: interviewerVoice,
             })
             .select()
             .single();

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PracticeInterface } from "@/components/interview";
+import { VoiceCallInterface } from "@/components/interview/voice-call-interface";
 
 export default async function PracticeSessionPage({
     params,
@@ -33,8 +34,29 @@ export default async function PracticeSessionPage({
         .from("interview_questions")
         .select("*")
         .eq("session_id", sessionId)
-        .eq("session_id", sessionId)
         .order("sort_order");
+
+    // Server Action to mark session complete
+    async function finishSession() {
+        "use server";
+        const sb = await createClient();
+        await sb
+            .from("interview_sessions")
+            .update({ completed_at: new Date().toISOString() })
+            .eq("id", sessionId);
+
+        redirect(`/dashboard/interview-prep/${sessionId}?finished=true`);
+    }
+
+    if (session.session_mode === 'voice') {
+        return (
+            <VoiceCallInterface
+                session={session}
+                questions={questions || []}
+                onComplete={finishSession}
+            />
+        );
+    }
 
     // If session is completed, fetch answers server-side for immediate results display
     let initialAnswers = [];

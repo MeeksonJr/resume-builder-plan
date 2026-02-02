@@ -30,10 +30,14 @@ import {
     TrendingUp,
     Loader2,
     CheckCircle2,
-    Play
+    Play,
+    Mic,
+    MessageSquare,
+    Volume2
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { useSpeechSynthesis } from "@/lib/hooks/use-speech-synthesis";
 
 interface InterviewDashboardProps {
     resumes: { id: string; title: string }[];
@@ -50,11 +54,20 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
         targetRole: targetRole || "",
         difficulty: "mid",
         questionCount: 12,
+        sessionMode: "text",
+        interviewerVoice: "",
     });
+
+    const { voices, speak, isSpeaking } = useSpeechSynthesis();
 
     const handleCreateSession = async () => {
         if (!form.targetRole) {
             toast.error("Please enter a target role");
+            return;
+        }
+
+        if (form.sessionMode === "voice" && !form.interviewerVoice) {
+            toast.error("Please select an interviewer voice");
             return;
         }
 
@@ -154,6 +167,32 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
+                            <Label>Session Mode</Label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div
+                                    className={`border rounded-lg p-4 cursor-pointer hover:bg-accent transition-colors ${form.sessionMode === 'text' ? 'border-primary bg-primary/5' : ''}`}
+                                    onClick={() => setForm({ ...form, sessionMode: 'text' })}
+                                >
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <MessageSquare className="h-5 w-5 text-primary" />
+                                        <span className="font-semibold">Standard</span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Text-based questions with optional voice input.</p>
+                                </div>
+                                <div
+                                    className={`border rounded-lg p-4 cursor-pointer hover:bg-accent transition-colors ${form.sessionMode === 'voice' ? 'border-primary bg-primary/5' : ''}`}
+                                    onClick={() => setForm({ ...form, sessionMode: 'voice' })}
+                                >
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Mic className="h-5 w-5 text-primary" />
+                                        <span className="font-semibold">Simulated Call</span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Immersive voice call with an AI interviewer.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
                             <Label htmlFor="target-role">Target Role *</Label>
                             <Input
                                 id="target-role"
@@ -179,6 +218,50 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        {form.sessionMode === 'voice' && (
+                            <div className="space-y-2">
+                                <Label htmlFor="voice">Interviewer Voice</Label>
+                                <div className="flex items-center gap-2">
+                                    <Select
+                                        value={form.interviewerVoice}
+                                        onValueChange={(v) => setForm({ ...form, interviewerVoice: v })}
+                                    >
+                                        <SelectTrigger className="flex-1">
+                                            <SelectValue placeholder="Select a voice" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {voices.filter(v => v.lang.startsWith('en')).map((voice) => (
+                                                <SelectItem key={voice.name} value={voice.name}>
+                                                    {voice.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        type="button"
+                                        onClick={() => {
+                                            if (form.interviewerVoice) {
+                                                const voice = voices.find(v => v.name === form.interviewerVoice);
+                                                // Temporarily set the voice on the speech synthesis global or use speak with override
+                                                // Our hook's speak function uses selectedVoice state, so we might need to set it or just hack it briefly
+                                                // Actually let's assume speak() uses the currently selected voice logic internally or we pass it
+                                                // But the hook assumes 'selectedVoice' state. 
+                                                // Let's just say "Hello, I will be your interviewer."
+                                                const u = new SpeechSynthesisUtterance("Hello, I will be your interviewer.");
+                                                if (voice) u.voice = voice;
+                                                window.speechSynthesis.speak(u);
+                                            }
+                                        }}
+                                        disabled={!form.interviewerVoice}
+                                    >
+                                        <Volume2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
 
                         {resumes.length > 0 && (
                             <div className="space-y-2">

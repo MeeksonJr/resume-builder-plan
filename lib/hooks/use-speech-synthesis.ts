@@ -35,8 +35,11 @@ export function useSpeechSynthesis() {
         }
     }, [selectedVoice]);
 
-    const speak = useCallback((text: string, rate: number = 1.0) => {
-        if (!isSupported) return;
+    const speak = useCallback((text: string, options?: { rate?: number, onEnd?: () => void, onStart?: () => void }) => {
+        if (!isSupported) {
+            options?.onEnd?.(); // Fail gracefully-ish
+            return;
+        }
 
         // Cancel any current speaking
         window.speechSynthesis.cancel();
@@ -47,14 +50,24 @@ export function useSpeechSynthesis() {
             utterance.voice = selectedVoice;
         }
 
-        utterance.rate = rate;
+        utterance.rate = options?.rate || 1.0;
         utterance.pitch = 1.0;
 
-        utterance.onstart = () => setIsSpeaking(true);
-        utterance.onend = () => setIsSpeaking(false);
+        utterance.onstart = () => {
+            setIsSpeaking(true);
+            options?.onStart?.();
+        };
+
+        utterance.onend = () => {
+            setIsSpeaking(false);
+            options?.onEnd?.();
+        };
+
         utterance.onerror = (e) => {
             console.error("Speech synthesis error:", e);
             setIsSpeaking(false);
+            // Treat error as completion so flow doesn't hang
+            options?.onEnd?.();
         };
 
         window.speechSynthesis.speak(utterance);

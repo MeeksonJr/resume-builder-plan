@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
+
 import { Label } from "@/components/ui/label";
 import {
     ChevronLeft,
@@ -37,8 +37,6 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
     const [currentAnswerId, setCurrentAnswerId] = useState<string | null>(null);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
     const [answers, setAnswers] = useState<any[]>(initialAnswers);
-    const [isVoiceMode, setIsVoiceMode] = useState(false);
-
     // If session is completed and we have answers, show results immediately
     const isSessionCompleted = !!session.completed_at;
 
@@ -56,19 +54,6 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
     useEffect(() => {
         return () => stop();
     }, [stop]);
-
-    // Handle Voice Mode Auto-Speak
-    useEffect(() => {
-        if (isVoiceMode && currentQuestion && !isSessionCompleted && !currentAnswerId) {
-            // Slight delay to allow transition
-            const timer = setTimeout(() => {
-                speak(currentQuestion.question_text);
-            }, 500);
-            return () => clearTimeout(timer);
-        } else {
-            stop();
-        }
-    }, [isVoiceMode, currentIndex, currentQuestion, isSessionCompleted, currentAnswerId, speak, stop]);
 
 
     // Fetch answers on mount ONLY if not provided initially
@@ -187,18 +172,6 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
 
                 <div className="flex items-center gap-6">
                     {/* Voice Mode Toggle */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="voice-mode" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                            <Mic className="w-4 h-4" />
-                            Voice Mode
-                        </Label>
-                        <Switch
-                            id="voice-mode"
-                            checked={isVoiceMode}
-                            onCheckedChange={setIsVoiceMode}
-                        />
-                    </div>
-
                     <div className="text-sm text-muted-foreground hidden md:block">
                         <span className="font-medium">{session.target_role}</span> •{" "}
                         <span className="capitalize">{session.difficulty}</span>
@@ -287,11 +260,6 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                                 <p className="text-sm text-blue-800 dark:text-blue-200">
                                     <strong>Tip:</strong> Consider using the STAR framework (Situation, Task, Action, Result) for behavioral questions.
                                 </p>
-                                {isVoiceMode && (
-                                    <Badge variant="secondary" className="ml-2 whitespace-nowrap bg-blue-100 text-blue-800">
-                                        <Mic className="w-3 h-3 mr-1" /> Auto-Listening
-                                    </Badge>
-                                )}
                             </div>
 
                             <AnswerRecorder
@@ -299,7 +267,6 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                                 sessionId={session.id}
                                 onAnswerSubmitted={handleAnswerSubmitted}
                                 initialValue={initialAnswerText}
-                                autoStart={isVoiceMode} // Auto-listening enabled in Voice Mode
                             />
                         </div>
                     ) : (
