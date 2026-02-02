@@ -504,7 +504,7 @@ export async function getAnalyticsInsights(
           keywordSuggestions: z.array(z.string()).describe("Keywords that could boost visibility"),
           performanceVerdict: z.string().describe("Summary of current resume performance"),
         }),
-        prompt: `Analyze the performance of these resumes and provide insights.
+        prompt: `Analyze the performance of these resumes and provide strategic career insights.
         
         Resumes:
         ${JSON.stringify(resumes.map(r => ({ title: r.title, views: r.view_count, last_viewed: r.last_viewed_at })), null, 2)}
@@ -512,7 +512,12 @@ export async function getAnalyticsInsights(
         Recent Activity (Views/Downloads):
         ${JSON.stringify(recentEvents.slice(0, 20), null, 2)}
         
-        Provide professional advice on how to improve these resumes to get more views and downloads. Focus on keyword optimization and market trends.`,
+        Instructions:
+        1. insights: Provide 4 concise, actionable tips based on the data.
+        2. keywordSuggestions: Provide 5-8 short, high-impact industry keywords (e.g., "React", "Cloud Native", "DevOps"). 
+           - DO NOT include descriptions or long sentences. 
+           - Each keyword MUST be 1-3 words maximum.
+        3. performanceVerdict: Provide a single, impactful summary of the current resume performance.`,
       });
     });
 

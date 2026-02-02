@@ -53,18 +53,19 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
     const [insights, setInsights] = useState<any>(null);
     const [isLoadingInsights, setIsLoadingInsights] = useState(false);
 
-    const fetchInsights = async () => {
+    const fetchInsights = async (force = false) => {
         if (resumes.length === 0) return;
         setIsLoadingInsights(true);
         try {
             const response = await fetch("/api/ai/analytics-insights", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ resumes, events }),
+                body: JSON.stringify({ resumes, events, force }),
             });
             if (!response.ok) throw new Error("Failed to fetch insights");
             const data = await response.json();
             setInsights(data);
+            if (force) toast.success("AI Analysis refreshed with latest data");
         } catch (error) {
             console.error(error);
             toast.error("Failed to generate AI insights");
@@ -266,7 +267,7 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={fetchInsights}
+                                onClick={() => fetchInsights(true)}
                                 disabled={isLoadingInsights}
                                 className="h-10 px-4 border border-border hover:bg-primary hover:text-primary-foreground font-bold transition-all rounded-xl shadow-sm active:scale-95"
                             >
@@ -318,7 +319,7 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                                     <p className="font-bold text-lg">Analysis Pending</p>
                                     <p className="text-sm">Initiate the Neural Optimizer for career insights.</p>
                                 </div>
-                                <Button onClick={fetchInsights} className="mt-4 rounded-2xl font-black">BOOST VISIBILITY</Button>
+                                <Button onClick={() => fetchInsights()} className="mt-4 rounded-2xl font-black">BOOST VISIBILITY</Button>
                             </div>
                         )}
                     </CardContent>
@@ -344,11 +345,14 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                             </div>
                         ) : insights ? (
                             <div className="flex flex-wrap gap-2.5 pt-2">
-                                {insights.keywordSuggestions.map((kw: string, idx: number) => (
-                                    <Badge key={idx} variant="secondary" className="bg-white dark:bg-slate-900 border-none shadow-md hover:bg-primary hover:text-primary-foreground transition-all cursor-default font-bold px-4 py-2 rounded-xl text-xs tracking-tight">
-                                        #{kw.toLowerCase().replace(/\s+/g, '')}
-                                    </Badge>
-                                ))}
+                                {insights.keywordSuggestions.map((kw: string, idx: number) => {
+                                    const cleanKw = kw.replace(/^#+/, '').trim();
+                                    return (
+                                        <Badge key={idx} variant="secondary" className="bg-white dark:bg-slate-900 border-none shadow-md hover:bg-primary hover:text-primary-foreground transition-all cursor-default font-bold px-4 py-2 rounded-xl text-xs tracking-tight">
+                                            #{cleanKw.toLowerCase().replace(/\s+/g, '-')}
+                                        </Badge>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="py-12 text-center opacity-40 grayscale">

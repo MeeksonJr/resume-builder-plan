@@ -13,22 +13,26 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumes, events } = await req.json();
+        const { resumes, events, force = false } = await req.json();
 
-        // 1. Check for cached insights
-        const { data: cachedData } = await supabase
-            .from("dashboard_insights")
-            .select("*")
-            .eq("user_id", user.id)
-            .single();
+        // 1. Check for cached insights (bypass if force is true)
+        if (!force) {
+            const { data: cachedData } = await supabase
+                .from("dashboard_insights")
+                .select("*")
+                .eq("user_id", user.id)
+                .single();
 
-        const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-        const isCacheValid = cachedData &&
-            (new Date().getTime() - new Date(cachedData.updated_at).getTime() < CACHE_TTL_MS);
+            const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+            const isCacheValid = cachedData &&
+                (new Date().getTime() - new Date(cachedData.updated_at).getTime() < CACHE_TTL_MS);
 
-        if (isCacheValid) {
-            console.log("[AI] Returning cached insights for user:", user.id);
-            return NextResponse.json(cachedData.insights);
+            if (isCacheValid) {
+                console.log("[AI] Returning cached insights for user:", user.id);
+                return NextResponse.json(cachedData.insights);
+            }
+        } else {
+            console.log("[AI] Force re-analyze requested. Bypassing cache for user:", user.id);
         }
 
         // 2. Fetch new insights from AI if no cache or stale
