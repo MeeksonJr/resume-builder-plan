@@ -69,7 +69,10 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
             setIsMicOn(true);
 
             const config: any = {
-                responseModalities: [Modality.AUDIO, Modality.TEXT],
+                responseModalities: [Modality.AUDIO], // Only Audio for now as per example, text comes via transcript events
+                speechConfig: {
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
+                },
                 systemInstruction: { parts: [{ text: systemInstruction }] },
             };
 
