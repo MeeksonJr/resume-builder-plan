@@ -151,6 +151,11 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
 
             sessionRef.current = session;
 
+            // Trigger the AI to speak first (as per system instruction)
+            session.sendClientContent({
+                turns: [{ role: 'user', parts: [{ text: "Hello, I'm ready to start the interview." }] }]
+            });
+
         } catch (error) {
             console.error("Failed to connect", error);
             setState('error');
