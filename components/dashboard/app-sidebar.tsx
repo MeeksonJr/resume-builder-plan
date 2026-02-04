@@ -240,7 +240,7 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton
                                     size="lg"
-                                    className="h-14 rounded-2xl hover:bg-primary/5 data-[state=open]:bg-primary/5 transition-all"
+                                    className="h-14 md:h-14 rounded-2xl hover:bg-primary/5 data-[state=open]:bg-primary/5 transition-all"
                                 >
                                     <Avatar className="h-9 w-9 border-2 border-primary/10">
                                         {profile?.avatar_url && (

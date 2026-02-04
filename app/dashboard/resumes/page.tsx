@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ResumesFilterBar } from "@/components/dashboard/resumes-filter-bar"
 import { DuplicateResumeAction, AnalyticsLinkAction } from "@/components/dashboard/resume-actions"
+import { EmptyState } from "@/components/dashboard/empty-state"
 
 export const metadata = {
     title: "All Resumes | ResumeForge",
@@ -89,7 +90,9 @@ export default async function AllResumesPage({
             </div>
 
             {/* Resumes Grid */}
-            {filteredResumes.length > 0 ? (
+            {resumes && resumes.length === 0 && !params.search && !params.template ? (
+                <EmptyState />
+            ) : filteredResumes.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredResumes.map((resume) => (
                         <Card key={resume.id} className="group relative hover:shadow-lg transition-shadow overflow-hidden">
@@ -165,20 +168,17 @@ export default async function AllResumesPage({
                     <CardContent>
                         <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                         <h3 className="text-lg font-semibold mb-2">
-                            {params.search ? "No resumes found" : "No resumes yet"}
+                            {params.search ? "No resumes found" : "No resumes match filters"}
                         </h3>
                         <p className="text-muted-foreground mb-4">
                             {params.search
                                 ? `No resumes matching "${params.search}".`
-                                : "Create your first resume to get started."
+                                : "Try adjusting your filters or search terms."
                             }
                         </p>
-                        {!params.search && (
-                            <Button asChild>
-                                <Link href="/dashboard/resume/new">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create Resume
-                                </Link>
+                        {!!params.search && (
+                            <Button asChild variant="outline">
+                                <Link href="/dashboard/resumes">Clear Search</Link>
                             </Button>
                         )}
                     </CardContent>

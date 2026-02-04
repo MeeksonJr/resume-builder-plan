@@ -17,7 +17,7 @@ interface TrackerBoardProps {
 
 export function TrackerBoard({ applications, onUpdateStatus }: TrackerBoardProps) {
     return (
-        <div className="flex gap-6 overflow-x-auto pb-10 scrollbar-hide snap-x px-1">
+        <div className="flex gap-6 overflow-x-auto pb-10 scrollbar-hide snap-x snap-mandatory px-4 md:px-1 overscroll-x-contain">
             {COLUMNS.map((col, i) => (
                 <motion.div
                     key={col.status}

@@ -52,6 +52,21 @@ const features = [
         background: (
             <div className="absolute inset-0 bg-grid-white/[0.02] [mask-image:linear-gradient(to_bottom,transparent,black)]" />
         ),
+    },
+    {
+        title: "Professional Directory",
+        description: "Publish your profile to our exclusive talent network. Let top recruiters and opportunities come to you.",
+        icon: Globe,
+        className: "md:col-span-3",
+        background: (
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-transparent opacity-40" />
+                {/* Abstract network nodes */}
+                <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+                <div className="absolute inset-0 bg-[radial-gradient(#3b82f633_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50" />
+            </div>
+        ),
     }
 ];
 

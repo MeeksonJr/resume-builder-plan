@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ResumeList } from "@/components/dashboard/resume-list";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { AnalyticsView } from "@/components/dashboard/analytics-view";
+import { WelcomeTour } from "@/components/dashboard/welcome-tour";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -28,6 +29,23 @@ export default async function DashboardPage() {
     .gte("created_at", thirtyDaysAgo.toISOString())
     .order("created_at", { ascending: true });
 
+  const { data: applications } = await supabase
+    .from("applications")
+    .select("id")
+    .eq("user_id", user.id);
+
+  const { data: interviews } = await supabase
+    .from("interview_sessions")
+    .select("id")
+    .eq("user_id", user.id);
+
+  // Profile is already fetched in layout, but we need it here for logic or let's fetch essential fields
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, bio")
+    .eq("id", user.id)
+    .single();
+
   return (
     <div className="relative space-y-12 pb-20">
       {/* Background Decorative Elements */}
@@ -46,6 +64,13 @@ export default async function DashboardPage() {
       </div>
 
       <div className="space-y-16">
+        <WelcomeTour
+          resumesCount={resumes?.length || 0}
+          applicationsCount={applications?.length || 0}
+          interviewsCount={interviews?.length || 0}
+          hasPortfolio={!!profile?.username || !!profile?.bio} // A rough check for portfolio setup
+        />
+
         {resumes && resumes.length > 0 ? (
           <>
             <section className="relative">
