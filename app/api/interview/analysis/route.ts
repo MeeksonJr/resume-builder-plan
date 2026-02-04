@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         `;
 
         const result = await generateObject({
-            model: google("gemini-1.5-pro-latest"),
+            model: google("gemini-1.5-flash"),
             schema: analysisSchema,
             prompt: prompt,
         });

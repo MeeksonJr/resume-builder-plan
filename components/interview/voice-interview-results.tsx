@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, RotateCw } from "lucide-react";
+import Link from "next/link";
 
 interface VoiceInterviewResultsProps {
     session: any;
@@ -23,27 +25,52 @@ export function VoiceInterviewResults({ session }: VoiceInterviewResultsProps) {
 
     const fetchAnalysis = async () => {
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
             const res = await fetch("/api/interview/analysis", {
                 method: "POST",
                 body: JSON.stringify({ sessionId: session.id }),
+                signal: controller.signal,
             });
+            clearTimeout(timeoutId);
+
             if (!res.ok) throw new Error("Analysis failed");
             const data = await res.json();
             setAnalysis(data);
-        } catch (e) {
-            setError("Failed to generate analysis. Please try refreshing.");
+        } catch (e: any) {
+            if (e.name === 'AbortError') {
+                setError("Analysis timed out. The session might be too long.");
+            } else {
+                setError("Failed to generate analysis. Please try refreshing.");
+            }
         }
     };
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-64 text-red-500">
-                <p>{error}</p>
+            <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                <p className="text-red-500 font-medium">{error}</p>
+                <Button onClick={() => { setError(null); fetchAnalysis(); }} variant="outline">
+                    <RotateCw className="w-4 h-4 mr-2" />
+                    Retry Analysis
+                </Button>
             </div>
         );
     }
 
     if (!analysis) {
+        if (transcript.length === 0) {
+            return (
+                <div className="flex flex-col items-center justify-center p-12 space-y-4 border rounded-lg bg-muted/50">
+                    <p className="text-muted-foreground">No audio transcript was recorded for this session.</p>
+                    <Button asChild variant="secondary">
+                        <Link href="/dashboard/interview-prep">Back to Dashboard</Link>
+                    </Button>
+                </div>
+            );
+        }
+
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
