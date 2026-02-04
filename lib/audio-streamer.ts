@@ -7,6 +7,8 @@ export class AudioStreamer {
 
     // Queue functionality for smooth playback
     startedAt = 0;
+    analyser: AnalyserNode | null = null;
+    gainNode: GainNode | null = null;
 
     constructor(onDataAvailable: (data: ArrayBuffer) => void) {
         this.onDataAvailable = onDataAvailable;
@@ -17,11 +19,22 @@ export class AudioStreamer {
 
         // Initialize Audio Context
         this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
-            sampleRate: 16000, // Try to request 16k to match Gemini default
+            sampleRate: 24000, // Upgrade to 24k for Gemini Native
         });
 
-        // Fallback: If 16k is not supported, the browser will ignore it and use default.
         console.log(`[AudioStreamer] AudioContext started with sampleRate: ${this.audioContext.sampleRate}`);
+
+        // Setup Analyser & Master Gain
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 256; // Good balance for visualizer
+        this.analyser.smoothingTimeConstant = 0.5;
+
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.gain.value = 1.0;
+
+        // Route: Analyser -> Gain -> Destination
+        this.analyser.connect(this.gainNode);
+        this.gainNode.connect(this.audioContext.destination);
 
         // Add the Worklet
         try {
@@ -43,18 +56,43 @@ export class AudioStreamer {
         this.workletNode = new AudioWorkletNode(this.audioContext, 'pcm-processor');
 
         this.workletNode.port.onmessage = (event) => {
-            // Buffer from worklet is Int16Array
-            // But postMessage sends it as generic JS object/array?
-            // Actually it sends the typed array.
-            // We need to send ArrayBuffer to Gemini.
             const int16Data = event.data; // Int16Array
             this.onDataAvailable(int16Data.buffer);
         };
 
+        // Connect Mic -> Worklet -> Analyser (for visualization)
+        // We do NOT want to hear ourselves/echo, but we want to see the waveform.
+        // However, if we connect to Analyser, and Analyser is connected to Destination, we will hear it.
+        // So we need a separate path or careful routing.
+
+        // Solution: 
+        // 1. Mic -> Worklet -> (processing for Gemini)
+        // 2. Mic -> Analyser (Visual only) -> ... Wait, Analyser passes through.
+        // Let's rely on the Worklet NOT outputting audio to its output port, or disconnecting it.
+        // Actually, for the visualizer to work on INPUT, we need to feed Source -> Analyser.
+        // But Source -> Analyser -> Destination = Echo.
+        // So: Source -> Analyser -> Disconnect? No, Analyser works even if not connected to destination (pull-based? no).
+        // Standard Web Audio: "A node will only process if it is connected to the destination (directly or indirectly)".
+        // Exception: AnalyserNode. It CAN pick up data if just connected to, even if downstream is dead? 
+        // Actually, usually you connect Source -> Analyser, and Analyser -> dest (if you want to hear).
+        // If you don't want to hear, connect Source -> Analyser, and Analyser -> Gain(0) -> Destination?
+
+        // Let's connect Mic Source to Analyser, but verify if we hear it.
+        // For now, let's Visualise OUTPUT only (AI Voice) to ensure no echo, OR tricky routing.
+        // Let's try: Source -> Worklet. (Data sent to Gemini).
+        // For visualization: 
+        // We will visualize AI Output mainly. 
+        // If we want to visualize User Input, we can use the `volume` calculation we already have in `useGeminiLive`.
+        // BUT, a real FFT waveform is nicer.
+
+        // Let's just visualize AI Output for "Siri" mode for now to be safe on Echo.
+        // Wait, the user wants "Real-time audio waveform visualizer" - usually implies both parties.
+        // Let's stick to AI Output in Analyser for safety first. 
+        // If user speaks, we can toggle a "Listening" animation based on the simpler volume metric.
+        // OR: source.connect(worklet);
+
         source.connect(this.workletNode);
-        this.workletNode.connect(this.audioContext.destination); // Keep graph alive? Or disconnect?
-        // Usually connecting to destination is needed to prevent GC, even if we assume output is muted.
-        // But if PCMProcessor doesn't output audio to 'output' channel, we are safe from feedback loop.
+        // this.workletNode.connect(this.audioContext.destination); // REMOVED to prevent echo
 
         this.isPlaying = true;
     }
@@ -69,6 +107,14 @@ export class AudioStreamer {
             this.workletNode.disconnect();
             this.workletNode = null;
         }
+        if (this.analyser) {
+            this.analyser.disconnect();
+            this.analyser = null;
+        }
+        if (this.gainNode) {
+            this.gainNode.disconnect();
+            this.gainNode = null;
+        }
         if (this.audioContext) {
             await this.audioContext.close();
             this.audioContext = null;
@@ -79,34 +125,35 @@ export class AudioStreamer {
     play(chunk: ArrayBuffer) {
         if (!this.audioContext || this.audioContext.state === 'closed') return;
 
-        // chunk is Int16 Le 24kHz Mono
         const int16Array = new Int16Array(chunk);
         const float32Array = new Float32Array(int16Array.length);
 
-        // Convert Int16 -> Float32
         for (let i = 0; i < int16Array.length; i++) {
             float32Array[i] = int16Array[i] / 32768;
         }
 
-        // Create Buffer
-        // Gemini sends 24000 Hz.
         const audioBuffer = this.audioContext.createBuffer(1, float32Array.length, 24000);
         audioBuffer.getChannelData(0).set(float32Array);
 
-        // Schedule
         const source = this.audioContext.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(this.audioContext.destination);
 
-        // Basic scheduling to prevent gaps but minimize latency
+        // Route AI Output: Source -> Analyser -> Gain -> Destination
+        if (this.analyser) {
+            source.connect(this.analyser);
+        } else {
+            source.connect(this.audioContext.destination);
+        }
+
         const now = this.audioContext.currentTime;
-        // Schedule next start time. If queue is empty (fell behind), start "now".
-        // If queue is ahead, append to it.
         const performAt = Math.max(now, this.startedAt);
 
         source.start(performAt);
 
-        // Update when this chunk finishes
         this.startedAt = performAt + audioBuffer.duration;
+    }
+
+    getAnalyser() {
+        return this.analyser;
     }
 }

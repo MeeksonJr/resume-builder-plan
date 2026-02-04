@@ -172,7 +172,8 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
         disconnect,
         isMicOn,
         volume,
-        transcript
+        transcript,
+        streamer: audioStreamerRef.current, // Expose for visualizer
     };
 }
 
