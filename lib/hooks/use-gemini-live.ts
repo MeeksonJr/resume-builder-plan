@@ -22,6 +22,9 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
     const connectionParamsRef = useRef<{ apiKey: string; instruction: string } | null>(null);
     const resumptionTokenRef = useRef<string | null>(null);
 
+    // Speech Recognition Ref
+    const recognitionRef = useRef<any>(null);
+
     // 1. Disconnect Logic (Defined first to be available for connect/useEffect)
     const disconnect = useCallback(() => {
         userDisconnectedRef.current = true;
@@ -31,6 +34,11 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
         if (sessionRef.current) {
             try { sessionRef.current.close(); } catch (e) { }
             sessionRef.current = null;
+        }
+
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+            recognitionRef.current = null;
         }
 
         audioStreamerRef.current?.stop();
@@ -61,6 +69,35 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
         connectionParamsRef.current = { apiKey, instruction: systemInstruction };
         userDisconnectedRef.current = false;
 
+        // Setup Speech Recognition
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event: any) => {
+                const latestResult = event.results[event.results.length - 1];
+                if (latestResult.isFinal) {
+                    const text = latestResult[0].transcript.trim();
+                    if (text) {
+                        setTranscript(prev => [...prev, { role: 'user', text, timestamp: new Date() }]);
+                    }
+                }
+            };
+
+            recognition.onend = () => {
+                // Restart if still connected (browser stops it automatically sometimes)
+                if (userDisconnectedRef.current === false && state === 'connected') {
+                    try { recognition.start(); } catch (e) { }
+                }
+            };
+
+            recognitionRef.current = recognition;
+            try { recognition.start(); } catch (e) { console.error("Speech recognition failed to start", e); }
+        }
+
         try {
             setState('connecting');
             const client = new GoogleGenAI({ apiKey });
@@ -69,7 +106,7 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
             setIsMicOn(true);
 
             const config: any = {
-                responseModalities: [Modality.AUDIO], // Only Audio for now as per example, text comes via transcript events
+                responseModalities: [Modality.AUDIO], // Only Audio for now text comes via transcript events (for AI)
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
                 },
