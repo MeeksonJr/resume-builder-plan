@@ -164,8 +164,13 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
                         }
 
                         if (isRecoverable) {
-                            setTimeout(() => {
+                            setTimeout(async () => {
                                 if (!userDisconnectedRef.current) {
+                                    // Ensure clean state before reconnecting
+                                    await disconnect();
+                                    // Reset flag because disconnect sets it to true
+                                    userDisconnectedRef.current = false;
+
                                     connect(
                                         connectionParamsRef.current!.apiKey,
                                         connectionParamsRef.current!.instruction,
