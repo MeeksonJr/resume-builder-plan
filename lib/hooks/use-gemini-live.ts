@@ -40,7 +40,7 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
 
     // 2. Send Audio Helper
     const sendAudioToGemini = (buffer: ArrayBuffer) => {
-        if (!sessionRef.current || state !== 'connected') return;
+        if (!sessionRef.current) return;
         const base64 = arrayBufferToBase64(buffer);
         try {
             sessionRef.current.sendRealtimeInput({
