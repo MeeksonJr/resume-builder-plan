@@ -78,7 +78,7 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
             }
 
             const session = await client.live.connect({
-                model: "gemini-2.0-flash",
+                model: "gemini-2.5-flash-native-audio-preview-12-2025",
                 config,
                 callbacks: {
                     onopen: () => {
