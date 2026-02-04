@@ -40,9 +40,13 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
     const sendAudioToGemini = (buffer: ArrayBuffer) => {
         if (!sessionRef.current) return;
         const base64 = arrayBufferToBase64(buffer);
-        sessionRef.current.sendRealtimeInput({
-            audio: { data: base64, mimeType: "audio/pcm;rate=16000" }
-        });
+        try {
+            sessionRef.current.sendRealtimeInput({
+                audio: { data: base64, mimeType: "audio/pcm;rate=24000" }
+            });
+        } catch (e) {
+            console.error("Failed to send audio", e);
+        }
     };
 
     const connect = async (apiKey: string, systemInstruction: string, resumeHandle?: string) => {
@@ -51,7 +55,6 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
             return;
         }
 
-        // Store params for auto-reconnect
         connectionParamsRef.current = { apiKey, instruction: systemInstruction };
         userDisconnectedRef.current = false;
 
@@ -67,14 +70,12 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
                 systemInstruction: { parts: [{ text: systemInstruction }] },
             };
 
-            // Use resumption token if available
             if (resumeHandle) {
                 config.sessionResumption = { handle: resumeHandle };
-                console.log("Resuming session with handle:", resumeHandle);
             }
 
             const session = await client.live.connect({
-                model: "gemini-2.5-flash-native-audio-preview-12-2025",
+                model: "gemini-2.0-flash-exp",
                 config,
                 callbacks: {
                     onopen: () => {
@@ -82,7 +83,6 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
                         setState('connected');
                     },
                     onmessage: (msg: any) => {
-                        // Handle Audio & Text
                         if (msg.serverContent?.modelTurn) {
                             msg.serverContent.modelTurn.parts.forEach((part: any) => {
                                 if (part.inlineData?.data) {
@@ -94,18 +94,6 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
                             });
                         }
 
-                        // Handle User Input Transcription (if enabled/available)
-                        const turnComplete = msg.serverContent?.turnComplete;
-                        if (turnComplete) {
-                            // Check various possible locations for transcript (API varies)
-                            // Usually in turnComplete.inputTranscription or similar
-                            // For now, if we don't get it, we rely on AI context.
-                        }
-
-                        // Handle Session Resumption Token
-                        // Check multiple possible locations for the token
-                        // Python SDK says msg.sessionResumptionUpdate
-                        // Some docs say msg.serverContent.sessionResumptionUpdate
                         const resumptionUpdate = msg.sessionResumptionUpdate || msg.serverContent?.sessionResumptionUpdate;
                         if (resumptionUpdate?.sessionResumptionConfig?.handle) {
                             resumptionTokenRef.current = resumptionUpdate.sessionResumptionConfig.handle;
@@ -113,31 +101,31 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
                     },
                     onclose: (e: any) => {
                         console.log("Gemini Live Closed", e);
-                        if (!userDisconnectedRef.current) {
-                            // Unexpected close - try to resume
-                            console.log("Unexpected disconnect. Attempting to resume...");
-                            if (resumptionTokenRef.current && connectionParamsRef.current) {
-                                setTimeout(() => {
-                                    connect(
-                                        connectionParamsRef.current!.apiKey,
-                                        connectionParamsRef.current!.instruction,
-                                        resumptionTokenRef.current!
-                                    );
-                                }, 1000);
-                            } else {
-                                toast.error("Connection lost (Session Expired)");
-                                setState('disconnected');
-                                props?.onDisconnect?.();
-                            }
-                        } else {
+                        if (userDisconnectedRef.current) {
                             setState('disconnected');
                             props?.onDisconnect?.();
+                            return;
                         }
+
+                        // Handle expired/invalid session (1007 sometimes implies bad args which means retrying same args fails)
+                        if (e.code === 1007 || e.code === 1000) {
+                            toast.error("Session dropped (Invalid Config/Expiry). Reconnecting...");
+                            // Retry fresh without resume token if 1007
+                            resumptionTokenRef.current = null;
+                        }
+
+                        setTimeout(() => {
+                            if (!userDisconnectedRef.current) {
+                                connect(
+                                    connectionParamsRef.current!.apiKey,
+                                    connectionParamsRef.current!.instruction,
+                                    resumptionTokenRef.current || undefined
+                                );
+                            }
+                        }, 2000);
                     },
                     onerror: (e: any) => {
                         console.error("Gemini Live Error", e);
-                        // Only disconnect if it's a fatal error that doesn't trigger onclose properly?
-                        // For now let onclose handle reconnection logic.
                     }
                 }
             });
@@ -152,8 +140,8 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
     };
 
     const disconnect = useCallback(() => {
-        userDisconnectedRef.current = true; // Mark as intentional
-        resumptionTokenRef.current = null;  // Clear token
+        userDisconnectedRef.current = true;
+        resumptionTokenRef.current = null;
         connectionParamsRef.current = null;
 
         if (sessionRef.current) {
