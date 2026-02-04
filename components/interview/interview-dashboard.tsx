@@ -104,7 +104,12 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
     const stats = {
         totalSessions: sessions.length,
         averageScore: sessions.length > 0
-            ? Math.round(sessions.reduce((sum, s) => sum + (s.average_score || 0), 0) / sessions.length)
+            ? Math.round(
+                sessions
+                    .filter(s => s.session_mode !== 'voice')
+                    .reduce((sum, s) => sum + (s.average_score || 0), 0)
+                / (sessions.filter(s => s.session_mode !== 'voice').length || 1)
+            )
             : 0,
         completedSessions: sessions.filter(s => s.completed_at).length,
     };
@@ -115,7 +120,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { label: "Total Sessions", val: stats.totalSessions, sub: `${stats.completedSessions} completed`, icon: Brain, color: "primary" },
-                    { label: "Average Score", val: stats.averageScore, sub: "Out of 100", icon: Target, color: "emerald", isScore: true },
+                    { label: "Average Score", val: stats.averageScore, sub: "Text Mode Only", icon: Target, color: "emerald", isScore: true },
                     {
                         label: "Improvement",
                         val: sessions.length >= 2 ? `+${Math.round((sessions[0]?.average_score || 0) - (sessions[sessions.length - 1]?.average_score || 0))}` : "N/A",
@@ -400,11 +405,21 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                         <CardContent>
                                             <div className="flex items-center justify-between pt-4 border-t border-primary/5">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="space-y-0.5">
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Progress</p>
-                                                        <p className="text-sm font-black tracking-tight">{session.answered_count} / {session.question_count}</p>
-                                                    </div>
-                                                    {session.average_score > 0 && (
+                                                    {session.session_mode === 'voice' ? (
+                                                        <div className="space-y-0.5">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Mode</p>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Mic className="h-3.5 w-3.5 text-primary" />
+                                                                <p className="text-sm font-black tracking-tight">Voice</p>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-0.5">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Progress</p>
+                                                            <p className="text-sm font-black tracking-tight">{session.answered_count} / {session.question_count}</p>
+                                                        </div>
+                                                    )}
+                                                    {session.average_score > 0 && session.session_mode !== 'voice' && (
                                                         <div className="space-y-0.5 border-l border-primary/5 pl-4">
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Avg Score</p>
                                                             <p className={cn("text-sm font-black tracking-tight", getScoreColor(session.average_score))}>

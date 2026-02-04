@@ -31,7 +31,6 @@ export default async function InterviewPrepPage() {
         .from("interview_sessions")
         .select("*")
         .eq("user_id", user.id)
-        .neq("session_mode", "voice") // Exclude voice sessions from stats/recent list
         .order("created_at", { ascending: false })
         .limit(10);
 
