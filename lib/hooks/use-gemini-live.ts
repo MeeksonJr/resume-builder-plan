@@ -22,33 +22,36 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
     const connectionParamsRef = useRef<{ apiKey: string; instruction: string } | null>(null);
     const resumptionTokenRef = useRef<string | null>(null);
 
-    // Initialize AudioStreamer
-    useEffect(() => {
-        audioStreamerRef.current = new AudioStreamer((data) => {
-            sendAudioToGemini(data);
+    // 1. Disconnect Logic (Defined first to be available for connect/useEffect)
+    const disconnect = useCallback(() => {
+        userDisconnectedRef.current = true;
+        resumptionTokenRef.current = null;
+        connectionParamsRef.current = null;
 
-            // Visualizer
-            const int16 = new Int16Array(data);
-            let sum = 0;
-            for (let i = 0; i < int16.length; i += 10) sum += Math.abs(int16[i]);
-            setVolume(Math.min(100, (sum / (int16.length / 10) / 32768) * 500));
-        });
+        if (sessionRef.current) {
+            try { sessionRef.current.close(); } catch (e) { }
+            sessionRef.current = null;
+        }
 
-        return () => disconnect();
+        audioStreamerRef.current?.stop();
+        setIsMicOn(false);
+        setState('disconnected');
     }, []);
 
+    // 2. Send Audio Helper
     const sendAudioToGemini = (buffer: ArrayBuffer) => {
-        if (!sessionRef.current) return;
+        if (!sessionRef.current || state !== 'connected') return;
         const base64 = arrayBufferToBase64(buffer);
         try {
             sessionRef.current.sendRealtimeInput({
                 audio: { data: base64, mimeType: "audio/pcm;rate=24000" }
             });
         } catch (e) {
-            console.error("Failed to send audio", e);
+            // Ignore send errors if we are closing
         }
     };
 
+    // 3. Connect Logic
     const connect = async (apiKey: string, systemInstruction: string, resumeHandle?: string) => {
         if (!apiKey) {
             toast.error("Missing Gemini API Key");
@@ -75,7 +78,7 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
             }
 
             const session = await client.live.connect({
-                model: "gemini-2.0-flash-exp",
+                model: "gemini-2.0-flash",
                 config,
                 callbacks: {
                     onopen: () => {
@@ -107,25 +110,38 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
                             return;
                         }
 
-                        // Handle expired/invalid session (1007 sometimes implies bad args which means retrying same args fails)
+                        // Handle expired/invalid session
+                        const isRecoverable = e.code === 1007 || e.code === 1000 || e.code === 1006;
+
                         if (e.code === 1007 || e.code === 1000) {
                             toast.error("Session dropped (Invalid Config/Expiry). Reconnecting...");
-                            // Retry fresh without resume token if 1007
                             resumptionTokenRef.current = null;
+                        } else if (e.code === 1008) {
+                            // 1008 is Policy Violation or Resource Not Found - FATAL
+                            toast.error("Connection failed: Model not found or unavailable.");
+                            disconnect();
+                            return;
                         }
 
-                        setTimeout(() => {
-                            if (!userDisconnectedRef.current) {
-                                connect(
-                                    connectionParamsRef.current!.apiKey,
-                                    connectionParamsRef.current!.instruction,
-                                    resumptionTokenRef.current || undefined
-                                );
-                            }
-                        }, 2000);
+                        if (isRecoverable) {
+                            setTimeout(() => {
+                                if (!userDisconnectedRef.current) {
+                                    connect(
+                                        connectionParamsRef.current!.apiKey,
+                                        connectionParamsRef.current!.instruction,
+                                        resumptionTokenRef.current || undefined
+                                    );
+                                }
+                            }, 2000);
+                        } else {
+                            toast.error(`Connection closed unexpectedly (Code: ${e.code})`);
+                            disconnect();
+                        }
                     },
                     onerror: (e: any) => {
                         console.error("Gemini Live Error", e);
+                        setState('error');
+                        disconnect();
                     }
                 }
             });
@@ -139,20 +155,21 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
         }
     };
 
-    const disconnect = useCallback(() => {
-        userDisconnectedRef.current = true;
-        resumptionTokenRef.current = null;
-        connectionParamsRef.current = null;
+    // 4. Effect to Initialize AudioStreamer
+    useEffect(() => {
+        audioStreamerRef.current = new AudioStreamer((data) => {
+            sendAudioToGemini(data);
 
-        if (sessionRef.current) {
-            try { sessionRef.current.close(); } catch (e) { }
-            sessionRef.current = null;
-        }
+            // Visualizer
+            const int16 = new Int16Array(data);
+            let sum = 0;
+            for (let i = 0; i < int16.length; i += 10) sum += Math.abs(int16[i]);
+            setVolume(Math.min(100, (sum / (int16.length / 10) / 32768) * 500));
+        });
 
-        audioStreamerRef.current?.stop();
-        setIsMicOn(false);
-        setState('disconnected');
-    }, []);
+        // Cleanup on unmount
+        return () => disconnect();
+    }, []); // Empty dependency array is fine here as we use refs/stable functions
 
     return {
         state,
@@ -161,7 +178,7 @@ export function useGeminiLive(props?: UseGeminiLiveProps) {
         isMicOn,
         volume,
         transcript,
-        streamer: audioStreamerRef.current, // Expose for visualizer
+        streamer: audioStreamerRef.current,
     };
 }
 
