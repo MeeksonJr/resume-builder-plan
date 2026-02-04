@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { useGeminiLive } from "@/lib/hooks/use-gemini-live";
 import { Button } from "@/components/ui/button";
