@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Missing resumeId" }, { status: 400 });
         }
 
-        const headersList = headers();
+        const headersList = await headers();
         const userAgent = headersList.get("user-agent") || "unknown";
         const ip = headersList.get("x-forwarded-for") || "unknown";
 
