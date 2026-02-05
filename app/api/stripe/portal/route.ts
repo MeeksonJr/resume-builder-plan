@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
             // Or handle creation logic here (complex).
             // For now, redirect to checkout or return error
             // Actually, if manage billing is clicked but no sub, checking out is better
-            return NextResponse.redirect(new URL("/(marketing)/pricing", req.url));
+            return NextResponse.redirect(new URL("/pricing", req.url));
         }
 
         const returnUrl = new URL("/dashboard/subscription", req.url).toString();

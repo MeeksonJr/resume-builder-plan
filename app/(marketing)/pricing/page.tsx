@@ -28,7 +28,7 @@ const plans = [
         ],
         buttonText: "Get Started Free",
         buttonVariant: "outline" as const,
-        href: "/auth/register",
+        href: "/auth/sign-up",
         popular: false,
     },
     {
@@ -50,7 +50,7 @@ const plans = [
         limitations: [],
         buttonText: "Start Pro Trial",
         buttonVariant: "default" as const,
-        href: "/auth/register?plan=pro",
+        href: "/auth/sign-up?plan=pro",
         popular: true,
         badge: "Most Popular",
     },
@@ -167,7 +167,7 @@ export default function PricingPage() {
                                             }`}
                                         asChild
                                     >
-                                        <Link href="/auth/sign-up">Get Started</Link>
+                                        <Link href={plan.href}>{plan.buttonText}</Link>
                                     </Button>
                                 </CardFooter>
                             </Card>
