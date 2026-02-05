@@ -112,7 +112,7 @@ export default async function SubscriptionPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="bg-muted/30 pt-6">
-                        <form action="/api/stripe/portal" method="POST" className="w-full">
+                        <form action={isPro ? "/api/stripe/portal" : "/api/stripe/checkout"} method={isPro ? "POST" : "GET"} className="w-full">
                             <Button className="w-full h-11" variant={isPro ? "outline" : "default"}>
                                 {isPro ? "Manage Billing" : "Upgrade to Pro"}
                             </Button>
