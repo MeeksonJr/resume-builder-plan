@@ -134,6 +134,7 @@ interface ResumeState {
   language: string;
   is_rtl: boolean;
   hasChanges: boolean;
+  isSaving: boolean;
 
   // Setters
   setResumeId: (id: string) => void;
@@ -187,6 +188,11 @@ interface ResumeState {
   restoreVersion: (version: ResumeVersion) => void;
 }
 
+const isValidUUID = (uuid: string) => {
+  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return regex.test(uuid);
+};
+
 export const useResumeStore = create<ResumeState>((set, get) => ({
   resumeId: null,
   profile: null,
@@ -202,6 +208,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   language: "en",
   is_rtl: false,
   hasChanges: false,
+  isSaving: false,
   sectionOrder: ["experience", "education", "skills", "projects", "certifications", "languages"],
   visualConfig: DEFAULT_VISUAL_CONFIG,
   versions: [],
@@ -406,264 +413,276 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
     if (!user) throw new Error("Not authenticated");
 
-    // Update profile (auth.users extension)
-    if (state.profile) {
-      const { ...profileData } = state.profile;
+    const currentState = get();
+    if (currentState.isSaving) return;
+    set({ isSaving: true });
 
-      // Update basic profile info
-      if (profileData.full_name || profileData.email) {
-        await supabase
-          .from("profiles")
-          .update({
-            full_name: profileData.full_name,
-            email: profileData.email,
-          })
-          .eq("id", user.id);
-      }
+    try {
+      // Update profile (auth.users extension)
+      if (state.profile) {
+        const { ...profileData } = state.profile;
 
-      // Update/Insert personal_info linked to resume
-      const personalInfoData = {
-        resume_id: state.resumeId,
-        full_name: profileData.full_name,
-        email: profileData.email,
-        phone: profileData.phone,
-        location: profileData.location,
-        linkedin: profileData.linkedin_url,
-        website: profileData.website_url,
-        github: profileData.github_url,
-        summary: profileData.summary,
-      };
+        // Update basic profile info
+        if (profileData.full_name || profileData.email) {
+          await supabase
+            .from("profiles")
+            .update({
+              full_name: profileData.full_name,
+              email: profileData.email,
+            })
+            .eq("id", user.id);
+        }
 
-      const { error: personalInfoError } = await supabase
-        .from("personal_info")
-        .upsert(personalInfoData, { onConflict: "resume_id" });
+        // Update/Insert personal_info linked to resume
+        const personalInfoData = {
+          resume_id: state.resumeId,
+          full_name: profileData.full_name,
+          email: profileData.email,
+          phone: profileData.phone,
+          location: profileData.location,
+          linkedin: profileData.linkedin_url,
+          website: profileData.website_url,
+          github: profileData.github_url,
+          summary: profileData.summary,
+        };
 
-      if (personalInfoError) {
-        console.error("Error saving personal_info:", JSON.stringify(personalInfoError, null, 2));
-        throw new Error(`Failed to save personal info: ${personalInfoError.message}`);
-      }
-    }
+        const { error: personalInfoError } = await supabase
+          .from("personal_info")
+          .upsert(personalInfoData, { onConflict: "resume_id" });
 
-    const normalizeDate = (dateStr: any) => {
-      if (!dateStr || typeof dateStr !== "string" || dateStr.trim() === "") return null;
-      const cleanDate = dateStr.trim();
-      // Match YYYY-MM
-      if (/^\d{4}-\d{2}$/.test(cleanDate)) {
-        return `${cleanDate}-01`;
-      }
-      return cleanDate;
-    };
-
-    // Helper to handle collection updates
-    const handleCollectionSave = async (
-      collection: any[],
-      tableName: string,
-      mapToDb: (item: any) => any,
-      updateLocalState: (id: string, newId: string) => void
-    ) => {
-      const currentIds = collection
-        .filter((item) => !item.id.startsWith("temp-"))
-        .map((item) => item.id);
-
-      // 1. Reconciliation: Delete orphaned records
-      if (currentIds.length > 0) {
-        await supabase
-          .from(tableName)
-          .delete()
-          .eq("resume_id", state.resumeId)
-          .not("id", "in", currentIds);
-      } else {
-        await supabase
-          .from(tableName)
-          .delete()
-          .eq("resume_id", state.resumeId);
-      }
-
-      const errors: any[] = [];
-      for (const item of collection) {
-        const dbItem = mapToDb(item);
-
-        if (item.id.startsWith("temp-")) {
-          // Insert new
-          const { data, error } = await supabase
-            .from(tableName)
-            .insert({ ...dbItem, resume_id: state.resumeId })
-            .select("id")
-            .single();
-
-          if (!error && data) {
-            updateLocalState(item.id, data.id);
-          } else if (error) {
-            console.error(`Error saving to ${tableName}:`, JSON.stringify(error, null, 2));
-            errors.push(error);
-          }
-        } else {
-          // Update existing
-          const { error } = await supabase
-            .from(tableName)
-            .update(dbItem)
-            .eq("id", item.id);
-
-          if (error) {
-            console.error(`Error updating ${tableName}:`, JSON.stringify(error, null, 2));
-            errors.push(error);
-          }
+        if (personalInfoError) {
+          console.error("Error saving personal_info:", JSON.stringify(personalInfoError, null, 2));
+          throw new Error(`Failed to save personal info: ${personalInfoError.message}`);
         }
       }
 
-      if (errors.length > 0) {
-        throw new Error(`Failed to save ${tableName}. See console for details.`);
+      const normalizeDate = (dateStr: any) => {
+        if (!dateStr || typeof dateStr !== "string" || dateStr.trim() === "") return null;
+        const cleanDate = dateStr.trim();
+        // Match YYYY-MM
+        if (/^\d{4}-\d{2}$/.test(cleanDate)) {
+          return `${cleanDate}-01`;
+        }
+        return cleanDate;
+      };
+
+      // Helper to handle collection updates
+      const handleCollectionSave = async (
+        collection: any[],
+        tableName: string,
+        mapToDb: (item: any) => any,
+        updateLocalState: (id: string, newId: string) => void
+      ) => {
+        const currentIds = collection
+          .filter((item) => !item.id.startsWith("temp-") && isValidUUID(item.id))
+          .map((item) => item.id);
+
+        // 1. Reconciliation: Delete orphaned records
+        if (currentIds.length > 0) {
+          await supabase
+            .from(tableName)
+            .delete()
+            .eq("resume_id", state.resumeId)
+            .not("id", "in", currentIds);
+        } else {
+          await supabase
+            .from(tableName)
+            .delete()
+            .eq("resume_id", state.resumeId);
+        }
+
+        const errors: any[] = [];
+        for (const item of collection) {
+          const dbItem = mapToDb(item);
+
+          if (item.id.startsWith("temp-")) {
+            // Insert new
+            const { data, error } = await supabase
+              .from(tableName)
+              .insert({ ...dbItem, resume_id: state.resumeId })
+              .select("id")
+              .single();
+
+            if (!error && data) {
+              updateLocalState(item.id, data.id);
+            } else if (error) {
+              console.error(`Error saving to ${tableName}:`, JSON.stringify(error, null, 2));
+              errors.push(error);
+            }
+          } else {
+            // Update existing
+            const { error } = await supabase
+              .from(tableName)
+              .update(dbItem)
+              .eq("id", item.id);
+
+            if (error) {
+              console.error(`Error updating ${tableName}:`, JSON.stringify(error, null, 2));
+              errors.push(error);
+            }
+          }
+        }
+
+        if (errors.length > 0) {
+          throw new Error(`Failed to save ${tableName}. See console for details.`);
+        }
+      };
+
+      // Handle work experiences
+      await handleCollectionSave(
+        state.workExperiences,
+        "work_experiences",
+        (exp) => ({
+          company: exp.company,
+          position: exp.position,
+          location: exp.location,
+          start_date: normalizeDate(exp.start_date),
+          end_date: normalizeDate(exp.end_date),
+          is_current: exp.is_current,
+          description: exp.description,
+          highlights: exp.highlights,
+          sort_order: exp.display_order,
+        }),
+        (oldId, newId) => {
+          set((s) => ({
+            workExperiences: s.workExperiences.map((i) =>
+              i.id === oldId ? { ...i, id: newId } : i
+            )
+          }));
+        }
+      );
+
+      // Handle education
+      await handleCollectionSave(
+        state.education,
+        "education",
+        (edu) => ({
+          institution: edu.institution,
+          degree: edu.degree,
+          field_of_study: edu.field_of_study,
+          location: edu.location,
+          start_date: normalizeDate(edu.start_date),
+          end_date: normalizeDate(edu.end_date),
+          gpa: edu.gpa,
+          achievements: edu.highlights,
+          sort_order: edu.display_order,
+        }),
+        (oldId, newId) => {
+          set((s) => ({
+            education: s.education.map((i) =>
+              i.id === oldId ? { ...i, id: newId } : i
+            )
+          }));
+        }
+      );
+
+      // Handle skills
+      await handleCollectionSave(
+        state.skills,
+        "skills",
+        (skill) => ({
+          name: skill.name,
+          category: skill.category,
+          proficiency_level: skill.proficiency_level,
+          sort_order: skill.display_order,
+        }),
+        (oldId, newId) => {
+          set((s) => ({
+            skills: s.skills.map((i) =>
+              i.id === oldId ? { ...i, id: newId } : i
+            )
+          }));
+        }
+      );
+
+      // Handle projects
+      await handleCollectionSave(
+        state.projects,
+        "projects",
+        (proj) => ({
+          name: proj.name,
+          description: proj.description,
+          technologies: proj.technologies,
+          url: proj.url,
+          highlights: proj.highlights,
+          sort_order: proj.display_order,
+        }),
+        (oldId, newId) => {
+          set((s) => ({
+            projects: s.projects.map((i) =>
+              i.id === oldId ? { ...i, id: newId } : i
+            )
+          }));
+        }
+      );
+
+      // Handle certifications
+      await handleCollectionSave(
+        state.certifications,
+        "certifications",
+        (cert) => ({
+          name: cert.name,
+          issuer: cert.issuer,
+          issue_date: normalizeDate(cert.issue_date),
+          expiry_date: normalizeDate(cert.expiry_date),
+          credential_id: cert.credential_id,
+          credential_url: cert.credential_url,
+          sort_order: cert.display_order,
+        }),
+        (oldId, newId) => {
+          set((s) => ({
+            certifications: s.certifications.map((i) =>
+              i.id === oldId ? { ...i, id: newId } : i
+            )
+          }));
+        }
+      );
+
+      // Handle languages
+      await handleCollectionSave(
+        state.languages,
+        "languages",
+        (lang) => ({
+          name: lang.language,
+          proficiency: lang.proficiency,
+          sort_order: lang.display_order,
+        }),
+        (oldId, newId) => {
+          set((s) => ({
+            languages: s.languages.map((i) =>
+              i.id === oldId ? { ...i, id: newId } : i
+            )
+          }));
+        }
+      );
+
+      // Update resume timestamp, template, and section order
+      const { error: resumeUpdateError } = await supabase
+        .from("resumes")
+        .update({
+          updated_at: new Date().toISOString(),
+          template_id: state.template,
+          slug: state.slug,
+          is_public: state.is_public,
+          section_order: state.sectionOrder,
+          visual_config: state.visualConfig,
+          language: state.language,
+          is_rtl: state.is_rtl,
+        })
+        .eq("id", state.resumeId);
+
+      if (resumeUpdateError) {
+        console.error("Error updating resume:", JSON.stringify(resumeUpdateError, null, 2));
+        // Ignore 409 conflicts if they are just race conditions on updates
+        if (resumeUpdateError.code !== '409') { // Postgres unique_violation code is 23505, but Supabase might return HTTP status in some contexts or code.
+          // Actually Supabase returns PostgrestError with 'code'. 23505 is unique violation.
+        }
       }
-    };
 
-    // Handle work experiences
-    await handleCollectionSave(
-      state.workExperiences,
-      "work_experiences",
-      (exp) => ({
-        company: exp.company,
-        position: exp.position,
-        location: exp.location,
-        start_date: normalizeDate(exp.start_date),
-        end_date: normalizeDate(exp.end_date),
-        is_current: exp.is_current,
-        description: exp.description,
-        highlights: exp.highlights,
-        sort_order: exp.display_order,
-      }),
-      (oldId, newId) => {
-        set((s) => ({
-          workExperiences: s.workExperiences.map((i) =>
-            i.id === oldId ? { ...i, id: newId } : i
-          )
-        }));
-      }
-    );
-
-    // Handle education
-    await handleCollectionSave(
-      state.education,
-      "education",
-      (edu) => ({
-        institution: edu.institution,
-        degree: edu.degree,
-        field_of_study: edu.field_of_study,
-        location: edu.location,
-        start_date: normalizeDate(edu.start_date),
-        end_date: normalizeDate(edu.end_date),
-        gpa: edu.gpa,
-        achievements: edu.highlights,
-        sort_order: edu.display_order,
-      }),
-      (oldId, newId) => {
-        set((s) => ({
-          education: s.education.map((i) =>
-            i.id === oldId ? { ...i, id: newId } : i
-          )
-        }));
-      }
-    );
-
-    // Handle skills
-    await handleCollectionSave(
-      state.skills,
-      "skills",
-      (skill) => ({
-        name: skill.name,
-        category: skill.category,
-        proficiency_level: skill.proficiency_level,
-        sort_order: skill.display_order,
-      }),
-      (oldId, newId) => {
-        set((s) => ({
-          skills: s.skills.map((i) =>
-            i.id === oldId ? { ...i, id: newId } : i
-          )
-        }));
-      }
-    );
-
-    // Handle projects
-    await handleCollectionSave(
-      state.projects,
-      "projects",
-      (proj) => ({
-        name: proj.name,
-        description: proj.description,
-        technologies: proj.technologies,
-        url: proj.url,
-        highlights: proj.highlights,
-        sort_order: proj.display_order,
-      }),
-      (oldId, newId) => {
-        set((s) => ({
-          projects: s.projects.map((i) =>
-            i.id === oldId ? { ...i, id: newId } : i
-          )
-        }));
-      }
-    );
-
-    // Handle certifications
-    await handleCollectionSave(
-      state.certifications,
-      "certifications",
-      (cert) => ({
-        name: cert.name,
-        issuer: cert.issuer,
-        issue_date: normalizeDate(cert.issue_date),
-        expiry_date: normalizeDate(cert.expiry_date),
-        credential_id: cert.credential_id,
-        credential_url: cert.credential_url,
-        sort_order: cert.display_order,
-      }),
-      (oldId, newId) => {
-        set((s) => ({
-          certifications: s.certifications.map((i) =>
-            i.id === oldId ? { ...i, id: newId } : i
-          )
-        }));
-      }
-    );
-
-    // Handle languages
-    await handleCollectionSave(
-      state.languages,
-      "languages",
-      (lang) => ({
-        name: lang.language,
-        proficiency: lang.proficiency,
-        sort_order: lang.display_order,
-      }),
-      (oldId, newId) => {
-        set((s) => ({
-          languages: s.languages.map((i) =>
-            i.id === oldId ? { ...i, id: newId } : i
-          )
-        }));
-      }
-    );
-
-    // Update resume timestamp, template, and section order
-    const { error: resumeUpdateError } = await supabase
-      .from("resumes")
-      .update({
-        updated_at: new Date().toISOString(),
-        template_id: state.template,
-        slug: state.slug,
-        is_public: state.is_public,
-        section_order: state.sectionOrder,
-        visual_config: state.visualConfig,
-        language: state.language,
-        is_rtl: state.is_rtl,
-      })
-      .eq("id", state.resumeId);
-
-    if (resumeUpdateError) {
-      console.error("Error updating resume:", JSON.stringify(resumeUpdateError, null, 2));
+      set({ hasChanges: false });
+    } finally {
+      set({ isSaving: false });
     }
-
-    set({ hasChanges: false });
   },
 
   fetchResume: async (id: string) => {

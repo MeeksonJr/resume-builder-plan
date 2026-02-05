@@ -31,7 +31,7 @@ export function VersionHistory() {
     const handleSaveVersion = async () => {
         setIsSaving(true);
         try {
-            await saveVersion();
+            await saveVersion("Manual Save " + new Date().toLocaleString());
             toast.success("Version saved successfully");
         } catch (error) {
             console.error(error);
