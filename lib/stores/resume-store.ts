@@ -80,6 +80,8 @@ export interface VisualConfig {
   fontFamily: string;
   fontSize: "small" | "standard" | "large";
   lineHeight: "tight" | "standard" | "relaxed";
+  nav_style?: "vertical" | "horizontal" | "standard";
+  margins?: "compact" | "standard" | "wide";
 }
 
 const DEFAULT_VISUAL_CONFIG: VisualConfig = {
@@ -87,6 +89,8 @@ const DEFAULT_VISUAL_CONFIG: VisualConfig = {
   fontFamily: "Inter",
   fontSize: "standard",
   lineHeight: "relaxed",
+  nav_style: "standard",
+  margins: "standard",
 };
 
 export interface ResumeVersion {

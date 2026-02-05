@@ -65,6 +65,24 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
   }
+
+  .theme-teal {
+    --primary: 173 80% 40%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 173 80% 40%;
+  }
+
+  .theme-rose {
+    --primary: 343 89% 60%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 343 89% 60%;
+  }
+
+  .theme-violet {
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 262 83% 58%;
+  }
 }
 
 @layer base {
