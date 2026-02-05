@@ -290,7 +290,7 @@ Provide specific, actionable suggestions to improve this resume for the target j
     return result.object;
   } catch (error: any) {
     console.warn("[AI] Tailoring failed:", error.message);
-    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed") || error.message.includes("insufficient_quota") || error.message.includes("429")) {
       return {
         suggestions: [
           "[MOCK] Add more metrics to your work experience",
@@ -731,10 +731,10 @@ export async function parseLinkedInData(linkedinText: string): Promise<ResumeDat
     return result.object;
   } catch (error: any) {
     console.warn("[AI] LinkedIn parsing failed:", error.message);
-    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed") || error.message.includes("insufficient_quota") || error.message.includes("429")) {
       return {
         personalInfo: {
-          fullName: "[MOCK] LinkedIn User",
+          fullName: "[MOCK] LinkedIn User (Quota Exceeded)",
           email: "user@linkedin.com",
           location: "San Francisco, CA",
           linkedin: "linkedin.com/in/user",

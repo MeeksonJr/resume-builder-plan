@@ -14,23 +14,42 @@ export async function POST(req: Request) {
         }
 
         const { resumeId, url } = await req.json();
+        console.log("[GITHUB_IMPORT_DEBUG] Received:", { resumeId, url });
 
         if (!resumeId || !url) {
+            console.log("[GITHUB_IMPORT_DEBUG] Missing fields");
             return new NextResponse("Resume ID and repository URL are required", { status: 400 });
         }
 
         // Parse owner and repo from URL
-        // Expected format: https://github.com/owner/repo or just github.com/owner/repo
-        const urlParts = url.replace("https://", "").replace("http://", "").split("/");
-        const githubIndex = urlParts.indexOf("github.com");
-
-        if (githubIndex === -1 || urlParts.length < githubIndex + 3) {
-            return new NextResponse("Invalid GitHub URL", { status: 400 });
+        let normalizedUrl = url.trim();
+        // Ensure protocol
+        if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+            normalizedUrl = "https://" + normalizedUrl;
         }
 
-        const owner = urlParts[githubIndex + 1];
-        const repo = urlParts[githubIndex + 2];
-        const repoFullName = `${owner}/${repo}`;
+        // Remove www.
+        normalizedUrl = normalizedUrl.replace("://www.github.com", "://github.com");
+
+        let repoFullName = "";
+        try {
+            const urlObj = new URL(normalizedUrl);
+            if (urlObj.hostname !== "github.com") {
+                console.log("[GITHUB_IMPORT_DEBUG] Invalid hostname:", urlObj.hostname);
+                return new NextResponse("Invalid GitHub URL. Must be github.com", { status: 400 });
+            }
+            const pathParts = urlObj.pathname.split("/").filter(Boolean);
+            if (pathParts.length < 2) {
+                console.log("[GITHUB_IMPORT_DEBUG] Invalid path:", urlObj.pathname);
+                return new NextResponse("Invalid GitHub URL. Must contain owner/repo", { status: 400 });
+            }
+            repoFullName = `${pathParts[0]}/${pathParts[1]}`;
+        } catch (e) {
+            console.log("[GITHUB_IMPORT_DEBUG] URL Parse failed:", e);
+            return new NextResponse("Invalid URL format", { status: 400 });
+        }
+
+        console.log("[GITHUB_IMPORT_DEBUG] Target Repo:", repoFullName);
 
         // Verify resume ownership
         const { data: resume } = await supabase
