@@ -136,6 +136,13 @@ interface ResumeState {
   hasChanges: boolean;
   isSaving: boolean;
 
+  // Tailoring State
+  tailoringResult: any | null; // using any for now to avoid circular dependency or duplicating types, ideally define TailoringResult type in a shared types file
+  targetJob: { title: string; company: string; description: string } | null;
+
+  setTailoringResult: (result: any | null) => void;
+  setTargetJob: (job: { title: string; company: string; description: string } | null) => void;
+
   // Setters
   setResumeId: (id: string) => void;
   setVisualConfig: (config: VisualConfig) => void;
@@ -212,6 +219,11 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   sectionOrder: ["experience", "education", "skills", "projects", "certifications", "languages"],
   visualConfig: DEFAULT_VISUAL_CONFIG,
   versions: [],
+  tailoringResult: null,
+  targetJob: null,
+
+  setTailoringResult: (result) => set({ tailoringResult: result }),
+  setTargetJob: (job) => set({ targetJob: job }),
 
   setResumeId: (id) => set({ resumeId: id }),
   setVisualConfig: (config) => set({ visualConfig: config }),

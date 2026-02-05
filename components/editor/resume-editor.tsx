@@ -22,6 +22,7 @@ import {
   FileDown,
   History,
   GitCommit,
+  Target,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SaveVersionDialog } from "@/components/dashboard/resume/save-version-dialog";
@@ -176,8 +177,10 @@ export function ResumeEditor({
   const [showHistory, setShowHistory] = useState(false);
 
   // Tailoring State
+  // Tailoring state handling is merged below
+
   const [isTailoring, setIsTailoring] = useState(false);
-  const [tailoringResult, setTailoringResult] = useState(null);
+  // Removed local tailoringResult state
   const [isOptimizationPanelOpen, setIsOptimizationPanelOpen] = useState(false);
 
   const {
@@ -199,6 +202,10 @@ export function ResumeEditor({
     saveAllChanges,
     setLanguage,
     setIsRtl,
+    tailoringResult,
+    setTailoringResult,
+    setTargetJob,
+    updateProfile
   } = useResumeStore();
 
   // Initialize store with data
@@ -299,6 +306,8 @@ export function ResumeEditor({
 
       const result = await response.json();
       setTailoringResult(result);
+      setTargetJob({ title: jobTitle, company, description: jobDescription });
+      setIsOptimizationPanelOpen(true);
       setIsOptimizationPanelOpen(true);
       toast.success("Analysis complete!");
     } catch (error) {
@@ -485,16 +494,23 @@ export function ResumeEditor({
             )}
           </Button>
 
-          <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
+          {tailoringResult ? (
             <Button
               variant="outline"
-              size="sm"
-              className={isOptimizationPanelOpen ? "bg-primary/10 border-primary/50" : ""}
+              className="gap-2 border-green-500 text-green-600 hover:bg-green-50"
+              onClick={() => setIsOptimizationPanelOpen(true)}
             >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Target Job
+              <Sparkles className="h-4 w-4" />
+              View Analysis ({tailoringResult.score}%)
             </Button>
-          </JobInputDialog>
+          ) : (
+            <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Target className="h-4 w-4" />
+                Target Job
+              </Button>
+            </JobInputDialog>
+          )}
 
           <Dialog>
             <DialogTrigger asChild>
@@ -646,7 +662,7 @@ export function ResumeEditor({
         open={showVersionDialog}
         onOpenChange={setShowVersionDialog}
       />
-    </div>
+    </div >
   );
 }
 
