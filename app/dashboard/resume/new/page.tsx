@@ -5,7 +5,9 @@ import React from "react"
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,8 +29,40 @@ export default function NewResumePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Subscription & Limit Check
+  const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+  const [resumeCount, setResumeCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
+
+  useEffect(() => {
+    async function checkLimit() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { count } = await supabase
+        .from("resumes")
+        .select("*", { count: 'exact', head: true })
+        .eq("user_id", user.id);
+
+      setResumeCount(count || 0);
+    }
+    checkLimit();
+  }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Feature Gate
+    if (!isPro && (resumeCount || 0) >= 1) {
+      toast.error("Free plan is limited to 1 resume. Upgrade to create more!");
+      router.push("/dashboard/subscription");
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
 
@@ -89,6 +123,39 @@ export default function NewResumePage() {
     toast.success("Resume created!");
     router.push(`/dashboard/resume/${resume.id}`);
   };
+
+  // Limit Reached UI
+  if (!isSubLoading && !isPro && resumeCount !== null && resumeCount >= 1) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <Button asChild variant="ghost" size="icon">
+          <Link href="/dashboard"><ArrowLeft className="h-5 w-5" /></Link>
+        </Button>
+        <Card className="border-2 border-primary/20 shadow-2xl overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-black uppercase">Limit Reached</CardTitle>
+            <CardDescription className="text-lg">
+              You've reached the limit of 1 resume on the Free plan.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              Upgrade to Pro to create <strong>unlimited resumes</strong>, access premium templates, and use AI power-ups.
+            </p>
+          </CardContent>
+          <CardFooter className="flex justify-center pb-8">
+            <Button size="lg" className="font-bold text-base px-8 h-12 rounded-xl" onClick={() => router.push('/dashboard/subscription')}>
+              Upgrade to Pro
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

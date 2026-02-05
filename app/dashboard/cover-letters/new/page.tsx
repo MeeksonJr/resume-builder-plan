@@ -20,11 +20,13 @@ import {
     CardDescription,
     CardHeader,
     CardTitle,
+    CardFooter,
 } from "@/components/ui/card";
 import { Loader2, Sparkles, ChevronLeft, Brain, Briefcase, User, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
 
 export default function NewCoverLetterPage() {
     const router = useRouter();
@@ -39,6 +41,12 @@ export default function NewCoverLetterPage() {
         recipientName: "",
         jobDescription: "",
     });
+
+    const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+
+    useEffect(() => {
+        checkSubscription();
+    }, [checkSubscription]);
 
     useEffect(() => {
         async function fetchResumes() {
@@ -59,6 +67,45 @@ export default function NewCoverLetterPage() {
         }
         fetchResumes();
     }, [supabase]);
+
+    if (!isSubLoading && !isPro) {
+        return (
+            <div className="max-w-4xl mx-auto py-12">
+                <Button asChild variant="ghost" className="mb-8">
+                    <Link href="/dashboard/cover-letters">
+                        <ChevronLeft className="mr-2 h-4 w-4" />
+                        Back
+                    </Link>
+                </Button>
+                <Card className="border-primary/20 shadow-2xl relative overflow-hidden bg-slate-950 text-white">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-blue-600/5 pointer-events-none" />
+                    <div className="absolute top-0 right-0 p-3">
+                        <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase">
+                            Premium
+                        </div>
+                    </div>
+                    <CardHeader className="text-center pt-16 pb-8">
+                        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center mb-6 shadow-xl shadow-primary/20">
+                            <Sparkles className="h-8 w-8 text-white" />
+                        </div>
+                        <CardTitle className="text-3xl font-black uppercase tracking-tight">AI Cover Letters</CardTitle>
+                        <CardDescription className="text-slate-400 text-lg max-w-lg mx-auto mt-2">
+                            Generate tailored, professional cover letters in seconds using advanced AI analysis of your resume and the job description.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardFooter className="flex justify-center pb-16">
+                        <Button
+                            size="lg"
+                            className="h-14 px-8 text-lg font-bold rounded-xl bg-white text-slate-950 hover:bg-slate-200"
+                            onClick={() => router.push('/dashboard/subscription')}
+                        >
+                            Upgrade to Pro
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+        )
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

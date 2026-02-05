@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, X, Loader2, Check, RefreshCw, Plus, ClipboardCopy, ArrowUpRight, ChevronDown, Target, Zap, Palette, Building2 } from "lucide-react";
+import { Sparkles, X, Loader2, Check, RefreshCw, Plus, ClipboardCopy, ArrowUpRight, ChevronDown, Target, Zap, Palette, Building2, Lock } from "lucide-react";
 import { useResumeStore, WorkExperience } from "@/lib/stores/resume-store";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -24,12 +24,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { JobMatchCard, BulkOptimizeDialog, ToneSelector, IndustrySelector } from "@/components/editor/ai";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { useRouter } from "next/navigation";
 
 interface AIAssistantProps {
     onClose: () => void;
 }
 
 export function AIAssistant({ onClose }: AIAssistantProps) {
+    const router = useRouter();
+    const { isPro } = useSubscriptionStore();
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<"menu" | "tailor" | "results" | "improve" | "ats" | "keywords" | "job-match" | "tone" | "industry">("menu");
     const [jobDescription, setJobDescription] = useState("");
@@ -405,27 +409,51 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
                             </div>
                             <Button
                                 variant="outline"
-                                className="w-full justify-start"
-                                onClick={() => setMode("job-match")}
+                                className="w-full justify-start relative group"
+                                onClick={() => {
+                                    if (!isPro) {
+                                        toast.error("Upgrade to Pro to use Job Match Score!");
+                                        router.push("/dashboard/subscription");
+                                        return;
+                                    }
+                                    setMode("job-match");
+                                }}
                             >
                                 <Target className="mr-2 h-4 w-4 text-blue-500" />
-                                Job Match Score
+                                <span>Job Match Score</span>
+                                {!isPro && <Lock className="ml-auto h-3 w-3 text-muted-foreground opacity-70 group-hover:opacity-100" />}
                             </Button>
                             <Button
                                 variant="outline"
-                                className="w-full justify-start"
-                                onClick={() => setMode("tone")}
+                                className="w-full justify-start relative group"
+                                onClick={() => {
+                                    if (!isPro) {
+                                        toast.error("Upgrade to Pro to use Tone Adjustment!");
+                                        router.push("/dashboard/subscription");
+                                        return;
+                                    }
+                                    setMode("tone");
+                                }}
                             >
                                 <Palette className="mr-2 h-4 w-4 text-purple-500" />
-                                Tone Adjustment
+                                <span>Tone Adjustment</span>
+                                {!isPro && <Lock className="ml-auto h-3 w-3 text-muted-foreground opacity-70 group-hover:opacity-100" />}
                             </Button>
                             <Button
                                 variant="outline"
-                                className="w-full justify-start"
-                                onClick={() => setMode("industry")}
+                                className="w-full justify-start relative group"
+                                onClick={() => {
+                                    if (!isPro) {
+                                        toast.error("Upgrade to Pro to use Industry Customize!");
+                                        router.push("/dashboard/subscription");
+                                        return;
+                                    }
+                                    setMode("industry");
+                                }}
                             >
                                 <Building2 className="mr-2 h-4 w-4 text-green-500" />
-                                Industry Customize
+                                <span>Industry Customize</span>
+                                {!isPro && <Lock className="ml-auto h-3 w-3 text-muted-foreground opacity-70 group-hover:opacity-100" />}
                             </Button>
                         </div>
                     </div>
