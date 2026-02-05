@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
             // Or handle creation logic here (complex).
             // For now, redirect to checkout or return error
             // Actually, if manage billing is clicked but no sub, checking out is better
-            return NextResponse.redirect(new URL("/pricing", req.url));
+            return NextResponse.redirect(new URL("/pricing", req.url), { status: 303 });
         }
 
         const returnUrl = new URL("/dashboard/subscription", req.url).toString();
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
             return_url: returnUrl,
         });
 
-        return NextResponse.redirect(session.url);
+        return NextResponse.redirect(session.url, { status: 303 });
     } catch (error) {
         console.error("Error creating portal session:", error);
         return new NextResponse("Internal Server Error", { status: 500 });

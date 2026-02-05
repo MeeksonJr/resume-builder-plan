@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { createClient } from "@supabase/supabase-js"; // Use admin client for webhooks
+import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
 
-// Need admin rights to update profiles without auth user context
+// Create a single supabase client for interacting with your database
+// using the Service Role key to bypass RLS.
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -12,74 +13,93 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: Request) {
     const body = await req.text();
-    const headersList = await headers();
-    const signature = headersList.get("Stripe-Signature") as string;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const signature = (await headers()).get("Stripe-Signature") as string;
 
-    if (!webhookSecret) {
-        return new NextResponse("Stripe Webhook Secret not configured", { status: 500 });
-    }
-
-    let event;
+    let event: Stripe.Event;
 
     try {
-        event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+        event = stripe.webhooks.constructEvent(
+            body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET!
+        );
     } catch (error: any) {
-        console.error(`Webhook Error: ${error.message}`);
         return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
     }
 
-    const session = event.data.object as any;
+    const session = event.data.object as Stripe.Checkout.Session;
 
     try {
-        if (event.type === "checkout.session.completed") {
-            const subscription = await stripe.subscriptions.retrieve(session.subscription) as any;
+        switch (event.type) {
+            case "checkout.session.completed": {
+                const subscriptionId = session.subscription as string;
+                const customerId = session.customer as string;
+                // Metadata usually contains the user_id if passed during checkout creation
+                // But typically we might rely on client_reference_id or search by email.
+                // Best practice: Pass user_id in checking session metadata.
+                const userId = session.metadata?.userId;
 
-            if (!session.metadata?.userId) {
-                console.error("User ID missing in session metadata");
-                return new NextResponse("User ID missing", { status: 400 });
+                if (!userId) {
+                    console.error("No userId in session metadata");
+                    // If we can't find user, we can try to look up by email, but metadata is safer
+                    break;
+                }
+
+                // Retrieve subscription details to get the current period end
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+                await supabaseAdmin
+                    .from("profiles")
+                    .update({
+                        stripe_subscription_id: subscriptionId,
+                        stripe_customer_id: customerId,
+                        stripe_price_id: subscription.items.data[0].price.id,
+                        stripe_current_period_end: new Date(
+                            subscription.current_period_end * 1000
+                        ).toISOString(),
+                        subscription_status: subscription.status,
+                    })
+                    .eq("id", userId);
+                break;
             }
 
-            await supabaseAdmin
-                .from("profiles")
-                .update({
-                    is_pro: true,
-                    stripe_subscription_id: subscription.id,
-                    stripe_customer_id: subscription.customer as string,
-                    stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                })
-                .eq("id", session.metadata.userId);
+            case "customer.subscription.updated": {
+                const subscription = event.data.object as Stripe.Subscription;
+                // We need to find the user by strip_customer_id since metadata might not be on the subscription object directly
+                // unless we copied it over. Easier to query profiles by customer_id.
+
+                await supabaseAdmin
+                    .from("profiles")
+                    .update({
+                        subscription_status: subscription.status,
+                        stripe_price_id: subscription.items.data[0].price.id,
+                        stripe_current_period_end: new Date(
+                            subscription.current_period_end * 1000
+                        ).toISOString(),
+                    })
+                    .eq("stripe_customer_id", subscription.customer as string);
+                break;
+            }
+
+            case "customer.subscription.deleted": {
+                const subscription = event.data.object as Stripe.Subscription;
+
+                await supabaseAdmin
+                    .from("profiles")
+                    .update({
+                        subscription_status: "canceled",
+                        stripe_current_period_end: new Date(
+                            subscription.current_period_end * 1000
+                        ).toISOString(),
+                    })
+                    .eq("stripe_customer_id", subscription.customer as string);
+                break;
+            }
         }
-
-        if (event.type === "customer.subscription.deleted") {
-            const subscription = event.data.object as any;
-
-            // We need to find the user by subscription ID or customer ID
-            await supabaseAdmin
-                .from("profiles")
-                .update({
-                    is_pro: false,
-                    stripe_current_period_end: null,
-                })
-                .eq("stripe_subscription_id", subscription.id);
-        }
-
-        if (event.type === "invoice.payment_succeeded") {
-            const subscription = await stripe.subscriptions.retrieve(session.subscription) as any;
-
-            // We might want to extend the period end here
-            await supabaseAdmin
-                .from("profiles")
-                .update({
-                    stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                })
-                .eq("stripe_subscription_id", subscription.id);
-        }
-
-        return new NextResponse(null, { status: 200 });
-
     } catch (error) {
-        console.error("[STRIPE_WEBHOOK_HANDLER]", error);
-        return new NextResponse("Webhook Handler failed", { status: 500 });
+        console.error("Webhook handler failed:", error);
+        return new NextResponse("Webhook handler failed", { status: 500 });
     }
+
+    return new NextResponse(null, { status: 200 });
 }
