@@ -55,6 +55,8 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { VisualCustomizer } from "@/components/editor/visual-customizer";
 import { exportToDocx } from "@/lib/export/docx-export";
+import { JobInputDialog } from "@/components/tailoring/job-input-dialog";
+import { OptimizationPanel } from "@/components/tailoring/optimization-panel";
 
 interface Resume {
   id: string;
@@ -171,6 +173,11 @@ export function ResumeEditor({
   const [showVersionDialog, setShowVersionDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
+  // Tailoring State
+  const [isTailoring, setIsTailoring] = useState(false);
+  const [tailoringResult, setTailoringResult] = useState(null);
+  const [isOptimizationPanelOpen, setIsOptimizationPanelOpen] = useState(false);
+
   const {
     setResumeId,
     setProfile,
@@ -266,6 +273,39 @@ export function ResumeEditor({
     resume.is_public,
     resume.slug,
   ]);
+
+  const handleTailor = async (jobDescription: string, jobTitle: string, company: string) => {
+    setIsTailoring(true);
+    try {
+      const response = await fetch("/api/ai/tailor", {
+        method: "POST",
+        body: JSON.stringify({
+          resume: {
+            personalInfo: useResumeStore.getState().profile,
+            workExperiences: useResumeStore.getState().workExperiences,
+            education: useResumeStore.getState().education,
+            skills: useResumeStore.getState().skills,
+            projects: useResumeStore.getState().projects
+          },
+          jobDescription,
+          jobTitle,
+          company
+        })
+      });
+
+      if (!response.ok) throw new Error("Analysis failed");
+
+      const result = await response.json();
+      setTailoringResult(result);
+      setIsOptimizationPanelOpen(true);
+      toast.success("Analysis complete!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to analyze fit.");
+    } finally {
+      setIsTailoring(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -442,6 +482,18 @@ export function ResumeEditor({
               </>
             )}
           </Button>
+
+          <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
+            <Button
+              variant="outline"
+              size="sm"
+              className={isOptimizationPanelOpen ? "bg-primary/10 border-primary/50" : ""}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Target Job
+            </Button>
+          </JobInputDialog>
+
           <Button
             variant="outline"
             size="sm"
@@ -563,6 +615,12 @@ export function ResumeEditor({
             <AIAssistant onClose={() => setShowAI(false)} />
           </div>
         )}
+
+        <OptimizationPanel
+          isOpen={isOptimizationPanelOpen}
+          onClose={() => setIsOptimizationPanelOpen(false)}
+          result={tailoringResult}
+        />
       </div>
 
       {/* Hidden Print Preview - Positioned off-screen to ensure react-to-print captures it */}
