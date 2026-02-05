@@ -57,6 +57,8 @@ import { VisualCustomizer } from "@/components/editor/visual-customizer";
 import { exportToDocx } from "@/lib/export/docx-export";
 import { JobInputDialog } from "@/components/tailoring/job-input-dialog";
 import { OptimizationPanel } from "@/components/tailoring/optimization-panel";
+import { CoverLetterGenerator } from "@/components/cover-letter/generator-panel";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 interface Resume {
   id: string;
@@ -493,6 +495,18 @@ export function ResumeEditor({
               Target Job
             </Button>
           </JobInputDialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Cover Letter
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-5xl h-[80vh] flex flex-col p-0">
+              <CoverLetterGenerator />
+            </DialogContent>
+          </Dialog>
 
           <Button
             variant="outline"

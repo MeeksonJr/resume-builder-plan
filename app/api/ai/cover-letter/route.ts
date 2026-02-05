@@ -1,80 +1,59 @@
-import { createClient } from "@/lib/supabase/server";
-import { generateCoverLetter } from "@/lib/ai";
-import { NextResponse } from "next/server";
+import { google } from "@ai-sdk/google";
+import { generateText } from "ai";
+import { z } from "zod";
+
+export const maxDuration = 60;
+
+const requestSchema = z.object({
+    resume: z.any(),
+    jobDescription: z.string(),
+    jobTitle: z.string(),
+    company: z.string(),
+    tone: z.enum(["professional", "enthusiastic", "confident", "casual"]).default("professional"),
+});
 
 export async function POST(req: Request) {
     try {
-        const supabase = await createClient();
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+        const json = await req.json();
+        const { resume, jobDescription, jobTitle, company, tone } = requestSchema.parse(json);
 
-        if (!user) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
-
-        const { resumeId, jobDescription, recipientName, companyName, jobTitle, tone } = await req.json();
-
-        if (!resumeId || !jobDescription) {
-            return new NextResponse("Missing required fields", { status: 400 });
-        }
-
-        // Fetch resume data
-        const [
-            { data: profile },
-            { data: workExperiences },
-            { data: education },
-            { data: skills },
-            { data: projects },
-            { data: certifications },
-            { data: languages },
-        ] = await Promise.all([
-            supabase.from("profiles").select("*").single(),
-            supabase.from("work_experiences").select("*").eq("resume_id", resumeId).order("sort_order"),
-            supabase.from("education").select("*").eq("resume_id", resumeId).order("sort_order"),
-            supabase.from("skills").select("*").eq("resume_id", resumeId).order("sort_order"),
-            supabase.from("projects").select("*").eq("resume_id", resumeId).order("sort_order"),
-            supabase.from("certifications").select("*").eq("resume_id", resumeId).order("sort_order"),
-            supabase.from("languages").select("*").eq("resume_id", resumeId).order("sort_order"),
-        ]);
-
-        const resumeData = {
-            personalInfo: profile || {},
-            workExperience: workExperiences || [],
-            education: education || [],
-            skills: skills || [],
-            projects: projects || [],
-            certifications: certifications || [],
-            languages: languages || [],
+        // Extract relevant resume data to reduce token usage
+        const resumeContext = {
+            fullName: resume.personalInfo?.full_name || resume.profile?.full_name,
+            skills: resume.skills?.map((s: any) => s.name).join(", "),
+            experience: resume.workExperiences?.map((w: any) => `${w.position} at ${w.company}: ${w.description}`).join("; "),
+            summary: resume.personalInfo?.summary || resume.profile?.summary,
         };
 
-        const content = await generateCoverLetter(
-            resumeData as any,
-            jobDescription,
-            { name: recipientName, company: companyName, title: jobTitle },
-            tone
-        );
+        const prompt = `
+    You are an expert career coach and professional copywriter.
+    Write a compelling cover letter for the position of "${jobTitle}" at "${company}".
+    
+    JOB DESCRIPTION:
+    ${jobDescription}
 
-        // Save to database
-        const { data: coverLetter, error } = await supabase
-            .from("cover_letters")
-            .insert({
-                user_id: user.id,
-                resume_id: resumeId,
-                title: `Cover Letter - ${companyName || jobTitle || "Untitled"}`,
-                content,
-                recipient_name: recipientName,
-                company_name: companyName,
-                job_title: jobTitle,
-            })
-            .select()
-            .single();
+    CANDIDATE CONTEXT:
+    ${JSON.stringify(resumeContext)}
 
-        if (error) throw error;
+    TONE: ${tone}
 
-        return NextResponse.json(coverLetter);
+    INSTRUCTIONS:
+    - Format as a standard business letter.
+    - Do not include placeholders like "[Your Name]" -> use the candidate's name from context.
+    - Highlight 2-3 key achievements from the candidate's experience that match the job description.
+    - Keep it under 400 words.
+    - Return ONLY the body of the letter (no markdown code blocks).
+    `;
+
+        const { text } = await generateText({
+            model: google("gemini-1.5-flash-latest"),
+            prompt,
+            temperature: 0.7,
+        });
+
+        return Response.json({ content: text });
     } catch (error) {
-        console.error("[API] Cover letter error:", error);
-        return new NextResponse("Internal Error", { status: 500 });
+        console.error("Cover Letter Generation Error:", error);
+        return Response.json({ error: "Failed to generate cover letter" }, { status: 500 });
     }
 }
