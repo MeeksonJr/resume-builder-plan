@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { TrackerBoard } from "@/components/dashboard/tracker/tracker-board";
+import { KanbanBoard } from "@/components/tracker/kanban-board";
 import { AddApplicationDialog } from "@/components/dashboard/tracker/add-application-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus, LayoutGrid, List, Briefcase, Workflow, Activity } from "lucide-react";
@@ -100,10 +100,7 @@ export default function TrackerPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.4 }}
                     >
-                        <TrackerBoard
-                            applications={applications}
-                            onUpdateStatus={handleUpdateStatus}
-                        />
+                        <KanbanBoard initialApplications={applications} />
                     </motion.div>
                 )}
             </AnimatePresence>
