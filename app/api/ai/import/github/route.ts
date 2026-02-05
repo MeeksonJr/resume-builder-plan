@@ -13,11 +13,24 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumeId, repoFullName, repoName, repoDescription, repoLanguage, repoUrl } = await req.json();
+        const { resumeId, url } = await req.json();
 
-        if (!resumeId || !repoFullName) {
-            return new NextResponse("Resume ID and repository name are required", { status: 400 });
+        if (!resumeId || !url) {
+            return new NextResponse("Resume ID and repository URL are required", { status: 400 });
         }
+
+        // Parse owner and repo from URL
+        // Expected format: https://github.com/owner/repo or just github.com/owner/repo
+        const urlParts = url.replace("https://", "").replace("http://", "").split("/");
+        const githubIndex = urlParts.indexOf("github.com");
+
+        if (githubIndex === -1 || urlParts.length < githubIndex + 3) {
+            return new NextResponse("Invalid GitHub URL", { status: 400 });
+        }
+
+        const owner = urlParts[githubIndex + 1];
+        const repo = urlParts[githubIndex + 2];
+        const repoFullName = `${owner}/${repo}`;
 
         // Verify resume ownership
         const { data: resume } = await supabase
@@ -31,30 +44,45 @@ export async function POST(req: Request) {
             return new NextResponse("Resume not found", { status: 404 });
         }
 
-        // Fetch README content from GitHub
+        // Fetch Repo Metadata and README content from GitHub
+        let repoData = null;
         let readmeContent = null;
+
         try {
-            const readmeResponse = await fetch(
-                `https://api.github.com/repos/${repoFullName}/readme`,
-                {
+            const [repoResponse, readmeResponse] = await Promise.all([
+                fetch(`https://api.github.com/repos/${repoFullName}`, {
+                    headers: {
+                        "Accept": "application/vnd.github.v3+json",
+                        "User-Agent": "ResumeForge",
+                    },
+                }),
+                fetch(`https://api.github.com/repos/${repoFullName}/readme`, {
                     headers: {
                         "Accept": "application/vnd.github.v3.raw",
                         "User-Agent": "ResumeForge",
                     },
-                }
-            );
+                })
+            ]);
+
+            if (repoResponse.ok) {
+                repoData = await repoResponse.json();
+            } else {
+                return new NextResponse("Repository not found or private", { status: 404 });
+            }
+
             if (readmeResponse.ok) {
                 readmeContent = await readmeResponse.text();
             }
         } catch (error) {
-            console.warn("Could not fetch README, proceeding without it");
+            console.error("GitHub API Error:", error);
+            return new NextResponse("Failed to fetch GitHub data", { status: 500 });
         }
 
         // Generate project description using AI
         const projectData = await generateProjectFromRepo(
-            repoName,
-            repoDescription,
-            repoLanguage,
+            repoData.name,
+            repoData.description || "No description provided",
+            repoData.language || "Unknown",
             readmeContent
         );
 
@@ -72,7 +100,7 @@ export async function POST(req: Request) {
                 name: projectData.name,
                 description: projectData.highlights.join("\n"),
                 technologies: projectData.technologies,
-                url: repoUrl,
+                url: url,
                 sort_order: count || 0,
             })
             .select()

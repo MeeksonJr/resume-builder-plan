@@ -34,7 +34,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
             const response = await fetch("/api/ai/import/linkedin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: linkedinData }),
+                body: JSON.stringify({ linkedinText: linkedinData }),
             });
 
             if (!response.ok) throw new Error("Import failed");
