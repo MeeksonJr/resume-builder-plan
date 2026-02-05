@@ -39,6 +39,25 @@ export async function generateMetadata({ params }: PublicResumePageProps): Promi
     return {
         title: `${resume.title} - ${userName}'s Resume`,
         description: `View ${userName}'s professional resume.`,
+        openGraph: {
+            title: `${userName} - ${resume.title}`,
+            description: `View ${userName}'s professional resume hosted on ResumeForge.`,
+            images: [
+                {
+                    url: `/api/og?title=${encodeURIComponent(resume.title)}&name=${encodeURIComponent(userName)}`,
+                    width: 1200,
+                    height: 630,
+                    alt: `${userName}'s Resume`,
+                },
+            ],
+            type: "profile",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${userName} - ${resume.title}`,
+            description: `View ${userName}'s professional resume on ResumeForge.`,
+            images: [`/api/og?title=${encodeURIComponent(resume.title)}&name=${encodeURIComponent(userName)}`],
+        },
     };
 }
 
