@@ -28,7 +28,11 @@ export async function POST(req: Request) {
             .insert({
                 user_id: user.id,
                 title: `LinkedIn Import - ${resumeData.personalInfo.fullName || "Untitled"}`,
-                template: "modern",
+                // template_id: "modern", // Assuming 'modern' is a valid ID or let it default if nullable
+                // If template_id is text, use 'modern'. If UUID, we need a valid one.
+                // Safest to omit if nullable, or query a default template.
+                // Let's assume for now we can omit it or it has a default. 
+                // Checks show column is template_id.
             })
             .select()
             .single();

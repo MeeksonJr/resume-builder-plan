@@ -74,26 +74,10 @@ export function ImportContent({ resumes }: ImportContentProps) {
                 throw new Error(errorData.error || `Server error: ${response.status}`);
             }
 
-            const resumeData = await response.json();
-
-            // Create the resume in database
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("Not authenticated");
-
-            const { data, error } = await supabase
-                .from("resumes")
-                .insert({
-                    user_id: user.id,
-                    title: `Imported from LinkedIn (${new Date().toLocaleDateString()})`,
-                    content: resumeData,
-                })
-                .select()
-                .single();
-
-            if (error) throw error;
+            const { resumeId } = await response.json();
 
             toast.success("Resume imported successfully!");
-            router.push(`/editor/${data.id}`);
+            router.push(`/editor/${resumeId}`);
         } catch (error: any) {
             handleError(error, "LinkedIn Import");
         } finally {
@@ -125,6 +109,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
             const result = await response.json();
 
             toast.success(result.message || "GitHub projects successfully added!");
+            console.log("Redirecting to editor with ID:", selectedResumeId);
             router.push(`/editor/${selectedResumeId}`);
         } catch (error: any) {
             handleError(error, "GitHub Import");
