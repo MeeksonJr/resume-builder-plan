@@ -21,7 +21,7 @@ const openai = createOpenAI({
 export const resumeDataSchema = z.object({
   personalInfo: z.object({
     fullName: z.string().optional(),
-    email: z.string().email().optional(),
+    email: z.string().email().optional().or(z.literal("")),
     phone: z.string().optional(),
     location: z.string().optional(),
     linkedin: z.string().optional(),
@@ -98,7 +98,7 @@ async function withFallback<T>(
     (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 0);
 
   if (!hasKeys) {
-    console.warn("[AI] No valid API keys found. Using mock response.");
+    console.warn("[AI] No valid API keys found.");
     throw new Error("NO_API_KEYS");
   }
 
@@ -731,40 +731,6 @@ export async function parseLinkedInData(linkedinText: string): Promise<ResumeDat
     return result.object;
   } catch (error: any) {
     console.warn("[AI] LinkedIn parsing failed:", error.message);
-    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed") || error.message.includes("insufficient_quota") || error.message.includes("429")) {
-      return {
-        personalInfo: {
-          fullName: "[MOCK] LinkedIn User (Quota Exceeded)",
-          email: "user@linkedin.com",
-          location: "San Francisco, CA",
-          linkedin: "linkedin.com/in/user",
-          summary: "[MOCK] Extracted summary from LinkedIn. Experienced professional with 5+ years in tech.",
-        },
-        workExperience: [
-          {
-            company: "[MOCK] Tech Corp",
-            position: "Senior Engineer",
-            location: "San Francisco, CA",
-            startDate: "2020-01",
-            current: true,
-            description: "Leading development of key features.",
-          }
-        ],
-        education: [
-          {
-            institution: "[MOCK] University",
-            degree: "Bachelor of Science",
-            field: "Computer Science",
-            startDate: "2015-09",
-            endDate: "2019-06",
-          }
-        ],
-        skills: [{ items: ["JavaScript", "React", "Node.js"], category: "Technical Skills" }],
-        projects: [],
-        certifications: [],
-        languages: [],
-      };
-    }
     throw error;
   }
 }
@@ -815,18 +781,6 @@ export async function generateProjectFromRepo(
     return result.object;
   } catch (error: any) {
     console.warn("[AI] GitHub project generation failed:", error.message);
-    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
-      return {
-        name: repoName || "[MOCK] Project Name",
-        description: "[MOCK] A full-stack application demonstrating modern web development practices.",
-        technologies: [repoLanguage || "JavaScript", "React", "Node.js"],
-        highlights: [
-          "[MOCK] Built scalable backend API serving 10K+ requests daily",
-          "[MOCK] Implemented responsive UI with 95+ Lighthouse performance score",
-          "[MOCK] Integrated third-party APIs for enhanced functionality"
-        ],
-      };
-    }
     throw error;
   }
 }

@@ -13,43 +13,12 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumeId, url } = await req.json();
-        console.log("[GITHUB_IMPORT_DEBUG] Received:", { resumeId, url });
+        const { resumeId, username } = await req.json();
+        console.log("[GITHUB_IMPORT_DEBUG] Received:", { resumeId, username });
 
-        if (!resumeId || !url) {
-            console.log("[GITHUB_IMPORT_DEBUG] Missing fields");
-            return new NextResponse("Resume ID and repository URL are required", { status: 400 });
+        if (!resumeId || !username) {
+            return new NextResponse("Resume ID and GitHub username are required", { status: 400 });
         }
-
-        // Parse owner and repo from URL
-        let normalizedUrl = url.trim();
-        // Ensure protocol
-        if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
-            normalizedUrl = "https://" + normalizedUrl;
-        }
-
-        // Remove www.
-        normalizedUrl = normalizedUrl.replace("://www.github.com", "://github.com");
-
-        let repoFullName = "";
-        try {
-            const urlObj = new URL(normalizedUrl);
-            if (urlObj.hostname !== "github.com") {
-                console.log("[GITHUB_IMPORT_DEBUG] Invalid hostname:", urlObj.hostname);
-                return new NextResponse("Invalid GitHub URL. Must be github.com", { status: 400 });
-            }
-            const pathParts = urlObj.pathname.split("/").filter(Boolean);
-            if (pathParts.length < 2) {
-                console.log("[GITHUB_IMPORT_DEBUG] Invalid path:", urlObj.pathname);
-                return new NextResponse("Invalid GitHub URL. Must contain owner/repo", { status: 400 });
-            }
-            repoFullName = `${pathParts[0]}/${pathParts[1]}`;
-        } catch (e) {
-            console.log("[GITHUB_IMPORT_DEBUG] URL Parse failed:", e);
-            return new NextResponse("Invalid URL format", { status: 400 });
-        }
-
-        console.log("[GITHUB_IMPORT_DEBUG] Target Repo:", repoFullName);
 
         // Verify resume ownership
         const { data: resume } = await supabase
@@ -63,76 +32,102 @@ export async function POST(req: Request) {
             return new NextResponse("Resume not found", { status: 404 });
         }
 
-        // Fetch Repo Metadata and README content from GitHub
-        let repoData = null;
-        let readmeContent = null;
-
+        // Fetch user's top repositories from GitHub
+        let repos = [];
         try {
-            const [repoResponse, readmeResponse] = await Promise.all([
-                fetch(`https://api.github.com/repos/${repoFullName}`, {
-                    headers: {
-                        "Accept": "application/vnd.github.v3+json",
-                        "User-Agent": "ResumeForge",
-                    },
-                }),
-                fetch(`https://api.github.com/repos/${repoFullName}/readme`, {
-                    headers: {
-                        "Accept": "application/vnd.github.v3.raw",
-                        "User-Agent": "ResumeForge",
-                    },
-                })
-            ]);
+            const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=5&type=owner`, {
+                headers: {
+                    "Accept": "application/vnd.github.v3+json",
+                    "User-Agent": "ResumeForge",
+                },
+            });
 
-            if (repoResponse.ok) {
-                repoData = await repoResponse.json();
-            } else {
-                return new NextResponse("Repository not found or private", { status: 404 });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    return new NextResponse("GitHub user not found", { status: 404 });
+                }
+                const text = await response.text();
+                console.error("[GITHUB_IMPORT_DEBUG] GitHub API Error:", text);
+                return new NextResponse(`GitHub API Error: ${response.statusText}`, { status: response.status });
             }
 
-            if (readmeResponse.ok) {
-                readmeContent = await readmeResponse.text();
-            }
+            repos = await response.json();
         } catch (error) {
-            console.error("GitHub API Error:", error);
-            return new NextResponse("Failed to fetch GitHub data", { status: 500 });
+            console.error("[GITHUB_IMPORT_DEBUG] Failed to fetch repos:", error);
+            return new NextResponse("Failed to connect to GitHub", { status: 500 });
         }
 
-        // Generate project description using AI
-        const projectData = await generateProjectFromRepo(
-            repoData.name,
-            repoData.description || "No description provided",
-            repoData.language || "Unknown",
-            readmeContent
-        );
+        if (!repos || repos.length === 0) {
+            return new NextResponse("No public repositories found for this user", { status: 404 });
+        }
 
-        // Get current project count for sort order
-        const { count } = await supabase
-            .from("projects")
-            .select("*", { count: "exact", head: true })
-            .eq("resume_id", resumeId);
+        // Filter out forks if desired, or keep them. For now, we take the top ones.
+        // We will process the top 3 most relevant repos (highest stars or most recently updated is already sort=updated)
+        // Let's re-sort by stars to get the most impressive ones, or keep recent?
+        // Let's stick to the top 3 from the API response (which are most recently updated) to be safe for quotas.
+        const topRepos = repos.slice(0, 3);
+        const importedProjects = [];
 
-        // Insert project into database
-        const { data: newProject, error: projectError } = await supabase
-            .from("projects")
-            .insert({
-                resume_id: resumeId,
-                name: projectData.name,
-                description: projectData.highlights.join("\n"),
-                technologies: projectData.technologies,
-                url: url,
-                sort_order: count || 0,
-            })
-            .select()
-            .single();
+        for (const repo of topRepos) {
+            try {
+                // Fetch README content
+                let readmeContent = null;
+                try {
+                    const readmeResponse = await fetch(`https://api.github.com/repos/${repo.full_name}/readme`, {
+                        headers: {
+                            "Accept": "application/vnd.github.v3.raw",
+                            "User-Agent": "ResumeForge",
+                        },
+                    });
+                    if (readmeResponse.ok) readmeContent = await readmeResponse.text();
+                } catch (e) {
+                    // Ignore README errors
+                }
 
-        if (projectError) throw projectError;
+                // Generate project description using AI
+                const projectData = await generateProjectFromRepo(
+                    repo.name,
+                    repo.description || "No description provided",
+                    repo.language || "Unknown",
+                    readmeContent
+                );
+
+                // Insert project into database
+                // Get current count for sort order
+                const { count } = await supabase
+                    .from("projects")
+                    .select("*", { count: "exact", head: true })
+                    .eq("resume_id", resumeId);
+
+                const { data: newProject } = await supabase
+                    .from("projects")
+                    .insert({
+                        resume_id: resumeId,
+                        name: projectData.name,
+                        description: projectData.highlights.join("\n"),
+                        technologies: projectData.technologies,
+                        url: repo.html_url,
+                        sort_order: (count || 0),
+                    })
+                    .select()
+                    .single();
+
+                if (newProject) importedProjects.push(newProject);
+
+            } catch (err) {
+                console.error(`[GITHUB_IMPORT_DEBUG] Failed to import repo ${repo.full_name}:`, err);
+                // Continue to next repo
+            }
+        }
 
         return NextResponse.json({
-            project: newProject,
-            message: "GitHub project successfully imported!"
+            count: importedProjects.length,
+            projects: importedProjects,
+            message: `Successfully imported ${importedProjects.length} projects from GitHub!`
         });
-    } catch (error) {
+
+    } catch (error: any) {
         console.error("[GITHUB_IMPORT_ERROR]", error);
-        return new NextResponse("Failed to import GitHub project", { status: 500 });
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
 }
