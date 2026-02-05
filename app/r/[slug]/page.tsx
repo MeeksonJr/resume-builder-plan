@@ -8,7 +8,7 @@ import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { PublicDownloadButton } from "../../../components/dashboard/public-download-button";
-
+import { PublicTracker } from "@/components/analytics/public-tracker"; // Import Tracker
 
 interface PublicResumePageProps {
     params: Promise<{ slug: string }>;
@@ -59,27 +59,6 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
     }
 
     const resumeId = resume.id;
-
-    // 2. Advanced Tracking (Server-side)
-    const headerList = await headers();
-    const userAgent = headerList.get("user-agent") || "";
-
-    // Basic UA parsing (standard for server-side without heavy libs)
-    const isMobile = /mobile/i.test(userAgent);
-    const os = /windows/i.test(userAgent) ? "Windows" : /mac/i.test(userAgent) ? "MacOS" : /linux/i.test(userAgent) ? "Linux" : /android/i.test(userAgent) ? "Android" : /iphone|ipad/i.test(userAgent) ? "iOS" : "Unknown";
-    const browser = /chrome/i.test(userAgent) ? "Chrome" : /firefox/i.test(userAgent) ? "Firefox" : /safari/i.test(userAgent) ? "Safari" : /edge/i.test(userAgent) ? "Edge" : "Unknown";
-    const device = isMobile ? "Mobile" : "Desktop";
-
-    // Record view event
-    supabase.rpc("record_resume_event", {
-        resume_id_param: resumeId,
-        event_type_param: "view",
-        browser_param: browser,
-        os_param: os,
-        device_param: device
-    }).then(({ error }) => {
-        if (error) console.error("Error recording view event:", error);
-    });
 
     // 2. Fetch all related data
     // We can run these in parallel
@@ -155,14 +134,14 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
                 <div className="w-full max-w-[210mm] bg-white shadow-2xl ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out md:hover:scale-[1.002]">
                     <ResumePreview
                         data={{
-                            resume,
-                            profile: mergedProfile,
-                            workExperiences: workExperiences || [],
-                            education: education || [],
-                            skills: skills || [],
-                            projects: projects || [],
-                            certifications: certifications || [],
-                            languages: languages || []
+                            resume: resume,
+                            profile: resume.content?.profile,
+                            workExperiences: resume.content?.workExperiences || [],
+                            education: resume.content?.education || [],
+                            skills: resume.content?.skills || [],
+                            projects: resume.content?.projects || [],
+                            certifications: resume.content?.certifications || [],
+                            languages: resume.content?.languages || []
                         }}
                         readOnly={true}
                     />
@@ -180,6 +159,7 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
                     </Button>
                 </div>
             </main>
+            <PublicTracker resumeId={resumeId} />
         </div>
     );
 }

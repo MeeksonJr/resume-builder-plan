@@ -165,13 +165,22 @@ export default function ResumeAnalyticsPage() {
             setResume(resumeData);
 
             // Fetch events
-            const { data: eventData } = await supabase
-                .from("resume_events")
+            // Fetch events (views)
+            const { data: viewData } = await supabase
+                .from("resume_views")
                 .select("*")
                 .eq("resume_id", id)
-                .order("created_at", { ascending: true });
+                .order("viewed_at", { ascending: true });
 
-            setEvents(eventData || []);
+            // Map to compatible event structure
+            const mappedEvents = (viewData || []).map(v => ({
+                created_at: v.viewed_at,
+                event_type: 'view',
+                device: v.device_type === 'mobile' ? 'Mobile' : 'Desktop',
+                browser: 'Unknown'
+            }));
+
+            setEvents(mappedEvents);
             setLoading(false);
 
             // Fetch full resume data for ATS scoring
