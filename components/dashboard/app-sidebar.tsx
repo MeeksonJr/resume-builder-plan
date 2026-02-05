@@ -50,60 +50,73 @@ interface AppSidebarProps {
     profile: any
 }
 
-const navItems = [
-    {
-        title: "Dashboard",
-        href: "/dashboard",
-        icon: LayoutDashboard,
-    },
-    {
-        title: "Resumes",
-        href: "/dashboard/resumes",
-        icon: FileText,
-        items: [
-            { title: "All Resumes", href: "/dashboard/resumes" },
-            { title: "Create New", href: "/dashboard/resume/new" },
-            { title: "Smart Import", href: "/dashboard/import" },
-        ],
-    },
-    {
-        title: "Applications",
-        href: "/dashboard/tracker",
-        icon: Briefcase,
-        items: [
-            { title: "Job Tracker", href: "/dashboard/tracker" },
-            { title: "Cover Letters", href: "/dashboard/cover-letters" },
-        ],
-    },
-    {
-        title: "AI Power-ups",
-        href: "/dashboard/career-coach",
-        icon: Sparkles,
-        items: [
-            { title: "Career Coach", href: "/dashboard/career-coach", icon: Sparkles },
-            { title: "Resume Optimizer", href: "/dashboard/optimize", icon: TrendingUp },
-            { title: "Interview Prep", href: "/dashboard/interview-prep", icon: Brain },
-        ],
-    },
-    {
-        title: "Showcase",
-        href: "/dashboard/portfolio",
-        icon: Globe,
-        items: [
-            { title: "My Portfolio", href: "/dashboard/portfolio" },
-            { title: "Discovery", href: "/dashboard/portfolios" },
-        ],
-    },
-    {
-        title: "Settings",
-        href: "/dashboard/settings",
-        icon: Settings,
-        items: [
-            { title: "General", href: "/dashboard/settings" },
-            { title: "Billing & Plans", href: "/dashboard/subscription" },
-        ],
-    },
-]
+const getNavItems = (isAdmin: boolean) => {
+    const items = [
+        {
+            title: "Dashboard",
+            href: "/dashboard",
+            icon: LayoutDashboard,
+        },
+        {
+            title: "Resumes",
+            href: "/dashboard/resumes",
+            icon: FileText,
+            items: [
+                { title: "All Resumes", href: "/dashboard/resumes" },
+                { title: "Create New", href: "/dashboard/resume/new" },
+                { title: "Smart Import", href: "/dashboard/import" },
+            ],
+        },
+        {
+            title: "Applications",
+            href: "/dashboard/tracker",
+            icon: Briefcase,
+            items: [
+                { title: "Job Tracker", href: "/dashboard/tracker" },
+                { title: "Cover Letters", href: "/dashboard/cover-letters" },
+            ],
+        },
+        {
+            title: "AI Power-ups",
+            href: "/dashboard/career-coach",
+            icon: Sparkles,
+            items: [
+                { title: "Career Coach", href: "/dashboard/career-coach", icon: Sparkles },
+                { title: "Resume Optimizer", href: "/dashboard/optimize", icon: TrendingUp },
+                { title: "Interview Prep", href: "/dashboard/interview-prep", icon: Brain },
+            ],
+        },
+        {
+            title: "Showcase",
+            href: "/dashboard/portfolio",
+            icon: Globe,
+            items: [
+                { title: "My Portfolio", href: "/dashboard/portfolio" },
+                { title: "Discovery", href: "/dashboard/portfolios" },
+            ],
+        },
+        {
+            title: "Settings",
+            href: "/dashboard/settings",
+            icon: Settings,
+            items: [
+                { title: "General", href: "/dashboard/settings" },
+                { title: "Billing & Plans", href: "/dashboard/subscription" },
+            ],
+        },
+    ];
+
+    if (isAdmin) {
+        items.push({
+            title: "Admin",
+            href: "/dashboard/admin",
+            icon: User, // Using User icon for now, could be Shield/Lock
+            items: [] // Add empty items to match type if needed, or adjust type
+        } as any);
+    }
+
+    return items;
+};
 
 export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
     const pathname = usePathname()
@@ -167,6 +180,8 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
         router.push("/")
         router.refresh()
     }
+
+    const navItems = React.useMemo(() => getNavItems(profile?.role === 'admin'), [profile?.role]);
 
     return (
         <Sidebar collapsible="icon" className="glass-border border-r bg-background/60 backdrop-blur-xl">
