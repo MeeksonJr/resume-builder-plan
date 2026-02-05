@@ -22,6 +22,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Loader2, FileText, Upload, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { ImportDialog } from "@/components/import/import-dialog";
 
 export default function NewResumePage() {
   const router = useRouter();
@@ -246,9 +247,11 @@ export default function NewResumePage() {
             </p>
           </CardContent>
           <CardFooter>
-            <Button asChild variant="outline" className="min-h-[44px] w-full bg-transparent">
-              <Link href="/dashboard/upload">Upload Resume</Link>
-            </Button>
+            <ImportDialog>
+              <Button variant="outline" className="min-h-[44px] w-full bg-transparent">
+                Import / Upload
+              </Button>
+            </ImportDialog>
           </CardFooter>
         </Card>
 
