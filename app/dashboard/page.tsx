@@ -3,6 +3,7 @@ import { ResumeList } from "@/components/dashboard/resume-list";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { AnalyticsView } from "@/components/dashboard/analytics-view";
 import { WelcomeTour } from "@/components/dashboard/welcome-tour";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
   // Profile is already fetched in layout, but we need it here for logic or let's fetch essential fields
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, bio")
+    .select("username, bio, is_pro")
     .eq("id", user.id)
     .single();
 
@@ -64,6 +65,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="space-y-16">
+        <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={!!profile?.is_pro} />
         <WelcomeTour
           resumesCount={resumes?.length || 0}
           applicationsCount={applications?.length || 0}
