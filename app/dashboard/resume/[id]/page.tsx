@@ -15,18 +15,29 @@ export default async function ResumePage({ params }: ResumePageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    console.error("[ResumePage] No user found in session");
     notFound();
   }
 
   // Fetch resume
-  const { data: resume } = await supabase
+  const { data: resume, error: resumeError } = await supabase
     .from("resumes")
     .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
     .maybeSingle();
 
+  if (resumeError) {
+    console.error("[ResumePage] Error fetching resume:", resumeError);
+  }
+
   if (!resume) {
+    console.error("[ResumePage] Resume not found for user:", user.id, "Resume ID:", id);
+    // Double check if resume exists at all for debugging
+    const { data: anyResume } = await supabase.from("resumes").select("user_id").eq("id", id).single();
+    if (anyResume) {
+      console.error("[ResumePage] Resume exists but belongs to:", anyResume.user_id);
+    }
     notFound();
   }
 

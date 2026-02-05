@@ -21,8 +21,10 @@ const openai = createOpenAI({
 export const resumeDataSchema = z.object({
   personalInfo: z.object({
     fullName: z.string().optional(),
-    email: z.string().email().optional().or(z.literal("")),
-    phone: z.string().optional(),
+    // Simplified schema for AI robustness - validated strictly in UI/DB if needed
+    email: z.string().optional().describe("Email address if available"),
+    phone: z.string().optional().describe("Phone number if available"),
+    address: z.string().optional(),
     location: z.string().optional(),
     linkedin: z.string().optional(),
     website: z.string().optional(),
