@@ -1,13 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { Search, Plus, Bell, Command, Sidebar as SidebarIcon } from "lucide-react"
+import { Search, Plus, Bell, Command, Sidebar as SidebarIcon, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
 
-export function TopNav() {
+interface TopNavProps {
+    isPro?: boolean;
+}
+
+export function TopNav({ isPro }: TopNavProps) {
     return (
         <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b bg-background/60 backdrop-blur-xl px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
@@ -62,6 +66,17 @@ export function TopNav() {
                         <Bell className="h-5 w-5" />
                         <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary border-2 border-background" />
                     </Button>
+
+                    {!isPro && (
+                        <Button
+                            variant="outline"
+                            className="hidden sm:flex h-10 gap-2 rounded-xl border-amber-500/20 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400 font-bold text-xs uppercase tracking-widest"
+                            onClick={() => window.location.href = '/pricing'}
+                        >
+                            <Sparkles className="h-4 w-4" />
+                            Upgrade Plan
+                        </Button>
+                    )}
 
                     <div className="h-6 w-px bg-primary/10 mx-1 hidden sm:block" />
 
