@@ -106,7 +106,7 @@ async function withFallback<T>(
 
   const models = [
     { provider: groq, model: "llama-3.3-70b-versatile", name: "Groq" },
-    { provider: google, model: "gemini-1.5-flash", name: "Gemini" },
+    { provider: google, model: "gemini-2.5-flash", name: "Gemini" },
     { provider: openai, model: "gpt-4o-mini", name: "OpenAI" },
   ];
 
