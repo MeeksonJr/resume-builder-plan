@@ -71,7 +71,7 @@ export function TopNav({ isPro }: TopNavProps) {
                         <Button
                             variant="outline"
                             className="hidden sm:flex h-10 gap-2 rounded-xl border-amber-500/20 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400 font-bold text-xs uppercase tracking-widest"
-                            onClick={() => window.location.href = '/pricing'}
+                            onClick={() => window.location.href = '/dashboard/subscription'}
                         >
                             <Sparkles className="h-4 w-4" />
                             Upgrade Plan

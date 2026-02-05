@@ -35,17 +35,14 @@ export async function POST(req: Request) {
                 const subscriptionId = session.subscription as string;
                 const customerId = session.customer as string;
                 // Metadata usually contains the user_id if passed during checkout creation
-                // But typically we might rely on client_reference_id or search by email.
-                // Best practice: Pass user_id in checking session metadata.
                 const userId = session.metadata?.userId;
 
                 if (!userId) {
                     console.error("No userId in session metadata");
-                    // If we can't find user, we can try to look up by email, but metadata is safer
                     break;
                 }
 
-                // Retrieve subscription details to get the current period end
+                // Retrieve subscription details
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
                 await supabaseAdmin
@@ -53,11 +50,12 @@ export async function POST(req: Request) {
                     .update({
                         stripe_subscription_id: subscriptionId,
                         stripe_customer_id: customerId,
-                        stripe_price_id: subscription.items.data[0].price.id,
+                        stripe_price_id: (subscription as any).items.data[0].price.id,
                         stripe_current_period_end: new Date(
-                            subscription.current_period_end * 1000
+                            (subscription as any).current_period_end * 1000
                         ).toISOString(),
-                        subscription_status: subscription.status,
+                        subscription_status: (subscription as any).status,
+                        is_pro: true,
                     })
                     .eq("id", userId);
                 break;
@@ -65,17 +63,16 @@ export async function POST(req: Request) {
 
             case "customer.subscription.updated": {
                 const subscription = event.data.object as Stripe.Subscription;
-                // We need to find the user by strip_customer_id since metadata might not be on the subscription object directly
-                // unless we copied it over. Easier to query profiles by customer_id.
 
                 await supabaseAdmin
                     .from("profiles")
                     .update({
                         subscription_status: subscription.status,
-                        stripe_price_id: subscription.items.data[0].price.id,
+                        stripe_price_id: (subscription as any).items.data[0].price.id,
                         stripe_current_period_end: new Date(
-                            subscription.current_period_end * 1000
+                            (subscription as any).current_period_end * 1000
                         ).toISOString(),
+                        is_pro: subscription.status === 'active' || subscription.status === 'trialing',
                     })
                     .eq("stripe_customer_id", subscription.customer as string);
                 break;
@@ -89,8 +86,9 @@ export async function POST(req: Request) {
                     .update({
                         subscription_status: "canceled",
                         stripe_current_period_end: new Date(
-                            subscription.current_period_end * 1000
+                            (subscription as any).current_period_end * 1000
                         ).toISOString(),
+                        is_pro: false,
                     })
                     .eq("stripe_customer_id", subscription.customer as string);
                 break;
