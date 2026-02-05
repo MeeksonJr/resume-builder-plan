@@ -6,23 +6,32 @@ export const maxDuration = 60;
 
 const requestSchema = z.object({
     resume: z.any(),
-    jobDescription: z.string(),
-    jobTitle: z.string(),
-    company: z.string(),
+    jobDescription: z.string().optional().or(z.literal("")), // Allow empty or undefined
+    jobTitle: z.string().min(1, "Job Title is required"),
+    company: z.string().min(1, "Company Name is required"),
     tone: z.enum(["professional", "enthusiastic", "confident", "casual"]).default("professional"),
 });
 
 export async function POST(req: Request) {
     try {
         const json = await req.json();
-        const { resume, jobDescription, jobTitle, company, tone } = requestSchema.parse(json);
+
+        // 1. Validation Phase
+        let parsedData;
+        try {
+            parsedData = requestSchema.parse(json);
+        } catch (zodError) {
+            return Response.json({ error: "Invalid Input", details: zodError }, { status: 400 });
+        }
+
+        const { resume, jobDescription, jobTitle, company, tone } = parsedData;
 
         // Extract relevant resume data to reduce token usage
         const resumeContext = {
-            fullName: resume.personalInfo?.full_name || resume.profile?.full_name,
-            skills: resume.skills?.map((s: any) => s.name).join(", "),
-            experience: resume.workExperiences?.map((w: any) => `${w.position} at ${w.company}: ${w.description}`).join("; "),
-            summary: resume.personalInfo?.summary || resume.profile?.summary,
+            fullName: resume.personalInfo?.full_name || resume.profile?.full_name || "Applicant",
+            skills: resume.skills?.map((s: any) => s.name).join(", ") || "",
+            experience: resume.workExperiences?.map((w: any) => `${w.position} at ${w.company}: ${w.description}`).join("; ") || "",
+            summary: resume.personalInfo?.summary || resume.profile?.summary || "",
         };
 
         const prompt = `
@@ -30,7 +39,7 @@ export async function POST(req: Request) {
     Write a compelling cover letter for the position of "${jobTitle}" at "${company}".
     
     JOB DESCRIPTION:
-    ${jobDescription}
+    ${jobDescription || "No specific description provided. Focus on standard requirements for this role."}
 
     CANDIDATE CONTEXT:
     ${JSON.stringify(resumeContext)}
@@ -51,9 +60,17 @@ export async function POST(req: Request) {
             temperature: 0.7,
         });
 
+        if (!text) {
+            throw new Error("Empty response from AI");
+        }
+
         return Response.json({ content: text });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Cover Letter Generation Error:", error);
-        return Response.json({ error: "Failed to generate cover letter" }, { status: 500 });
+        // Return JSON error even for 500, so frontend can parse it
+        return Response.json(
+            { error: error.message || "Failed to generate cover letter" },
+            { status: 500 }
+        );
     }
 }

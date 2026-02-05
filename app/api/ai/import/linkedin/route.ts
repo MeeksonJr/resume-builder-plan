@@ -15,8 +15,8 @@ export async function POST(req: Request) {
 
         const { linkedinText } = await req.json();
 
-        if (!linkedinText || linkedinText.trim().length === 0) {
-            return new NextResponse("LinkedIn profile text is required", { status: 400 });
+        if (!linkedinText || typeof linkedinText !== "string" || linkedinText.trim().length === 0) {
+            return NextResponse.json({ error: "LinkedIn profile text is required" }, { status: 400 });
         }
 
         // Parse LinkedIn data using AI
@@ -133,8 +133,8 @@ export async function POST(req: Request) {
             resumeId: newResume.id,
             message: "LinkedIn profile successfully imported!"
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("[LINKEDIN_IMPORT_ERROR]", error);
-        return new NextResponse("Internal Error", { status: 500 });
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
 }

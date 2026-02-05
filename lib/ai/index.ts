@@ -205,9 +205,10 @@ export async function generateFullResume(data: {
       - Additional Context: ${data.additionalInfo || "None"}
       
       CRITICAL INSTRUCTIONS:
-      1. FULL COMPLETION: You MUST populate ALL sections of the resume: Personal Info, Summary, Work Experience (2-4 entries), Education (1-2 entries), Skills (categorized), Projects, and Languages.
-      2. INTELLIGENT HALLUCINATION: If the user provided sparse info, use your knowledge of the ${data.role} role to create realistic, high-quality placeholders. For example, if they didn't list a degree, add a "Bachelor of Science in [Related Field]" at a "[Major University]".
-      3. SMART PLACEHOLDERS: For specific details the user SHOULD fill in themselves (like specific dates or company names if not provided), use professional placeholders like "[Insert Company Name]" or "[YYYY] - [Present]".
+      1. FULL COMPLETION: You MUST populate ALL sections: Personal Info, Summary, Work Experience (2-4 entries), Education (1-2 entries), Skills, Projects, and Languages.
+      2. EDUCATION IS MANDATORY: Even if the user provided no education details, you MUST generate at least one realistic Education entry (e.g., "Bachelor of Science" relevant to the role). DO NOT LEAVE EDUCATION EMPTY.
+      3. INTELLIGENT HALLUCINATION: If the user provided sparse info, use your knowledge of the ${data.role} role to create realistic, high-quality placeholders.
+      4. SMART PLACEHOLDERS: Use professional placeholders like "[Insert Company Name]" or "[YYYY] - [Present]" only when absolutely necessary. Prefer realistic data.
       4. IMPACTFUL CONTENT: Write bullet points using the STAR method (Situation, Task, Action, Result). Use strong action verbs and quantify achievements (e.g., "Increased efficiency by 20%").
       5. PROFESSIONAL TONE: Ensure the language is sophisticated and tailored to the ${data.role} market.
       6. SKILLS: Categorize skills logically (e.g., Technical, Professional, Tools).

@@ -8,11 +8,13 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 interface PublicDownloadButtonProps {
-    resumeId: string;
-    title: string;
+    resumeId?: string;
+    title?: string;
+    user?: any;
+    resumeCode?: string;
 }
 
-export function PublicDownloadButton({ resumeId, title }: PublicDownloadButtonProps) {
+export function PublicDownloadButton({ resumeId, title, user, resumeCode }: PublicDownloadButtonProps) {
     const [isDownloading, setIsDownloading] = useState(false);
     const supabase = createClient();
     const contentRef = useRef<HTMLDivElement>(null);

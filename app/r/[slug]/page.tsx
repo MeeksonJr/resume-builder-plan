@@ -129,38 +129,55 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
     // Given the previous task instructions "Refactor ResumePreview for modularity", 
     // I hope it accepts props now. If not, I'll fix it.
 
+    // 3. Render
+    // Ensure we pass safe defaults. mismatched join types (array vs object) can cause issues,
+    // but here we are fetching directly from tables so we get objects or null (with maybeSingle) or arrays (with just select).
+    // The queries above use `order()` which implies returning arrays for lists.
+    // `maybeSingle()` returns object or null.
+
     return (
-        <div className="min-h-screen bg-[#f3f4f6] flex flex-col items-center font-sans selection:bg-primary/20">
-            {/* Top Navigation / Brand Bar */}
-            <header className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50 no-print">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold">R</div>
-                        <span className="font-semibold text-lg tracking-tight hidden sm:inline-block">ResumeForge</span>
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+            {/* Force light mode for the resume container to match print styles, or handle themes properly */}
+            <main className="container mx-auto px-4 py-8">
+                <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold">{resume.title}</h1>
+                        <p className="text-muted-foreground">
+                            Last updated {new Date(resume.updated_at).toLocaleDateString()}
+                        </p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-                            <a href="/">Build Your Own</a>
-                        </Button>
-                        <PublicDownloadButton resumeId={resumeId} title={resume.title} />
+                    <div className="flex items-center gap-2">
+                        <PublicDownloadButton
+                            user={resume.user}
+                            resumeId={resume.id}
+                            title={resume.title}
+                            resumeCode={JSON.stringify({
+                                resume,
+                                profile: profile || {},
+                                personalInfo: personalInfo || {},
+                                workExperiences: workExperiences || [],
+                                education: education || [],
+                                skills: skills || [],
+                                projects: projects || [],
+                                certifications: certifications || [],
+                                languages: languages || [],
+                            })}
+                        />
                     </div>
                 </div>
-            </header>
 
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 md:py-12 flex flex-col items-center">
-                {/* Resume Container */}
-                {/* Shadow-2xl for depth, ring-1 for definition */}
-                <div className="w-full max-w-[210mm] bg-white shadow-2xl ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out md:hover:scale-[1.002]">
+                <div className="mx-auto max-w-[210mm] shadow-2xl print:shadow-none print:max-w-none">
                     <ResumePreview
                         data={{
-                            resume: resume,
-                            profile: resume.content?.profile,
-                            workExperiences: resume.content?.workExperiences || [],
-                            education: resume.content?.education || [],
-                            skills: resume.content?.skills || [],
-                            projects: resume.content?.projects || [],
-                            certifications: resume.content?.certifications || [],
-                            languages: resume.content?.languages || []
+                            resume,
+                            profile: profile || {},
+                            personalInfo: personalInfo || {},
+                            workExperiences: workExperiences || [],
+                            education: education || [],
+                            skills: skills || [],
+                            projects: projects || [],
+                            certifications: certifications || [],
+                            languages: languages || [],
                         }}
                         readOnly={true}
                     />
@@ -178,7 +195,6 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
                     </Button>
                 </div>
             </main>
-            <PublicTracker resumeId={resumeId} />
         </div>
     );
 }

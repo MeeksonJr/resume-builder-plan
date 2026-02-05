@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { PracticeInterface } from "@/components/interview";
 import { VoiceCallInterface } from "@/components/interview/voice-call-interface";
 import { VoiceInterviewResults } from "@/components/interview/voice-interview-results";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function PracticeSessionPage({
     params,
@@ -67,11 +69,16 @@ export default async function PracticeSessionPage({
         // Show Results for Voice Session
         return (
             <div className="container max-w-4xl mx-auto p-6">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">Interview Results</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Here is the analysis of your simulated voice interview.
-                    </p>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Interview Results</h1>
+                        <p className="text-muted-foreground mt-2">
+                            Here is the analysis of your simulated voice interview.
+                        </p>
+                    </div>
+                    <Button variant="outline" asChild>
+                        <Link href="/dashboard/interview-prep">Back to Dashboard</Link>
+                    </Button>
                 </div>
                 <VoiceInterviewResults session={session} />
             </div>

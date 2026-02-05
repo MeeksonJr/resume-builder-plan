@@ -10,6 +10,7 @@ interface ResumePreviewProps extends React.HTMLAttributes<HTMLDivElement> {
     data?: {
         resume: any;
         profile: any;
+        personalInfo: any;
         workExperiences: any[];
         education: any[];
         skills: any[];

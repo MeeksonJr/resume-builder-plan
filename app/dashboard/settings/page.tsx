@@ -59,13 +59,15 @@ export default async function SettingsPage() {
                 <CareerSettings profile={profile} />
             </SettingsTab>
 
+            {/* 
             <SettingsTab
                 value="appearance"
                 title="Appearance"
                 description="Customize how ResumeForge looks for you."
             >
                 <AppearanceSettings />
-            </SettingsTab>
+            </SettingsTab> 
+            */}
 
             <SettingsTab
                 value="security"
