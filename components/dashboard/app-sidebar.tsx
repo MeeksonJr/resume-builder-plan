@@ -94,6 +94,15 @@ const navItems = [
             { title: "Discovery", href: "/dashboard/portfolios" },
         ],
     },
+    {
+        title: "Settings",
+        href: "/dashboard/settings",
+        icon: Settings,
+        items: [
+            { title: "General", href: "/dashboard/settings" },
+            { title: "Billing & Plans", href: "/dashboard/subscription" },
+        ],
+    },
 ]
 
 export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {

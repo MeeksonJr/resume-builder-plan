@@ -31,12 +31,14 @@ import {
     Info,
     TrendingDown,
     ShieldCheck,
-    Search
+    Search,
+    Lock as LockIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
 import { format, subDays, startOfDay, isWithinInterval, differenceInHours } from "date-fns";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -44,6 +46,13 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 export default function ResumeAnalyticsPage() {
     const { id } = useParams();
     const router = useRouter();
+    const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+
+    // Check subscription on mount
+    useEffect(() => {
+        checkSubscription();
+    }, [checkSubscription]);
+
     const [resume, setResume] = useState<any>(null);
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,6 +61,13 @@ export default function ResumeAnalyticsPage() {
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
     const fetchATSScore = useCallback(async (resumeId: string, force: boolean = false) => {
+        // Gate check
+        if (!isPro && !isSubLoading) {
+            toast.error("Upgrade to Pro to use AI Analytics!");
+            router.push("/dashboard/subscription");
+            return;
+        }
+
         setLoadingATS(true);
         const supabase = createClient();
         try {
@@ -322,7 +338,11 @@ export default function ResumeAnalyticsPage() {
                                     onClick={() => fetchATSScore(id as string, true)}
                                     disabled={loadingATS}
                                 >
-                                    <Zap className={cn("h-3 w-3", loadingATS ? "text-muted-foreground" : "text-amber-500")} />
+                                    {!isPro ? (
+                                        <LockIcon className="h-3 w-3 text-muted-foreground" />
+                                    ) : (
+                                        <Zap className={cn("h-3 w-3", loadingATS ? "text-muted-foreground" : "text-amber-500")} />
+                                    )}
                                     {loadingATS ? "Analyzing..." : "Re-Check"}
                                 </Button>
                             </div>
