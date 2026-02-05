@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle2, Copy, Sparkles, ArrowRight } from "lucide-re
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useResumeStore } from "@/lib/stores/resume-store";
 
 interface Suggestion {
     section: string;
@@ -31,6 +32,17 @@ interface OptimizationPanelProps {
 }
 
 export function OptimizationPanel({ isOpen, onClose, result }: OptimizationPanelProps) {
+    const {
+        profile,
+        workExperiences,
+        projects,
+        education,
+        updateProfile,
+        updateWorkExperience,
+        updateProject,
+        updateEducation
+    } = useResumeStore();
+
     if (!result) return null;
 
     const getScoreColor = (score: number) => {
@@ -42,6 +54,85 @@ export function OptimizationPanel({ isOpen, onClose, result }: OptimizationPanel
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard");
+    };
+
+    const handleApply = (suggestion: Suggestion) => {
+        const { section, original, improved } = suggestion;
+        let applied = false;
+
+        const clean = (s: string | null | undefined) => s?.trim();
+        const target = clean(original);
+
+        if (!target) {
+            toast.error("Cannot apply: Original text is empty.");
+            return;
+        }
+
+        // 1. Summary
+        if (section.toLowerCase().includes("summary") || section.toLowerCase().includes("personal")) {
+            if (clean(profile?.summary) === target || (profile && !profile.summary)) {
+                updateProfile({ summary: improved });
+                applied = true;
+            }
+        }
+
+        // 2. Work Experience
+        if (!applied && (section.toLowerCase().includes("experience") || section.toLowerCase().includes("work"))) {
+            for (const exp of workExperiences) {
+                if (clean(exp.description) === target) {
+                    updateWorkExperience(exp.id, { description: improved });
+                    applied = true;
+                    break;
+                }
+                const hlIndex = exp.highlights.findIndex(h => clean(h) === target);
+                if (hlIndex !== -1) {
+                    const newHighlights = [...exp.highlights];
+                    newHighlights[hlIndex] = improved;
+                    updateWorkExperience(exp.id, { highlights: newHighlights });
+                    applied = true;
+                    break;
+                }
+            }
+        }
+
+        // 3. Projects
+        if (!applied && section.toLowerCase().includes("project")) {
+            for (const proj of projects) {
+                if (clean(proj.description) === target) {
+                    updateProject(proj.id, { description: improved });
+                    applied = true;
+                    break;
+                }
+                const hlIndex = proj.highlights.findIndex(h => clean(h) === target);
+                if (hlIndex !== -1) {
+                    const newHighlights = [...proj.highlights];
+                    newHighlights[hlIndex] = improved;
+                    updateProject(proj.id, { highlights: newHighlights });
+                    applied = true;
+                    break;
+                }
+            }
+        }
+
+        // 4. Education
+        if (!applied && section.toLowerCase().includes("education")) {
+            for (const edu of education) {
+                const hlIndex = edu.highlights.findIndex(h => clean(h) === target);
+                if (hlIndex !== -1) {
+                    const newHighlights = [...edu.highlights];
+                    newHighlights[hlIndex] = improved;
+                    updateEducation(edu.id, { highlights: newHighlights });
+                    applied = true;
+                    break;
+                }
+            }
+        }
+
+        if (applied) {
+            toast.success("Applied to resume!");
+        } else {
+            toast.warning("Could not automatically match the original text. Please copy manually.");
+        }
     };
 
     return (
@@ -137,14 +228,21 @@ export function OptimizationPanel({ isOpen, onClose, result }: OptimizationPanel
                                             <ArrowRight className="h-4 w-4 text-muted-foreground/50 rotate-90" />
                                         </div>
                                         <div className="p-3 rounded-md bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20">
-                                            <div className="flex justify-between items-start gap-2">
+                                            <div className="flex flex-col gap-2">
                                                 <div>
                                                     <span className="text-xs uppercase font-bold text-green-500/70 block mb-1">Improved</span>
                                                     {suggestion.improved}
                                                 </div>
-                                                <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" onClick={() => copyToClipboard(suggestion.improved)}>
-                                                    <Copy className="h-3 w-3" />
-                                                </Button>
+                                                <div className="flex justify-end gap-2 mt-2">
+                                                    <Button size="sm" variant="outline" className="h-8 gap-2 bg-background/50" onClick={() => copyToClipboard(suggestion.improved)}>
+                                                        <Copy className="h-3 w-3" />
+                                                        Copy
+                                                    </Button>
+                                                    <Button size="sm" className="h-8 gap-2 bg-green-600 hover:bg-green-700 text-white" onClick={() => handleApply(suggestion)}>
+                                                        <Sparkles className="h-3 w-3" />
+                                                        Apply
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
                                         <p className="text-xs text-muted-foreground italic">
