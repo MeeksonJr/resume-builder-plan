@@ -662,7 +662,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         .update({
           updated_at: new Date().toISOString(),
           template_id: state.template,
-          slug: state.slug,
+          slug: state.slug || null,
           is_public: state.is_public,
           section_order: state.sectionOrder,
           visual_config: state.visualConfig,
