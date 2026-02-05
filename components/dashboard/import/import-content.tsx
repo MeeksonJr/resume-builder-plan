@@ -77,7 +77,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
             const { resumeId } = await response.json();
 
             toast.success("Resume imported successfully!");
-            router.push(`/editor/${resumeId}`);
+            router.push(`/dashboard/resume/${resumeId}`);
         } catch (error: any) {
             handleError(error, "LinkedIn Import");
         } finally {
@@ -110,7 +110,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
 
             toast.success(result.message || "GitHub projects successfully added!");
             console.log("Redirecting to editor with ID:", selectedResumeId);
-            router.push(`/editor/${selectedResumeId}`);
+            router.push(`/dashboard/resume/${selectedResumeId}`);
         } catch (error: any) {
             handleError(error, "GitHub Import");
         } finally {
