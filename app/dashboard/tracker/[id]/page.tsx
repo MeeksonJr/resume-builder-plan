@@ -37,29 +37,30 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Link href="/dashboard/tracker">
-                    <Button variant="ghost" size="icon">
+        <div className="space-y-6 text-[#102b2b]">
+            <div className="flex flex-col gap-4 border-b border-[#102b2b]/15 pb-5 sm:flex-row sm:items-center">
+                <Link href="/dashboard/tracker" aria-label="Back to job tracker">
+                    <Button variant="outline" size="icon" className="rounded-none border-[#102b2b]/20">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{application.role}</h1>
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0d8274]">Application record</p>
+                    <h1 className="mt-1 text-3xl font-black tracking-tight">{application.role}</h1>
+                    <div className="mt-1 flex items-center gap-2 text-sm text-[#102b2b]/65">
                         <Building2 className="h-4 w-4" />
                         <span className="font-medium">{application.company}</span>
                     </div>
                 </div>
-                <div className="ml-auto flex items-center gap-2">
-                    <Badge className="capitalize" variant={
+                <div className="flex items-center gap-2 sm:ml-auto">
+                    <Badge className="rounded-none capitalize" variant={
                         application.status === 'offered' ? 'default' :
                             application.status === 'rejected' ? 'destructive' :
                                 'secondary'
                     }>
                         {application.status}
                     </Badge>
-                    <Button variant="destructive" size="icon" className="h-8 w-8">
+                    <Button variant="destructive" size="icon" aria-label="Delete application" className="h-9 w-9 rounded-none">
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
@@ -68,31 +69,31 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
             <div className="grid gap-6 md:grid-cols-3">
                 {/* Main Details */}
                 <div className="md:col-span-2 space-y-6">
-                    <Card>
+                    <Card className="rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
                         <CardHeader>
                             <CardTitle>Job Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="grid gap-4 md:grid-cols-2">
+                        <CardContent className="grid gap-5 md:grid-cols-2">
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground uppercase">Salary Range</label>
+                                <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#102b2b]/55">Salary Range</label>
                                 <div className="flex items-center gap-2">
                                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                                     <span>{application.salary_range || "Not specified"}</span>
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground uppercase">Location</label>
+                                <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#102b2b]/55">Location</label>
                                 <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-muted-foreground" />
                                     <span>{application.location || "Remote / Not specified"}</span>
                                 </div>
                             </div>
                             <div className="space-y-1 col-span-2">
-                                <label className="text-xs font-medium text-muted-foreground uppercase">Job URL</label>
+                                <label className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#102b2b]/55">Job URL</label>
                                 <div className="flex items-center gap-2">
                                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
                                     {application.url ? (
-                                        <a href={application.url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate block w-full">
+                                        <a href={application.url} target="_blank" rel="noreferrer" className="block w-full truncate text-[#0d8274] hover:underline">
                                             {application.url}
                                         </a>
                                     ) : (
@@ -103,12 +104,12 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
                         <CardHeader>
-                            <CardTitle>Notes</CardTitle>
+                            <CardTitle className="text-lg">Notes</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                            <p className="whitespace-pre-wrap text-sm leading-6 text-[#102b2b]/70">
                                 {application.notes || "No notes added yet."}
                             </p>
                         </CardContent>
@@ -117,13 +118,13 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
 
                 {/* Sidebar / Metadata */}
                 <div className="space-y-6">
-                    <Card>
+                    <Card className="rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Timeline</CardTitle>
+                            <CardTitle className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#102b2b]/55">Timeline</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <div className="flex h-8 w-8 items-center justify-center border border-[#0d8274]/20 bg-[#d8f36b]/45 text-[#0d8274]">
                                     <Calendar className="h-4 w-4" />
                                 </div>
                                 <div>
@@ -134,7 +135,7 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                <div className="flex h-8 w-8 items-center justify-center border border-[#102b2b]/10 bg-[#e9eee8] text-[#102b2b]/55">
                                     <Calendar className="h-4 w-4" />
                                 </div>
                                 <div>
@@ -147,15 +148,15 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Linked Assets</CardTitle>
+                            <CardTitle className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#102b2b]/55">Linked Assets</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-1">
                                 <p className="text-xs font-medium text-muted-foreground">Resume Used</p>
                                 {application.resumes ? (
-                                    <Link href={`/dashboard/resume/${application.resume_id}/edit`} className="text-sm text-primary hover:underline">
+                                    <Link href={`/dashboard/resume/${application.resume_id}/edit`} className="text-sm text-[#0d8274] hover:underline">
                                         {application.resumes.title}
                                     </Link>
                                 ) : (
@@ -165,7 +166,7 @@ export default async function ApplicationDetailsPage({ params }: ApplicationDeta
                             <div className="space-y-1">
                                 <p className="text-xs font-medium text-muted-foreground">Cover Letter Used</p>
                                 {application.cover_letters ? (
-                                    <Link href={`/dashboard/cover-letters/${application.cover_letter_id}`} className="text-sm text-primary hover:underline">
+                                    <Link href={`/dashboard/cover-letters/${application.cover_letter_id}`} className="text-sm text-[#0d8274] hover:underline">
                                         {application.cover_letters.title}
                                     </Link>
                                 ) : (

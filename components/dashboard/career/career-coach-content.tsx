@@ -146,15 +146,15 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
 
     if (!profile.target_role) {
         return (
-            <Card className="bg-slate-950/50 border-dashed border-2 border-primary/20 py-16 flex flex-col items-center justify-center text-center shadow-2xl backdrop-blur-xl">
-                <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 animate-pulse">
-                    <Target className="h-10 w-10 text-primary" />
+            <Card className="border-dashed border-2 border-[#102b2b]/25 bg-[#f4f7f1] py-16 flex flex-col items-center justify-center text-center shadow-none">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center border border-[#0d8274]/30 bg-[#0d8274]/10">
+                    <Target className="h-8 w-8 text-[#0d8274]" />
                 </div>
-                <h2 className="text-2xl font-black mb-3 tracking-tight uppercase">Define Your North Star</h2>
-                <p className="text-muted-foreground max-w-md mb-8 font-medium">
-                    To provide a personalized career roadmap, we need to know where you're headed. Set your target role and goals in settings.
+                <h2 className="mb-3 text-2xl font-bold tracking-tight text-[#102b2b]">Set your direction</h2>
+                <p className="mb-8 max-w-md font-medium text-[#102b2b]/65">
+                    Add a target role in your preferences so the coach can build a personalized roadmap.
                 </p>
-                <Button asChild size="lg" className="rounded-2xl font-black px-8">
+                <Button asChild size="lg" className="rounded-none bg-[#d8f36b] px-8 font-bold text-[#102b2b] hover:bg-[#c8e95a]">
                     <a href="/dashboard/settings">Go to My Preferences</a>
                 </Button>
             </Card>
@@ -164,19 +164,19 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Action Bar */}
-            <div className="flex flex-wrap items-center gap-4 bg-slate-950/40 p-4 rounded-3xl border border-primary/5 backdrop-blur-md">
-                <Button onClick={runAnalysis} disabled={isLoading} className="gap-2 rounded-2xl h-12 font-black px-6 shadow-lg shadow-primary/20">
+            <div className="flex flex-wrap items-center gap-3 border border-[#102b2b]/15 bg-[#f4f7f1] p-4">
+                <Button onClick={runAnalysis} disabled={isLoading} className="h-11 gap-2 rounded-none bg-[#d8f36b] px-5 font-bold text-[#102b2b] shadow-none hover:bg-[#c8e95a]">
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" />}
                     {analysis ? "Run New Analysis" : "Start Analysis"}
                 </Button>
                 {analysis && !analysis.id && (
-                    <Button onClick={saveAnalysis} disabled={isSaving} variant="outline" className="gap-2 rounded-2xl h-12 border-primary/20 font-bold hover:bg-primary/5">
+                    <Button onClick={saveAnalysis} disabled={isSaving} variant="outline" className="h-11 gap-2 rounded-none border-[#102b2b]/25 font-bold text-[#102b2b] hover:bg-[#102b2b] hover:text-[#e9eee8]">
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Save Results
                     </Button>
                 )}
                 {analysis?.id && (
-                    <Badge variant="secondary" className="gap-2 h-10 px-4 rounded-xl bg-emerald-500/10 text-emerald-500 border-none font-bold">
+                    <Badge variant="secondary" className="h-10 gap-2 rounded-none border border-[#0d8274]/20 bg-[#0d8274]/10 px-4 font-bold text-[#0d8274]">
                         <CheckCircle2 className="h-4 w-4" />
                         Analysis Saved
                     </Badge>
@@ -197,8 +197,8 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                             size="sm"
                             onClick={() => setAnalysis(saved)}
                             className={cn(
-                                "shrink-0 rounded-xl h-9 px-4 font-bold border-none transition-all",
-                                analysis?.id === saved.id ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-primary/5"
+                                "h-9 shrink-0 rounded-none px-4 font-bold transition-all",
+                                analysis?.id === saved.id ? "bg-[#102b2b] text-[#e9eee8]" : "border border-[#102b2b]/15 text-[#102b2b]/65 hover:bg-[#d8f36b] hover:text-[#102b2b]"
                             )}
                         >
                             {saved.match_percentage}% • {formatDistanceToNow(new Date(saved.created_at!), { addSuffix: true })}
@@ -208,14 +208,14 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <Card className="col-span-1 lg:col-span-2 bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl group relative overflow-hidden">
+                <Card className="relative col-span-1 overflow-hidden border-[#102b2b]/15 bg-[#f4f7f1] shadow-none lg:col-span-2">
                     {/* Subtle Gradient Glow */}
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[80px] group-hover:bg-primary/10 transition-colors duration-1000" />
 
                     <CardHeader className="relative">
-                        <CardTitle className="text-2xl font-black tracking-tight flex items-center gap-3 uppercase">
-                            <div className="p-2.5 rounded-xl bg-primary/10">
-                                <Target className="h-6 w-6 text-primary" />
+                        <CardTitle className="flex items-center gap-3 text-2xl font-bold tracking-tight text-[#102b2b]">
+                            <div className="border border-[#0d8274]/20 bg-[#0d8274]/10 p-2.5">
+                                <Target className="h-6 w-6 text-[#0d8274]" />
                             </div>
                             {profile.target_role}
                         </CardTitle>
@@ -234,18 +234,18 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                                     <div className="flex justify-between items-end">
                                         <div>
                                             <p className="text-xs font-black uppercase tracking-widest text-primary/60 mb-1">Career Match Velocity</p>
-                                            <p className="text-5xl font-black tracking-tighter text-primary drop-shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+                                            <p className="text-5xl font-bold tracking-tighter text-[#0d8274]">
                                                 {analysis.match_percentage}%
                                             </p>
                                         </div>
                                         <TrendingUp className="h-12 w-12 text-primary/10" />
                                     </div>
-                                    <div className="h-4 w-full bg-primary/10 rounded-full overflow-hidden p-1 border border-primary/10">
+                                    <div className="h-3 w-full overflow-hidden border border-[#102b2b]/10 bg-[#102b2b]/10">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${analysis.match_percentage}%` }}
                                             transition={{ duration: 1.5, ease: "easeOut" }}
-                                            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                                            className="h-full bg-[#d8f36b]"
                                         />
                                     </div>
                                 </div>
@@ -310,7 +310,7 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                     </CardContent>
                 </Card>
 
-                <Card className="bg-slate-950/40 border-primary/10 shadow-xl backdrop-blur-xl relative overflow-hidden">
+                <Card className="relative overflow-hidden border-[#102b2b]/15 bg-[#f4f7f1] shadow-none">
                     <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" />
                     <CardHeader className="border-b border-primary/5 pb-4">
                         <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-3 text-primary">

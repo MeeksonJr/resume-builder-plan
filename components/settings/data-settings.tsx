@@ -82,10 +82,10 @@ export function DataSettings({ userId }: DataSettingsProps) {
     return (
         <div className="space-y-6">
             {/* Export Data */}
-            <Card className="border-primary/10 bg-primary/5 p-6">
+            <Card className="rounded-none border-border bg-muted/30 p-4 shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-primary/10 p-2 mt-1">
+                        <div className="mt-1 bg-primary/15 p-2">
                             <Download className="h-5 w-5 text-primary" />
                         </div>
                         <div className="space-y-1">
@@ -100,7 +100,7 @@ export function DataSettings({ userId }: DataSettingsProps) {
                         size="sm"
                         onClick={handleExport}
                         disabled={exporting}
-                        className="shrink-0"
+                        className="min-h-11 shrink-0 rounded-none"
                     >
                         {exporting ? "Exporting..." : "Export Data"}
                     </Button>
@@ -108,10 +108,10 @@ export function DataSettings({ userId }: DataSettingsProps) {
             </Card>
 
             {/* Import Data */}
-            <Card className="border-muted bg-muted/30 p-6">
+            <Card className="rounded-none border-border bg-muted/30 p-4 shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-muted p-2 mt-1">
+                        <div className="mt-1 bg-muted p-2">
                             <Upload className="h-5 w-5" />
                         </div>
                         <div className="space-y-1">
@@ -126,16 +126,16 @@ export function DataSettings({ userId }: DataSettingsProps) {
                             </p>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" disabled className="shrink-0">
+                    <Button variant="outline" size="sm" disabled className="min-h-11 shrink-0 rounded-none">
                         Import Data
                     </Button>
                 </div>
             </Card>
 
             {/* Storage Usage */}
-            <Card className="border-muted bg-muted/30 p-6">
+            <Card className="rounded-none border-border bg-muted/30 p-4 shadow-none sm:p-6">
                 <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-muted p-2 mt-1">
+                    <div className="mt-1 bg-muted p-2">
                         <Database className="h-5 w-5" />
                     </div>
                     <div className="space-y-1">
@@ -148,10 +148,10 @@ export function DataSettings({ userId }: DataSettingsProps) {
             </Card>
 
             {/* Delete Account */}
-            <Card className="border-destructive/20 bg-destructive/5 p-6">
+            <Card className="rounded-none border-destructive/30 bg-destructive/5 p-4 shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-destructive/10 p-2 mt-1">
+                        <div className="mt-1 bg-destructive/10 p-2">
                             <Trash2 className="h-5 w-5 text-destructive" />
                         </div>
                         <div className="space-y-1">
@@ -164,11 +164,11 @@ export function DataSettings({ userId }: DataSettingsProps) {
 
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" className="shrink-0">
+                            <Button variant="destructive" size="sm" className="min-h-11 shrink-0 rounded-none">
                                 Delete Account
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="glass glass-border">
+                        <AlertDialogContent className="rounded-none border-border bg-card">
                             <AlertDialogHeader>
                                 <AlertDialogTitle className="font-heading font-black">
                                     Are you absolutely sure?
@@ -179,11 +179,11 @@ export function DataSettings({ userId }: DataSettingsProps) {
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                                <AlertDialogCancel className="min-h-11 rounded-none">Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={handleDeleteAccount}
                                     disabled={deleting}
-                                    className="bg-destructive hover:bg-destructive/90 rounded-xl font-black"
+                                    className="min-h-11 rounded-none bg-destructive font-black hover:bg-destructive/90"
                                 >
                                     {deleting ? "Deleting..." : "Delete Account"}
                                 </AlertDialogAction>

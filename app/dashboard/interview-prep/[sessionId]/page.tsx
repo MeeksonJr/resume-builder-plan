@@ -68,19 +68,22 @@ export default async function PracticeSessionPage({
 
         // Show Results for Voice Session
         return (
-            <div className="container max-w-4xl mx-auto p-6">
-                <div className="mb-8 flex items-center justify-between">
+            <div className="min-h-full bg-[#e9eee8] px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-5xl">
+                <div className="mb-8 flex flex-col gap-4 border-b border-[#102b2b]/15 pb-6 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Interview Results</h1>
-                        <p className="text-muted-foreground mt-2">
+                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">Session review</p>
+                        <h1 className="text-3xl font-bold tracking-tight text-[#102b2b]">Interview Results</h1>
+                        <p className="mt-2 text-sm text-[#102b2b]/65">
                             Here is the analysis of your simulated voice interview.
                         </p>
                     </div>
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" className="rounded-none border-[#102b2b]/25 bg-transparent text-[#102b2b] hover:bg-[#102b2b] hover:text-[#e9eee8]" asChild>
                         <Link href="/dashboard/interview-prep">Back to Dashboard</Link>
                     </Button>
                 </div>
                 <VoiceInterviewResults session={session} />
+                </div>
             </div>
         );
     }

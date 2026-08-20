@@ -92,49 +92,48 @@ export default function ScholarshipsPage() {
   }, [searchQuery, selectedCategory, selectedLevel, onlyNoEssay, minAmount]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/30 selection:text-white pt-24 pb-20">
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-indigo-600/15 via-violet-600/10 to-transparent blur-3xl pointer-events-none -z-10" />
+    <div className="min-h-screen bg-[#e9eee8] text-[#102b2b] selection:bg-[#d8f36b] selection:text-[#102b2b] pt-24 pb-20">
 
       {/* Header / Hero */}
       <div className="container mx-auto px-4 max-w-6xl mb-12">
         <div className="text-center space-y-4 max-w-3xl mx-auto pt-6 pb-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold tracking-wide">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-sm bg-[#d8f36b] text-[#102b2b] text-xs font-semibold tracking-wide">
+            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Over $18.4M+ in Verified Student Scholarships</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            Find Scholarships You <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-amber-200 bg-clip-text text-transparent">Actually Qualify For</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#102b2b] leading-tight">
+            Find Scholarships You <span className="text-[#0d8274]">Actually Qualify For</span>
           </h1>
 
-          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-[#102b2b]/70 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             Stop sorting through thousands of dead links. Explore vetted scholarship opportunities with real match compatibility, clear requirements, and instant deadlines.
           </p>
 
           {/* Quick Search Bar */}
           <div className="pt-4 max-w-2xl mx-auto">
-            <div className="relative flex items-center shadow-2xl shadow-indigo-950/50 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/80 backdrop-blur-xl">
-              <Search className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" />
+            <div className="relative flex items-center shadow-sm rounded-md overflow-hidden border border-[#b8c8b9] bg-[#f7faf5]">
+              <Search className="w-5 h-5 text-[#0d8274] absolute left-4 pointer-events-none" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search by major, keyword (e.g. Computer Science, First-Gen, Nursing)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-14 pl-12 pr-28 bg-transparent text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                aria-label="Search scholarships by major or keyword"
+                className="w-full h-14 pl-12 pr-28 bg-transparent text-[#102b2b] placeholder:text-[#102b2b]/50 text-sm focus:outline-none focus:ring-2 focus:ring-[#0d8274] transition-all"
               />
               {searchQuery && (
                 <button 
                   onClick={() => setSearchQuery("")} 
-                  className="absolute right-20 text-slate-400 hover:text-white p-1 cursor-pointer"
-                  title="Clear search"
+                  aria-label="Clear scholarship search"
+                  className="absolute right-20 text-[#102b2b]/55 hover:text-[#0d8274] p-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d8274]"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
               <Button 
                 size="sm" 
-                className="absolute right-2.5 h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium cursor-pointer"
+                className="absolute right-2.5 h-9 px-4 rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-medium cursor-pointer"
                 onClick={() => {}}
               >
                 Search
@@ -144,7 +143,7 @@ export default function ScholarshipsPage() {
 
           {/* Popular Tag Pills */}
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-            <span className="text-xs text-slate-400 font-medium mr-1">Popular:</span>
+            <span className="text-xs text-[#102b2b]/60 font-medium mr-1">Popular:</span>
             {["STEM", "First-Gen", "Healthcare", "No Essay", "Undergraduate"].map((tag) => (
               <button
                 key={tag}
@@ -157,7 +156,7 @@ export default function ScholarshipsPage() {
                     setSelectedLevel(tag);
                   }
                 }}
-                className="text-xs px-3 py-1 rounded-full bg-slate-900 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                className="text-xs px-3 py-1 rounded-sm bg-[#f7faf5] border border-[#b8c8b9] hover:border-[#0d8274] text-[#102b2b]/75 hover:text-[#102b2b] transition-colors cursor-pointer"
               >
                 {tag}
               </button>
@@ -168,16 +167,16 @@ export default function ScholarshipsPage() {
 
       {/* Main Content Layout */}
       <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex items-center justify-between pb-6 border-b border-slate-800/80 mb-8">
+        <div className="flex items-center justify-between pb-6 border-b border-[#b8c8b9] mb-8">
           <div>
             <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <span>Opportunities</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-sm bg-[#0d8274]/10 text-[#0d8274] border border-[#0d8274]/30">
                 {filteredScholarships.length} Available
               </span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Verified daily by Premio scholarship curators
+            <p className="text-xs text-[#102b2b]/60 mt-0.5">
+              Verified daily by ResumeForge scholarship curators
             </p>
           </div>
 
@@ -186,15 +185,15 @@ export default function ScholarshipsPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowFiltersMobile(!showFiltersMobile)}
-              className="lg:hidden h-9 rounded-xl border-slate-800 bg-slate-900/60 text-slate-300 hover:text-white cursor-pointer"
+              className="lg:hidden h-9 rounded-sm border-[#b8c8b9] bg-[#f7faf5] text-[#102b2b]/75 hover:text-[#102b2b] cursor-pointer"
             >
               <SlidersHorizontal className="w-4 h-4 mr-2" />
               Filters
             </Button>
 
             <Link href="/dashboard">
-              <Button size="sm" variant="secondary" className="rounded-xl h-9 text-xs font-semibold gap-1.5 cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <Button size="sm" variant="secondary" className="rounded-sm h-9 text-xs font-semibold gap-1.5 cursor-pointer bg-[#102b2b] hover:bg-[#0d8274] text-[#e9eee8]">
+                <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" aria-hidden="true" />
                 Match My Profile
               </Button>
             </Link>
@@ -203,10 +202,10 @@ export default function ScholarshipsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Desktop Filter Sidebar */}
-          <aside className={`lg:col-span-3 space-y-6 ${showFiltersMobile ? "block" : "hidden lg:block"} bg-slate-900/40 p-5 rounded-2xl border border-slate-800/80 backdrop-blur-md`}>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <aside className={`lg:col-span-3 space-y-6 ${showFiltersMobile ? "block" : "hidden lg:block"} bg-[#f7faf5] p-5 rounded-md border border-[#b8c8b9]`}>
+            <div className="flex items-center justify-between pb-3 border-b border-[#b8c8b9]">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center gap-2">
-                <Filter className="w-4 h-4 text-indigo-400" />
+                <Filter className="w-4 h-4 text-[#0d8274]" aria-hidden="true" />
                 Refine Search
               </h3>
               {(selectedCategory !== "All" || selectedLevel !== "All Levels" || onlyNoEssay || minAmount > 0 || searchQuery) && (
@@ -218,7 +217,7 @@ export default function ScholarshipsPage() {
                     setMinAmount(0);
                     setSearchQuery("");
                   }}
-                  className="text-xs text-indigo-400 hover:underline cursor-pointer"
+                  className="text-xs text-[#0d8274] hover:underline cursor-pointer"
                 >
                   Reset
                 </button>
@@ -227,69 +226,69 @@ export default function ScholarshipsPage() {
 
             {/* Category Filter */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Award Category</label>
+              <label className="text-xs font-medium text-[#102b2b]/80">Award Category</label>
               <div className="flex flex-col gap-1">
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`text-left text-xs px-3 py-2 rounded-xl transition-all flex items-center justify-between cursor-pointer ${
+                    className={`text-left text-xs px-3 py-2 rounded-sm transition-all flex items-center justify-between cursor-pointer ${
                       selectedCategory === cat
-                        ? "bg-indigo-600/20 border border-indigo-500/40 text-indigo-200 font-semibold"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                        ? "bg-[#d8f36b] border border-[#102b2b]/15 text-[#102b2b] font-semibold"
+                        : "text-[#102b2b]/60 hover:text-[#102b2b] hover:bg-[#e9eee8]"
                     }`}
                   >
                     <span>{cat}</span>
-                    {selectedCategory === cat && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />}
+                    {selectedCategory === cat && <CheckCircle2 className="w-3.5 h-3.5 text-[#0d8274]" aria-hidden="true" />}
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Education Level */}
-            <div className="space-y-2 pt-2 border-t border-slate-800/60">
-              <label className="text-xs font-medium text-slate-300">Education Level</label>
+            <div className="space-y-2 pt-2 border-t border-[#b8c8b9]">
+              <label className="text-xs font-medium text-[#102b2b]/80">Education Level</label>
               <div className="flex flex-col gap-1">
                 {EDUCATION_LEVELS.map((lvl) => (
                   <button
                     key={lvl}
                     onClick={() => setSelectedLevel(lvl)}
-                    className={`text-left text-xs px-3 py-2 rounded-xl transition-all flex items-center justify-between cursor-pointer ${
+                    className={`text-left text-xs px-3 py-2 rounded-sm transition-all flex items-center justify-between cursor-pointer ${
                       selectedLevel === lvl
-                        ? "bg-indigo-600/20 border border-indigo-500/40 text-indigo-200 font-semibold"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                        ? "bg-[#d8f36b] border border-[#102b2b]/15 text-[#102b2b] font-semibold"
+                        : "text-[#102b2b]/60 hover:text-[#102b2b] hover:bg-[#e9eee8]"
                     }`}
                   >
                     <span>{lvl}</span>
-                    {selectedLevel === lvl && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />}
+                    {selectedLevel === lvl && <CheckCircle2 className="w-3.5 h-3.5 text-[#0d8274]" aria-hidden="true" />}
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Quick Toggle: No Essay */}
-            <div className="pt-2 border-t border-slate-800/60">
+            <div className="pt-2 border-t border-[#b8c8b9]">
               <label 
-                className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 border border-slate-800 cursor-pointer select-none"
+                className="flex items-center gap-3 p-2.5 rounded-sm bg-[#e9eee8] hover:bg-white border border-[#b8c8b9] cursor-pointer select-none"
                 onClick={() => setOnlyNoEssay(!onlyNoEssay)}
               >
                 <input
                   type="checkbox"
                   checked={onlyNoEssay}
                   onChange={() => {}}
-                  className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 h-4 w-4 bg-slate-900 cursor-pointer"
+                  className="rounded-sm border-[#b8c8b9] text-[#0d8274] focus:ring-[#0d8274] h-4 w-4 bg-[#f7faf5] cursor-pointer"
                 />
-                <span className="text-xs font-medium text-slate-300">
+                <span className="text-xs font-medium text-[#102b2b]/80">
                   No-Essay Scholarships only
                 </span>
               </label>
             </div>
 
             {/* Min Amount */}
-            <div className="space-y-2 pt-2 border-t border-slate-800/60">
+            <div className="space-y-2 pt-2 border-t border-[#b8c8b9]">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-medium text-slate-300">Min Award Amount</span>
-                <span className="font-mono text-amber-300 font-bold">${minAmount.toLocaleString()}</span>
+                <span className="font-medium text-[#102b2b]/80">Min Award Amount</span>
+                <span className="font-mono text-[#0d8274] font-bold">${minAmount.toLocaleString()}</span>
               </div>
               <input
                 type="range"
@@ -298,9 +297,9 @@ export default function ScholarshipsPage() {
                 step="1000"
                 value={minAmount}
                 onChange={(e) => setMinAmount(Number(e.target.value))}
-                className="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                className="w-full accent-[#0d8274] h-1.5 bg-[#b8c8b9] rounded-sm cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-slate-500">
+              <div className="flex justify-between text-[10px] text-[#102b2b]/50">
                 <span>$0</span>
                 <span>$10k</span>
                 <span>$20k+</span>
@@ -308,13 +307,13 @@ export default function ScholarshipsPage() {
             </div>
 
             {/* Trust Box */}
-            <div className="pt-4 border-t border-slate-800/60 text-xs text-slate-400 space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-medium">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
+            <div className="pt-4 border-t border-[#b8c8b9] text-xs text-[#102b2b]/60 space-y-2">
+              <div className="flex items-center gap-2 text-[#0d8274] font-medium">
+                <ShieldCheck className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>Zero Application Scams</span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Premio filters out commercial sweepstakes, loan marketing, and pay-to-apply listings.
+              <p className="text-[11px] text-[#102b2b]/50 leading-relaxed">
+                ResumeForge filters out commercial sweepstakes, loan marketing, and pay-to-apply listings.
               </p>
             </div>
           </aside>
@@ -322,12 +321,12 @@ export default function ScholarshipsPage() {
           {/* Scholarship Cards Grid */}
           <main className="lg:col-span-9 space-y-4">
             {filteredScholarships.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto">
+              <div className="p-12 text-center rounded-md bg-[#f7faf5] border border-[#b8c8b9] space-y-4">
+                <div className="w-12 h-12 rounded-md bg-[#0d8274]/10 text-[#0d8274] flex items-center justify-center mx-auto">
                   <Search className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-white">No Scholarships Matched</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto">
+                <p className="text-sm text-[#102b2b]/60 max-w-md mx-auto">
                   Try clearing some filters or searching for broader terms like "STEM", "Undergraduate", or "Leadership".
                 </p>
                 <Button 
@@ -339,7 +338,7 @@ export default function ScholarshipsPage() {
                     setMinAmount(0);
                     setSearchQuery("");
                   }}
-                  className="rounded-xl border-slate-700 text-white cursor-pointer"
+                  className="rounded-sm border-[#b8c8b9] text-[#102b2b] cursor-pointer"
                 >
                   Reset All Filters
                 </Button>
@@ -352,32 +351,32 @@ export default function ScholarshipsPage() {
                     <Card
                       key={sch.id}
                       onClick={() => setActiveModalScholarship(sch)}
-                      className="group bg-slate-900/60 hover:bg-slate-900 border-slate-800/90 hover:border-indigo-500/40 transition-all duration-200 cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-indigo-950/40 flex flex-col justify-between"
+                      className="group bg-[#f7faf5] hover:bg-white border-[#b8c8b9] hover:border-[#0d8274] transition-colors duration-200 cursor-pointer rounded-md overflow-hidden shadow-sm flex flex-col justify-between"
                     >
                       <CardHeader className="p-5 pb-3">
                         <div className="flex items-start justify-between gap-3">
                           <Badge 
                             variant="secondary" 
-                            className="bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border-indigo-500/30 text-[11px] font-semibold py-0.5 px-2.5 rounded-full"
+                            className="bg-[#0d8274]/10 text-[#0d8274] hover:bg-[#0d8274]/20 border-[#0d8274]/30 text-[11px] font-semibold py-0.5 px-2.5 rounded-sm"
                           >
                             {sch.category}
                           </Badge>
 
                           <div className="flex items-center gap-1.5">
                             {/* Match score badge */}
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                              <Sparkles className="w-3 h-3" />
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-sm bg-[#d8f36b] text-[#102b2b] border border-[#102b2b]/15">
+                              <Sparkles className="w-3 h-3" aria-hidden="true" />
                               {sch.matchScore}% Match
                             </span>
 
                             {/* Bookmark button */}
                             <button
                               onClick={(e) => toggleSave(sch.id, e)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-slate-800 transition-colors cursor-pointer"
-                              title={isSaved ? "Remove from saved" : "Save scholarship"}
+                              aria-label={isSaved ? "Remove scholarship from saved" : "Save scholarship"}
+                              className="p-2 rounded-sm text-[#102b2b]/55 hover:text-[#0d8274] hover:bg-[#e9eee8] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d8274]"
                             >
                               {isSaved ? (
-                                <BookmarkCheck className="w-4 h-4 text-amber-300 fill-amber-300/30" />
+                                <BookmarkCheck className="w-4 h-4 text-[#0d8274] fill-[#0d8274]/20" />
                               ) : (
                                 <Bookmark className="w-4 h-4" />
                               )}
@@ -385,65 +384,65 @@ export default function ScholarshipsPage() {
                           </div>
                         </div>
 
-                        <CardTitle className="text-base sm:text-lg font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1 mt-2">
+                        <CardTitle className="text-base sm:text-lg font-bold text-[#102b2b] group-hover:text-[#0d8274] transition-colors line-clamp-1 mt-2">
                           {sch.title}
                         </CardTitle>
-                        <CardDescription className="text-xs text-slate-400 line-clamp-1">
+                        <CardDescription className="text-xs text-[#102b2b]/60 line-clamp-1">
                           {sch.organization}
                         </CardDescription>
                       </CardHeader>
 
                       <CardContent className="p-5 pt-0 pb-4 space-y-3 flex-1">
                         {/* Award & Deadline Highlights */}
-                        <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                        <div className="grid grid-cols-2 gap-2 p-3 rounded-sm bg-[#e9eee8] border border-[#b8c8b9]">
                           <div>
-                            <span className="text-[10px] text-slate-500 font-medium block">Award Amount</span>
-                            <span className="text-base font-extrabold text-amber-300 font-mono">
+                            <span className="text-[10px] text-[#102b2b]/55 font-medium block">Award Amount</span>
+                            <span className="text-base font-extrabold text-[#0d8274] font-mono">
                               {sch.formattedAmount}
                             </span>
                           </div>
                           <div>
-                            <span className="text-[10px] text-slate-500 font-medium block">Deadline</span>
-                            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1 mt-0.5">
-                              <Clock className="w-3 h-3 text-indigo-400" />
+                            <span className="text-[10px] text-[#102b2b]/55 font-medium block">Deadline</span>
+                            <span className="text-xs font-semibold text-[#102b2b] flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3 text-[#0d8274]" aria-hidden="true" />
                               {sch.daysLeft} days left
                             </span>
                           </div>
                         </div>
 
-                        <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[#102b2b]/75 line-clamp-2 leading-relaxed">
                           {sch.description}
                         </p>
 
                         {/* Requirements chips */}
                         <div className="flex flex-wrap gap-1.5 pt-1">
                           {sch.minGpa && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-medium border border-slate-700">
+                            <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#e9eee8] text-[#102b2b]/75 font-medium border border-[#b8c8b9]">
                               Min {sch.minGpa} GPA
                             </span>
                           )}
                           {!sch.requirements.essay ? (
-                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-300 font-medium border border-emerald-800/50">
+                            <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#d8f36b] text-[#102b2b] font-medium border border-[#102b2b]/15">
                               No Essay
                             </span>
                           ) : (
-                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-medium">
+                            <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#e9eee8] text-[#102b2b]/55 font-medium">
                               Essay Required
                             </span>
                           )}
                           {sch.renewable && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-violet-950/60 text-violet-300 font-medium border border-violet-800/50">
+                            <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#0d8274]/10 text-[#0d8274] font-medium border border-[#0d8274]/25">
                               Renewable
                             </span>
                           )}
                         </div>
                       </CardContent>
 
-                      <CardFooter className="p-5 pt-0 border-t border-slate-800/60 mt-auto flex items-center justify-between text-xs text-slate-400">
-                        <span className="text-[11px] text-slate-500">
+                      <CardFooter className="p-5 pt-0 border-t border-[#b8c8b9] mt-auto flex items-center justify-between text-xs text-[#102b2b]/60">
+                        <span className="text-[11px] text-[#102b2b]/50">
                           {sch.awardsAvailable} awards offered
                         </span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-indigo-400 group-hover:text-indigo-300 group-hover:translate-x-0.5 transition-all">
+                        <span className="inline-flex items-center gap-1 font-semibold text-[#0d8274] group-hover:text-[#102b2b] group-hover:translate-x-0.5 transition-all">
                           View Details
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
@@ -460,43 +459,43 @@ export default function ScholarshipsPage() {
       {/* Scholarship Detail Modal */}
       <Dialog open={!!activeModalScholarship} onOpenChange={(open) => !open && setActiveModalScholarship(null)}>
         {activeModalScholarship && (
-          <DialogContent className="max-w-2xl bg-slate-900 border-slate-800 text-slate-100 p-0 overflow-hidden max-h-[90vh] flex flex-col rounded-2xl shadow-2xl">
+          <DialogContent className="max-w-2xl bg-[#f7faf5] border-[#b8c8b9] text-[#102b2b] p-0 overflow-hidden max-h-[90vh] flex flex-col rounded-md shadow-xl">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-800 bg-slate-950/50 relative">
+            <div className="p-6 border-b border-[#b8c8b9] bg-[#e9eee8] relative">
               <div className="flex items-center justify-between gap-4 mb-2">
-                <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 text-xs">
+                <Badge className="bg-[#0d8274]/10 text-[#0d8274] border-[#0d8274]/30 text-xs rounded-sm">
                   {activeModalScholarship.category}
                 </Badge>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-bold border border-emerald-500/30">
-                  <Sparkles className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-[#d8f36b] text-[#102b2b] text-xs font-bold border border-[#102b2b]/15">
+                  <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                   {activeModalScholarship.matchScore}% Match for you
                 </span>
               </div>
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-white">
+              <DialogTitle className="text-xl sm:text-2xl font-bold text-[#102b2b]">
                 {activeModalScholarship.title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-400 mt-1">
+              <DialogDescription className="text-sm text-[#102b2b]/60 mt-1">
                 Offered by {activeModalScholarship.organization} • Last verified {activeModalScholarship.lastVerifiedDate}
               </DialogDescription>
 
               {/* Key Metrics Bar */}
-              <div className="grid grid-cols-3 gap-3 mt-5 p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
+              <div className="grid grid-cols-3 gap-3 mt-5 p-3 rounded-sm bg-[#f7faf5] border border-[#b8c8b9] text-center">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-medium">Award</span>
-                  <p className="text-lg font-black text-amber-300 font-mono">
+                  <span className="text-[10px] text-[#102b2b]/60 uppercase font-medium">Award</span>
+                  <p className="text-lg font-black text-[#0d8274] font-mono">
                     {activeModalScholarship.formattedAmount}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-medium">Deadline</span>
-                  <p className="text-xs font-bold text-white mt-1">
+                  <span className="text-[10px] text-[#102b2b]/60 uppercase font-medium">Deadline</span>
+                  <p className="text-xs font-bold text-[#102b2b] mt-1">
                     {activeModalScholarship.deadline}
                   </p>
-                  <span className="text-[10px] text-indigo-400">({activeModalScholarship.daysLeft} days)</span>
+                  <span className="text-[10px] text-[#0d8274]">({activeModalScholarship.daysLeft} days)</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-medium">Competition</span>
-                  <p className="text-xs font-bold text-slate-200 mt-1">
+                  <span className="text-[10px] text-[#102b2b]/60 uppercase font-medium">Competition</span>
+                  <p className="text-xs font-bold text-[#102b2b] mt-1">
                     {activeModalScholarship.competitionLevel}
                   </p>
                 </div>
@@ -507,20 +506,20 @@ export default function ScholarshipsPage() {
             <div className="p-6 overflow-y-auto space-y-6 text-sm">
               {/* Description */}
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Overview</h4>
-                <p className="text-slate-300 leading-relaxed">{activeModalScholarship.description}</p>
+                <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Overview</h4>
+                <p className="text-[#102b2b]/80 leading-relaxed">{activeModalScholarship.description}</p>
               </div>
 
               {/* Why You Match AI Breakdown */}
-              <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/30 space-y-2">
-                <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  Why Premio Thinks You Match
+              <div className="p-4 rounded-sm bg-[#0d8274]/10 border border-[#0d8274]/25 space-y-2">
+                <h4 className="text-xs font-bold text-[#0d8274] uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#0d8274]" aria-hidden="true" />
+                  Why ResumeForge Thinks You Match
                 </h4>
                 <ul className="space-y-1.5 pt-1">
                   {activeModalScholarship.whyYouMatch.map((reason, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-indigo-100">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <li key={idx} className="flex items-start gap-2 text-xs text-[#102b2b]/80">
+                      <CheckCircle2 className="w-4 h-4 text-[#0d8274] shrink-0 mt-0.5" aria-hidden="true" />
                       <span>{reason}</span>
                     </li>
                   ))}
@@ -529,11 +528,11 @@ export default function ScholarshipsPage() {
 
               {/* Eligibility Criteria */}
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Eligibility Criteria</h4>
+                <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Eligibility Criteria</h4>
                 <ul className="space-y-2">
                   {activeModalScholarship.eligibility.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mt-1.5 shrink-0" />
+                    <li key={idx} className="flex items-start gap-2 text-xs text-[#102b2b]/80">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#0d8274] mt-1.5 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -542,54 +541,54 @@ export default function ScholarshipsPage() {
 
               {/* Application Requirements */}
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Requirements Checklist</h4>
+                <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Requirements Checklist</h4>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-400">Essay</span>
-                    <span className={`font-semibold ${activeModalScholarship.requirements.essay ? "text-amber-300" : "text-emerald-400"}`}>
+                  <div className="p-2.5 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
+                    <span className="text-[#102b2b]/60">Essay</span>
+                    <span className={`font-semibold ${activeModalScholarship.requirements.essay ? "text-[#102b2b]" : "text-[#0d8274]"}`}>
                       {activeModalScholarship.requirements.essay ? "Required" : "No Essay"}
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-400">Recommendations</span>
-                    <span className="font-semibold text-slate-200">
+                  <div className="p-2.5 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
+                    <span className="text-[#102b2b]/60">Recommendations</span>
+                    <span className="font-semibold text-[#102b2b]">
                       {activeModalScholarship.requirements.recommendationLetters} Letters
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-400">Transcript</span>
-                    <span className="font-semibold text-slate-200">
+                  <div className="p-2.5 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
+                    <span className="text-[#102b2b]/60">Transcript</span>
+                    <span className="font-semibold text-[#102b2b]">
                       {activeModalScholarship.requirements.transcriptRequired ? "Official/Unofficial" : "Not Required"}
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                    <span className="text-slate-400">Resume / CV</span>
-                    <span className="font-semibold text-slate-200">
+                  <div className="p-2.5 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
+                    <span className="text-[#102b2b]/60">Resume / CV</span>
+                    <span className="font-semibold text-[#102b2b]">
                       {activeModalScholarship.requirements.resumeRequired ? "Required" : "Optional"}
                     </span>
                   </div>
                 </div>
 
                 {activeModalScholarship.requirements.essayPrompt && (
-                  <div className="mt-3 p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-xs">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Essay Prompt</span>
-                    <p className="text-slate-300 italic">"{activeModalScholarship.requirements.essayPrompt}"</p>
+                  <div className="mt-3 p-3 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] text-xs">
+                    <span className="text-[10px] uppercase font-bold text-[#102b2b]/60 block mb-1">Essay Prompt</span>
+                    <p className="text-[#102b2b]/80 italic">"{activeModalScholarship.requirements.essayPrompt}"</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="p-4 sm:p-6 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between gap-3">
+            <div className="p-4 sm:p-6 border-t border-[#b8c8b9] bg-[#e9eee8] flex items-center justify-between gap-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => toggleSave(activeModalScholarship.id)}
-                className="rounded-xl border-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                className="rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#f7faf5] cursor-pointer"
               >
                 {savedIds.includes(activeModalScholarship.id) ? (
                   <>
-                    <BookmarkCheck className="w-4 h-4 mr-1.5 text-amber-300 fill-amber-300/30" />
+                    <BookmarkCheck className="w-4 h-4 mr-1.5 text-[#0d8274] fill-[#0d8274]/20" />
                     Saved to Tracker
                   </>
                 ) : (
@@ -602,14 +601,14 @@ export default function ScholarshipsPage() {
 
               <div className="flex items-center gap-2">
                 <Link href="/dashboard/tracker">
-                  <Button variant="secondary" size="sm" className="rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer">
+                  <Button variant="secondary" size="sm" className="rounded-sm bg-[#102b2b] text-[#e9eee8] hover:bg-[#0d8274] cursor-pointer">
                     Track in Dashboard
                   </Button>
                 </Link>
 
                 <Button
                   size="sm"
-                  className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 gap-1.5 cursor-pointer"
+                  className="rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-semibold gap-1.5 cursor-pointer"
                   asChild
                 >
                   <a href={activeModalScholarship.applicationUrl} target="_blank" rel="noopener noreferrer">

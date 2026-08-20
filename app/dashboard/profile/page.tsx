@@ -55,14 +55,15 @@ export default async function ProfilePage() {
         .slice(0, 2);
 
     return (
-        <div className="container max-w-5xl mx-auto p-6 space-y-8">
+        <div className="container mx-auto max-w-5xl space-y-7 p-4 sm:p-6">
             {/* Page Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-heading font-black">Your Profile</h1>
-                    <p className="text-muted-foreground">Manage your account information</p>
+                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">Account workspace</p>
+                    <h1 className="text-3xl font-heading font-black tracking-tight sm:text-4xl">Your Profile</h1>
+                    <p className="mt-2 text-sm text-muted-foreground sm:text-base">Manage your account information</p>
                 </div>
-                <Button className="gap-2 rounded-xl" asChild>
+                <Button className="min-h-11 gap-2 rounded-none" asChild>
                     <Link href="/dashboard/settings">
                         <Settings className="h-4 w-4" />
                         Settings
@@ -71,10 +72,10 @@ export default async function ProfilePage() {
             </div>
 
             {/* Profile Card */}
-            <Card className="glass-card">
+            <Card className="rounded-none border-border bg-card shadow-[4px_4px_0_rgba(16,43,43,0.06)]">
                 <CardHeader>
                     <div className="flex items-start gap-6">
-                        <Avatar className="h-24 w-24 border-4 border-primary/10">
+                        <Avatar className="h-24 w-24 rounded-none border-4 border-primary/10">
                             {profile?.avatar_url && (
                                 <AvatarImage src={profile.avatar_url} alt={displayName} />
                             )}
@@ -85,7 +86,7 @@ export default async function ProfilePage() {
                         <div className="flex-1 space-y-4">
                             <div>
                                 <h2 className="text-2xl font-heading font-black">{displayName}</h2>
-                                <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
+                                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1.5">
                                         <Mail className="h-4 w-4" />
                                         {user.email}
@@ -110,7 +111,7 @@ export default async function ProfilePage() {
                             )}
 
                             {profile?.website && (
-                                <Button variant="outline" size="sm" className="gap-2 rounded-xl" asChild>
+                                <Button variant="outline" size="sm" className="min-h-11 gap-2 rounded-none" asChild>
                                     <a href={profile.website} target="_blank" rel="noopener noreferrer">
                                         <ExternalLink className="h-4 w-4" />
                                         Visit Website
@@ -124,11 +125,11 @@ export default async function ProfilePage() {
 
             {/* Stats Grid */}
             <div className="grid md:grid-cols-3 gap-4">
-                <Card className="glass-card">
+                <Card className="rounded-none border-border bg-card shadow-none">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-4">
-                            <div className="rounded-xl bg-blue-500/10 p-3">
-                                <Briefcase className="h-6 w-6 text-blue-600" />
+                            <div className="bg-primary/15 p-3">
+                                <Briefcase className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <p className="text-2xl font-heading font-black">{resumeCount || 0}</p>
@@ -138,11 +139,11 @@ export default async function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                <Card className="glass-card">
+                <Card className="rounded-none border-border bg-card shadow-none">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-4">
-                            <div className="rounded-xl bg-purple-500/10 p-3">
-                                <User className="h-6 w-6 text-purple-600" />
+                            <div className="bg-primary/15 p-3">
+                                <User className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <p className="text-2xl font-heading font-black">
@@ -154,11 +155,11 @@ export default async function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                <Card className="glass-card">
+                <Card className="rounded-none border-border bg-card shadow-none">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-4">
-                            <div className="rounded-xl bg-green-500/10 p-3">
-                                <ExternalLink className="h-6 w-6 text-green-600" />
+                            <div className="bg-primary/15 p-3">
+                                <ExternalLink className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                                 <p className="text-2xl font-heading font-black">
@@ -173,7 +174,7 @@ export default async function ProfilePage() {
 
             {/* Portfolio Section */}
             {portfolio && (
-                <Card className="glass-card">
+                <Card className="rounded-none border-border bg-card shadow-none">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
@@ -189,7 +190,7 @@ export default async function ProfilePage() {
                                     </a>
                                 </CardDescription>
                             </div>
-                            <Button variant="outline" className="gap-2 rounded-xl" asChild>
+                            <Button variant="outline" className="min-h-11 gap-2 rounded-none" asChild>
                                 <Link href="/dashboard/portfolio">
                                     Edit Portfolio
                                 </Link>
@@ -198,16 +199,16 @@ export default async function ProfilePage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <Badge variant={portfolio.is_public ? "default" : "secondary"}>
+                                <Badge className="rounded-none" variant={portfolio.is_public ? "default" : "secondary"}>
                                 {portfolio.is_public ? "Public" : "Private"}
                             </Badge>
                             {portfolio.open_to_work && (
-                                <Badge className="bg-green-500/10 text-green-600">
+                                <Badge className="rounded-none bg-primary/15 text-foreground">
                                     Open to Work
                                 </Badge>
                             )}
                             {portfolio.template && (
-                                <Badge variant="outline">
+                                <Badge className="rounded-none" variant="outline">
                                     Template: {portfolio.template}
                                 </Badge>
                             )}
@@ -222,25 +223,25 @@ export default async function ProfilePage() {
             )}
 
             {/* Quick Actions */}
-            <Card className="glass-card bg-primary/5 border-primary/20">
+            <Card className="rounded-none border-primary/25 bg-primary/10 shadow-none">
                 <CardHeader>
                     <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid md:grid-cols-3 gap-3">
-                        <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" asChild>
+                        <Button variant="outline" className="h-auto min-h-20 flex-col gap-2 rounded-none py-4" asChild>
                             <Link href="/dashboard">
                                 <Briefcase className="h-5 w-5" />
                                 <span className="font-bold">View Resumes</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" asChild>
+                        <Button variant="outline" className="h-auto min-h-20 flex-col gap-2 rounded-none py-4" asChild>
                             <Link href="/dashboard/portfolio">
                                 <User className="h-5 w-5" />
                                 <span className="font-bold">Edit Portfolio</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className="h-auto py-4 flex-col gap-2 rounded-xl" asChild>
+                        <Button variant="outline" className="h-auto min-h-20 flex-col gap-2 rounded-none py-4" asChild>
                             <Link href="/dashboard/settings">
                                 <Settings className="h-5 w-5" />
                                 <span className="font-bold">Account Settings</span>

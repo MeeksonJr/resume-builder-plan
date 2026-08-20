@@ -66,7 +66,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                         value={formData.full_name}
                         onChange={handleChange}
                         placeholder="John Doe"
-                        className="glass-border"
+                        className="h-11 rounded-none border-input bg-background"
                     />
                 </div>
 
@@ -77,7 +77,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                         type="email"
                         value={user?.email || ""}
                         disabled
-                        className="glass-border bg-muted/50"
+                        className="h-11 rounded-none border-input bg-muted/50"
                     />
                     <p className="text-xs text-muted-foreground">
                         Contact support to change your email address.
@@ -93,7 +93,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                         onChange={handleChange}
                         placeholder="Tell us about yourself..."
                         rows={4}
-                        className="glass-border resize-none"
+                        className="rounded-none border-input bg-background resize-none"
                     />
                     <p className="text-xs text-muted-foreground">
                         Brief description for your public profile.
@@ -109,7 +109,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                             value={formData.location}
                             onChange={handleChange}
                             placeholder="San Francisco, CA"
-                            className="glass-border"
+                            className="h-11 rounded-none border-input bg-background"
                         />
                     </div>
 
@@ -122,7 +122,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                             value={formData.website_url}
                             onChange={handleChange}
                             placeholder="https://yourwebsite.com"
-                            className="glass-border"
+                            className="h-11 rounded-none border-input bg-background"
                         />
                     </div>
                 </div>
@@ -131,7 +131,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
             <Button
                 onClick={handleSave}
                 disabled={loading}
-                className="w-full sm:w-auto bg-gradient-to-br from-primary to-primary/80 font-black"
+                className="min-h-11 w-full rounded-none bg-primary font-black text-primary-foreground hover:bg-primary/90 sm:w-auto"
             >
                 {loading ? "Saving..." : "Save Changes"}
             </Button>

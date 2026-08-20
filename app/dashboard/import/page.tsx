@@ -28,23 +28,23 @@ export default function ImportPage() {
     }, [supabase]);
 
     return (
-        <div className="space-y-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
+        <div className="space-y-8">
+            <div className="flex flex-col justify-between gap-5 border-b border-[#102b2b]/15 px-1 pb-7 md:flex-row md:items-end">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-black uppercase tracking-tight md:text-4xl text-white flex items-center gap-3">
-                        Smart Import
-                        <div className="h-6 w-[2px] bg-primary/20 -rotate-12" />
-                        <Import className="h-6 w-6 text-primary/40" />
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">Resume intake</p>
+                    <h1 className="flex items-center gap-3 text-4xl font-black tracking-[-0.04em] text-[#102b2b] md:text-5xl">
+                        Smart import
+                        <Import className="h-6 w-6 text-[#0d8274]" aria-hidden="true" />
                     </h1>
-                    <p className="text-muted-foreground/80 font-bold flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    <p className="flex items-center gap-2 text-sm text-[#102b2b]/65 sm:text-base">
+                        <span className="h-1.5 w-1.5 bg-[#d8f36b]" />
                         Quickly ingest your professional data from LinkedIn, GitHub, and more.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-primary/5 border border-primary/10 shadow-inner">
-                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Secure Ingestion</span>
+                <div className="flex items-center gap-3 border border-[#102b2b]/15 bg-[#f5f7f1] px-4 py-2">
+                    <ShieldCheck className="h-4 w-4 text-[#0d8274]" aria-hidden="true" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/60">Secure ingestion</span>
                 </div>
             </div>
 

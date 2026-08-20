@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -52,9 +51,9 @@ export function GeneralSettings({ profile }: GeneralSettingsProps) {
         <div className="space-y-6">
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="language">Language</Label>
+                    <Label htmlFor="language" className="text-sm font-bold">Language</Label>
                     <Select value={language} onValueChange={setLanguage}>
-                        <SelectTrigger id="language" className="glass-border">
+                        <SelectTrigger id="language" className="h-11 rounded-none border-input bg-background">
                             <SelectValue placeholder="Select language" />
                         </SelectTrigger>
                         <SelectContent>
@@ -69,9 +68,9 @@ export function GeneralSettings({ profile }: GeneralSettingsProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
+                    <Label htmlFor="timezone" className="text-sm font-bold">Timezone</Label>
                     <Select value={timezone} onValueChange={setTimezone}>
-                        <SelectTrigger id="timezone" className="glass-border">
+                        <SelectTrigger id="timezone" className="h-11 rounded-none border-input bg-background">
                             <SelectValue placeholder="Select timezone" />
                         </SelectTrigger>
                         <SelectContent>
@@ -89,7 +88,7 @@ export function GeneralSettings({ profile }: GeneralSettingsProps) {
                     </p>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-primary/10 bg-primary/5 p-4">
+                <div className="flex items-center justify-between gap-4 border border-border bg-muted/30 p-4">
                     <div className="space-y-0.5">
                         <Label htmlFor="email-notifications" className="font-bold">
                             Email Notifications
@@ -109,7 +108,7 @@ export function GeneralSettings({ profile }: GeneralSettingsProps) {
             <Button
                 onClick={handleSave}
                 disabled={loading}
-                className="w-full sm:w-auto bg-gradient-to-br from-primary to-primary/80 font-black"
+                className="min-h-11 w-full rounded-none bg-primary font-black text-primary-foreground hover:bg-primary/90 sm:w-auto"
             >
                 {loading ? "Saving..." : "Save Changes"}
             </Button>

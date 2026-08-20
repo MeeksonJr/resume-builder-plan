@@ -132,19 +132,20 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
 
     if (loading) {
         return (
-            <div className="flex h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex h-[400px] flex-col items-center justify-center gap-3 text-[#102b2b]/60">
+                <Loader2 className="h-7 w-7 animate-spin text-[#0d8274]" aria-hidden="true" />
+                <p className="text-sm">Loading cover letter...</p>
             </div>
         );
     }
 
     if (!coverLetter) {
         return (
-            <div className="text-center py-20 bg-slate-950/40 backdrop-blur-xl rounded-[32px] border border-primary/5 mx-auto max-w-lg mt-20">
-                <Info className="h-12 w-12 text-primary/40 mx-auto mb-4" />
-                <h2 className="text-2xl font-black uppercase tracking-tight">Letter not found</h2>
-                <Button asChild variant="link" className="text-primary font-bold">
-                    <Link href="/dashboard/cover-letters">Return to Dashboard</Link>
+            <div className="mx-auto mt-20 max-w-lg border border-[#102b2b]/15 bg-white/50 py-20 text-center text-[#102b2b]">
+                <Info className="mx-auto mb-4 h-10 w-10 text-[#0d8274]" aria-hidden="true" />
+                <h2 className="text-2xl font-black tracking-tight">Letter not found</h2>
+                <Button asChild variant="link" className="font-bold text-[#0d8274]">
+                    <Link href="/dashboard/cover-letters">Return to cover letters</Link>
                 </Button>
             </div>
         );
@@ -154,18 +155,19 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mx-auto max-w-6xl space-y-8"
+            className="mx-auto max-w-6xl space-y-6 text-[#102b2b]"
         >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
+            <div className="flex flex-col gap-4 border-b border-[#102b2b]/15 pb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" asChild className="hover:bg-slate-900 rounded-xl px-3 group">
-                        <Link href="/dashboard/cover-letters">
+                    <Button variant="outline" asChild className="rounded-none border-[#102b2b]/20 px-3">
+                        <Link href="/dashboard/cover-letters" aria-label="Back to cover letters">
                             <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                         </Link>
                     </Button>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-2xl font-black uppercase tracking-tight text-white line-clamp-1">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0d8274]">Applications / Letter editor</p>
+                            <h1 className="mt-1 line-clamp-1 text-2xl font-black tracking-tight">
                                 {coverLetter.title}
                             </h1>
                             <AnimatePresence>
@@ -179,7 +181,7 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                                 )}
                             </AnimatePresence>
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
+                        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/55">
                             <Calendar className="h-3 w-3" />
                             Rendered {format(new Date(coverLetter.created_at), "PPP")}
                         </p>
@@ -187,11 +189,11 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                 </div>
 
                 <div className="flex gap-3">
-                    <Button variant="outline" size="sm" className="h-11 px-5 rounded-xl border-primary/10 bg-slate-900/50 hover:bg-primary/5 font-black uppercase tracking-widest text-[10px] gap-2 transition-all shadow-xl" onClick={() => handlePrint()}>
+                    <Button variant="outline" size="sm" className="h-10 rounded-none border-[#102b2b]/20 bg-transparent px-4 text-[10px] font-bold uppercase tracking-widest" onClick={() => handlePrint()}>
                         <Download className="h-4 w-4" />
                         Export PDF
                     </Button>
-                    <Button onClick={handleSave} disabled={saving || !isEdited} size="sm" className="h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] gap-2 shadow-xl shadow-primary/20 transition-all">
+                    <Button onClick={handleSave} disabled={saving || !isEdited} size="sm" className="h-10 rounded-none bg-[#102b2b] px-4 text-[10px] font-bold uppercase tracking-widest text-[#d8f36b] hover:bg-[#0d8274]">
                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Sync Changes
                     </Button>
@@ -199,13 +201,13 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
             </div>
 
             <div className="grid gap-8 lg:grid-cols-4">
-                <Card className="lg:col-span-3 border-primary/5 bg-slate-950/60 backdrop-blur-2xl rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
-                    <CardHeader className="border-b border-primary/5 bg-slate-900/40 px-8 py-5">
+                <Card className="flex flex-col overflow-hidden rounded-none border-[#102b2b]/15 bg-white/60 shadow-none lg:col-span-3">
+                    <CardHeader className="border-b border-[#102b2b]/10 bg-[#e9eee8] px-5 py-4 sm:px-8">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Letter Manuscript</CardTitle>
+                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-[#102b2b]/60">Letter manuscript</CardTitle>
                             <div className="flex items-center gap-2">
-                                <span className={`h-1.5 w-1.5 rounded-full ${isEdited ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                                <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/40">{isEdited ? 'Unsaved Changes' : 'Synced'}</span>
+                                <span className={`h-1.5 w-1.5 ${isEdited ? 'bg-amber-600' : 'bg-[#0d8274]'}`} />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/55">{isEdited ? 'Unsaved changes' : 'Saved'}</span>
                             </div>
                         </div>
                     </CardHeader>
@@ -216,25 +218,25 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                                 setCoverLetter({ ...coverLetter, content });
                                 setIsEdited(true);
                             }}
-                            className="border-0 focus-within:ring-0 min-h-[600px] p-8"
+                            className="min-h-[600px] rounded-none border-0 p-5 focus-within:ring-0 sm:p-8"
                             placeholder="Your cover letter content..."
                         />
                     </CardContent>
                 </Card>
 
                 <div className="space-y-6">
-                    <Card className="border-primary/5 bg-slate-950/40 backdrop-blur-xl rounded-[24px] shadow-xl overflow-hidden">
-                        <div className="bg-primary/5 border-b border-primary/5 px-6 py-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
+                        <div className="border-b border-[#102b2b]/10 bg-[#e9eee8] px-6 py-4">
+                            <h3 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#0d8274]">
                                 <Layout className="h-3 w-3" />
                                 Configuration
                             </h3>
                         </div>
                         <CardContent className="p-6 space-y-6">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Layout Engine</Label>
+                                <Label className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Layout engine</Label>
                                 <Select value={coverLetterTemplate} onValueChange={setCoverLetterTemplate}>
-                                    <SelectTrigger className="h-10 bg-slate-900/50 border-primary/10 rounded-xl focus:ring-primary/20 font-bold transition-all">
+                                    <SelectTrigger className="h-10 rounded-none border-[#102b2b]/15 bg-[#e9eee8] font-bold">
                                         <SelectValue placeholder="Select template" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-slate-900 border-primary/10 rounded-xl">
@@ -248,15 +250,15 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                             <div className="space-y-4 pt-4 border-t border-primary/5">
                                 <div className="space-y-1">
                                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Target</Label>
-                                    <div className="flex items-center gap-2 text-white font-bold group">
-                                        <Building2 className="h-3.5 w-3.5 text-primary opacity-60 group-hover:opacity-100 transition-all" />
+                                    <div className="flex items-center gap-2 font-bold">
+                                        <Building2 className="h-3.5 w-3.5 text-[#0d8274]" />
                                         <p className="text-sm truncate">{coverLetter.company_name || "Enterprise"}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Role</Label>
-                                    <div className="flex items-center gap-2 text-white font-bold group">
-                                        <Briefcase className="h-3.5 w-3.5 text-primary opacity-60 group-hover:opacity-100 transition-all" />
+                                    <div className="flex items-center gap-2 font-bold">
+                                        <Briefcase className="h-3.5 w-3.5 text-[#0d8274]" />
                                         <p className="text-sm truncate">{coverLetter.job_title || "Professional"}</p>
                                     </div>
                                 </div>
@@ -264,12 +266,12 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                         </CardContent>
                     </Card>
 
-                    <div className="p-6 rounded-[24px] border border-primary/5 bg-slate-950/20 backdrop-blur-sm">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-3 flex items-center gap-1.5">
+                    <div className="border border-[#102b2b]/15 bg-[#e9eee8]/55 p-6">
+                        <h4 className="mb-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/55">
                             <Info className="h-3 w-3" />
                             Live Synthesis
                         </h4>
-                        <p className="text-[11px] font-medium text-muted-foreground/60 leading-relaxed italic">
+                        <p className="text-[11px] leading-relaxed text-[#102b2b]/65">
                             Changes saved here are synced to your database but won't affect the original resume source material.
                         </p>
                     </div>

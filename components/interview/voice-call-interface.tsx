@@ -68,29 +68,29 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-zinc-950 text-white overflow-hidden relative">
+        <div className="relative flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-[#102b2b] text-[#e9eee8]">
             {/* Main Video Area (Simulated) */}
             <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
 
                 {/* AI Avatar / Video Feed */}
-                <div className="relative w-full max-w-4xl aspect-video bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-zinc-800 flex items-center justify-center">
+                <div className="relative flex aspect-video w-full max-w-4xl items-center justify-center overflow-hidden border border-[#e9eee8]/15 bg-[#0b2020] shadow-2xl">
 
                     {/* Status Indicators */}
                     <div className="absolute top-4 left-4 flex gap-2 z-20">
                         {state === 'connected' && (
-                            <div className="bg-red-500/90 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1.5 animate-pulse">
-                                <div className="w-2 h-2 bg-white rounded-full" />
+                            <div className="flex items-center gap-1.5 border border-[#d8f36b]/40 bg-[#d8f36b] px-2 py-1 text-xs font-bold text-[#102b2b] animate-pulse">
+                                <div className="h-2 w-2 bg-[#102b2b]" />
                                 LIVE
                             </div>
                         )}
                         {state === 'connecting' && (
-                            <div className="bg-amber-500/90 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 border border-amber-300/40 bg-amber-400 px-2 py-1 text-xs font-bold text-[#102b2b]">
                                 <Loader2 className="w-3 h-3 animate-spin" />
                                 CONNECTING...
                             </div>
                         )}
                         {state === 'error' && (
-                            <div className="bg-rose-600 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 border border-rose-300/40 bg-rose-500 px-2 py-1 text-xs font-bold text-white">
                                 <AlertCircle className="w-3 h-3" />
                                 CONNECTION ERROR
                             </div>
@@ -104,12 +104,12 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
                             state === 'connected' ? "scale-100" : "scale-90 opacity-70"
                         )}>
                             <div className={cn(
-                                "absolute inset-0 bg-blue-500/20 rounded-full blur-3xl transition-all duration-300",
+                                "absolute inset-0 rounded-full bg-[#0d8274]/25 blur-3xl transition-all duration-300",
                                 state === 'connected' && volume > 0 ? "opacity-100 scale-125" : "opacity-0 scale-100"
                             )} />
-                            <Avatar className="h-40 w-40 md:h-56 md:w-56 border-4 border-zinc-800 shadow-2xl z-10">
+                            <Avatar className="z-10 h-40 w-40 border-4 border-[#e9eee8]/15 shadow-2xl md:h-56 md:w-56">
                                 <AvatarImage src="/ai-avatar.png" alt="AI Interviewer" />
-                                <AvatarFallback className="text-5xl bg-gradient-to-br from-blue-600 to-indigo-700">AI</AvatarFallback>
+                                <AvatarFallback className="bg-[#0d8274] text-5xl text-[#e9eee8]">AI</AvatarFallback>
                             </Avatar>
                         </div>
 
@@ -136,8 +136,8 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
                         <Button
                             size="lg"
                             className={cn(
-                                "h-16 px-8 rounded-full text-xl shadow-lg transition-all hover:scale-105",
-                                permissionError ? "bg-rose-600 hover:bg-rose-700" : "bg-green-600 hover:bg-green-700 shadow-green-900/20"
+                                "h-14 rounded-none px-8 text-xl shadow-lg transition-all hover:bg-[#c8e95a]",
+                                permissionError ? "bg-rose-600 hover:bg-rose-700" : "bg-[#d8f36b] text-[#102b2b]"
                             )}
                             onClick={handleStart}
                         >
@@ -156,8 +156,8 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
                     ) : (
                         <>
                             <div className={cn(
-                                "h-14 w-14 rounded-full flex items-center justify-center transition-colors shadow-lg",
-                                isMicOn ? "bg-zinc-800 text-white ring-1 ring-white/10" : "bg-rose-500 text-white"
+                                "flex h-14 w-14 items-center justify-center transition-colors shadow-lg",
+                                isMicOn ? "bg-[#0d8274] text-white ring-1 ring-white/10" : "bg-rose-500 text-white"
                             )}>
                                 {isMicOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
                             </div>
@@ -165,7 +165,7 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
                             <Button
                                 size="lg"
                                 variant="destructive"
-                                className="h-16 px-8 rounded-full text-lg shadow-lg"
+                                className="h-14 rounded-none px-8 text-lg shadow-lg"
                                 onClick={handleEndCall}
                             >
                                 <PhoneOff className="w-6 h-6 mr-3" />
@@ -176,7 +176,7 @@ export function VoiceCallInterface({ session, questions, onComplete }: VoiceCall
                 </div>
 
                 {permissionError && (
-                    <div className="absolute bottom-32 bg-rose-500/10 border border-rose-500/20 text-rose-200 px-4 py-2 rounded-lg text-sm max-w-md text-center backdrop-blur-md">
+                    <div className="absolute bottom-32 max-w-md border border-rose-300/30 bg-rose-950/60 px-4 py-2 text-center text-sm text-rose-100">
                         Please allow microphone access in your browser settings to continue.
                     </div>
                 )}

@@ -203,13 +203,13 @@ export function AnswerRecorder({
                     onKeyDown={handleKeyDown}
                     placeholder="Type your answer here... (Ctrl+Enter to submit)"
                     disabled={disabled || isSubmitting}
-                    className="w-full min-h-[150px] max-h-[400px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="min-h-[150px] max-h-[400px] w-full resize-none border border-[#102b2b]/20 bg-white px-4 py-3 text-[#102b2b] focus:border-[#0d8274] focus:ring-2 focus:ring-[#0d8274]/30 disabled:cursor-not-allowed disabled:opacity-50"
                     rows={6}
                 />
 
                 {isListening && (
-                    <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1 bg-red-100 border border-red-300 rounded-full animate-in fade-in">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <div className="absolute right-3 top-3 flex items-center gap-2 border border-rose-300 bg-rose-50 px-3 py-1 animate-in fade-in">
+                        <div className="h-2 w-2 animate-pulse bg-rose-500" />
                         <span className="text-sm font-medium text-red-700">Listening...</span>
                     </div>
                 )}
@@ -221,9 +221,9 @@ export function AnswerRecorder({
                         type="button"
                         onClick={isListening ? handleStopRecording : handleStartRecording}
                         disabled={disabled || isSubmitting || !isSupported}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isListening
-                            ? "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
+                        className={`flex items-center gap-2 border px-4 py-2 font-medium transition-colors ${isListening
+                            ? "border-rose-200 bg-rose-100 text-rose-700 hover:bg-rose-200"
+                            : "border-[#102b2b]/15 bg-[#102b2b]/5 text-[#102b2b] hover:bg-[#102b2b]/10"
                             } disabled:opacity-50 disabled:cursor-not-allowed`}
                         title={!isSupported ? "Speech recognition not supported in this browser" : isListening ? "Stop Recording" : "Start Recording"}
                     >
@@ -251,7 +251,7 @@ export function AnswerRecorder({
                     type="button"
                     onClick={handleSubmit}
                     disabled={!answer.trim() || disabled || isSubmitting}
-                    className="gap-2"
+                    className="gap-2 rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c8e95a]"
                 >
                     {isSubmitting ? (
                         <>

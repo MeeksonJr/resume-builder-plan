@@ -52,9 +52,9 @@ export function SecuritySettings() {
     return (
         <div className="space-y-6">
             {/* Password Change */}
-            <div className="space-y-4 rounded-lg border border-primary/10 bg-primary/5 p-6">
+            <div className="space-y-4 border border-border bg-muted/30 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-2">
+                        <div className="bg-primary/15 p-2">
                         <Lock className="h-5 w-5 text-primary" />
                     </div>
                     <div>
@@ -74,7 +74,7 @@ export function SecuritySettings() {
                             value={passwords.new}
                             onChange={(e) => setPasswords(prev => ({ ...prev, new: e.target.value }))}
                             placeholder="Enter new password"
-                            className="glass-border"
+                            className="h-11 rounded-none border-input bg-background"
                         />
                     </div>
 
@@ -86,14 +86,14 @@ export function SecuritySettings() {
                             value={passwords.confirm}
                             onChange={(e) => setPasswords(prev => ({ ...prev, confirm: e.target.value }))}
                             placeholder="Confirm new password"
-                            className="glass-border"
+                            className="h-11 rounded-none border-input bg-background"
                         />
                     </div>
 
                     <Button
                         onClick={handlePasswordChange}
                         disabled={loading || !passwords.new || !passwords.confirm}
-                        className="w-full sm:w-auto bg-gradient-to-br from-primary to-primary/80 font-black"
+                        className="min-h-11 w-full rounded-none bg-primary font-black text-primary-foreground hover:bg-primary/90 sm:w-auto"
                     >
                         {loading ? "Updating..." : "Update Password"}
                     </Button>
@@ -101,10 +101,10 @@ export function SecuritySettings() {
             </div>
 
             {/* 2FA */}
-            <Card className="border-primary/10 bg-primary/5 p-6">
+            <Card className="rounded-none border-border bg-card p-4 shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-primary/10 p-2 mt-1">
+                        <div className="mt-1 bg-primary/15 p-2">
                             <Smartphone className="h-5 w-5 text-primary" />
                         </div>
                         <div className="space-y-1">
@@ -117,17 +117,17 @@ export function SecuritySettings() {
                             </p>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" disabled>
+                    <Button variant="outline" size="sm" disabled className="min-h-11 rounded-none">
                         Enable 2FA
                     </Button>
                 </div>
             </Card>
 
             {/* Active Sessions */}
-            <Card className="border-primary/10 bg-muted/30 p-6">
+            <Card className="rounded-none border-border bg-muted/30 p-4 shadow-none sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-muted p-2 mt-1">
+                        <div className="mt-1 bg-muted p-2">
                             <Shield className="h-5 w-5" />
                         </div>
                         <div className="space-y-1">
@@ -140,7 +140,7 @@ export function SecuritySettings() {
                             </p>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" disabled>
+                    <Button variant="outline" size="sm" disabled className="min-h-11 rounded-none">
                         View Sessions
                     </Button>
                 </div>

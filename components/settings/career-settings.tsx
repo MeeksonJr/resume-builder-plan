@@ -105,7 +105,7 @@ export function CareerSettings({ profile }: CareerSettingsProps) {
                         placeholder="e.g., Senior Software Engineer, Product Manager"
                         value={targetRole}
                         onChange={(e) => setTargetRole(e.target.value)}
-                        className="glass-border"
+                        className="h-11 rounded-none border-input bg-background"
                     />
                     <p className="text-xs text-muted-foreground">
                         The job title you&apos;re targeting for your next role.
@@ -119,7 +119,7 @@ export function CareerSettings({ profile }: CareerSettingsProps) {
                         Target Industry
                     </Label>
                     <Select value={targetIndustry} onValueChange={setTargetIndustry}>
-                        <SelectTrigger id="target-industry" className="glass-border">
+                        <SelectTrigger id="target-industry" className="h-11 rounded-none border-input bg-background">
                             <SelectValue placeholder="Select your target industry" />
                         </SelectTrigger>
                         <SelectContent>
@@ -142,7 +142,7 @@ export function CareerSettings({ profile }: CareerSettingsProps) {
                         Experience Level
                     </Label>
                     <Select value={experienceLevel} onValueChange={setExperienceLevel}>
-                        <SelectTrigger id="experience-level" className="glass-border">
+                        <SelectTrigger id="experience-level" className="h-11 rounded-none border-input bg-background">
                             <SelectValue placeholder="Select your experience level" />
                         </SelectTrigger>
                         <SelectContent>
@@ -163,7 +163,7 @@ export function CareerSettings({ profile }: CareerSettingsProps) {
                         placeholder="Describe your career goals and aspirations..."
                         value={careerGoals}
                         onChange={(e) => setCareerGoals(e.target.value)}
-                        className="glass-border min-h-[100px]"
+                        className="rounded-none border-input bg-background min-h-[100px]"
                     />
                     <p className="text-xs text-muted-foreground">
                         This helps Career Coach and AI features provide personalized advice.
@@ -178,7 +178,7 @@ export function CareerSettings({ profile }: CareerSettingsProps) {
                         placeholder="List companies you're interested in, separated by commas..."
                         value={targetCompanies}
                         onChange={(e) => setTargetCompanies(e.target.value)}
-                        className="glass-border min-h-[80px]"
+                        className="rounded-none border-input bg-background min-h-[80px]"
                     />
                     <p className="text-xs text-muted-foreground">
                         We&apos;ll tailor recommendations based on these companies.
@@ -189,7 +189,7 @@ export function CareerSettings({ profile }: CareerSettingsProps) {
             <Button
                 onClick={handleSave}
                 disabled={loading}
-                className="w-full sm:w-auto bg-gradient-to-br from-primary to-primary/80 font-black"
+                className="min-h-11 w-full rounded-none bg-primary font-black text-primary-foreground hover:bg-primary/90 sm:w-auto"
             >
                 {loading ? "Saving..." : "Save Career Preferences"}
             </Button>

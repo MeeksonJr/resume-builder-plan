@@ -70,33 +70,32 @@ export default function NewCoverLetterPage() {
 
     if (!isSubLoading && !isPro) {
         return (
-            <div className="max-w-4xl mx-auto py-12">
-                <Button asChild variant="ghost" className="mb-8">
+            <div className="mx-auto max-w-4xl py-8 text-[#102b2b]">
+                <Button asChild variant="ghost" className="mb-8 rounded-none">
                     <Link href="/dashboard/cover-letters">
                         <ChevronLeft className="mr-2 h-4 w-4" />
                         Back
                     </Link>
                 </Button>
-                <Card className="border-primary/20 shadow-2xl relative overflow-hidden bg-slate-950 text-white">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-blue-600/5 pointer-events-none" />
-                    <div className="absolute top-0 right-0 p-3">
-                        <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase">
+                <Card className="relative overflow-hidden rounded-none border-[#102b2b]/15 bg-[#102b2b] text-[#e9eee8] shadow-none">
+                    <div className="absolute right-0 top-0 p-3">
+                        <div className="border border-[#d8f36b]/40 bg-[#d8f36b]/15 px-3 py-1 text-xs font-bold uppercase text-[#d8f36b]">
                             Premium
                         </div>
                     </div>
                     <CardHeader className="text-center pt-16 pb-8">
-                        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center mb-6 shadow-xl shadow-primary/20">
-                            <Sparkles className="h-8 w-8 text-white" />
+                        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-[#d8f36b]/40 bg-[#d8f36b] text-[#102b2b]">
+                            <Sparkles className="h-8 w-8" />
                         </div>
                         <CardTitle className="text-3xl font-black uppercase tracking-tight">AI Cover Letters</CardTitle>
-                        <CardDescription className="text-slate-400 text-lg max-w-lg mx-auto mt-2">
+                        <CardDescription className="mx-auto mt-2 max-w-lg text-lg text-[#e9eee8]/70">
                             Generate tailored, professional cover letters in seconds using advanced AI analysis of your resume and the job description.
                         </CardDescription>
                     </CardHeader>
                     <CardFooter className="flex justify-center pb-16">
                         <Button
                             size="lg"
-                            className="h-14 px-8 text-lg font-bold rounded-xl bg-white text-slate-950 hover:bg-slate-200"
+                            className="h-12 rounded-none bg-[#d8f36b] px-8 text-lg font-bold text-[#102b2b] hover:bg-white"
                             onClick={() => router.push('/dashboard/subscription')}
                         >
                             Upgrade to Pro
@@ -143,49 +142,50 @@ export default function NewCoverLetterPage() {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto max-w-4xl space-y-10"
+            className="mx-auto max-w-4xl space-y-7 text-[#102b2b]"
         >
             <div className="flex items-center justify-between">
-                <Button variant="ghost" asChild className="hover:bg-slate-900 rounded-xl px-4 transition-all group">
+                <Button variant="ghost" asChild className="rounded-none px-3">
                     <Link href="/dashboard/cover-letters">
                         <ChevronLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-bold text-xs uppercase tracking-widest text-muted-foreground group-hover:text-white">All Letters</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-[#102b2b]/60">All Letters</span>
                     </Link>
                 </Button>
             </div>
 
             <div className="space-y-2 px-1">
-                <h1 className="text-4xl font-black uppercase tracking-tight text-white flex items-center gap-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0d8274]">Applications / Writing</p>
+                <h1 className="mt-2 flex items-center gap-3 text-4xl font-black tracking-tight">
                     Tailored Letter
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                    <div className="h-2 w-2 bg-[#0d8274]" />
                 </h1>
-                <p className="text-muted-foreground/80 font-bold max-w-2xl">
+                <p className="max-w-2xl text-[#102b2b]/65">
                     Our AI engineers a professional narrative by synthesizing your resume with specific job requirements.
                 </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                <Card className="border-primary/5 bg-slate-950/60 backdrop-blur-2xl rounded-[32px] overflow-hidden shadow-2xl">
-                    <div className="h-24 bg-gradient-to-br from-primary/10 via-slate-900 to-transparent border-b border-primary/5 flex items-center px-10">
+                <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
+                    <div className="flex h-20 items-center border-b border-[#102b2b]/10 bg-[#e9eee8] px-5 sm:px-8">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-2xl bg-primary/10 shadow-inner">
-                                <Sparkles className="h-6 w-6 text-primary" />
+                            <div className="border border-[#0d8274]/20 bg-[#d8f36b]/50 p-3">
+                                <Sparkles className="h-6 w-6 text-[#0d8274]" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black uppercase tracking-tight">AI Generation Engine</h2>
-                                <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">Configure your targeting parameters</p>
+                                <h2 className="text-xl font-black tracking-tight">AI generation engine</h2>
+                                <p className="text-xs font-bold uppercase tracking-widest text-[#102b2b]/55">Configure your targeting parameters</p>
                             </div>
                         </div>
                     </div>
 
-                    <CardContent className="p-10 space-y-10">
+                    <CardContent className="space-y-8 p-5 sm:p-8">
                         <div className="grid gap-8 md:grid-cols-2">
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Context</Label>
+                                <Label className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Context</Label>
                                 <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-                                    <SelectTrigger className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 transition-all font-bold">
+                                    <SelectTrigger className="h-12 rounded-none border-[#102b2b]/15 bg-[#e9eee8] font-bold">
                                         <div className="flex items-center gap-2">
-                                            <Briefcase className="h-4 w-4 text-primary" />
+                                            <Briefcase className="h-4 w-4 text-[#0d8274]" />
                                             <SelectValue placeholder="Select a resume" />
                                         </div>
                                     </SelectTrigger>
@@ -200,10 +200,10 @@ export default function NewCoverLetterPage() {
                             </div>
 
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Aesthetics & Tone</Label>
+                                <Label className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Aesthetics & Tone</Label>
                                 <Select value={tone} onValueChange={setTone}>
-                                    <SelectTrigger className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 transition-all font-bold">
-                                        <div className="flex items-center gap-2 text-primary">
+                                    <SelectTrigger className="h-12 rounded-none border-[#102b2b]/15 bg-[#e9eee8] font-bold">
+                                        <div className="flex items-center gap-2 text-[#0d8274]">
                                             <Brain className="h-4 w-4" />
                                             <SelectValue placeholder="Select tone" />
                                         </div>
@@ -220,75 +220,74 @@ export default function NewCoverLetterPage() {
 
                         <div className="grid gap-8 md:grid-cols-2">
                             <div className="space-y-3">
-                                <Label htmlFor="jobTitle" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Target Role</Label>
+                                <Label htmlFor="jobTitle" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Target Role</Label>
                                 <div className="relative group">
                                     <Input
                                         id="jobTitle"
                                         value={formData.jobTitle}
                                         onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
                                         placeholder="Senior Frontend Engineer"
-                                        className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 pl-4 font-bold placeholder:text-muted-foreground/30 transition-all group-hover:border-primary/20"
+                                        className="h-12 rounded-none border-[#102b2b]/15 bg-[#e9eee8] pl-4 font-bold placeholder:text-[#102b2b]/35"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <Label htmlFor="companyName" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Hiring Entity</Label>
+                                <Label htmlFor="companyName" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Hiring Entity</Label>
                                 <div className="relative group">
                                     <Input
                                         id="companyName"
                                         value={formData.companyName}
                                         onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                                         placeholder="SpaceX"
-                                        className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 pl-4 font-bold placeholder:text-muted-foreground/30 transition-all group-hover:border-primary/20"
+                                        className="h-12 rounded-none border-[#102b2b]/15 bg-[#e9eee8] pl-4 font-bold placeholder:text-[#102b2b]/35"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         <div className="space-y-3">
-                            <Label htmlFor="recipientName" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">Hiring Lead (Optional)</Label>
+                            <Label htmlFor="recipientName" className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Hiring Lead (Optional)</Label>
                             <Input
                                 id="recipientName"
                                 value={formData.recipientName}
                                 onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
                                 placeholder="Ms. Elena Vance"
-                                className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl focus:ring-primary/20 pl-4 font-bold placeholder:text-muted-foreground/30 transition-all"
+                                className="h-12 rounded-none border-[#102b2b]/15 bg-[#e9eee8] pl-4 font-bold placeholder:text-[#102b2b]/35"
                             />
                         </div>
 
-                        <div className="space-y-3 border-t border-primary/5 pt-8">
-                            <Label htmlFor="jobDescription" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1 flex items-center justify-between">
+                        <div className="space-y-3 border-t border-[#102b2b]/10 pt-7">
+                            <Label htmlFor="jobDescription" className="ml-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">
                                 Job Description
-                                <span className="text-primary opacity-60">REQUIRED</span>
+                                <span className="text-[#0d8274]">REQUIRED</span>
                             </Label>
                             <Textarea
                                 id="jobDescription"
                                 value={formData.jobDescription}
                                 onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
                                 placeholder="Paste the requirement text here. Our AI will extract keywords and align your narrative..."
-                                className="min-h-[250px] bg-slate-900/30 border-primary/10 rounded-2xl p-6 font-medium text-muted-foreground/80 focus:ring-primary/20 placeholder:text-muted-foreground/20 resize-none transition-all leading-relaxed"
+                                className="min-h-[220px] resize-none rounded-none border-[#102b2b]/15 bg-[#e9eee8] p-4 leading-relaxed text-[#102b2b]/75 placeholder:text-[#102b2b]/35 sm:p-6"
                                 required
                             />
                         </div>
                     </CardContent>
 
-                    <div className="px-10 pb-10">
+                    <div className="px-5 pb-6 sm:px-8 sm:pb-8">
                         <Button
                             type="submit"
                             disabled={loading || !formData.jobDescription}
-                            className="w-full h-16 rounded-[20px] font-black uppercase tracking-widest text-sm relative group overflow-hidden shadow-2xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                            className="relative h-12 w-full overflow-hidden rounded-none bg-[#102b2b] text-sm font-bold uppercase tracking-widest text-[#d8f36b] hover:bg-[#0d8274]"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary opacity-100 group-hover:opacity-90 transition-opacity" />
                             <div className="relative flex items-center justify-center gap-3">
                                 {loading ? (
                                     <>
                                         <Loader2 className="h-5 w-5 animate-spin" />
-                                        <span>Engineering Narrative...</span>
+                                        <span>Generating letter...</span>
                                     </>
                                 ) : (
                                     <>
                                         <Sparkles className="h-5 w-5" />
-                                        <span>Initialize Synthesis</span>
+                                        <span>Generate cover letter</span>
                                     </>
                                 )}
                             </div>

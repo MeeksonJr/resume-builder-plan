@@ -128,15 +128,15 @@ export default function NewResumePage() {
   // Limit Reached UI
   if (!isSubLoading && !isPro && resumeCount !== null && resumeCount >= 1) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="mx-auto max-w-3xl space-y-7">
         <Button asChild variant="ghost" size="icon">
           <Link href="/dashboard"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
-        <Card className="border-2 border-primary/20 shadow-2xl overflow-hidden relative">
+        <Card className="relative overflow-hidden rounded-none border-[#102b2b]/20 bg-[#f5f7f1] shadow-none">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
           <CardHeader className="text-center pb-2">
-            <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <Sparkles className="h-6 w-6 text-primary" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-none bg-[#d8f36b]">
+              <Sparkles className="h-6 w-6 text-[#102b2b]" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl font-black uppercase">Limit Reached</CardTitle>
             <CardDescription className="text-lg">
@@ -149,7 +149,7 @@ export default function NewResumePage() {
             </p>
           </CardContent>
           <CardFooter className="flex justify-center pb-8">
-            <Button size="lg" className="font-bold text-base px-8 h-12 rounded-xl" onClick={() => router.push('/dashboard/subscription')}>
+            <Button size="lg" className="h-12 rounded-none bg-[#d8f36b] px-8 text-base font-bold text-[#102b2b] hover:bg-[#c9e95c]" onClick={() => router.push('/dashboard/subscription')}>
               Upgrade to Pro
             </Button>
           </CardFooter>
@@ -159,30 +159,30 @@ export default function NewResumePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-7">
       <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+        <Button asChild variant="ghost" size="icon" aria-label="Back to dashboard" className="min-h-[44px] min-w-[44px] rounded-none text-[#102b2b] hover:bg-[#d8f36b]">
           <Link href="/dashboard">
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Create New Resume</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-black tracking-[-0.04em] text-[#102b2b] sm:text-4xl">Create new resume</h1>
+          <p className="text-[#102b2b]/65">
             Start fresh or import from an existing resume
           </p>
         </div>
       </div>
 
       {/* Create from scratch */}
-      <Card>
+      <Card className="rounded-none border-[#102b2b]/15 bg-[#f5f7f1] shadow-none">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <FileText className="h-5 w-5 text-primary" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-none bg-[#d8f36b]">
+                <FileText className="h-5 w-5 text-[#102b2b]" aria-hidden="true" />
             </div>
             <div>
-              <CardTitle className="text-lg">Start from Scratch</CardTitle>
+              <CardTitle className="text-lg font-bold text-[#102b2b]">Start from scratch</CardTitle>
               <CardDescription>
                 Create a new blank resume and fill in your details
               </CardDescription>
@@ -206,7 +206,7 @@ export default function NewResumePage() {
                 disabled={isLoading}
                 className="min-h-[44px]"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[#102b2b]/55">
                 This is for your reference only. Recruiters won&apos;t see this.
               </p>
             </div>
@@ -215,7 +215,7 @@ export default function NewResumePage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="min-h-[44px] gap-2"
+              className="min-h-[44px] gap-2 rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c9e95c]"
             >
               {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               Create Resume
@@ -226,11 +226,11 @@ export default function NewResumePage() {
 
       {/* Other options */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="transition-all hover:border-primary/30 hover:shadow-md">
+        <Card className="rounded-none border-[#102b2b]/15 bg-[#f5f7f1] shadow-none transition-colors hover:border-[#0d8274]">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/20">
-                <Upload className="h-5 w-5 text-accent-foreground" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-none bg-[#0d8274]/10">
+                  <Upload className="h-5 w-5 text-[#0d8274]" aria-hidden="true" />
               </div>
               <div>
                 <CardTitle className="text-lg">Upload PDF</CardTitle>
@@ -255,11 +255,11 @@ export default function NewResumePage() {
           </CardFooter>
         </Card>
 
-        <Card className="transition-all hover:border-primary/30 hover:shadow-md">
+        <Card className="rounded-none border-[#102b2b]/15 bg-[#f5f7f1] shadow-none transition-colors hover:border-[#0d8274]">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-none bg-[#d8f36b]">
+                  <Sparkles className="h-5 w-5 text-[#102b2b]" aria-hidden="true" />
               </div>
               <div>
                 <CardTitle className="text-lg">AI Assistant</CardTitle>

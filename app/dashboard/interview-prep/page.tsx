@@ -35,11 +35,13 @@ export default async function InterviewPrepPage() {
         .limit(10);
 
     return (
-        <div className="p-6 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Interview Preparation</h1>
-                <p className="text-muted-foreground">
-                    Practice with AI-generated questions and get personalized feedback
+        <div className="min-h-full bg-[#e9eee8] px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl space-y-8">
+            <div className="border-b border-[#102b2b]/15 pb-6">
+                <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">Practice lab</p>
+                <h1 className="text-3xl font-bold tracking-tight text-[#102b2b] sm:text-4xl">Interview Preparation</h1>
+                <p className="mt-2 max-w-2xl text-sm text-[#102b2b]/65 sm:text-base">
+                    Rehearse the moments that matter, then use direct feedback to sharpen your next answer.
                 </p>
             </div>
 
@@ -48,6 +50,7 @@ export default async function InterviewPrepPage() {
                 sessions={sessions || []}
                 targetRole={profile?.target_role || null}
             />
+            </div>
         </div>
     );
 }

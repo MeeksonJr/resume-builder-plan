@@ -58,6 +58,7 @@ import {
 
 export default function PortfolioManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [portfolio, setPortfolio] = useState<any>(null);
     const [resumes, setResumes] = useState<any[]>([]);
@@ -74,6 +75,7 @@ export default function PortfolioManagementPage() {
 
     const fetchPortfolio = async () => {
         setIsLoading(true);
+        setLoadError(false);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -204,6 +206,7 @@ export default function PortfolioManagementPage() {
 
         } catch (error: any) {
             console.error("Error fetching portfolio:", error.message);
+            setLoadError(true);
             toast.error("Failed to load portfolio settings");
         } finally {
             setIsLoading(false);
@@ -241,29 +244,46 @@ export default function PortfolioManagementPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex min-h-[520px] items-center justify-center bg-[#e9eee8] text-[#102b2b]">
+                <div className="flex items-center gap-3 border border-[#102b2b]/15 bg-[#f5f7f2] px-5 py-4 text-sm font-bold uppercase tracking-widest">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#0d8274]" aria-hidden="true" />
+                    Loading showcase
+                </div>
+            </div>
+        );
+    }
+
+    if (loadError || !portfolio) {
+        return (
+            <div className="flex min-h-[520px] items-center justify-center bg-[#e9eee8] px-5 text-center text-[#102b2b]">
+                <div role="alert" className="max-w-md border border-red-900/20 bg-red-50 p-8">
+                    <h1 className="text-2xl font-heading font-black">Showcase unavailable</h1>
+                    <p className="mt-2 text-sm leading-6 text-red-950/70">We could not load your portfolio settings. Refresh the page to try again.</p>
+                    <Button className="mt-6 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274]" onClick={fetchPortfolio}>Try again</Button>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-1">
-                    <h1 className="text-4xl font-black tracking-tight uppercase">Career Portfolio</h1>
-                    <p className="text-muted-foreground font-medium">Customize your public professional presence and showcase your best work.</p>
+        <div className="min-h-full bg-[#e9eee8] text-[#102b2b]">
+        <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 animate-in fade-in duration-500 lg:px-10 lg:py-12">
+            <div className="flex flex-col gap-6 border-b border-[#102b2b]/15 pb-7 md:flex-row md:items-end md:justify-between">
+                <div className="space-y-2">
+                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#0d8274]">Showcase / My portfolio</div>
+                    <h1 className="text-4xl font-heading font-black tracking-[-0.04em] md:text-5xl">Career portfolio</h1>
+                    <p className="max-w-xl text-sm font-medium leading-6 text-[#102b2b]/60">Shape the public page that makes your work easy to understand, trust, and contact.</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2">
                     {portfolio.slug && (
-                        <Button variant="outline" size="lg" className="rounded-2xl border-primary/20 hover:bg-primary/5 font-bold h-12" asChild>
+                        <Button variant="outline" size="lg" className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]" asChild>
                             <a href={`/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer">
                                 <Eye className="mr-2 h-5 w-5" />
                                 Preview
                             </a>
                         </Button>
                     )}
-                    <Button onClick={handleSave} disabled={isSaving} size="lg" className="gap-2 rounded-2xl h-12 font-black px-8 shadow-xl shadow-primary/20">
+                    <Button onClick={handleSave} disabled={isSaving} size="lg" className="h-11 gap-2 rounded-none bg-[#102b2b] px-7 font-black text-[#d8f36b] shadow-none hover:bg-[#0d8274]">
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Save Changes
                     </Button>
@@ -271,32 +291,32 @@ export default function PortfolioManagementPage() {
             </div>
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="flex w-full overflow-x-auto h-14 bg-slate-950/40 p-1.5 rounded-2xl border border-primary/5 backdrop-blur-md mb-8 scrollbar-hide">
-                    <TabsTrigger value="general" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                <TabsList className="mb-8 flex h-auto w-full gap-1 overflow-x-auto border-b border-[#102b2b]/15 bg-transparent p-0 scrollbar-hide">
+                    <TabsTrigger value="general" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Settings2 className="h-4 w-4" />
                         General
                     </TabsTrigger>
-                    <TabsTrigger value="social" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="social" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Globe className="h-4 w-4" />
                         Social
                     </TabsTrigger>
-                    <TabsTrigger value="seo" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="seo" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Search className="h-4 w-4" />
                         SEO & Social
                     </TabsTrigger>
-                    <TabsTrigger value="share" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="share" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Share2 className="h-4 w-4" />
                         Share
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="appearance" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Palette className="h-4 w-4" />
                         Visuals
                     </TabsTrigger>
-                    <TabsTrigger value="content" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="content" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Layout className="h-4 w-4" />
                         Gallery
                     </TabsTrigger>
-                    <TabsTrigger value="messages" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="messages" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <MessageSquare className="h-4 w-4" />
                         Messages
                         {messages.length > 0 && (
@@ -305,18 +325,18 @@ export default function PortfolioManagementPage() {
                             </Badge>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="testimonials" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="testimonials" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Trophy className="h-4 w-4" />
                         Proof
                     </TabsTrigger>
-                    <TabsTrigger value="insights" className="gap-2 rounded-xl transition-all data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-bold px-6 shrink-0 h-full">
+                    <TabsTrigger value="insights" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <BarChart3 className="h-4 w-4" />
                         Insights
                     </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="share" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -327,7 +347,7 @@ export default function PortfolioManagementPage() {
                             <CardDescription className="font-medium">Manage how others view and access your portfolio.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8 space-y-8">
-                            <div className="flex items-center justify-between p-6 rounded-2xl border border-primary/10 bg-primary/5">
+                            <div className="flex flex-col items-start justify-between gap-4 border border-[#0d8274]/25 bg-[#d8f36b]/25 p-5 sm:flex-row sm:items-center">
                                 <div className="space-y-1">
                                     <h4 className="font-bold text-foreground">Public Access</h4>
                                     <p className="text-sm text-muted-foreground">
@@ -376,7 +396,7 @@ export default function PortfolioManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="general" className="mt-0 space-y-8 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl group overflow-hidden">
+                    <Card className="group overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -475,7 +495,7 @@ export default function PortfolioManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="social" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -553,7 +573,7 @@ export default function PortfolioManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="seo" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -654,7 +674,7 @@ export default function PortfolioManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="appearance" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -676,14 +696,14 @@ export default function PortfolioManagementPage() {
                                         <div className="relative group">
                                             <Input
                                                 type="color"
-                                                className="h-14 w-28 p-1 rounded-2xl cursor-pointer bg-slate-900/50 border-primary/10 transition-all hover:bg-slate-900"
+                                                className="h-12 w-24 cursor-pointer rounded-none border-[#102b2b]/15 bg-[#102b2b] p-1 transition-all hover:bg-[#0d8274]"
                                                 value={portfolio.accent_color || "#3b82f6"}
                                                 onChange={(e) => setPortfolio({ ...portfolio, accent_color: e.target.value })}
                                             />
                                         </div>
                                         <div className="flex-1 space-y-2">
                                             <Input
-                                                className="h-14 rounded-2xl border-primary/10 bg-slate-950/40 font-mono text-sm"
+                                                className="h-12 rounded-none border-[#102b2b]/15 bg-transparent font-mono text-sm"
                                                 placeholder="#3b82f6"
                                                 value={portfolio.accent_color || "#3b82f6"}
                                                 onChange={(e) => setPortfolio({ ...portfolio, accent_color: e.target.value })}
@@ -727,7 +747,7 @@ export default function PortfolioManagementPage() {
                                         <div
                                             key={s.id}
                                             className={cn(
-                                                "p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300",
+                                                "cursor-pointer border-2 border-[#102b2b]/10 bg-[#e9eee8] p-5 transition-all duration-300",
                                                 portfolio.theme_settings?.style === s.id
                                                     ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.1)] ring-1 ring-primary/20"
                                                     : "border-primary/5 bg-slate-900/40 hover:border-primary/30"
@@ -762,7 +782,7 @@ export default function PortfolioManagementPage() {
                                             <div
                                                 key={template.id}
                                                 className={cn(
-                                                    "flex flex-col border-2 rounded-3xl cursor-pointer transition-all duration-500 hover:shadow-2xl group overflow-hidden",
+                                                    "group flex cursor-pointer flex-col overflow-hidden border-2 border-[#102b2b]/10 bg-[#e9eee8] transition-all duration-300 hover:border-[#0d8274]",
                                                     isSelected
                                                         ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(var(--primary),0.1)] ring-1 ring-primary/20"
                                                         : "border-primary/5 bg-slate-900/40 hover:border-primary/40"
@@ -796,7 +816,7 @@ export default function PortfolioManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="content" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="bg-slate-950/40 border-primary/5 shadow-2xl backdrop-blur-xl overflow-hidden">
+                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">
                         <CardHeader className="border-b border-primary/5 bg-primary/[0.02]">
                             <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -822,7 +842,7 @@ export default function PortfolioManagementPage() {
                                             <div
                                                 key={r.id}
                                                 className={cn(
-                                                    "p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 flex flex-col justify-between h-36 group",
+                                                    "group flex h-36 cursor-pointer flex-col justify-between border-2 border-[#102b2b]/10 bg-[#e9eee8] p-5 transition-all duration-300",
                                                     isFeatured
                                                         ? "border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
                                                         : "border-primary/5 bg-slate-900/40 hover:border-primary/30"
@@ -868,7 +888,7 @@ export default function PortfolioManagementPage() {
                                             <div
                                                 key={p.id}
                                                 className={cn(
-                                                    "p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 flex flex-col justify-between h-44 group",
+                                                    "group flex h-44 cursor-pointer flex-col justify-between border-2 border-[#102b2b]/10 bg-[#e9eee8] p-5 transition-all duration-300",
                                                     isFeatured
                                                         ? "border-emerald-500/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
                                                         : "border-primary/5 bg-slate-900/40 hover:border-primary/30"
@@ -897,7 +917,7 @@ export default function PortfolioManagementPage() {
                                         );
                                     })}
                                     {projects.length === 0 && (
-                                        <div className="col-span-full py-20 text-center border-2 border-dashed border-primary/10 rounded-2xl bg-slate-900/20 text-muted-foreground">
+                                        <div className="col-span-full border-2 border-dashed border-[#102b2b]/15 bg-[#e9eee8] py-20 text-center text-[#102b2b]/55">
                                             <div className="h-12 w-12 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
                                                 <Briefcase className="h-6 w-6 text-primary/30" />
                                             </div>
@@ -1247,6 +1267,7 @@ export default function PortfolioManagementPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+        </div>
         </div>
     );
 }

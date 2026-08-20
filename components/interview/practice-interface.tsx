@@ -164,7 +164,7 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                 <Button
                     variant="ghost"
                     onClick={() => router.push("/dashboard/interview-prep")}
-                    className="gap-2"
+                    className="gap-2 rounded-none text-[#102b2b] hover:bg-[#102b2b]/10"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Exit Session
@@ -189,11 +189,11 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                         {answeredCount} answered
                     </span>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <Progress value={progress} className="h-2 rounded-none bg-[#102b2b]/10" />
             </div>
 
             {/* Question Card */}
-            <Card>
+            <Card className="border-[#102b2b]/15 bg-[#f4f7f1] shadow-none">
                 <CardHeader>
                     <div className="flex items-start justify-between">
                         <div className="space-y-2 flex-1">
@@ -211,9 +211,10 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className={`h-6 w-6 p-0 rounded-full ${isSpeaking ? "text-primary animate-pulse" : "text-muted-foreground"}`}
+                                    className={`h-9 w-9 rounded-none p-0 ${isSpeaking ? "animate-pulse text-[#0d8274]" : "text-[#102b2b]/55"}`}
                                     onClick={handleReadQuestion}
-                                    title="Read question"
+                                    title="Read question aloud"
+                                    aria-label="Read question aloud"
                                 >
                                     {isSpeaking ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                                 </Button>
@@ -256,8 +257,8 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                         />
                     ) : !currentAnswerId ? (
                         <div className="space-y-4">
-                            <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 flex justify-between items-start">
-                                <p className="text-sm text-blue-800 dark:text-blue-200">
+                            <div className="flex items-start justify-between border border-[#0d8274]/20 bg-[#0d8274]/10 p-4">
+                                <p className="text-sm text-[#102b2b]">
                                     <strong>Tip:</strong> Consider using the STAR framework (Situation, Task, Action, Result) for behavioral questions.
                                 </p>
                             </div>
@@ -282,7 +283,7 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                                     setCurrentAnswerId(null);
                                     setInitialAnswerText("");
                                 }}
-                                className="w-full"
+                                className="w-full rounded-none border-[#102b2b]/25"
                             >
                                 Try Different Answer
                             </Button>

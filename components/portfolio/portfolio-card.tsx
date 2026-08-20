@@ -11,7 +11,6 @@ import {
     ExternalLink,
     Eye,
     Briefcase,
-    Code,
     TrendingUp,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -37,14 +36,14 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
     return (
         <Card
             className={cn(
-                "group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
-                featured && "border-2 border-primary shadow-lg"
+                "group relative overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none transition-colors duration-200 hover:border-[#0d8274] hover:shadow-[5px_5px_0_#d8f36b]",
+                featured && "border-2 border-[#0d8274] shadow-[5px_5px_0_#d8f36b]"
             )}
         >
             {/* Featured Badge */}
             {featured && (
-                <div className="absolute top-3 right-3 z-10">
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg">
+                <div className="absolute right-3 top-3 z-10">
+                    <Badge className="rounded-none border-none bg-[#d8f36b] text-[#102b2b] shadow-none">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         Featured
                     </Badge>
@@ -53,13 +52,13 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
 
             {/* Header with gradient & avatar */}
             <CardHeader className="relative p-0">
-                <div className="h-24 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 transition-all group-hover:from-primary/30 group-hover:via-primary/20 group-hover:to-primary/10" />
+                <div className="h-24 border-b border-[#102b2b]/10 bg-[#102b2b] transition-colors group-hover:bg-[#0d8274]" />
                 <div className="absolute bottom-0 left-6 translate-y-1/2">
-                    <Avatar className="h-16 w-16 border-4 border-background shadow-lg">
+                    <Avatar className="h-16 w-16 rounded-none border-4 border-[#f5f7f2] shadow-none">
                         {portfolio.avatar_url && (
                             <AvatarImage src={portfolio.avatar_url} alt={displayName} />
                         )}
-                        <AvatarFallback className="bg-primary/10 text-primary font-black text-lg">
+                        <AvatarFallback className="rounded-none bg-[#d8f36b] text-lg font-black text-[#102b2b]">
                             {initials}
                         </AvatarFallback>
                     </Avatar>
@@ -71,13 +70,13 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
                 {/* Name & Status */}
                 <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-xl font-heading font-black group-hover:text-primary transition-colors line-clamp-1">
+                        <h3 className="line-clamp-1 text-xl font-heading font-black tracking-[-0.02em] text-[#102b2b] transition-colors group-hover:text-[#0d8274]">
                             {displayName}
                         </h3>
                         {portfolio.open_to_work && (
                             <Badge
                                 variant="secondary"
-                                className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20 whitespace-nowrap shrink-0"
+                                className="shrink-0 whitespace-nowrap rounded-none border-[#0d8274]/25 bg-[#0d8274]/10 text-[#0d8274] hover:bg-[#0d8274]/15"
                             >
                                 Available
                             </Badge>
@@ -92,7 +91,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
 
                     {/* Location */}
                     {(portfolio.location || portfolio.profiles?.location) && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5 text-xs text-[#102b2b]/55">
                             <MapPin className="h-3 w-3" />
                             <span>{portfolio.location || portfolio.profiles?.location}</span>
                         </div>
@@ -101,7 +100,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
 
                 {/* Bio */}
                 {portfolio.bio && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-[#102b2b]/65">
                         {portfolio.bio}
                     </p>
                 )}
@@ -113,7 +112,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
                             <Badge
                                 key={i}
                                 variant="outline"
-                                className="text-xs font-medium bg-primary/5 hover:bg-primary/10 transition-colors"
+                                className="rounded-none border-[#102b2b]/15 bg-transparent text-xs font-medium text-[#102b2b]/70 hover:bg-[#d8f36b]/35"
                             >
                                 {skill}
                             </Badge>
@@ -121,7 +120,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
                         {remainingSkills > 0 && (
                             <Badge
                                 variant="outline"
-                                className="text-xs font-medium bg-muted/50 text-muted-foreground"
+                                className="rounded-none border-[#102b2b]/10 bg-[#102b2b]/5 text-xs font-medium text-[#102b2b]/55"
                             >
                                 +{remainingSkills}
                             </Badge>
@@ -130,7 +129,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
                 )}
 
                 {/* Stats */}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2">
+                <div className="flex items-center gap-4 border-t border-[#102b2b]/10 pt-3 text-xs text-[#102b2b]/55">
                     {portfolio.view_count !== undefined && portfolio.view_count > 0 && (
                         <div className="flex items-center gap-1">
                             <Eye className="h-3 w-3" />
@@ -149,7 +148,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
             {/* Footer */}
             <CardFooter className="p-6 pt-0">
                 <Button
-                    className="w-full gap-2 rounded-xl h-10 font-bold bg-gradient-to-br from-primary to-primary/80 hover:shadow-lg transition-all"
+                    className="h-10 w-full gap-2 rounded-none bg-[#102b2b] font-bold text-[#d8f36b] transition-colors hover:bg-[#0d8274]"
                     asChild
                 >
                     <Link href={`/p/${portfolio.slug}`}>
@@ -160,7 +159,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
             </CardFooter>
 
             {/* Hover Effect Border */}
-            <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/20 rounded-lg pointer-events-none transition-colors" />
+            <div className="pointer-events-none absolute inset-0 border-2 border-transparent transition-colors group-hover:border-[#0d8274]/30" />
         </Card>
     )
 }

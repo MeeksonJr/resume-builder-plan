@@ -135,12 +135,12 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                     >
-                        <Card className="bg-slate-950/40 border-primary/5 shadow-xl backdrop-blur-md overflow-hidden group h-full">
+                        <Card className="group h-full overflow-hidden border-[#102b2b]/15 bg-[#f4f7f1] shadow-none">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className={cn("p-2 rounded-xl bg-opacity-10 shadow-inner",
-                                        stat.color === "primary" ? "bg-primary text-primary" :
-                                            stat.color === "emerald" ? "bg-emerald-500 text-emerald-500" : "bg-blue-500 text-blue-500"
+                                    <div className={cn("border p-2",
+                                        stat.color === "primary" ? "border-[#0d8274]/20 bg-[#0d8274]/10 text-[#0d8274]" :
+                                            stat.color === "emerald" ? "border-[#0d8274]/20 bg-[#0d8274]/10 text-[#0d8274]" : "border-[#102b2b]/15 bg-[#102b2b]/5 text-[#102b2b]"
                                     )}>
                                         <stat.icon className="h-5 w-5" />
                                     </div>
@@ -155,9 +155,9 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                     </p>
                                 </div>
                             </CardContent>
-                            <div className={cn("h-1 w-full opacity-30",
-                                stat.color === "primary" ? "bg-primary" :
-                                    stat.color === "emerald" ? "bg-emerald-500" : "bg-blue-500"
+                            <div className={cn("h-1 w-full",
+                                stat.color === "primary" ? "bg-[#d8f36b]" :
+                                    stat.color === "emerald" ? "bg-[#0d8274]" : "bg-[#102b2b]"
                             )} />
                         </Card>
                     </motion.div>
@@ -175,29 +175,29 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                     </h2>
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-11 gap-2 rounded-2xl font-black bg-primary text-white hover:shadow-lg transition-all shadow-primary/20">
+                            <Button className="h-11 gap-2 rounded-none bg-[#d8f36b] font-bold text-[#102b2b] shadow-none transition-all hover:bg-[#c8e95a]">
                                 <Plus className="h-4 w-4" />
                                 New Session
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[550px] bg-slate-950/95 border-primary/10 shadow-3xl backdrop-blur-2xl p-0 overflow-hidden rounded-3xl">
-                            <div className="relative h-24 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border-b border-primary/5 flex items-center px-8">
+                        <DialogContent className="overflow-hidden rounded-none border-[#102b2b]/20 bg-[#e9eee8] p-0 shadow-2xl sm:max-w-[550px]">
+                            <div className="relative flex h-24 items-center border-b border-[#102b2b]/15 bg-[#102b2b] px-8 text-[#e9eee8]">
                                 <div>
                                     <DialogTitle className="text-2xl font-black uppercase tracking-tight">Practice Session</DialogTitle>
                                     <DialogDescription className="font-bold text-muted-foreground/80">Customize your AI-powered interview experience.</DialogDescription>
                                 </div>
                                 <Brain className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 text-primary/10" />
                             </div>
-                            <div className="p-8 space-y-8">
+                            <div className="space-y-8 p-8">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Session Mode</Label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div
                                             className={cn(
-                                                "p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300",
+                                                "cursor-pointer border-2 p-5 transition-all duration-300",
                                                 form.sessionMode === 'text'
-                                                    ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.1)] ring-1 ring-primary/20"
-                                                    : "border-primary/5 bg-slate-900/40 hover:border-primary/30"
+                                                    ? "border-[#0d8274] bg-[#0d8274]/10 ring-1 ring-[#0d8274]/20"
+                                                    : "border-[#102b2b]/15 bg-[#f4f7f1] hover:border-[#0d8274]/50"
                                             )}
                                             onClick={() => setForm({ ...form, sessionMode: 'text' })}
                                         >
@@ -209,10 +209,10 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                         </div>
                                         <div
                                             className={cn(
-                                                "p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300",
+                                                "cursor-pointer border-2 p-5 transition-all duration-300",
                                                 form.sessionMode === 'voice'
-                                                    ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.1)] ring-1 ring-primary/20"
-                                                    : "border-primary/5 bg-slate-900/40 hover:border-primary/30"
+                                                    ? "border-[#0d8274] bg-[#0d8274]/10 ring-1 ring-[#0d8274]/20"
+                                                    : "border-[#102b2b]/15 bg-[#f4f7f1] hover:border-[#0d8274]/50"
                                             )}
                                             onClick={() => setForm({ ...form, sessionMode: 'voice' })}
                                         >
@@ -231,7 +231,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                         <Input
                                             id="target-role"
                                             placeholder="Software Engineer"
-                                            className="h-12 rounded-xl bg-slate-900/40 border-primary/10 focus:ring-primary shadow-inner font-bold"
+                                            className="h-12 rounded-none border-[#102b2b]/20 bg-[#f4f7f1] font-bold shadow-none focus:ring-[#0d8274]"
                                             value={form.targetRole}
                                             onChange={(e) => setForm({ ...form, targetRole: e.target.value })}
                                         />
@@ -335,7 +335,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                     </div>
                                 </div>
 
-                                <Button onClick={handleCreateSession} disabled={isCreating} className="h-14 rounded-2xl w-full gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20 text-md">
+                                <Button onClick={handleCreateSession} disabled={isCreating} className="h-14 w-full gap-3 rounded-none bg-[#d8f36b] text-md font-bold uppercase tracking-widest text-[#102b2b] shadow-none hover:bg-[#c8e95a]">
                                     {isCreating ? (
                                         <>
                                             <Loader2 className="h-5 w-5 animate-spin" />
@@ -354,7 +354,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                 </div>
 
                 {sessions.length === 0 ? (
-                    <Card className="bg-slate-950/40 border-dashed border-2 border-primary/10 py-24 flex flex-col items-center justify-center text-center rounded-3xl backdrop-blur-md">
+                    <Card className="flex flex-col items-center justify-center border-2 border-dashed border-[#102b2b]/20 bg-[#f4f7f1] py-24 text-center shadow-none">
                         <div className="h-20 w-20 bg-primary/5 rounded-3xl flex items-center justify-center mb-6">
                             <Brain className="h-10 w-10 text-primary/30" />
                         </div>
@@ -374,7 +374,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                     transition={{ delay: i * 0.05 }}
                                 >
                                     <Card
-                                        className="bg-slate-950/40 border-primary/5 hover:bg-slate-900/60 transition-all duration-300 cursor-pointer rounded-2xl group shadow-lg overflow-hidden h-full"
+                                        className="group h-full cursor-pointer overflow-hidden border-[#102b2b]/15 bg-[#f4f7f1] shadow-none transition-all duration-300 hover:border-[#0d8274]/50 hover:bg-white"
                                         onClick={() => router.push(`/dashboard/interview-prep/${session.id}`)}
                                     >
                                         <CardHeader className="pb-4">
@@ -431,7 +431,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-10 w-10 rounded-xl bg-primary/5 hover:bg-primary/20 text-primary transition-all p-0"
+                                                    className="h-10 w-10 rounded-none bg-[#d8f36b] p-0 text-[#102b2b] transition-all hover:bg-[#c8e95a]"
                                                 >
                                                     {session.completed_at ? <TrendingUp className="h-4.5 w-4.5" /> : <Play className="h-4.5 w-4.5" />}
                                                 </Button>

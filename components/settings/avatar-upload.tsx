@@ -125,8 +125,8 @@ export function AvatarUpload({ profile }: AvatarUploadProps) {
     }
 
     return (
-        <div className="flex items-start gap-6 rounded-lg border border-primary/10 bg-primary/5 p-6">
-            <Avatar className="h-24 w-24 border-4 border-primary/20">
+        <div className="flex flex-col items-start gap-5 border border-border bg-muted/30 p-4 sm:flex-row sm:gap-6 sm:p-6">
+            <Avatar className="h-24 w-24 rounded-none border-4 border-primary/20">
                 {preview && <AvatarImage src={preview} alt={profile?.full_name || "Avatar"} />}
                 <AvatarFallback className="bg-primary/10 text-primary text-2xl font-black">
                     {initials}
@@ -147,7 +147,7 @@ export function AvatarUpload({ profile }: AvatarUploadProps) {
                         size="sm"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="gap-2"
+                        className="min-h-11 gap-2 rounded-none"
                     >
                         {uploading ? (
                             <>
@@ -168,7 +168,7 @@ export function AvatarUpload({ profile }: AvatarUploadProps) {
                             size="sm"
                             onClick={handleRemove}
                             disabled={uploading}
-                            className="gap-2 text-destructive hover:text-destructive"
+                            className="min-h-11 gap-2 rounded-none text-destructive hover:text-destructive"
                         >
                             <X className="h-4 w-4" />
                             Remove
