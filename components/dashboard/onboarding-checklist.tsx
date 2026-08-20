@@ -70,7 +70,7 @@ export function OnboardingChecklist({ resumeCount, isPro }: OnboardingChecklistP
             </div>
             <CardHeader>
                 <div className="flex items-center justify-between mb-2">
-                    <CardTitle className="text-xl">Welcome to ResumeForge! 🚀</CardTitle>
+                    <CardTitle className="text-xl">Set up your workspace</CardTitle>
                     <span className="text-sm font-medium text-muted-foreground mr-6">
                         {completedCount}/{steps.length} Steps
                     </span>

@@ -13,7 +13,7 @@ interface TopNavProps {
 
 export function TopNav({ isPro }: TopNavProps) {
     return (
-        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b bg-background/60 backdrop-blur-xl px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b border-[#102b2b]/10 bg-[#f8f4ec]/85 px-4 backdrop-blur-xl transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
                 <SidebarTrigger className="-ml-1" />
             </div>
@@ -22,7 +22,7 @@ export function TopNav({ isPro }: TopNavProps) {
                 <div className="flex flex-1 items-center gap-4">
                     <Button
                         variant="outline"
-                        className="hidden h-10 w-full max-w-[400px] justify-start gap-3 rounded-xl border-primary/10 bg-primary/5 px-4 text-sm font-medium text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary md:flex"
+                        className="hidden h-10 w-full max-w-[400px] justify-start gap-3 rounded-none border-[#102b2b]/10 bg-[#e9eee8] px-4 text-sm font-medium text-[#52716a] transition-all hover:border-[#0d8274]/40 hover:text-[#102b2b] md:flex"
                         onClick={() => {
                             // Trigger command menu
                             const event = new KeyboardEvent('keydown', {
@@ -34,8 +34,8 @@ export function TopNav({ isPro }: TopNavProps) {
                         }}
                     >
                         <Search className="h-4 w-4" />
-                        <span>Search anything...</span>
-                        <Kbd className="ml-auto pointer-events-none select-none px-1.5 py-0.5 text-[10px] font-black tracking-widest bg-white/20">
+                            <span>Search your workspace...</span>
+                            <Kbd className="pointer-events-none ml-auto select-none bg-white/60 px-1.5 py-0.5 text-[10px] font-black tracking-widest">
                             CTRL K
                         </Kbd>
                     </Button>
@@ -70,22 +70,22 @@ export function TopNav({ isPro }: TopNavProps) {
                     {!isPro && (
                         <Button
                             variant="outline"
-                            className="hidden sm:flex h-10 gap-2 rounded-xl border-amber-500/20 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400 font-bold text-xs uppercase tracking-widest"
+                            className="hidden h-10 gap-2 rounded-none border-[#d8a84e]/30 bg-[#d8a84e]/10 text-[#9a6b16] hover:bg-[#d8a84e]/20 hover:text-[#7a5110] sm:flex"
                             onClick={() => window.location.href = '/dashboard/subscription'}
                         >
                             <Sparkles className="h-4 w-4" />
-                            Upgrade Plan
+                            Upgrade
                         </Button>
                     )}
 
                     <div className="h-6 w-px bg-primary/10 mx-1 hidden sm:block" />
 
                     <Button
-                        className="hidden sm:flex h-10 gap-2 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/20 font-black text-xs tracking-tight border-none"
+                        className="hidden h-10 gap-2 rounded-none bg-[#102b2b] text-xs font-semibold tracking-tight text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 hover:bg-[#164743] sm:flex"
                         onClick={() => window.location.href = '/dashboard/resume/new'}
                     >
                         <Plus className="h-4 w-4" />
-                        NEW RESUME
+                        New resume
                     </Button>
                 </div>
             </div>

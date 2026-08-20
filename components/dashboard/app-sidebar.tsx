@@ -58,13 +58,13 @@ const getNavItems = (isAdmin: boolean) => {
             icon: LayoutDashboard,
         },
         {
-            title: "Scholarships & Aid",
+            title: "Funding & aid",
             href: "/dashboard/scholarships",
             icon: Sparkles,
             items: [
-                { title: "Matched Awards", href: "/dashboard/scholarships" },
-                { title: "Grants & Aid", href: "/dashboard/grants" },
-                { title: "Public Directory", href: "/scholarships" },
+                { title: "Matched awards", href: "/dashboard/scholarships" },
+                { title: "Grants & aid", href: "/dashboard/grants" },
+                { title: "Public directory", href: "/scholarships" },
             ],
         },
         {
@@ -87,7 +87,7 @@ const getNavItems = (isAdmin: boolean) => {
             ],
         },
         {
-            title: "AI Power-ups",
+            title: "AI tools",
             href: "/dashboard/career-coach",
             icon: Sparkles,
             items: [
@@ -195,18 +195,17 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
 
     return (
         <Sidebar collapsible="icon" className="glass-border border-r bg-background/60 backdrop-blur-xl">
-            <SidebarHeader className="h-16 flex items-center justify-center px-4">
+            <SidebarHeader className="flex h-16 items-center justify-center px-4">
                 <Link href="/dashboard" className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25 transition-all group-hover:scale-110">
-                        <span className="font-extrabold text-base">G</span>
-                        <span className="text-xs text-amber-300 ml-0.5 -mt-2">✦</span>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#102b2b] text-[#d8f36b] transition-all group-hover:-rotate-6">
+                        <span className="text-base font-extrabold">R</span>
                     </div>
                     <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-                        <span className="text-lg font-heading font-black tracking-tight text-white">
-                            grantly<span className="text-indigo-400">.ai</span>
+                        <span className="text-lg font-heading font-black tracking-tight text-foreground">
+                            ResumeForge<span className="text-[#0d8274]">.</span>
                         </span>
                         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
-                            Funding & Career
+                            Career workspace
                         </span>
                     </div>
                 </Link>
