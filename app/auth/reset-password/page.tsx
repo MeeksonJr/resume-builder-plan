@@ -78,16 +78,16 @@ export default function ResetPasswordPage() {
 
     if (isVerifying) {
         return (
-            <Card className="w-full max-w-md border-white/10 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden flex flex-col items-center justify-center p-12">
+            <Card className="flex w-full max-w-md flex-col items-center justify-center overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec] p-12 text-[#102b2b] shadow-[18px_20px_0_rgba(16,43,43,.12)]">
                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
-                <p className="text-slate-400 font-medium">Verifying reset link...</p>
+                <p className="font-medium text-[#52716a]">Verifying your reset link...</p>
             </Card>
         );
     }
 
     if (isSuccess) {
         return (
-            <Card className="w-full max-w-md border-white/10 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+            <Card className="w-full max-w-md overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec] text-[#102b2b] shadow-[18px_20px_0_rgba(16,43,43,.12)]">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500/50 to-transparent" />
                 <CardHeader className="space-y-4 pb-8 text-center">
                     <div className="flex justify-center">
@@ -95,20 +95,20 @@ export default function ResetPasswordPage() {
                             <CheckCircle2 className="w-8 h-8 text-green-400" />
                         </div>
                     </div>
-                    <CardTitle className="text-3xl font-bold text-white tracking-tight">Password Updated</CardTitle>
-                    <CardDescription className="text-slate-400 text-base leading-relaxed">
+                    <CardTitle className="text-3xl font-semibold tracking-[-.05em]">Password updated</CardTitle>
+                    <CardDescription className="text-base leading-relaxed text-[#52716a]">
                         Your password has been successfully reset. Redirecting you to login...
                     </CardDescription>
                 </CardHeader>
                 <CardFooter className="flex justify-center pb-8 text-slate-500 text-xs">
-                    Automatic redirection in 3 seconds...
+                    Returning you to sign in in 3 seconds...
                 </CardFooter>
             </Card>
         );
     }
 
     return (
-        <Card className="w-full max-w-md border-white/10 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+        <Card className="relative w-full max-w-md overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec] text-[#102b2b] shadow-[18px_20px_0_rgba(16,43,43,.12)]">
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
             <CardHeader className="space-y-2 pb-8">
@@ -117,9 +117,9 @@ export default function ResetPasswordPage() {
                         <Lock className="w-6 h-6 text-blue-400" />
                     </div>
                 </div>
-                <CardTitle className="text-3xl font-bold text-center text-white tracking-tight">New Password</CardTitle>
-                <CardDescription className="text-center text-slate-400 text-base">
-                    Set a secure new password for your account
+                <CardTitle className="text-3xl font-semibold tracking-[-.05em]">Create a new password</CardTitle>
+                <CardDescription className="text-center text-base text-[#52716a]">
+                    Choose a secure password for your workspace.
                 </CardDescription>
             </CardHeader>
 
@@ -130,7 +130,7 @@ export default function ResetPasswordPage() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                         >
-                            <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400">
+                            <Alert variant="destructive" className="rounded-none border-red-700/20 bg-red-50 text-red-800">
                                 <AlertCircle className="h-4 w-4" />
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
@@ -146,7 +146,7 @@ export default function ResetPasswordPage() {
 
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-slate-300 font-medium ml-1">New Password</Label>
+                            <Label htmlFor="password" className="ml-1 font-medium text-[#365950]">New password</Label>
                             <div className="relative group/input">
                                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 transition-colors group-focus-within/input:text-blue-400" />
                                 <Input
@@ -157,13 +157,13 @@ export default function ResetPasswordPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     disabled={isLoading}
-                                    className="pl-11 h-12 bg-slate-950/50 border-white/5 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all rounded-xl"
+                                    className="h-12 rounded-none border-[#102b2b]/15 bg-white/60 pl-11 text-[#102b2b] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-slate-300 font-medium ml-1">Confirm New Password</Label>
+                            <Label htmlFor="confirmPassword" className="ml-1 font-medium text-[#365950]">Confirm new password</Label>
                             <div className="relative group/input">
                                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 transition-colors group-focus-within/input:text-blue-400" />
                                 <Input
@@ -174,7 +174,7 @@ export default function ResetPasswordPage() {
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
                                     disabled={isLoading}
-                                    className="pl-11 h-12 bg-slate-950/50 border-white/5 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all rounded-xl"
+                                    className="h-12 rounded-none border-[#102b2b]/15 bg-white/60 pl-11 text-[#102b2b] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                                 />
                             </div>
                         </div>
@@ -184,24 +184,24 @@ export default function ResetPasswordPage() {
                 <CardFooter className="flex flex-col gap-6 pt-2 pb-8">
                     <Button
                         type="submit"
-                        className="h-12 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] group"
+                        className="h-12 w-full rounded-none bg-[#102b2b] font-semibold text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 transition-all hover:bg-[#164743]"
                         disabled={isLoading || error?.includes("Invalid or expired reset link")}
                     >
                         {isLoading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : (
                             <span className="flex items-center justify-center gap-2">
-                                Update Password
+                                Save new password
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </span>
                         )}
                     </Button>
 
-                    <p className="text-center text-sm text-slate-400">
+                    <p className="text-center text-sm text-[#52716a]">
                         Back to{" "}
                         <Link
                             href="/auth/login"
-                            className="font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                            className="font-bold text-[#0d8274] transition-colors hover:text-[#102b2b]"
                         >
                             Sign in
                         </Link>

@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, Mail, Lock, ArrowRight, Sparkles, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Loader2, AlertCircle, Mail, Lock, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
@@ -55,8 +55,8 @@ export default function LoginPage() {
   const handleDemoSignIn = async () => {
     setIsLoading(true);
     setError(null);
-    setEmail("student@premio.edu");
-    setPassword("scholarship2026");
+    setEmail("demo@resumeforge.ai");
+    setPassword("resumeforge");
     
     // Simulate quick instant demo login to dashboard
     setTimeout(() => {
@@ -65,19 +65,18 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="w-full border-slate-800/80 bg-slate-900/70 backdrop-blur-2xl shadow-2xl shadow-indigo-950/40 rounded-3xl relative overflow-hidden">
-      {/* Decorative top soft accent */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-amber-300" />
+    <Card className="relative w-full overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec]/95 shadow-[18px_20px_0_rgba(16,43,43,.12)]">
+      <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
 
-      <CardHeader className="space-y-2 pb-6 pt-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2">
-          <Sparkles className="w-6 h-6 text-amber-300" />
+      <CardHeader className="space-y-2 pb-6 pt-9 text-left">
+        <div className="mb-2 flex h-11 w-11 items-center justify-center bg-[#d8f36b] text-[#102b2b]">
+          <Sparkles className="h-5 w-5" />
         </div>
-        <CardTitle className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Welcome to Premio
+        <CardTitle className="text-3xl font-semibold tracking-[-.05em] text-[#102b2b] sm:text-4xl">
+          Welcome back.
         </CardTitle>
-        <CardDescription className="text-slate-400 text-sm max-w-xs mx-auto">
-          Log in to access your matched scholarships, grants, and deadlines.
+        <CardDescription className="max-w-sm text-sm leading-relaxed text-[#52716a]">
+          Pick up where you left off: sharpen a resume, tailor an application, or prepare for the conversation.
         </CardDescription>
       </CardHeader>
 
@@ -88,7 +87,7 @@ export default function LoginPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-300 rounded-2xl py-3">
+              <Alert variant="destructive" className="rounded-none border-red-700/20 bg-red-50 text-red-800">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs">{error}</AlertDescription>
               </Alert>
@@ -100,7 +99,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleDemoSignIn}
-              className="flex items-center justify-center gap-2 h-11 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer"
+              className="flex h-11 cursor-pointer items-center justify-center gap-2 border border-[#102b2b]/15 bg-white/50 text-xs font-semibold text-[#365950] transition-all hover:border-[#0d8274]/50 hover:bg-white"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -126,7 +125,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleDemoSignIn}
-              className="flex items-center justify-center gap-2 h-11 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer"
+              className="flex h-11 cursor-pointer items-center justify-center gap-2 border border-[#102b2b]/15 bg-white/50 text-xs font-semibold text-[#365950] transition-all hover:border-[#0d8274]/50 hover:bg-white"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.42c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.71-.93 2.73 1 .08 2.01-.48 2.63-1.23z" />
@@ -137,39 +136,39 @@ export default function LoginPage() {
 
           <div className="relative flex items-center justify-center">
             <div className="border-t border-slate-800 w-full" />
-            <span className="bg-slate-900 px-3 text-[11px] uppercase tracking-wider text-slate-500 font-medium">
-              or with email
+            <span className="bg-[#f8f4ec] px-3 text-[11px] font-medium uppercase tracking-wider text-[#78928a]">
+              or continue with email
             </span>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium text-slate-300">
-                Student Email
+              <Label htmlFor="email" className="text-xs font-medium text-[#365950]">
+                Email address
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="student@university.edu"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
+                  className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs font-medium text-slate-300">
+                <Label htmlFor="password" className="text-xs font-medium text-[#365950]">
                   Password
                 </Label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                    className="text-xs text-[#0d8274] transition-colors hover:text-[#102b2b]"
                 >
                   Forgot password?
                 </Link>
@@ -184,7 +183,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
+                  className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                 />
               </div>
             </div>
@@ -193,7 +192,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+            className="h-12 w-full cursor-pointer rounded-none bg-[#102b2b] font-semibold text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 transition-all hover:bg-[#164743]"
           >
             {isLoading ? (
               <>
@@ -202,7 +201,7 @@ export default function LoginPage() {
               </>
             ) : (
               <>
-                Sign In to Dashboard
+                Open my workspace
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}
@@ -213,23 +212,23 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleDemoSignIn}
-              className="w-full p-2.5 rounded-xl bg-indigo-950/40 hover:bg-indigo-950/70 border border-indigo-500/30 text-indigo-200 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="flex w-full cursor-pointer items-center justify-center gap-1.5 border border-[#0d8274]/20 bg-[#0d8274]/10 p-2.5 text-xs font-medium text-[#0d8274] transition-colors hover:bg-[#0d8274]/15"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Instant Student Demo Access (1-Click)</span>
+              <span>Explore the demo workspace</span>
             </button>
           </div>
         </CardContent>
       </form>
 
       <CardFooter className="px-6 sm:px-8 pb-8 pt-0 flex flex-col gap-4 text-center">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-[#52716a]">
           Don't have an account?{" "}
           <Link
             href="/auth/sign-up"
-            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
+            className="font-semibold text-[#0d8274] transition-colors hover:text-[#102b2b]"
           >
-            Create free profile
+            Create an account
           </Link>
         </p>
       </CardFooter>

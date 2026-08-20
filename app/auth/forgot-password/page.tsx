@@ -51,22 +51,22 @@ export default function ForgotPasswordPage() {
 
   if (isSuccess) {
     return (
-      <Card className="w-full border-slate-800/80 bg-slate-900/70 backdrop-blur-2xl shadow-2xl shadow-indigo-950/40 rounded-3xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
+      <Card className="relative w-full overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec]/95 shadow-[18px_20px_0_rgba(16,43,43,.12)]">
+        <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
         <CardHeader className="space-y-3 pb-6 pt-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
             <CheckCircle2 className="w-6 h-6" />
           </div>
-          <CardTitle className="text-2xl font-bold text-white tracking-tight">Check your email</CardTitle>
-          <CardDescription className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto">
+          <CardTitle className="text-3xl font-semibold tracking-[-.05em] text-[#102b2b]">Check your email</CardTitle>
+          <CardDescription className="mx-auto max-w-xs text-xs leading-relaxed text-[#52716a] sm:text-sm">
             We&apos;ve sent a password reset link to <span className="text-white font-medium">{email}</span>
           </CardDescription>
         </CardHeader>
         <CardFooter className="flex flex-col gap-4 pb-8 px-6 sm:px-8">
-          <Button variant="outline" className="w-full h-11 rounded-xl border-slate-700 bg-slate-950/50 text-white hover:bg-slate-800 cursor-pointer" asChild>
+          <Button variant="outline" className="h-12 w-full cursor-pointer rounded-none border-[#102b2b]/20 bg-transparent text-[#102b2b] hover:bg-[#102b2b]/5" asChild>
             <Link href="/auth/login">Return to login</Link>
           </Button>
-          <p className="text-[11px] text-center text-slate-500">
+            <p className="text-center text-[11px] text-[#78928a]">
             Didn&apos;t receive the email? Check your spam or promotions folder.
           </p>
         </CardFooter>
@@ -75,16 +75,16 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="w-full border-slate-800/80 bg-slate-900/70 backdrop-blur-2xl shadow-2xl shadow-indigo-950/40 rounded-3xl relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-amber-300" />
+    <Card className="relative w-full overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec]/95 shadow-[18px_20px_0_rgba(16,43,43,.12)]">
+      <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
 
       <CardHeader className="space-y-2 pb-6 pt-8 text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2">
           <KeyRound className="w-6 h-6 text-amber-300" />
         </div>
-        <CardTitle className="text-2xl font-bold text-white tracking-tight">Reset Password</CardTitle>
+        <CardTitle className="text-3xl font-semibold tracking-[-.05em] text-[#102b2b]">Reset your password</CardTitle>
         <CardDescription className="text-slate-400 text-xs sm:text-sm max-w-xs mx-auto">
-          Enter your student email address and we'll send you a recovery link.
+          Enter your account email and we&apos;ll send a secure recovery link.
         </CardDescription>
       </CardHeader>
 
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-300 rounded-2xl py-3">
+              <Alert variant="destructive" className="rounded-none border-red-700/20 bg-red-50 text-red-800">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs">{error}</AlertDescription>
               </Alert>
@@ -103,20 +103,20 @@ export default function ForgotPasswordPage() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs font-medium text-slate-300">
-              Account Email
+              <Label htmlFor="email" className="text-xs font-medium text-[#365950]">
+              Account email
             </Label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
               <Input
                 id="email"
                 type="email"
-                placeholder="student@university.edu"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
+                className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
               />
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function ForgotPasswordPage() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer mt-2"
+            className="mt-2 h-12 w-full cursor-pointer rounded-none bg-[#102b2b] font-semibold text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 transition-all hover:bg-[#164743]"
           >
             {isLoading ? (
               <>
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
               </>
             ) : (
               <>
-                Send Reset Link
+                Email me a reset link
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}
@@ -141,11 +141,11 @@ export default function ForgotPasswordPage() {
         </CardContent>
 
         <CardFooter className="px-6 sm:px-8 pb-8 pt-2 flex flex-col gap-4 text-center">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#52716a]">
             Remembered your password?{" "}
             <Link
               href="/auth/login"
-              className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
+              className="font-semibold text-[#0d8274] transition-colors hover:text-[#102b2b]"
             >
               Back to sign in
             </Link>

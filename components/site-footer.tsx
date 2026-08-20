@@ -8,12 +8,32 @@ import { Input } from "@/components/ui/input";
 
 export function SiteFooter() {
     const [email, setEmail] = useState("");
+    const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+    const [newsletterError, setNewsletterError] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Implement newsletter signup
-        console.log("Newsletter signup:", email);
-        setEmail("");
+        setNewsletterStatus("sending");
+        setNewsletterError("");
+
+        try {
+            const response = await fetch("/api/newsletter", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "We could not subscribe you.");
+            }
+
+            setNewsletterStatus("success");
+            setEmail("");
+        } catch (submitError) {
+            setNewsletterStatus("error");
+            setNewsletterError(submitError instanceof Error ? submitError.message : "We could not subscribe you.");
+        }
     };
 
     return (
@@ -31,7 +51,7 @@ export function SiteFooter() {
                         <p className="mx-auto mb-8 max-w-2xl text-[#a6c0b8]">
                             Get practical career notes, product updates, and templates worth keeping.
                         </p>
-                        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                        <form onSubmit={handleSubmit} className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
                             <Input
                                 type="email"
                                 placeholder="Enter your email"
@@ -39,14 +59,15 @@ export function SiteFooter() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="h-12 flex-1 rounded-none border-white/20 bg-white/10 text-white placeholder:text-[#a6c0b8]"
                                 required
+                                disabled={newsletterStatus === "sending"}
                             />
-                            <Button type="submit" className="h-12 rounded-none bg-[#d8f36b] px-8 font-semibold text-[#102b2b] hover:bg-[#e5ff8b]">
-                                Subscribe
+                            <Button type="submit" disabled={newsletterStatus === "sending"} className="h-12 rounded-none bg-[#d8f36b] px-8 font-semibold text-[#102b2b] hover:bg-[#e5ff8b]">
+                                {newsletterStatus === "sending" ? "Joining..." : "Subscribe"}
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </form>
-                        <p className="mt-4 text-xs text-[#7f9c93]">
-                            No spam. Unsubscribe anytime.
+                        <p role={newsletterStatus === "error" ? "alert" : undefined} className={`mt-4 text-xs ${newsletterStatus === "error" ? "text-red-300" : "text-[#7f9c93]"}`}>
+                            {newsletterStatus === "success" ? "You are on the list. Watch your inbox for the next note." : newsletterStatus === "error" ? newsletterError : "No spam. Unsubscribe anytime."}
                         </p>
                     </div>
                 </div>

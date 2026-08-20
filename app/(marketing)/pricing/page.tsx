@@ -85,33 +85,33 @@ const comparisonFeatures = [
 
 export default function PricingPage() {
     return (
-        <div className="py-32 bg-slate-950 min-h-screen">
-            <div className="container mx-auto px-4">
+        <div className="min-h-screen bg-[#e9eee8] py-32 text-[#102b2b]">
+            <div className="container mx-auto max-w-7xl px-6 md:px-10">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-6"
+                        className="mb-6 inline-flex items-center gap-2 border border-[#0d8274]/20 bg-[#0d8274]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#0d8274]"
                     >
                         <Zap className="w-3 h-3" />
-                        Pricing
+                        Membership
                     </motion.div>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-6xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400"
+                        className="mb-4 text-5xl font-semibold tracking-[-.06em] md:text-7xl"
                     >
-                        Simple, Transparent Pricing
+                        Choose the amount of momentum you need.
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-lg text-slate-400 max-w-2xl mx-auto"
+                        className="mx-auto max-w-2xl text-lg leading-relaxed text-[#52716a]"
                     >
-                        Start free, upgrade when you're ready. No hidden fees, cancel anytime.
+                        Start with the essentials. Upgrade when deeper feedback, unlimited tailoring, and interview practice become useful.
                     </motion.p>
                 </div>
 
@@ -124,13 +124,13 @@ export default function PricingPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 + 0.3 }}
                         >
-                            <Card className={`flex flex-col relative h-full ${plan.popular
-                                ? 'border-primary shadow-2xl shadow-primary/20 scale-105 bg-gradient-to-b from-primary/5 to-transparent'
-                                : 'border-white/10 bg-white/5'
+                            <Card className={`relative flex h-full flex-col ${plan.popular
+                                ? 'border-[#0d8274] bg-[#102b2b] text-[#f8f4ec] shadow-[14px_16px_0_rgba(13,130,116,.18)] lg:scale-105'
+                                : 'border-[#102b2b]/15 bg-[#f8f4ec]'
                                 }`}>
                                 {plan.popular && (
                                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                        <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                                        <Badge className="rounded-none bg-[#d8f36b] px-4 py-1 text-[#102b2b]">
                                             <Sparkles className="w-3 h-3 mr-1" />
                                             {plan.badge}
                                         </Badge>
@@ -138,24 +138,24 @@ export default function PricingPage() {
                                 )}
                                 <CardHeader className="pb-8">
                                     <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                                    <CardDescription className="text-base">{plan.description}</CardDescription>
+                                    <CardDescription className={plan.popular ? "text-base text-[#a6c0b8]" : "text-base text-[#52716a]"}>{plan.description}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-1">
                                     <div className="mb-8">
-                                        <span className="text-5xl font-bold text-white">{plan.price}</span>
-                                        <span className="text-slate-400 text-lg">{plan.period}</span>
+                                        <span className="text-5xl font-semibold tracking-[-.06em]">{plan.price}</span>
+                                        <span className={plan.popular ? "text-lg text-[#a6c0b8]" : "text-lg text-[#52716a]"}>{plan.period}</span>
                                     </div>
                                     <div className="space-y-3 mb-6">
                                         {plan.features.map((feature) => (
                                             <div key={feature} className="flex items-start gap-3">
-                                                <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                                                <span className="text-sm text-slate-200">{feature}</span>
+                                                <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#0d8274]" />
+                                                <span className={plan.popular ? "text-sm text-[#f8f4ec]" : "text-sm text-[#365950]"}>{feature}</span>
                                             </div>
                                         ))}
                                         {plan.limitations.map((feature) => (
                                             <div key={feature} className="flex items-start gap-3 opacity-50">
-                                                <X className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
-                                                <span className="text-sm text-slate-400">{feature}</span>
+                                                <X className="mt-0.5 h-5 w-5 shrink-0 text-[#9bb5aa]" />
+                                                <span className={plan.popular ? "text-sm text-[#7f9c93]" : "text-sm text-[#78928a]"}>{feature}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -163,7 +163,7 @@ export default function PricingPage() {
                                 <CardFooter>
                                     <Button
                                         variant={plan.buttonVariant}
-                                        className={`w-full h-12 text-base rounded-xl ${plan.popular ? 'shadow-lg shadow-primary/25' : ''
+                                        className={`h-12 w-full rounded-none text-base ${plan.popular ? 'bg-[#d8f36b] text-[#102b2b] hover:bg-[#e5ff8b]' : 'border-[#102b2b]/20 bg-transparent text-[#102b2b] hover:bg-[#102b2b]/5'
                                             }`}
                                         asChild
                                     >
@@ -182,19 +182,19 @@ export default function PricingPage() {
                     transition={{ delay: 0.6 }}
                     className="max-w-5xl mx-auto"
                 >
-                    <h2 className="text-3xl font-bold text-center mb-12 text-white">
-                        Feature Comparison
+                    <h2 className="mb-12 text-center text-4xl font-semibold tracking-[-.05em]">
+                        Compare the work, not the hype.
                     </h2>
                     <div className="space-y-8">
                         {comparisonFeatures.map((category, idx) => (
-                            <div key={idx} className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-                                <div className="bg-white/5 px-6 py-4 border-b border-white/10">
-                                    <h3 className="font-semibold text-lg text-white">{category.category}</h3>
+                            <div key={idx} className="overflow-hidden border border-[#102b2b]/15 bg-[#f8f4ec]">
+                                <div className="border-b border-[#102b2b]/10 bg-[#d8e5dc] px-6 py-4">
+                                    <h3 className="text-lg font-semibold">{category.category}</h3>
                                 </div>
-                                <div className="divide-y divide-white/10">
+                                <div className="divide-y divide-[#102b2b]/10">
                                     {category.features.map((feature, fIdx) => (
-                                        <div key={fIdx} className="grid grid-cols-3 gap-4 px-6 py-4 items-center hover:bg-white/5 transition-colors">
-                                            <div className="text-slate-300">{feature.name}</div>
+                                        <div key={fIdx} className="grid grid-cols-3 items-center gap-4 px-6 py-4 transition-colors hover:bg-[#e9eee8]">
+                                            <div className="text-[#365950]">{feature.name}</div>
                                             <div className="text-center">
                                                 {typeof feature.free === 'boolean' ? (
                                                     feature.free ? (

@@ -76,19 +76,19 @@ export default function SignUpPage() {
   };
 
   return (
-    <Card className="w-full border-slate-800/80 bg-slate-900/70 backdrop-blur-2xl shadow-2xl shadow-indigo-950/40 rounded-3xl relative overflow-hidden">
+    <Card className="relative w-full overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec]/95 shadow-[18px_20px_0_rgba(16,43,43,.12)]">
       {/* Decorative top soft accent */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-emerald-400 to-amber-300" />
+      <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
 
-      <CardHeader className="space-y-2 pb-6 pt-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2">
-          <GraduationCap className="w-6 h-6 text-indigo-300" />
+      <CardHeader className="space-y-2 pb-6 pt-9 text-left">
+        <div className="mb-2 flex h-11 w-11 items-center justify-center bg-[#d8f36b] text-[#102b2b]">
+          <GraduationCap className="h-5 w-5" />
         </div>
         <CardTitle className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Create Student Profile
+          Build your workspace.
         </CardTitle>
         <CardDescription className="text-slate-400 text-sm max-w-xs mx-auto">
-          Start matching with thousands of vetted scholarships and grants for college.
+          Bring your experience in once. Then turn it into stronger resumes, applications, and conversations.
         </CardDescription>
       </CardHeader>
 
@@ -99,7 +99,7 @@ export default function SignUpPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-300 rounded-2xl py-3">
+              <Alert variant="destructive" className="rounded-none border-red-700/20 bg-red-50 text-red-800">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs">{error}</AlertDescription>
               </Alert>
@@ -108,7 +108,7 @@ export default function SignUpPage() {
 
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="fullName" className="text-xs font-medium text-slate-300">
+              <Label htmlFor="fullName" className="text-xs font-medium text-[#365950]">
                 Full Name
               </Label>
               <div className="relative">
@@ -121,13 +121,13 @@ export default function SignUpPage() {
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
+                  className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium text-slate-300">
+              <Label htmlFor="email" className="text-xs font-medium text-[#365950]">
                 Email Address
               </Label>
               <div className="relative">
@@ -140,20 +140,20 @@ export default function SignUpPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
+                  className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="education" className="text-xs font-medium text-slate-300">
+              <Label htmlFor="education" className="text-xs font-medium text-[#365950]">
                 Current Education Level
               </Label>
               <select
                 id="education"
                 value={educationLevel}
                 onChange={(e) => setEducationLevel(e.target.value)}
-                className="w-full h-11 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                className="h-11 w-full rounded-none border border-[#102b2b]/15 bg-white/60 px-3 text-sm text-[#102b2b] focus:outline-none focus:ring-2 focus:ring-[#0d8274]/30"
               >
                 <option value="High School Senior">High School Senior</option>
                 <option value="Undergraduate">College Undergraduate (Freshman-Senior)</option>
@@ -164,7 +164,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-xs font-medium text-slate-300">
+              <Label htmlFor="password" className="text-xs font-medium text-[#365950]">
                 Password
               </Label>
               <div className="relative">
@@ -177,7 +177,7 @@ export default function SignUpPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
+                  className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
                 />
               </div>
             </div>
@@ -187,7 +187,7 @@ export default function SignUpPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+              className="h-12 w-full cursor-pointer rounded-none bg-[#102b2b] font-semibold text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 transition-all hover:bg-[#164743]"
             >
               {isLoading ? (
                 <>
@@ -196,7 +196,7 @@ export default function SignUpPage() {
                 </>
               ) : (
                 <>
-                  Get Matched Free
+                  Create my workspace
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}
@@ -207,27 +207,27 @@ export default function SignUpPage() {
           <button
             type="button"
             onClick={handleQuickDemo}
-            className="w-full p-2.5 rounded-xl bg-indigo-950/40 hover:bg-indigo-950/70 border border-indigo-500/30 text-indigo-200 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center gap-1.5 border border-[#0d8274]/20 bg-[#0d8274]/10 p-2.5 text-xs font-medium text-[#0d8274] transition-colors hover:bg-[#0d8274]/15"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Instant Demo Account (Skip Signup)</span>
+            <span>Explore the demo workspace</span>
           </button>
         </CardContent>
       </form>
 
       <CardFooter className="px-6 sm:px-8 pb-8 pt-0 flex flex-col gap-3 text-center">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-[#52716a]">
           Already have an account?{" "}
           <Link
             href="/auth/login"
-            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
+            className="font-semibold text-[#0d8274] transition-colors hover:text-[#102b2b]"
           >
-            Sign in here
+            Sign in instead
           </Link>
         </p>
 
-        <p className="text-[11px] text-slate-500 leading-tight">
-          By signing up, you agree to Premio's Terms of Service and Privacy Policy.
+        <p className="text-[11px] leading-tight text-[#78928a]">
+          By creating an account, you agree to ResumeForge&apos;s Terms of Service and Privacy Policy.
         </p>
       </CardFooter>
     </Card>

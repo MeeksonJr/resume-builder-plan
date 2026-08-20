@@ -96,9 +96,17 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 GROQ_API_KEY=your_groq_api_key
 GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 
+# Resend email delivery
+RESEND_API_KEY=re_your_api_key
+RESEND_FROM_EMAIL=ResumeForge <hello@your-verified-domain.com>
+CONTACT_EMAIL=hello@your-domain.com
+RESEND_AUDIENCE_ID=your_resend_audience_id
+
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+`RESEND_API_KEY` and `CONTACT_EMAIL` enable the contact form. Add `RESEND_AUDIENCE_ID` to save newsletter subscribers as Resend contacts; without an audience, newsletter signups send a notification email to `CONTACT_EMAIL` instead.
 
 ### 4. Database Setup & Migration
 You can apply the necessary database tables and Row Level Security (RLS) policies using the Supabase CLI or manually via the dashboard.

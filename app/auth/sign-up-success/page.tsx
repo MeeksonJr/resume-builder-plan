@@ -12,9 +12,9 @@ import { Mail, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function SignUpSuccessPage() {
   return (
-    <Card className="w-full max-w-md border-white/10 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+    <Card className="relative w-full max-w-md overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec] text-[#102b2b] shadow-[18px_20px_0_rgba(16,43,43,.12)]">
       {/* Decorative top glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+      <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
 
       <CardHeader className="space-y-4 pb-8 text-center">
         <div className="flex justify-center mb-2">
@@ -22,17 +22,17 @@ export default function SignUpSuccessPage() {
             <Mail className="w-8 h-8 text-blue-400" />
           </div>
         </div>
-        <CardTitle className="text-3xl font-bold text-white tracking-tight">Check your email</CardTitle>
-        <CardDescription className="text-slate-400 text-base leading-relaxed">
+        <CardTitle className="text-3xl font-semibold tracking-[-.05em]">Check your email</CardTitle>
+        <CardDescription className="text-base leading-relaxed text-[#52716a]">
           We&apos;ve sent a confirmation link to verify your email address.
           Please click it to activate your account.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4 px-8 pb-8">
-        <div className="rounded-2xl bg-slate-950/50 border border-white/5 p-4 text-sm text-slate-400">
+        <div className="border border-[#102b2b]/10 bg-white/60 p-4 text-sm text-[#52716a]">
           <p className="flex items-start gap-3">
-            <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0d8274]" />
             <span>
               The email might take a few minutes. Check your spam folder if you can&apos;t find it.
             </span>
@@ -41,13 +41,13 @@ export default function SignUpSuccessPage() {
       </CardContent>
 
       <CardFooter className="flex flex-col gap-4 pb-8 px-8">
-        <Button asChild className="h-12 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all group">
+        <Button asChild className="h-12 w-full rounded-none bg-[#102b2b] font-semibold text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 transition-all hover:bg-[#164743] group">
           <Link href="/auth/login" className="flex items-center justify-center gap-2">
             Go to Sign In
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </Button>
-        <Button asChild variant="ghost" className="h-11 w-full text-slate-400 hover:text-white hover:bg-white/5 font-medium">
+        <Button asChild variant="ghost" className="h-11 w-full font-medium text-[#52716a] hover:bg-[#102b2b]/5 hover:text-[#102b2b]">
           <Link href="/">Return to Home</Link>
         </Button>
       </CardFooter>
