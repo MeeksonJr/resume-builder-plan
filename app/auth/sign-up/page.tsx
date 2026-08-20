@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, User, Mail, Lock, UserPlus, ArrowRight } from "lucide-react";
+import { Loader2, AlertCircle, User, Mail, Lock, Sparkles, GraduationCap, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SignUpPage() {
@@ -24,6 +24,7 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [educationLevel, setEducationLevel] = useState("Undergraduate");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,151 +39,197 @@ export default function SignUpPage() {
       return;
     }
 
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo:
-          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-          `${window.location.origin}/dashboard`,
-        data: {
-          full_name: fullName,
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+            `${window.location.origin}/dashboard`,
+          data: {
+            full_name: fullName,
+            education_level: educationLevel,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "Failed to create account. Please try again.");
       setIsLoading(false);
-      return;
     }
+  };
 
-    router.push("/auth/sign-up-success");
+  const handleQuickDemo = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 600);
   };
 
   return (
-    <Card className="w-full max-w-md border-white/10 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
-      {/* Decorative top glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+    <Card className="w-full border-slate-800/80 bg-slate-900/70 backdrop-blur-2xl shadow-2xl shadow-indigo-950/40 rounded-3xl relative overflow-hidden">
+      {/* Decorative top soft accent */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-emerald-400 to-amber-300" />
 
-      <CardHeader className="space-y-2 pb-8">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20">
-            <UserPlus className="w-6 h-6 text-purple-400" />
-          </div>
+      <CardHeader className="space-y-2 pb-6 pt-8 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2">
+          <GraduationCap className="w-6 h-6 text-indigo-300" />
         </div>
-        <CardTitle className="text-3xl font-bold text-center text-white tracking-tight">Create Account</CardTitle>
-        <CardDescription className="text-center text-slate-400 text-base">
-          Join thousands of professionals building their future
+        <CardTitle className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Create Student Profile
+        </CardTitle>
+        <CardDescription className="text-slate-400 text-sm max-w-xs mx-auto">
+          Start matching with thousands of vetted scholarships and grants for college.
         </CardDescription>
       </CardHeader>
 
       <form onSubmit={handleSignUp}>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 px-6 sm:px-8">
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400">
+              <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-300 rounded-2xl py-3">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="text-xs">{error}</AlertDescription>
               </Alert>
             </motion.div>
           )}
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-slate-300 font-medium ml-1">Full Name</Label>
-              <div className="relative group/input">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 transition-colors group-focus-within/input:text-purple-400" />
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="fullName" className="text-xs font-medium text-slate-300">
+                Full Name
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="Mohamed L. Datt"
+                  placeholder="Alex Morgan"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-11 h-12 bg-slate-950/50 border-white/5 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all rounded-xl"
+                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300 font-medium ml-1">Email Address</Label>
-              <div className="relative group/input">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 transition-colors group-focus-within/input:text-purple-400" />
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-xs font-medium text-slate-300">
+                Email Address
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder="alex@university.edu"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-11 h-12 bg-slate-950/50 border-white/5 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all rounded-xl"
+                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300 font-medium ml-1">Password</Label>
-              <div className="relative group/input">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 transition-colors group-focus-within/input:text-purple-400" />
+            <div className="space-y-1.5">
+              <Label htmlFor="education" className="text-xs font-medium text-slate-300">
+                Current Education Level
+              </Label>
+              <select
+                id="education"
+                value={educationLevel}
+                onChange={(e) => setEducationLevel(e.target.value)}
+                className="w-full h-11 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              >
+                <option value="High School Senior">High School Senior</option>
+                <option value="Undergraduate">College Undergraduate (Freshman-Senior)</option>
+                <option value="Graduate">Graduate / Master's Student</option>
+                <option value="Transfer">Transfer Student</option>
+                <option value="PhD">Doctoral / PhD Candidate</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-xs font-medium text-slate-300">
+                Password
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Minimum 6 characters"
+                  placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="pl-11 h-12 bg-slate-950/50 border-white/5 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all rounded-xl"
+                  className="pl-10 h-11 bg-slate-950/80 border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 rounded-xl text-white text-sm"
                 />
               </div>
             </div>
           </div>
-        </CardContent>
 
-        <CardFooter className="flex flex-col gap-6 pt-2 pb-8">
-          <Button
-            type="submit"
-            className="h-12 w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98] group"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                Create Account
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </span>
-            )}
-          </Button>
-
-          <div className="relative w-full">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/5" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent px-2 text-slate-500 font-medium">Already a Member?</span>
-            </div>
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating profile...
+                </>
+              ) : (
+                <>
+                  Get Matched Free
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </Button>
           </div>
 
-          <p className="text-center text-sm text-slate-400">
-            Already have an account?{" "}
-            <Link
-              href="/auth/login"
-              className="font-bold text-purple-400 hover:text-purple-300 transition-colors underline-offset-4 hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
+          {/* Quick Demo Access */}
+          <button
+            type="button"
+            onClick={handleQuickDemo}
+            className="w-full p-2.5 rounded-xl bg-indigo-950/40 hover:bg-indigo-950/70 border border-indigo-500/30 text-indigo-200 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Instant Demo Account (Skip Signup)</span>
+          </button>
+        </CardContent>
       </form>
+
+      <CardFooter className="px-6 sm:px-8 pb-8 pt-0 flex flex-col gap-3 text-center">
+        <p className="text-xs text-slate-400">
+          Already have an account?{" "}
+          <Link
+            href="/auth/login"
+            className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors"
+          >
+            Sign in here
+          </Link>
+        </p>
+
+        <p className="text-[11px] text-slate-500 leading-tight">
+          By signing up, you agree to Premio's Terms of Service and Privacy Policy.
+        </p>
+      </CardFooter>
     </Card>
   );
 }

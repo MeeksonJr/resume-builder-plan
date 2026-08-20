@@ -1,8 +1,10 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
-});
+function getGroqClient() {
+    return new Groq({
+        apiKey: process.env.GROQ_API_KEY || "placeholder-groq-key",
+    });
+}
 
 export interface EvaluationResult {
     score: number; // 1-10
@@ -79,6 +81,7 @@ Format your response as JSON with this structure:
 IMPORTANT: Return ONLY valid JSON, no other text.`;
 
     try {
+        const groq = getGroqClient();
         const response = await groq.chat.completions.create({
             model: "llama-3.3-70b-versatile", // Fast and free model
             messages: [

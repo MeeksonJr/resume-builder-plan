@@ -1,132 +1,216 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, CheckCircle, PlayCircle } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { ArrowRight, Sparkles, CheckCircle, GraduationCap, DollarSign, Award, Search, Compass, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { BlackHoleHeroSection } from "@/components/ui/blackhole-hero-section";
+import { GlassDock, GlassButton, GlassFilter } from "@/components/ui/liquid-glass";
+
+const sampleFunding = [
+    { title: "Future Tech Innovators Grant", amount: "$15,000", match: "98% Match", tags: ["STEM", "Undergrad"] },
+    { title: "NextGen Leaders Fellowship", amount: "$25,000", match: "95% Match", tags: ["Leadership", "All Majors"] },
+    { title: "First-Generation Scholar Award", amount: "$10,000", match: "92% Match", tags: ["Need-Based", "Freshman"] },
+];
 
 export function HeroSection() {
-    const ref = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: ref,
-        offset: ["start start", "end start"],
-    });
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
+    const dockIcons = [
+        {
+            src: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=128&auto=format&fit=crop&q=80",
+            alt: "College Scholarships",
+        },
+        {
+            src: "https://images.unsplash.com/photo-1532619675605-1ede6c2ed2b0?w=128&auto=format&fit=crop&q=80",
+            alt: "Research Grants",
+        },
+        {
+            src: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=128&auto=format&fit=crop&q=80",
+            alt: "Fellowships",
+        },
+        {
+            src: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=128&auto=format&fit=crop&q=80",
+            alt: "Tuition Assistance",
+        },
+    ];
 
     return (
-        <section ref={ref} className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-            {/* Dynamic Background */}
-            <div className="absolute inset-0 -z-10 bg-slate-950">
-                <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
-                <div className="absolute top-0 right-0 h-[600px] w-[600px] bg-blue-500/20 rounded-full blur-[120px] mix-blend-screen opacity-50 animate-pulse" />
-                <div className="absolute bottom-0 left-0 h-[500px] w-[500px] bg-purple-500/10 rounded-full blur-[100px] mix-blend-screen opacity-50" />
+        <section className="relative min-h-[92svh] md:min-h-[840px] w-full overflow-hidden bg-[#0B1220] text-white">
+            {/* Black Hole Gravitational Background */}
+            <div className="absolute inset-0 z-0 pointer-events-auto">
+                <BlackHoleHeroSection
+                    distance={26}
+                    elevation={-6}
+                    azimuth={0}
+                    fov={46}
+                    hotColor="#FFF5EA"
+                    midColor="#6366F1"
+                    coolColor="#312E81"
+                    glow={1.1}
+                    steps={240}
+                    resolution={0.65}
+                    scrim="left"
+                    scrimStrength={0.85}
+                    className="opacity-75"
+                />
             </div>
 
-            <div className="container mx-auto px-4 text-center relative z-10">
+            <GlassFilter />
 
-                {/* Badge */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm font-medium text-blue-400 mb-8 backdrop-blur-sm cursor-pointer hover:bg-blue-500/20 transition-colors"
-                >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>New: AI Voice Interviews v2.0</span>
-                    <ArrowRight className="h-3.5 w-3.5 ml-1 opacity-50" />
-                </motion.div>
+            <div className="container relative z-10 mx-auto px-4 pt-32 pb-20 md:pt-40 md:pb-28">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    
+                    {/* Left Copy */}
+                    <div className="lg:col-span-7 text-left space-y-6">
+                        {/* Brand Badge */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-950/60 px-4 py-1.5 text-xs font-semibold text-indigo-300 backdrop-blur-md"
+                        >
+                            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>AI Scholarship & Grant Matching</span>
+                            <span className="text-amber-300">✦</span>
+                        </motion.div>
 
-                {/* Heading */}
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                    className="mx-auto max-w-5xl text-5xl font-extrabold tracking-tight md:text-7xl lg:text-8xl leading-[1.1]"
-                >
-                    Your Career, <br className="hidden md:block" />
-                    <span className="text-gradient drop-shadow-2xl">Supercharged by AI.</span>
-                </motion.h1>
+                        {/* Main Heading */}
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08]"
+                        >
+                            Your money for college,{" "}
+                            <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-emerald-300 bg-clip-text text-transparent">
+                                matched.
+                            </span>
+                        </motion.h1>
 
-                {/* Subheading */}
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="mx-auto mt-8 max-w-2xl text-lg text-slate-400 md:text-xl font-light leading-relaxed"
-                >
-                    Build ATS-ready resumes, generate cover letters, and practice with our realistic AI interviewer.
-                    The complete toolkit for the modern job seeker.
-                </motion.p>
+                        {/* Subtitle */}
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="max-w-xl text-base sm:text-lg text-slate-300 font-light leading-relaxed"
+                        >
+                            <strong className="text-white font-medium">Grantly</strong> analyzes your GPA, major, background, and goals to automatically match you with thousands of verified scholarships, fellowships, and research grants.
+                        </motion.p>
 
-                {/* CTAs */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-                >
-                    <Button size="lg" className="h-14 px-8 text-base gap-2 rounded-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 transition-all hover:scale-105" asChild>
-                        <Link href="/auth/sign-up">
-                            Start Building Free <ArrowRight className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <Button size="lg" variant="outline" className="h-14 px-8 text-base gap-2 rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-200 backdrop-blur-md transition-all hover:scale-105" asChild>
-                        <Link href="#demo">
-                            <PlayCircle className="h-4 w-4" />
-                            Watch Demo
-                        </Link>
-                    </Button>
-                </motion.div>
-
-                {/* Trust Badges */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.8 }}
-                    className="mt-12 flex items-center justify-center gap-8 text-sm text-slate-500"
-                >
-                    <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-blue-500" />
-                        <span>No credit card needed</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-purple-500" />
-                        <span>Used by 1,000+ candidates</span>
-                    </div>
-                </motion.div>
-
-                {/* 3D Dashboard Mockup */}
-                <motion.div
-                    style={{ y }}
-                    className="mt-20 relative mx-auto max-w-6xlPerspective"
-                >
-                    <div className="relative rounded-2xl border border-white/10 bg-slate-900/50 p-2 shadow-2xl backdrop-blur-xl lg:rounded-3xl lg:p-3 overflow-hidden group">
-                        {/* Glow behind the dashboard */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-indigo-500/30 transition-all duration-1000" />
-
-                        <div className="rounded-xl border border-white/5 bg-slate-950 aspect-[16/10] overflow-hidden relative">
-                            {/* Dashboard Screenshot */}
-                            <Image
-                                src="/dashboard-preview.png"
-                                alt="Resume Builder Dashboard Interface"
-                                fill
-                                className="object-cover"
-                                priority
-                            />
-
-                            {/* Fake UI Elements for visual interest */}
-                            <div className="absolute top-0 left-0 right-0 h-12 border-b border-white/5 bg-slate-900/80 backdrop-blur-sm flex items-center px-4 gap-2">
-                                <div className="w-3 h-3 rounded-full bg-red-500/50" />
-                                <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                                <div className="w-3 h-3 rounded-full bg-green-500/50" />
+                        {/* Interactive Fast Search */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="flex flex-col sm:flex-row gap-3 max-w-xl pt-2"
+                        >
+                            <div className="relative flex-1">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Enter your major, school, or interest..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full h-14 pl-12 pr-4 rounded-2xl bg-white/10 border border-white/15 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-md text-sm"
+                                />
                             </div>
-                        </div>
+                            <Button size="lg" className="h-14 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold shadow-lg shadow-indigo-500/30 gap-2 shrink-0 cursor-pointer" asChild>
+                                <Link href="/scholarships">
+                                    Find Matches <ArrowRight className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </motion.div>
+
+                        {/* Trust Badges */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.5 }}
+                            className="flex flex-wrap items-center gap-6 pt-2 text-xs text-slate-400"
+                        >
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-emerald-400" />
+                                <span>$45M+ in verified awards</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-indigo-400" />
+                                <span>No essay-mill spam</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-amber-300" />
+                                <span>AI Application Assistant</span>
+                            </div>
+                        </motion.div>
                     </div>
-                </motion.div>
+
+                    {/* Right Interactive Card / Liquid Glass Dock */}
+                    <div className="lg:col-span-5 space-y-6">
+                        {/* Glass Match Widget */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="rounded-3xl border border-white/15 bg-slate-950/70 p-6 backdrop-blur-xl shadow-2xl space-y-4"
+                        >
+                            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                                        <Award className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-sm text-white">Live Opportunities</h3>
+                                        <p className="text-xs text-slate-400">Updated in real time</p>
+                                    </div>
+                                </div>
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                                    <Sparkles className="h-3 w-3" /> 2,400+ Active
+                                </span>
+                            </div>
+
+                            {/* Sample Opportunities */}
+                            <div className="space-y-2.5">
+                                {sampleFunding.map((item, idx) => (
+                                    <div key={idx} className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-indigo-500/40 hover:bg-white/10 transition-all cursor-pointer">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-medium text-xs sm:text-sm text-white group-hover:text-indigo-300 transition-colors">
+                                                    {item.title}
+                                                </h4>
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                                {item.tags.map((t, i) => (
+                                                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/5">
+                                                        {t}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <div className="font-bold text-sm text-emerald-400">{item.amount}</div>
+                                            <div className="text-[10px] text-indigo-400">{item.match}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Liquid Glass Interactive Dock */}
+                            <div className="pt-2 flex flex-col items-center gap-3">
+                                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Explore Categories</p>
+                                <GlassDock icons={dockIcons} href="/scholarships" />
+                                <Button asChild className="w-full rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 text-xs cursor-pointer" size="sm">
+                                    <Link href="/scholarships">
+                                        Browse All Scholarships & Grants <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                                    </Link>
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </div>
+
+                </div>
             </div>
         </section>
     );
 }
+

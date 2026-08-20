@@ -2,12 +2,12 @@ import { createClient } from "@supabase/supabase-js";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-// Initialize Supabase Service Role Client
-// We need this to insert into resume_views since we don't have a public INSERT policy
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabaseAdmin() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key"
+    );
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
         const country = headersList.get("x-vercel-ip-country") || null;
         const city = headersList.get("x-vercel-ip-city") || null;
 
+        const supabaseAdmin = getSupabaseAdmin();
         const { error } = await supabaseAdmin.from("resume_views").insert({
             resume_id: resumeId,
             viewer_ip_hash: ipHash,

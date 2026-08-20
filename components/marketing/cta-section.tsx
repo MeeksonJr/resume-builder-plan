@@ -32,10 +32,10 @@ export function CTASection() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.1 }}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-8"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-semibold mb-8"
                                 >
                                     <Sparkles className="w-4 h-4" />
-                                    Start Your Career Journey Today
+                                    Fund Your Education & Career Today
                                 </motion.div>
 
                                 <motion.h2
@@ -45,7 +45,7 @@ export function CTASection() {
                                     transition={{ delay: 0.2 }}
                                     className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-6"
                                 >
-                                    Ready to Land Your Dream Job?
+                                    Ready to Unlock Your College Funding?
                                 </motion.h2>
 
                                 <motion.p
@@ -55,8 +55,7 @@ export function CTASection() {
                                     transition={{ delay: 0.3 }}
                                     className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed"
                                 >
-                                    Join 1,200+ job seekers who've used our AI-powered tools to create standout resumes
-                                    and ace their interviews. Start free, no credit card required.
+                                    Join 25,000+ students who have matched with scholarships, fellowships, and grants tailored to their background. Start free, no credit card required.
                                 </motion.p>
 
                                 <motion.div
@@ -72,7 +71,7 @@ export function CTASection() {
                                         asChild
                                     >
                                         <Link href="/auth/sign-up">
-                                            Get Started for Free
+                                            Find Scholarships Now
                                             <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </Link>
                                     </Button>
@@ -94,16 +93,16 @@ export function CTASection() {
                                     className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-slate-400"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle className="h-4 w-4 text-green-400" />
-                                        <span>Free forever plan</span>
+                                        <CheckCircle className="h-4 w-4 text-emerald-400" />
+                                        <span>Free scholarship search</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle className="h-4 w-4 text-green-400" />
-                                        <span>No credit card needed</span>
+                                        <CheckCircle className="h-4 w-4 text-emerald-400" />
+                                        <span>Verified legitimate awards</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle className="h-4 w-4 text-green-400" />
-                                        <span>Cancel anytime</span>
+                                        <CheckCircle className="h-4 w-4 text-emerald-400" />
+                                        <span>AI Essay Assistant</span>
                                     </div>
                                 </motion.div>
                             </div>

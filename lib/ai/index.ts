@@ -10,7 +10,7 @@ const groq = createGroq({
 });
 
 const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
 });
 
 const openai = createOpenAI({
@@ -95,8 +95,9 @@ async function withFallback<T>(
 ): Promise<T> {
   // Check if any keys are available and non-empty
   const hasKeys =
-    (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.length > 0) ||
+    (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 0) ||
     (process.env.GOOGLE_GENERATIVE_AI_API_KEY && process.env.GOOGLE_GENERATIVE_AI_API_KEY.length > 0) ||
+    (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.length > 0) ||
     (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 0);
 
   if (!hasKeys) {
@@ -105,8 +106,8 @@ async function withFallback<T>(
   }
 
   const models = [
-    { provider: groq, model: "llama-3.3-70b-versatile", name: "Groq" },
     { provider: google, model: "gemini-2.5-flash", name: "Gemini" },
+    { provider: groq, model: "llama-3.3-70b-versatile", name: "Groq" },
     { provider: openai, model: "gpt-4o-mini", name: "OpenAI" },
   ];
 

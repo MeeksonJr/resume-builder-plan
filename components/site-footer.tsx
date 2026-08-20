@@ -57,26 +57,26 @@ export function SiteFooter() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
                     {/* Brand */}
                     <div className="lg:col-span-2 space-y-4">
-                        <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                                <FileText className="h-6 w-6 text-primary" />
+                        <Link href="/" className="flex items-center gap-2.5 font-bold text-xl">
+                            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md">
+                                <span className="font-extrabold text-base">G</span>
+                                <span className="text-xs text-amber-300 ml-0.5 -mt-2">✦</span>
                             </div>
-                            <span className="text-white">ResumeBuilder<span className="text-primary">.ai</span></span>
+                            <span className="text-white lowercase font-extrabold tracking-tight text-2xl">grantly<span className="text-indigo-400">.ai</span></span>
                         </Link>
                         <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-                            Build professional resumes, practice interviews with AI, and land your dream job.
-                            The complete career toolkit powered by advanced AI.
+                            AI-powered funding for your future. Find scholarships, grants, and fellowship opportunities tailored to your profile.
                         </p>
                         <div className="flex space-x-4">
-                            <Link href="#" className="text-slate-400 hover:text-primary transition-colors">
+                            <Link href="#" className="text-slate-400 hover:text-indigo-400 transition-colors">
                                 <Twitter className="h-5 w-5" />
                                 <span className="sr-only">Twitter</span>
                             </Link>
-                            <Link href="#" className="text-slate-400 hover:text-primary transition-colors">
+                            <Link href="#" className="text-slate-400 hover:text-indigo-400 transition-colors">
                                 <Github className="h-5 w-5" />
                                 <span className="sr-only">GitHub</span>
                             </Link>
-                            <Link href="#" className="text-slate-400 hover:text-primary transition-colors">
+                            <Link href="#" className="text-slate-400 hover:text-indigo-400 transition-colors">
                                 <Linkedin className="h-5 w-5" />
                                 <span className="sr-only">LinkedIn</span>
                             </Link>
@@ -85,12 +85,12 @@ export function SiteFooter() {
 
                     {/* Product */}
                     <div>
-                        <h4 className="font-semibold text-white mb-4">Product</h4>
+                        <h4 className="font-semibold text-white mb-4">Funding & Tools</h4>
                         <ul className="space-y-3 text-sm text-slate-400">
-                            <li><Link href="/#features" className="hover:text-primary transition-colors">Features</Link></li>
-                            <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
-                            <li><Link href="/changelog" className="hover:text-primary transition-colors">Changelog</Link></li>
-                            <li><Link href="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link></li>
+                            <li><Link href="/#scholarships" className="hover:text-indigo-400 transition-colors">Scholarship Matcher</Link></li>
+                            <li><Link href="/#grants" className="hover:text-indigo-400 transition-colors">Grants & Aid</Link></li>
+                            <li><Link href="/pricing" className="hover:text-indigo-400 transition-colors">Pricing</Link></li>
+                            <li><Link href="/dashboard" className="hover:text-indigo-400 transition-colors">Dashboard</Link></li>
                         </ul>
                     </div>
 
@@ -98,9 +98,9 @@ export function SiteFooter() {
                     <div>
                         <h4 className="font-semibold text-white mb-4">Company</h4>
                         <ul className="space-y-3 text-sm text-slate-400">
-                            <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-                            <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+                            <li><Link href="/about" className="hover:text-indigo-400 transition-colors">About Us</Link></li>
+                            <li><Link href="/blog" className="hover:text-indigo-400 transition-colors">Blog & Guides</Link></li>
+                            <li><Link href="/contact" className="hover:text-indigo-400 transition-colors">Contact</Link></li>
                         </ul>
                     </div>
 
@@ -108,8 +108,8 @@ export function SiteFooter() {
                     <div>
                         <h4 className="font-semibold text-white mb-4">Legal</h4>
                         <ul className="space-y-3 text-sm text-slate-400">
-                            <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                            <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+                            <li><Link href="/privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
+                            <li><Link href="/terms" className="hover:text-indigo-400 transition-colors">Terms of Service</Link></li>
                         </ul>
                     </div>
                 </div>
@@ -117,10 +117,10 @@ export function SiteFooter() {
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-slate-500">
-                        © {new Date().getFullYear()} ResumeBuilder. All rights reserved.
+                        © {new Date().getFullYear()} Grantly. All rights reserved. Your money for college, matched.
                     </p>
                     <p className="text-sm text-slate-500">
-                        Built with ❤️ for job seekers everywhere
+                        Built with ✦ for ambitious students & scholars
                     </p>
                 </div>
             </div>

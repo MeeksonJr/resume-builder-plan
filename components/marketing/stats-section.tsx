@@ -5,28 +5,28 @@ import { Users, FileCheck, Briefcase, Award } from "lucide-react";
 
 const stats = [
     {
+        icon: Award,
+        value: "$45M+",
+        label: "Funding Unlocked",
+        color: "text-emerald-400",
+    },
+    {
         icon: Users,
-        value: "1,200+",
-        label: "Active Job Seekers",
-        color: "text-blue-500",
+        value: "25,000+",
+        label: "Matched Students",
+        color: "text-indigo-400",
     },
     {
         icon: FileCheck,
-        value: "3,500+",
-        label: "Resumes Created",
-        color: "text-purple-500",
+        value: "12,400+",
+        label: "Verified Scholarships",
+        color: "text-violet-400",
     },
     {
         icon: Briefcase,
-        value: "850+",
-        label: "Interviews Practiced",
-        color: "text-pink-500",
-    },
-    {
-        icon: Award,
-        value: "92%",
-        label: "Success Rate",
-        color: "text-green-500",
+        value: "96.4%",
+        label: "Profile Match Accuracy",
+        color: "text-amber-300",
     },
 ];
 

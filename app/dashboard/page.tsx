@@ -4,6 +4,10 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { AnalyticsView } from "@/components/dashboard/analytics-view";
 import { WelcomeTour } from "@/components/dashboard/welcome-tour";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
+import { FundingOverview } from "@/components/dashboard/funding-overview";
+import { Sparkles, FileText, Briefcase, GraduationCap } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -40,37 +44,56 @@ export default async function DashboardPage() {
     .select("id")
     .eq("user_id", user.id);
 
-  // Profile is already fetched in layout, but we need it here for logic or let's fetch essential fields
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, bio, is_pro")
+    .select("username, bio, is_pro, full_name")
     .eq("id", user.id)
     .single();
+
+  const displayName = profile?.full_name || profile?.username || user.email?.split("@")[0];
 
   return (
     <div className="relative space-y-12 pb-20">
       {/* Background Decorative Elements */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 -right-24 w-80 h-80 bg-primary/2 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -right-24 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="flex flex-col gap-6 px-4 md:px-0 sm:flex-row sm:items-center sm:justify-between relative">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-heading font-black tracking-tighter md:text-5xl lg:text-6xl gradient-text">
-            My Resumes
-          </h1>
-          <p className="text-lg text-muted-foreground font-medium max-w-lg">
-            Manage your career assets with AI-powered precision.
-          </p>
+      {/* Primary Section: AI Funding, Scholarships & Grants */}
+      <FundingOverview userName={displayName} />
+
+      {/* Secondary Section: Career Assets, Resumes, and Portfolio Tools */}
+      <div className="pt-8 border-t border-slate-800/80 space-y-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+              <FileText className="w-5 h-5 text-indigo-400" />
+              <span>Career & Application Documents</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Manage your tailored resumes, cover letters, and application portfolios.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/resume/new">
+              <Button size="sm" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs">
+                + Create Resume
+              </Button>
+            </Link>
+            <Link href="/dashboard/cover-letters">
+              <Button size="sm" variant="outline" className="rounded-xl border-slate-700 text-slate-300 text-xs">
+                Cover Letters
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-16">
         <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={!!profile?.is_pro} />
         <WelcomeTour
           resumesCount={resumes?.length || 0}
           applicationsCount={applications?.length || 0}
           interviewsCount={interviews?.length || 0}
-          hasPortfolio={!!profile?.username || !!profile?.bio} // A rough check for portfolio setup
+          hasPortfolio={!!profile?.username || !!profile?.bio}
         />
 
         {resumes && resumes.length > 0 ? (
@@ -79,11 +102,11 @@ export default async function DashboardPage() {
               <AnalyticsView resumes={resumes} events={events || []} />
             </section>
 
-            <section className="relative pt-4">
-              <div className="flex items-center gap-4 mb-8 px-4 md:px-0">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40 whitespace-nowrap">Your Portfolio</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+            <section className="relative pt-2">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400/60 whitespace-nowrap">Your Resumes & Portfolios</span>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
               </div>
               <ResumeList resumes={resumes} />
             </section>

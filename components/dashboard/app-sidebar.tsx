@@ -58,7 +58,17 @@ const getNavItems = (isAdmin: boolean) => {
             icon: LayoutDashboard,
         },
         {
-            title: "Resumes",
+            title: "Scholarships & Aid",
+            href: "/dashboard/scholarships",
+            icon: Sparkles,
+            items: [
+                { title: "Matched Awards", href: "/dashboard/scholarships" },
+                { title: "Grants & Aid", href: "/dashboard/grants" },
+                { title: "Public Directory", href: "/scholarships" },
+            ],
+        },
+        {
+            title: "Resumes & CVs",
             href: "/dashboard/resumes",
             icon: FileText,
             items: [
@@ -187,15 +197,16 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
         <Sidebar collapsible="icon" className="glass-border border-r bg-background/60 backdrop-blur-xl">
             <SidebarHeader className="h-16 flex items-center justify-center px-4">
                 <Link href="/dashboard" className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/60 shadow-lg shadow-primary/20 transition-all group-hover:scale-110">
-                        <FileText className="h-5 w-5 text-primary-foreground" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25 transition-all group-hover:scale-110">
+                        <span className="font-extrabold text-base">G</span>
+                        <span className="text-xs text-amber-300 ml-0.5 -mt-2">✦</span>
                     </div>
                     <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-                        <span className="text-lg font-heading font-black tracking-tight gradient-text">
-                            ResumeForge
+                        <span className="text-lg font-heading font-black tracking-tight text-white">
+                            grantly<span className="text-indigo-400">.ai</span>
                         </span>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                            Professional
+                        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                            Funding & Career
                         </span>
                     </div>
                 </Link>
