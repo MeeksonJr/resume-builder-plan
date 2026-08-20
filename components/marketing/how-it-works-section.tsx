@@ -32,17 +32,15 @@ const steps = [
 
 export function HowItWorksSection() {
     return (
-        <section className="py-24 bg-slate-950 relative overflow-hidden">
+        <section className="relative overflow-hidden bg-[#102b2b] py-24 text-[#f8f4ec]">
             {/* Background decoration */}
-            <div className="absolute top-1/2 right-0 w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-[120px] -z-10" />
-
-            <div className="container mx-auto px-4 max-w-6xl">
+            <div className="container mx-auto max-w-7xl px-6 md:px-10">
                 <div className="text-center mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold uppercase tracking-wider mb-6"
+                        className="mb-6 inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#d8f36b]"
                     >
                         How It Works
                     </motion.div>
@@ -51,7 +49,7 @@ export function HowItWorksSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-3xl md:text-5xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400"
+                        className="mb-6 text-4xl font-semibold tracking-[-.05em] md:text-6xl"
                     >
                         From Resume to Offer in 4 Steps
                     </motion.h2>
@@ -60,13 +58,13 @@ export function HowItWorksSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="text-lg text-slate-400 max-w-2xl mx-auto"
+                        className="mx-auto max-w-2xl text-lg text-[#a6c0b8]"
                     >
                         Our streamlined process takes you from upload to interview-ready in minutes, not hours.
                     </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
                     {steps.map((step, idx) => (
                         <motion.div
                             key={idx}
@@ -78,27 +76,27 @@ export function HowItWorksSection() {
                         >
                             {/* Connecting line */}
                             {idx < steps.length - 1 && (
-                                <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-white/20 to-transparent -z-10" />
+                                <div className="absolute left-full top-16 hidden h-px w-full bg-[#d8f36b]/30 lg:block" />
                             )}
 
                             <div className="relative">
                                 {/* Step number */}
-                                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-slate-900 border-2 border-white/10 flex items-center justify-center text-sm font-bold text-slate-400 group-hover:border-white/30 transition-colors">
+                                <div className="absolute -left-3 -top-3 flex h-9 w-9 items-center justify-center border border-[#d8f36b]/40 bg-[#164743] text-sm font-bold text-[#d8f36b] transition-colors group-hover:border-[#d8f36b]">
                                     {idx + 1}
                                 </div>
 
                                 {/* Icon */}
-                                <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.gradient} p-0.5 mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                                    <div className="w-full h-full rounded-2xl bg-slate-950 flex items-center justify-center">
+                                <div className="mb-6 h-20 w-20 border border-[#d8f36b]/30 bg-[#164743] p-0.5 transition-transform duration-300 group-hover:-translate-y-1">
+                                    <div className="flex h-full w-full items-center justify-center">
                                         <step.icon className="w-10 h-10 text-white" />
                                     </div>
                                 </div>
 
                                 {/* Content */}
-                                <h3 className="text-xl font-semibold text-white mb-3">
+                                    <h3 className="mb-3 text-xl font-semibold">
                                     {step.title}
                                 </h3>
-                                <p className="text-slate-400 leading-relaxed">
+                                <p className="leading-relaxed text-[#a6c0b8]">
                                     {step.description}
                                 </p>
                             </div>

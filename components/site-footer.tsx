@@ -17,19 +17,19 @@ export function SiteFooter() {
     };
 
     return (
-        <footer className="bg-slate-950 border-t border-white/10">
+        <footer className="border-t border-[#c9d8d0] bg-[#102b2b] text-[#f8f4ec]">
             {/* Newsletter Section */}
             <div className="border-b border-white/10">
-                <div className="container mx-auto px-4 py-16">
+                <div className="container mx-auto px-6 py-16 md:px-10">
                     <div className="max-w-4xl mx-auto text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 mb-6">
-                            <Mail className="w-8 h-8 text-white" />
+                        <div className="mb-6 inline-flex h-12 w-12 items-center justify-center bg-[#d8f36b] text-[#102b2b]">
+                            <Mail className="h-6 w-6" />
                         </div>
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                            Stay Updated
+                        <h3 className="mb-4 text-2xl font-semibold md:text-3xl">
+                            A better application starts with one useful idea.
                         </h3>
-                        <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
-                            Get career tips, product updates, and exclusive interview prep strategies delivered to your inbox weekly.
+                        <p className="mx-auto mb-8 max-w-2xl text-[#a6c0b8]">
+                            Get practical career notes, product updates, and templates worth keeping.
                         </p>
                         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                             <Input
@@ -37,15 +37,15 @@ export function SiteFooter() {
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="flex-1 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 rounded-xl"
+                                className="h-12 flex-1 rounded-none border-white/20 bg-white/10 text-white placeholder:text-[#a6c0b8]"
                                 required
                             />
-                            <Button type="submit" className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 font-semibold">
+                            <Button type="submit" className="h-12 rounded-none bg-[#d8f36b] px-8 font-semibold text-[#102b2b] hover:bg-[#e5ff8b]">
                                 Subscribe
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </form>
-                        <p className="text-xs text-slate-500 mt-4">
+                        <p className="mt-4 text-xs text-[#7f9c93]">
                             No spam. Unsubscribe anytime.
                         </p>
                     </div>
@@ -53,19 +53,18 @@ export function SiteFooter() {
             </div>
 
             {/* Main Footer */}
-            <div className="container mx-auto px-4 py-12">
+            <div className="container mx-auto px-6 py-12 md:px-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
                     {/* Brand */}
                     <div className="lg:col-span-2 space-y-4">
                         <Link href="/" className="flex items-center gap-2.5 font-bold text-xl">
-                            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md">
-                                <span className="font-extrabold text-base">G</span>
-                                <span className="text-xs text-amber-300 ml-0.5 -mt-2">✦</span>
+                            <div className="flex h-9 w-9 items-center justify-center bg-[#d8f36b] text-[#102b2b]">
+                                <span className="text-base font-extrabold">R</span>
                             </div>
-                            <span className="text-white lowercase font-extrabold tracking-tight text-2xl">grantly<span className="text-indigo-400">.ai</span></span>
+                            <span className="text-2xl font-extrabold tracking-tight">ResumeForge<span className="text-[#d8f36b]">.</span></span>
                         </Link>
-                        <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-                            AI-powered funding for your future. Find scholarships, grants, and fellowship opportunities tailored to your profile.
+                        <p className="max-w-sm text-sm leading-relaxed text-[#a6c0b8]">
+                            A calmer, sharper way to build the materials that move your career forward.
                         </p>
                         <div className="flex space-x-4">
                             <Link href="#" className="text-slate-400 hover:text-indigo-400 transition-colors">
@@ -87,10 +86,10 @@ export function SiteFooter() {
                     <div>
                         <h4 className="font-semibold text-white mb-4">Funding & Tools</h4>
                         <ul className="space-y-3 text-sm text-slate-400">
-                            <li><Link href="/#scholarships" className="hover:text-indigo-400 transition-colors">Scholarship Matcher</Link></li>
-                            <li><Link href="/#grants" className="hover:text-indigo-400 transition-colors">Grants & Aid</Link></li>
+                            <li><Link href="/dashboard/resume" className="transition-colors hover:text-[#d8f36b]">Resume builder</Link></li>
+                            <li><Link href="/dashboard/optimize" className="transition-colors hover:text-[#d8f36b]">ATS optimizer</Link></li>
                             <li><Link href="/pricing" className="hover:text-indigo-400 transition-colors">Pricing</Link></li>
-                            <li><Link href="/dashboard" className="hover:text-indigo-400 transition-colors">Dashboard</Link></li>
+                            <li><Link href="/dashboard/interview-prep" className="transition-colors hover:text-[#d8f36b]">Interview prep</Link></li>
                         </ul>
                     </div>
 
@@ -116,11 +115,11 @@ export function SiteFooter() {
 
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-sm text-slate-500">
-                        © {new Date().getFullYear()} Grantly. All rights reserved. Your money for college, matched.
+                    <p className="text-sm text-[#7f9c93]">
+                        © {new Date().getFullYear()} ResumeForge. All rights reserved.
                     </p>
-                    <p className="text-sm text-slate-500">
-                        Built with ✦ for ambitious students & scholars
+                    <p className="text-sm text-[#7f9c93]">
+                        Built for ambitious people in motion.
                     </p>
                 </div>
             </div>

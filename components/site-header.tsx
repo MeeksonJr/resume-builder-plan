@@ -4,12 +4,12 @@ import Link from "next/link";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, ArrowUpRight } from "lucide-react";
 
 const navItems = [
-    { name: "Scholarships", href: "/scholarships" },
-    { name: "Grants & Aid", href: "/grants" },
-    { name: "AI Matcher", href: "/dashboard" },
+    { name: "Resume builder", href: "/dashboard/resume" },
+    { name: "Career tools", href: "/dashboard" },
+    { name: "Templates", href: "/dashboard/resumes" },
     { name: "Pricing", href: "/pricing" },
     { name: "Blog", href: "/blog" },
 ];
@@ -24,19 +24,12 @@ export function SiteHeader() {
     });
 
     return (
-        <header className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300`}>
-            <div className={`container mx-auto px-4 max-w-6xl`}>
-                <div className={`${isScrolled ? "glass rounded-full py-2 px-6 shadow-indigo-950/40" : "bg-transparent py-4"} transition-all duration-300 flex items-center justify-between`}>
-                    {/* Grantly Logo: G -> ✦ */}
-                    <Link href="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight group">
-                        <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-                            <span className="font-extrabold text-base tracking-tighter">G</span>
-                            <span className="text-xs text-amber-300 ml-0.5 -mt-2">✦</span>
-                        </div>
-                        <span className="text-foreground lowercase font-extrabold tracking-tight text-2xl font-sans">
-                            grantly
-                            <span className="text-indigo-500 ml-0.5 inline-block text-xs font-mono font-medium uppercase tracking-widest px-1.5 py-0.5 bg-indigo-500/10 rounded-full border border-indigo-500/20 align-middle">ai</span>
-                        </span>
+        <header className="fixed left-0 right-0 top-0 z-50 px-4 pt-4 transition-all duration-300">
+            <div className="container mx-auto max-w-7xl">
+                <div className={`${isScrolled ? "border-[#102b2b]/10 bg-[#f8f4ec]/95 shadow-lg backdrop-blur" : "border-transparent bg-transparent"} flex items-center justify-between border px-4 py-3 transition-all duration-300 md:px-6`}>
+                    <Link href="/" className="flex items-center gap-2 font-heading text-xl font-bold tracking-[-.04em] text-[#102b2b] group">
+                        <span className="flex h-8 w-8 items-center justify-center bg-[#102b2b] text-sm font-bold text-[#d8f36b] transition-transform group-hover:-rotate-6">R</span>
+                        <span>ResumeForge<span className="text-[#0d8274]">.</span></span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -45,7 +38,7 @@ export function SiteHeader() {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
+                                className="text-sm font-medium text-[#52716a] transition-colors duration-200 hover:text-[#102b2b]"
                             >
                                 {item.name}
                             </Link>
@@ -54,17 +47,18 @@ export function SiteHeader() {
 
                     {/* Auth Buttons */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <Link href="/auth/login" className="text-sm font-medium text-[#52716a] transition-colors hover:text-[#102b2b]">
                             Sign In
                         </Link>
-                        <Button size="sm" className="rounded-full px-6 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-semibold" asChild>
-                            <Link href="/auth/sign-up">Get Started</Link>
+                        <Button size="sm" className="rounded-none bg-[#102b2b] px-5 font-semibold text-[#f8f4ec] hover:bg-[#164743]" asChild>
+                            <Link href="/auth/sign-up">Start building <ArrowUpRight className="h-4 w-4" /></Link>
                         </Button>
                     </div>
 
                     {/* Mobile Menu Toggle */}
                     <button
-                        className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+                        aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                        className="p-2 text-[#102b2b] hover:text-[#0d8274] md:hidden"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
                         {mobileMenuOpen ? <X /> : <Menu />}
@@ -78,24 +72,24 @@ export function SiteHeader() {
                     initial={{ opacity: 0, y: -20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                    className="md:hidden absolute top-20 left-4 right-4 glass rounded-2xl p-6 flex flex-col gap-4 shadow-2xl origin-top"
+                    className="absolute left-4 right-4 top-20 flex origin-top flex-col gap-4 border border-[#102b2b]/10 bg-[#f8f4ec] p-6 shadow-2xl md:hidden"
                 >
                     {navItems.map((item) => (
                         <Link
                             key={item.name}
                             href={item.href}
-                            className="text-lg font-medium py-2 border-b border-white/10 text-muted-foreground hover:text-primary transition-colors"
+                            className="border-b border-[#102b2b]/10 py-2 text-lg font-medium text-[#52716a] transition-colors hover:text-[#0d8274]"
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             {item.name}
                         </Link>
                     ))}
                     <div className="flex flex-col gap-3 mt-4">
-                        <Button variant="outline" asChild className="w-full rounded-xl border-white/10 hover:bg-white/5">
+                        <Button variant="outline" asChild className="w-full rounded-none border-[#102b2b]/20">
                             <Link href="/auth/login">Sign In</Link>
                         </Button>
-                        <Button asChild className="w-full rounded-xl shadow-lg shadow-primary/25">
-                            <Link href="/auth/sign-up">Get Started</Link>
+                        <Button asChild className="w-full rounded-none bg-[#102b2b] text-[#f8f4ec]">
+                            <Link href="/auth/sign-up">Start building</Link>
                         </Button>
                     </div>
                 </motion.div>

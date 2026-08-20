@@ -7,21 +7,18 @@ import { ArrowRight, Sparkles, CheckCircle } from "lucide-react";
 
 export function CTASection() {
     return (
-        <section className="py-24 bg-slate-950 relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-grid-white/[0.02]" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-[120px] opacity-50" />
+        <section className="relative overflow-hidden bg-[#102b2b] py-24 text-[#f8f4ec]">
 
-            <div className="container mx-auto px-4 relative z-10">
+            <div className="container relative z-10 mx-auto px-6 md:px-10">
                 <div className="max-w-4xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-1"
+                        className="relative overflow-hidden border border-[#d8f36b]/30 bg-[#164743] p-8 md:p-16"
                     >
-                        <div className="relative overflow-hidden rounded-3xl bg-slate-950 px-8 py-16 md:px-16 md:py-20">
+                        <div className="relative">
                             {/* Decorative Elements */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
                             <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
@@ -32,10 +29,10 @@ export function CTASection() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.1 }}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-semibold mb-8"
+                                    className="mb-8 inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-4 py-2 text-sm font-semibold text-[#d8f36b]"
                                 >
                                     <Sparkles className="w-4 h-4" />
-                                    Fund Your Education & Career Today
+                                    A more considered career studio
                                 </motion.div>
 
                                 <motion.h2
@@ -43,9 +40,9 @@ export function CTASection() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.2 }}
-                                    className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-6"
+                                    className="mb-6 text-4xl font-semibold tracking-[-.05em] md:text-6xl"
                                 >
-                                    Ready to Unlock Your College Funding?
+                                    Your next application deserves a better starting point.
                                 </motion.h2>
 
                                 <motion.p
@@ -55,7 +52,7 @@ export function CTASection() {
                                     transition={{ delay: 0.3 }}
                                     className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed"
                                 >
-                                    Join 25,000+ students who have matched with scholarships, fellowships, and grants tailored to their background. Start free, no credit card required.
+                                    Start with the experience you already have. ResumeForge helps you shape it into a story that is ready for the room, the recruiter, and the scanner.
                                 </motion.p>
 
                                 <motion.div
@@ -67,18 +64,18 @@ export function CTASection() {
                                 >
                                     <Button
                                         size="lg"
-                                        className="h-14 px-8 text-base gap-2 rounded-xl bg-white text-slate-950 hover:bg-slate-100 shadow-lg shadow-white/20 font-semibold"
+                                        className="h-14 gap-2 rounded-none bg-[#d8f36b] px-8 text-base font-semibold text-[#102b2b] hover:bg-[#e5ff8b]"
                                         asChild
                                     >
                                         <Link href="/auth/sign-up">
-                                            Find Scholarships Now
+                                            Build my resume
                                             <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </Link>
                                     </Button>
                                     <Button
                                         size="lg"
                                         variant="outline"
-                                        className="h-14 px-8 text-base rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm font-semibold"
+                                        className="h-14 rounded-none border-[#c5d7d1]/30 bg-transparent px-8 text-base font-semibold text-white hover:bg-white/10"
                                         asChild
                                     >
                                         <Link href="/pricing">View Pricing</Link>
@@ -94,15 +91,15 @@ export function CTASection() {
                                 >
                                     <div className="flex items-center gap-2">
                                         <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                        <span>Free scholarship search</span>
+                                        <span>Free to start</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                        <span>Verified legitimate awards</span>
+                                        <span>ATS-aware templates</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                        <span>AI Essay Assistant</span>
+                                        <span>Career tools included</span>
                                     </div>
                                 </motion.div>
                             </div>

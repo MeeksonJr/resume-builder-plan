@@ -35,14 +35,14 @@ export function FAQSection() {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="py-24 bg-slate-900/50">
-            <div className="container mx-auto px-4 max-w-3xl">
+        <section className="bg-[#e9eee8] py-24 text-[#102b2b]">
+            <div className="container mx-auto max-w-4xl px-6 md:px-10">
                 <div className="text-center mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-6"
+                        className="mb-6 inline-flex items-center gap-2 border border-[#0d8274]/20 bg-[#0d8274]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#0d8274]"
                     >
                         <HelpCircle className="w-3 h-3" />
                         FAQ
@@ -52,7 +52,7 @@ export function FAQSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-3xl md:text-5xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400"
+                        className="mb-6 text-4xl font-semibold tracking-[-.05em] md:text-6xl"
                     >
                         Frequently Asked Questions
                     </motion.h2>
@@ -66,17 +66,18 @@ export function FAQSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
                             viewport={{ once: true }}
-                            className="rounded-xl bg-white/5 border border-white/10 overflow-hidden hover:border-white/20 transition-colors"
+                            className="overflow-hidden border border-[#102b2b]/15 bg-[#f8f4ec] transition-colors hover:border-[#0d8274]/50"
                         >
                             <button
                                 onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                                className="w-full px-6 py-5 flex items-center justify-between text-left group"
+                                aria-expanded={openIndex === idx}
+                                className="group flex w-full items-center justify-between px-6 py-5 text-left"
                             >
-                                <span className="font-semibold text-white text-lg pr-8">
+                                <span className="pr-8 text-lg font-semibold">
                                     {faq.question}
                                 </span>
                                 <ChevronDown
-                                    className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 ${openIndex === idx ? "rotate-180" : ""
+                                    className={`h-5 w-5 shrink-0 text-[#52716a] transition-transform duration-300 ${openIndex === idx ? "rotate-180" : ""
                                         }`}
                                 />
                             </button>
@@ -90,7 +91,7 @@ export function FAQSection() {
                                         transition={{ duration: 0.3 }}
                                         className="overflow-hidden"
                                     >
-                                        <div className="px-6 pb-5 text-slate-400 leading-relaxed">
+                                        <div className="px-6 pb-5 leading-relaxed text-[#52716a]">
                                             {faq.answer}
                                         </div>
                                     </motion.div>

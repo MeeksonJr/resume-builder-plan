@@ -32,9 +32,9 @@ const stats = [
 
 export function StatsSection() {
     return (
-        <section className="py-24 bg-slate-900/50 border-y border-white/5">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <section className="border-y border-[#c9d8d0] bg-[#f8f4ec] py-16 text-[#102b2b] md:py-20">
+            <div className="container mx-auto px-6 md:px-10">
+                <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
                     {stats.map((stat, idx) => (
                         <motion.div
                             key={idx}
@@ -42,15 +42,15 @@ export function StatsSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1, duration: 0.5 }}
                             viewport={{ once: true }}
-                            className="text-center group"
+                            className="group text-center"
                         >
-                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-800/50 border border-white/10 mb-4 group-hover:scale-110 transition-transform duration-300">
+                            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center border border-[#102b2b]/15 bg-[#d8f36b] transition-transform duration-300 group-hover:-translate-y-1">
                                 <stat.icon className={`w-8 h-8 ${stat.color}`} />
                             </div>
-                            <div className="text-4xl md:text-5xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
+                            <div className="mb-2 text-4xl font-semibold tracking-[-.06em] md:text-5xl">
                                 {stat.value}
                             </div>
-                            <div className="text-sm md:text-base text-slate-400 font-medium">
+                            <div className="text-sm font-medium text-[#52716a] md:text-base">
                                 {stat.label}
                             </div>
                         </motion.div>
