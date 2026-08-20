@@ -17,47 +17,24 @@ export async function POST(request: Request) {
     }
 
     const { email } = parsed.data;
-    const { from, contactEmail, audienceId } = getResendConfig();
-
-    if (!audienceId && !contactEmail) {
-        return NextResponse.json(
-            { error: "Newsletter delivery is not configured yet." },
-            { status: 503 },
-        );
-    }
+    const { from, newsletterEmail } = getResendConfig();
 
     try {
         const resend = getResendClient();
 
-        if (audienceId) {
-            const { error } = await resend.contacts.create({
-                email,
-                audienceId,
-                unsubscribed: false,
-            });
+        const { error } = await resend.emails.send({
+            from,
+            to: [newsletterEmail],
+            subject: "New ResumeForge newsletter subscriber",
+            text: `New subscriber: ${email}`,
+        });
 
-            if (error && !error.message.toLowerCase().includes("already exists")) {
-                console.error("Resend newsletter contact failed", error);
-                return NextResponse.json(
-                    { error: "We could not subscribe you. Please try again." },
-                    { status: 502 },
-                );
-            }
-        } else if (contactEmail) {
-            const { error } = await resend.emails.send({
-                from,
-                to: [contactEmail],
-                subject: "New ResumeForge newsletter subscriber",
-                text: `New subscriber: ${email}`,
-            });
-
-            if (error) {
-                console.error("Resend newsletter notification failed", error);
-                return NextResponse.json(
-                    { error: "We could not subscribe you. Please try again." },
-                    { status: 502 },
-                );
-            }
+        if (error) {
+            console.error("Resend newsletter notification failed", error);
+            return NextResponse.json(
+                { error: "We could not subscribe you. Please try again." },
+                { status: 502 },
+            );
         }
 
         return NextResponse.json({ ok: true });

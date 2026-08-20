@@ -15,9 +15,9 @@ export function getResendClient() {
 
 export function getResendConfig() {
     return {
-        from: process.env.RESEND_FROM_EMAIL || "ResumeForge <onboarding@resend.dev>",
-        contactEmail: process.env.CONTACT_EMAIL,
-        audienceId: process.env.RESEND_AUDIENCE_ID,
+        from: "ResumeForge <onboarding@resend.dev>",
+        contactEmail: process.env.CONTACT_EMAIL || "d.mohamed1504@gmail.com",
+        newsletterEmail: process.env.NEWSLETTER_EMAIL || "d.mohamed1504@gmail.com",
     };
 }
 
