@@ -1,4 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGroq } from "@ai-sdk/groq";
+import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -6,6 +8,14 @@ import { createClient } from "@/lib/supabase/server";
 
 const googleAI = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
+});
+
+const groqAI = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+const openaiAI = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const opportunitySchema = z.object({
@@ -40,6 +50,62 @@ const opportunitySchema = z.object({
 const searchSchema = z.object({
   opportunities: z.array(opportunitySchema)
 });
+
+// Fallback helper for structured object generation
+async function generateObjectWithFallback<T>({
+  schema,
+  prompt,
+}: {
+  schema: z.ZodType<T>;
+  prompt: string;
+}) {
+  const models = [];
+
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY) {
+    // 1. Google search grounded
+    models.push({
+      creator: () => googleAI("gemini-2.5-flash", { useSearchGrounding: true }),
+      name: "Gemini 2.5 Flash (Search Grounded)"
+    });
+    // 2. Google parametric
+    models.push({
+      creator: () => googleAI("gemini-2.5-flash"),
+      name: "Gemini 2.5 Flash"
+    });
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    models.push({
+      creator: () => groqAI("llama-3.3-70b-versatile"),
+      name: "Groq Llama 3.3"
+    });
+  }
+
+  if (process.env.OPENAI_API_KEY) {
+    models.push({
+      creator: () => openaiAI("gpt-4o-mini"),
+      name: "OpenAI GPT-4o Mini"
+    });
+  }
+
+  let lastError = null;
+  for (const modelConfig of models) {
+    try {
+      console.log(`[AI] Attempting search generation with: ${modelConfig.name}`);
+      const result = await generateObject({
+        model: modelConfig.creator(),
+        schema,
+        prompt,
+      });
+      return result;
+    } catch (err: any) {
+      console.error(`[AI] Model ${modelConfig.name} failed:`, err.message || err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("All AI models failed to generate response.");
+}
 
 export async function POST(req: Request) {
   try {
@@ -95,7 +161,7 @@ export async function POST(req: Request) {
       `;
     }
 
-    // 2. Call Gemini model with Google Search Grounding enabled
+    // 2. Call fallback generator
     const promptText = `
       You are an expert student financial aid finder.
       Find 10 REAL-WORLD, ACTIVE, currently open scholarships, grants, fellowships, or aid opportunities matching the query.
@@ -106,35 +172,21 @@ export async function POST(req: Request) {
       ${profileSummary}
 
       CRITICAL INSTRUCTIONS:
-      1. Search the live web for active opportunities. Do not generate fictional or placeholder data.
+      1. Search the live web or use your knowledge base for active opportunities. Do not generate fictional or placeholder data.
       2. Ensure kinds align: 'scholarship' or 'fellowship' for academic/talent awards; 'grant' or 'aid' for government or need-based aid.
       3. For the application_url, use the direct application link or provider home page.
       4. Populate majors, education levels, and keywords so they can be matched globally with other users who fit those criteria.
     `;
 
-    let result;
-    try {
-      // Try search grounding first
-      result = await generateObject({
-        model: googleAI("gemini-2.5-flash", {
-          useSearchGrounding: true,
-        }),
-        schema: searchSchema,
-        prompt: promptText,
-      });
-    } catch (err) {
-      console.warn("Failed search grounding, falling back to standard generation:", err);
-      result = await generateObject({
-        model: googleAI("gemini-2.5-flash"),
-        schema: searchSchema,
-        prompt: promptText,
-      });
-    }
+    const result = await generateObjectWithFallback({
+      schema: searchSchema,
+      prompt: promptText
+    });
 
     const opportunities = result.object.opportunities || [];
 
     if (opportunities.length > 0) {
-      // 3. Save these opportunities globally in our database using user client (bypasses RLS write check via auth policy)
+      // 3. Save these opportunities globally in our database using user client
       const dbOpportunities = opportunities.map(opp => ({
         id: opp.id,
         kind: opp.kind,

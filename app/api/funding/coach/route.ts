@@ -1,4 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGroq } from "@ai-sdk/groq";
+import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -6,6 +8,64 @@ import { createClient } from "@/lib/supabase/server";
 const googleAI = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
 });
+
+const groqAI = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+const openaiAI = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Fallback helper for unstructured text generation
+async function generateTextWithFallback({
+  prompt,
+  system,
+}: {
+  prompt: string;
+  system: string;
+}) {
+  const models = [];
+
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY) {
+    models.push({
+      creator: () => googleAI("gemini-2.5-flash"),
+      name: "Gemini 2.5 Flash"
+    });
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    models.push({
+      creator: () => groqAI("llama-3.3-70b-versatile"),
+      name: "Groq Llama 3.3"
+    });
+  }
+
+  if (process.env.OPENAI_API_KEY) {
+    models.push({
+      creator: () => openaiAI("gpt-4o-mini"),
+      name: "OpenAI GPT-4o Mini"
+    });
+  }
+
+  let lastError = null;
+  for (const modelConfig of models) {
+    try {
+      console.log(`[AI] Attempting coach generation with: ${modelConfig.name}`);
+      const result = await generateText({
+        model: modelConfig.creator(),
+        system,
+        prompt,
+      });
+      return result;
+    } catch (err: any) {
+      console.error(`[AI] Model ${modelConfig.name} failed:`, err.message || err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("All AI models failed to generate response.");
+}
 
 export async function POST(req: Request) {
   try {
@@ -79,10 +139,9 @@ export async function POST(req: Request) {
       - If they ask for recommendations, suggest matching kinds of opportunities from the database context or standard steps (like filing FAFSA).
     `;
 
-    const result = await generateText({
-      model: googleAI("gemini-2.5-flash"),
-      system: systemPrompt,
-      prompt: prompt,
+    const result = await generateTextWithFallback({
+      prompt,
+      system: systemPrompt
     });
 
     return NextResponse.json({ response: result.text.trim() });

@@ -1,4 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGroq } from "@ai-sdk/groq";
+import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -8,17 +10,75 @@ const googleAI = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
 });
 
+const groqAI = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+const openaiAI = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 const analysisSchema = z.object({
   matchScore: z.number().min(0).max(100),
   whyYouMatch: z.array(z.string()).describe("3-4 bullet points detailing why the candidate's profile is a strong fit"),
   potentialBlockers: z.array(z.string()).describe("Any potential eligibility blockers (e.g. GPA, citizenship, state residency, recommendation letters)"),
-  tailoringTips: z.array(z.string()).describe("How the user should tailer their resume or application description for this opportunity")
+  tailoringTips: z.array(z.string()).describe("How the user should tailor their resume or application description for this opportunity")
 });
 
 const essaySchema = z.object({
   draft: z.string().describe("The drafted essay content or answer, fully tailored using the user's resume details"),
   tips: z.array(z.string()).describe("Tips for refining the essay draft")
 });
+
+// Fallback helper for structured object generation
+async function generateObjectWithFallback<T>({
+  schema,
+  prompt,
+}: {
+  schema: z.ZodType<T>;
+  prompt: string;
+}) {
+  const models = [];
+
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY) {
+    models.push({
+      creator: () => googleAI("gemini-2.5-flash"),
+      name: "Gemini 2.5 Flash"
+    });
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    models.push({
+      creator: () => groqAI("llama-3.3-70b-versatile"),
+      name: "Groq Llama 3.3"
+    });
+  }
+
+  if (process.env.OPENAI_API_KEY) {
+    models.push({
+      creator: () => openaiAI("gpt-4o-mini"),
+      name: "OpenAI GPT-4o Mini"
+    });
+  }
+
+  let lastError = null;
+  for (const modelConfig of models) {
+    try {
+      console.log(`[AI] Attempting ops generation with: ${modelConfig.name}`);
+      const result = await generateObject({
+        model: modelConfig.creator(),
+        schema,
+        prompt,
+      });
+      return result;
+    } catch (err: any) {
+      console.error(`[AI] Model ${modelConfig.name} failed:`, err.message || err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("All AI models failed to generate response.");
+}
 
 export async function POST(req: Request) {
   try {
@@ -106,8 +166,7 @@ export async function POST(req: Request) {
         4. Give resume/essay tailoring tips.
       `;
 
-      const result = await generateObject({
-        model: googleAI("gemini-2.5-flash"),
+      const result = await generateObjectWithFallback({
         schema: analysisSchema,
         prompt: prompt,
       });
@@ -141,8 +200,7 @@ export async function POST(req: Request) {
         4. Do not use fictional placeholders (e.g., "[Insert Project Here]"). Use the actual information from their resume, or smoothly write around it.
       `;
 
-      const result = await generateObject({
-        model: googleAI("gemini-2.5-flash"),
+      const result = await generateObjectWithFallback({
         schema: essaySchema,
         prompt: prompt,
       });
