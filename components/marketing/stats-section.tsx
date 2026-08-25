@@ -6,19 +6,19 @@ import { Users, FileCheck, Briefcase, Award } from "lucide-react";
 const stats = [
     {
         icon: Award,
-        value: "$45M+",
+        value: "$45K+",
         label: "Funding Unlocked",
         color: "text-emerald-400",
     },
     {
         icon: Users,
-        value: "25,000+",
+        value: "2+",
         label: "Matched Students",
         color: "text-indigo-400",
     },
     {
         icon: FileCheck,
-        value: "12,400+",
+        value: "124+",
         label: "Verified Scholarships",
         color: "text-violet-400",
     },
