@@ -23,6 +23,13 @@ export interface FundingOpportunity {
   fetched_at: string;
   verified_at: string | null;
   is_active: boolean;
+  // User specific transient / joined data
+  user_status?: "saved" | "applying" | "applied" | "dismissed" | null;
+  essay_draft?: string | null;
+  notes?: string | null;
+  match_score?: number | null;
+  why_you_match?: string[] | null;
+  potential_blockers?: string[] | null;
 }
 
 export function formatFundingAmount(opportunity: FundingOpportunity) {

@@ -35,6 +35,18 @@ CREATE POLICY "funding_opportunities_public_read"
   ON public.funding_opportunities FOR SELECT
   USING (is_active = TRUE);
 
+DROP POLICY IF EXISTS "funding_opportunities_auth_insert" ON public.funding_opportunities;
+CREATE POLICY "funding_opportunities_auth_insert"
+  ON public.funding_opportunities FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "funding_opportunities_auth_update" ON public.funding_opportunities;
+CREATE POLICY "funding_opportunities_auth_update"
+  ON public.funding_opportunities FOR UPDATE
+  TO authenticated
+  USING (true);
+
 CREATE INDEX IF NOT EXISTS funding_opportunities_kind_idx
   ON public.funding_opportunities(kind);
 CREATE INDEX IF NOT EXISTS funding_opportunities_deadline_idx
