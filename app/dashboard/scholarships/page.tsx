@@ -67,8 +67,12 @@ export default function DashboardScholarshipsPage() {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("fetchScholarships: No authenticated user session found");
+        return;
+      }
 
+      console.log("fetchScholarships: Fetching active global funding opportunities...");
       // 1. Fetch active global funding opportunities for scholarships
       const { data: opps, error: oppsError } = await supabase
         .from("funding_opportunities")
@@ -77,7 +81,11 @@ export default function DashboardScholarshipsPage() {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (oppsError) throw oppsError;
+      if (oppsError) {
+        console.error("fetchScholarships: oppsError:", oppsError);
+        throw oppsError;
+      }
+      console.log(`fetchScholarships: Fetched ${opps?.length || 0} global scholarships:`, opps);
 
       // 2. Fetch user interactions
       const { data: userOpps, error: userOppsError } = await supabase
@@ -85,15 +93,17 @@ export default function DashboardScholarshipsPage() {
         .select("*")
         .eq("user_id", user.id);
 
-      if (userOppsError) throw userOppsError;
+      if (userOppsError) {
+        console.error("fetchScholarships: userOppsError:", userOppsError);
+        throw userOppsError;
+      }
+      console.log("fetchScholarships: Fetched user interactions:", userOpps);
 
       const userStateMap = new Map(userOpps?.map(uo => [uo.opportunity_id, uo]) || []);
 
       // 3. Merge
       const merged = (opps || []).map((opp: any): FundingOpportunity => {
         const uState = userStateMap.get(opp.id);
-        
-        // Dynamic heuristic score if not pre-analyzed
         const basicScore = Math.floor(Math.random() * (99 - 85 + 1)) + 85; 
 
         return {
@@ -105,9 +115,10 @@ export default function DashboardScholarshipsPage() {
         };
       });
 
+      console.log("fetchScholarships: Final merged opportunities state:", merged);
       setOpportunities(merged);
     } catch (err: any) {
-      console.error("Error fetching scholarships:", err.message);
+      console.error("Error fetching scholarships:", err.message || err);
       toast.error("Failed to load scholarships.");
     } finally {
       setLoading(false);
@@ -322,7 +333,7 @@ export default function DashboardScholarshipsPage() {
       const matchesSearch = 
         sch.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         sch.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        sch.majors.some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
+        (sch.majors || []).some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
 
       if (selectedTab === "saved") {
         return matchesSearch && sch.user_status === "saved";

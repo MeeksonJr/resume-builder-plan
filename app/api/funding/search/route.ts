@@ -184,6 +184,7 @@ export async function POST(req: Request) {
     });
 
     const opportunities = result.object.opportunities || [];
+    console.log(`[Search Route] Scraped ${opportunities.length} opportunities from AI`);
 
     if (opportunities.length > 0) {
       // 3. Save these opportunities globally in our database using user client
@@ -213,12 +214,16 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString()
       }));
 
-      const { error: upsertError } = await supabase
+      console.log(`[Search Route] Upserting ${dbOpportunities.length} opportunities to public.funding_opportunities...`);
+      const { data, error: upsertError } = await supabase
         .from("funding_opportunities")
         .upsert(dbOpportunities, { onConflict: "id" });
 
+      console.log("[Search Route] Upsert response details:", { data, error: upsertError });
       if (upsertError) {
-        console.error("Supabase upsert error:", upsertError);
+        console.error("[Search Route] Supabase upsert error:", upsertError);
+      } else {
+        console.log("[Search Route] Upsert successfully completed with no errors.");
       }
     }
 

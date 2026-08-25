@@ -65,8 +65,12 @@ export default function DashboardGrantsPage() {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("fetchGrants: No authenticated user session found");
+        return;
+      }
 
+      console.log("fetchGrants: Fetching active global funding opportunities...");
       // 1. Fetch active global funding opportunities for grants / aid
       const { data: opps, error: oppsError } = await supabase
         .from("funding_opportunities")
@@ -75,7 +79,11 @@ export default function DashboardGrantsPage() {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (oppsError) throw oppsError;
+      if (oppsError) {
+        console.error("fetchGrants: oppsError:", oppsError);
+        throw oppsError;
+      }
+      console.log(`fetchGrants: Fetched ${opps?.length || 0} global grants:`, opps);
 
       // 2. Fetch user interactions
       const { data: userOpps, error: userOppsError } = await supabase
@@ -83,7 +91,11 @@ export default function DashboardGrantsPage() {
         .select("*")
         .eq("user_id", user.id);
 
-      if (userOppsError) throw userOppsError;
+      if (userOppsError) {
+        console.error("fetchGrants: userOppsError:", userOppsError);
+        throw userOppsError;
+      }
+      console.log("fetchGrants: Fetched user interactions:", userOpps);
 
       const userStateMap = new Map(userOpps?.map(uo => [uo.opportunity_id, uo]) || []);
 
@@ -101,9 +113,10 @@ export default function DashboardGrantsPage() {
         };
       });
 
+      console.log("fetchGrants: Final merged opportunities state:", merged);
       setOpportunities(merged);
     } catch (err: any) {
-      console.error("Error fetching grants:", err.message);
+      console.error("Error fetching grants:", err.message || err);
       toast.error("Failed to load grants.");
     } finally {
       setLoading(false);
@@ -316,9 +329,9 @@ export default function DashboardGrantsPage() {
     const matchesSearch = 
       g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       g.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      g.majors.some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
+      (g.majors || []).some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const isMatch = selectedType === "All" || g.kind.toLowerCase() === selectedType.toLowerCase() || g.keywords.some(k => k.toLowerCase() === selectedType.toLowerCase());
+    const isMatch = selectedType === "All" || g.kind.toLowerCase() === selectedType.toLowerCase() || (g.keywords || []).some(k => k.toLowerCase() === selectedType.toLowerCase());
     return matchesSearch && isMatch;
   });
 
