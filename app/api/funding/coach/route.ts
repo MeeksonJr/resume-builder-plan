@@ -76,6 +76,17 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_status")
+      .eq("id", user.id)
+      .single();
+
+    const isPro = profile?.subscription_status === "active" || profile?.subscription_status === "trialing";
+    if (!isPro) {
+      return new NextResponse("Forbidden: Pro subscription required", { status: 403 });
+    }
+
     const { prompt } = await req.json();
 
     if (!prompt) {

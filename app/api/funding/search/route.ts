@@ -5,6 +5,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { searchLocalCatalog, runApifySearch } from "@/lib/funding/crawler";
 
 const googleAI = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY,
@@ -116,7 +117,18 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { searchQuery } = await req.json();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_status")
+      .eq("id", user.id)
+      .single();
+
+    const isPro = profile?.subscription_status === "active" || profile?.subscription_status === "trialing";
+    if (!isPro) {
+      return new NextResponse("Forbidden: Pro subscription required", { status: 403 });
+    }
+
+    const { searchQuery, forceRefresh, clientDate } = await req.json();
 
     if (!searchQuery) {
       return new NextResponse("Missing search query", { status: 400 });
@@ -161,73 +173,137 @@ export async function POST(req: Request) {
       `;
     }
 
-    // 2. Call fallback generator
-    const promptText = `
-      You are an expert student financial aid finder.
-      Find 10 REAL-WORLD, ACTIVE, currently open scholarships, grants, fellowships, or aid opportunities matching the query.
-      Make sure to return actual valid URLs and accurate details.
+    // Determine keywords for database filtering
+    const keywords = [
+      ...userMajors, 
+      userEducationLevel, 
+      searchQuery.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+    ].filter(Boolean);
 
-      SEARCH QUERY: "${searchQuery}"
-      USER PROFILE CONTEXT:
-      ${profileSummary}
-
-      CRITICAL INSTRUCTIONS:
-      1. Search the live web or use your knowledge base for active opportunities. Do not generate fictional or placeholder data.
-      2. Ensure kinds align: 'scholarship' or 'fellowship' for academic/talent awards; 'grant' or 'aid' for government or need-based aid.
-      3. For the application_url, use the direct application link or provider home page.
-      4. Populate majors, education levels, and keywords so they can be matched globally with other users who fit those criteria.
-    `;
-
-    const result = await generateObjectWithFallback({
-      schema: searchSchema,
-      prompt: promptText
+    // 2. Perform cache-first search in global catalog
+    console.log(`[Search Route] Running cache-first catalog query for: "${searchQuery}"`);
+    let catalogResults = await searchLocalCatalog({
+      query: searchQuery,
+      majors: userMajors,
+      educationLevels: userEducationLevel ? [userEducationLevel] : [],
+      keywords
     });
 
-    const opportunities = result.object.opportunities || [];
-    console.log(`[Search Route] Scraped ${opportunities.length} opportunities from AI`);
+    console.log(`[Search Route] Cache lookup returned ${catalogResults.length} matches.`);
 
-    if (opportunities.length > 0) {
-      // 3. Save these opportunities globally in our database using user client
-      const dbOpportunities = opportunities.map(opp => ({
-        id: opp.id,
-        kind: opp.kind,
-        title: opp.title,
-        provider: opp.provider,
-        description: opp.description,
-        amount_min: opp.amount_min,
-        amount_max: opp.amount_max,
-        currency: opp.currency,
-        deadline: opp.deadline || null,
-        application_url: opp.application_url,
-        source_url: opp.source_url,
-        source_name: opp.source_name,
-        education_levels: opp.education_levels,
-        majors: opp.majors,
-        careers: opp.careers,
-        keywords: opp.keywords,
-        year: opp.year || 2026,
-        eligibility: opp.eligibility,
-        requirements: opp.requirements,
-        raw_data: opp,
-        is_active: true,
-        fetched_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
+    // 3. Scrape-on-Demand: Trigger scraper if matches are sparse (< 5) or forceRefresh is true
+    if (catalogResults.length < 5 || forceRefresh === true) {
+      console.log(`[Search Route] Matches are sparse or forceRefresh is active. Triggering live scraper...`);
+      
+      let opportunities: any[] = [];
+      const apifyToken = process.env.APIFY_TOKEN || process.env.APIFY_API_KEY;
 
-      console.log(`[Search Route] Upserting ${dbOpportunities.length} opportunities to public.funding_opportunities...`);
-      const { data, error: upsertError } = await supabase
-        .from("funding_opportunities")
-        .upsert(dbOpportunities, { onConflict: "id" });
+      if (apifyToken) {
+        // Run Apify Google Search Scraper
+        const apifyRawResults = await runApifySearch(searchQuery);
+        if (apifyRawResults && apifyRawResults.length > 0) {
+          // Use LLM to structure Apify raw Google results into our catalog schema
+          const todayStr = clientDate || new Date().toISOString().split('T')[0];
+          const promptText = `
+            You are an expert student financial aid crawler.
+            Below is raw web search result data from a Google Search API.
+            Convert this data into exactly 4 REAL-WORLD, ACTIVE, currently open opportunities conforming to the schema.
+            
+            CRITICAL INSTRUCTIONS:
+            1. All opportunities MUST have application deadlines after ${todayStr}. Do not return any opportunities with deadlines before this date.
+            2. Extract real details and URLs.
 
-      console.log("[Search Route] Upsert response details:", { data, error: upsertError });
-      if (upsertError) {
-        console.error("[Search Route] Supabase upsert error:", upsertError);
-      } else {
-        console.log("[Search Route] Upsert successfully completed with no errors.");
+            RAW SEARCH DATA:
+            ${JSON.stringify(apifyRawResults.slice(0, 15))}
+            
+            USER PROFILE CONTEXT:
+            ${profileSummary}
+          `;
+          const result = await generateObjectWithFallback({
+            schema: searchSchema,
+            prompt: promptText
+          });
+          opportunities = (result.object.opportunities || []).slice(0, 4);
+        }
+      } 
+      
+      // Fallback: If Apify is not configured or failed to return items, run Gemini Search Grounding
+      if (opportunities.length === 0) {
+        console.log("[Search Route] Using Gemini Search Grounding fallback...");
+        const todayStr = clientDate || new Date().toISOString().split('T')[0];
+        const promptText = `
+          You are an expert student financial aid finder.
+          Find exactly 4 REAL-WORLD, ACTIVE, currently open scholarships, grants, fellowships, or aid opportunities matching the query.
+          Make sure to return actual valid URLs and accurate details.
+
+          SEARCH QUERY: "${searchQuery}"
+          USER PROFILE CONTEXT:
+          ${profileSummary}
+
+          CRITICAL INSTRUCTIONS:
+          1. Search the live web or use your knowledge base for active opportunities. Do not generate fictional or placeholder data.
+          2. Do not return any opportunities with application deadlines before ${todayStr}. All deadlines must be in the future.
+          3. Ensure kinds align: 'scholarship' or 'fellowship' for academic/talent awards; 'grant' or 'aid' for government or need-based aid.
+          4. For the application_url, use the direct application link or provider home page.
+          5. Populate majors, education levels, and keywords so they can be matched globally with other users who fit those criteria.
+        `;
+        const result = await generateObjectWithFallback({
+          schema: searchSchema,
+          prompt: promptText
+        });
+        opportunities = (result.object.opportunities || []).slice(0, 4);
+      }
+
+      if (opportunities.length > 0) {
+        // Save opportunities globally in our database using user client (bypasses RLS check via auth policy)
+        const dbOpportunities = opportunities.map(opp => ({
+          id: opp.id,
+          kind: opp.kind,
+          title: opp.title,
+          provider: opp.provider,
+          description: opp.description,
+          amount_min: opp.amount_min,
+          amount_max: opp.amount_max,
+          currency: opp.currency,
+          deadline: opp.deadline || null,
+          application_url: opp.application_url,
+          source_url: opp.source_url,
+          source_name: opp.source_name,
+          education_levels: opp.education_levels,
+          majors: opp.majors,
+          careers: opp.careers,
+          keywords: opp.keywords,
+          year: opp.year || 2026,
+          eligibility: opp.eligibility,
+          requirements: opp.requirements,
+          raw_data: opp,
+          is_active: true,
+          fetched_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+
+        console.log(`[Search Route] Saving ${dbOpportunities.length} opportunities to global catalog...`);
+        const { error: upsertError } = await supabase
+          .from("funding_opportunities")
+          .upsert(dbOpportunities, { onConflict: "id" });
+
+        if (upsertError) {
+          console.error("[Search Route] Supabase upsert error:", upsertError);
+        } else {
+          console.log("[Search Route] Global catalog updated successfully.");
+        }
+
+        // Re-query catalog to return fully merged listings
+        catalogResults = await searchLocalCatalog({
+          query: searchQuery,
+          majors: userMajors,
+          educationLevels: userEducationLevel ? [userEducationLevel] : [],
+          keywords
+        });
       }
     }
 
-    return NextResponse.json({ success: true, opportunities });
+    return NextResponse.json({ success: true, opportunities: catalogResults });
 
   } catch (error: any) {
     console.error("Scraping search error:", error);

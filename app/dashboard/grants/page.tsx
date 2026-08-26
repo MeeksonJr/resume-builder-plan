@@ -32,11 +32,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { createClient } from "@/lib/supabase/client";
 import { FundingOpportunity, formatFundingAmount } from "@/lib/funding/types";
 import { toast } from "sonner";
+import { RelativeDate } from "@/components/dashboard/relative-date";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { FundingPaywall } from "@/components/dashboard/funding-paywall";
 
 export default function DashboardGrantsPage() {
   const supabase = createClient();
+  const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
   const [opportunities, setOpportunities] = useState<FundingOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hideClosed, setHideClosed] = useState(false);
+
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("All");
   const [activeModalOpportunity, setActiveModalOpportunity] = useState<FundingOpportunity | null>(null);
@@ -231,7 +240,11 @@ export default function DashboardGrantsPage() {
       const res = await fetch("/api/funding/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ searchQuery })
+        body: JSON.stringify({ 
+          searchQuery, 
+          forceRefresh: true,
+          clientDate: new Date().toISOString().split('T')[0]
+        })
       });
 
       if (!res.ok) throw new Error("Search API error");
@@ -331,9 +344,30 @@ export default function DashboardGrantsPage() {
       g.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (g.majors || []).some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
 
+    if (hideClosed && g.deadline) {
+      const deadlineDate = new Date(g.deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (deadlineDate < today) {
+        return false;
+      }
+    }
+
     const isMatch = selectedType === "All" || g.kind.toLowerCase() === selectedType.toLowerCase() || (g.keywords || []).some(k => k.toLowerCase() === selectedType.toLowerCase());
     return matchesSearch && isMatch;
   });
+
+  if (isSubLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] bg-[#e9eee8]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0d8274]" />
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return <FundingPaywall />;
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-16 bg-[#e9eee8] text-[#102b2b]">
@@ -417,13 +451,27 @@ export default function DashboardGrantsPage() {
           ))}
         </div>
 
-        <Button size="sm" className="rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-medium text-xs gap-1.5 cursor-pointer" asChild>
-          <a href="https://studentaid.gov/h/apply-for-aid/fafsa" target="_blank" rel="noopener noreferrer">
-            FAFSA Portal
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </Button>
+        {/* Hide Closed Toggle */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold">
+          <input
+            type="checkbox"
+            id="hideClosedCheckboxGrants"
+            checked={hideClosed}
+            onChange={(e) => setHideClosed(e.target.checked)}
+            className="w-3.5 h-3.5 accent-[#d8f36b] cursor-pointer"
+          />
+          <label htmlFor="hideClosedCheckboxGrants" className="cursor-pointer select-none">
+            Hide Closed Opportunities
+          </label>
+        </div>
       </div>
+      
+      <Button size="sm" className="rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-medium text-xs gap-1.5 cursor-pointer" asChild>
+        <a href="https://studentaid.gov/h/apply-for-aid/fafsa" target="_blank" rel="noopener noreferrer">
+          FAFSA Portal
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      </Button>
 
       {/* Loading & Grid */}
       {loading ? (
@@ -458,13 +506,14 @@ export default function DashboardGrantsPage() {
                     <Badge variant="outline" className="bg-[#0d8274]/10 text-[#0d8274] border-[#0d8274]/30 text-xs rounded-sm uppercase">
                       {opp.kind}
                     </Badge>
+                    <div>
+                      <span className="text-[10px] text-[#102b2b]/55 block">Deadline</span>
+                      <span className="flex items-center gap-1 mt-0.5">
+                        <RelativeDate deadline={opp.deadline} />
+                      </span>
+                    </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-[#102b2b]/60 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-[#0d8274]" aria-hidden="true" />
-                        {opp.deadline || "Rolling"}
-                      </span>
-
                       <button
                         onClick={(e) => handleToggleSave(opp.id, opp.user_status, e)}
                         aria-label={isSaved ? "Remove from saved" : "Save"}
@@ -563,8 +612,10 @@ export default function DashboardGrantsPage() {
               <DialogTitle className="text-xl sm:text-2xl font-bold text-[#102b2b]">
                 {activeModalOpportunity.title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-[#102b2b]/60 mt-1">
-                {activeModalOpportunity.provider} • Deadline {activeModalOpportunity.deadline || "Rolling"}
+              <DialogDescription className="text-sm text-[#102b2b]/60 mt-1 flex flex-wrap items-center gap-1.5">
+                <span>{activeModalOpportunity.provider}</span>
+                <span>•</span>
+                <RelativeDate deadline={activeModalOpportunity.deadline} />
               </DialogDescription>
 
               <div className="grid grid-cols-2 gap-3 mt-4 p-3 rounded-sm bg-[#f7faf5] border border-[#b8c8b9] text-center">
@@ -623,22 +674,65 @@ export default function DashboardGrantsPage() {
                     )}
                   </div>
 
-                  <div>
-                    <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Requirements</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                      <div className="p-2 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
-                        <span>FAFSA Required:</span>
-                        <strong className="text-[#0d8274]">{(activeModalOpportunity.requirements as any)?.fafsa_required ? "Yes" : "No"}</strong>
-                      </div>
-                      <div className="p-2 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
-                        <span>Transcript Required:</span>
-                        <strong className="text-[#0d8274]">{(activeModalOpportunity.requirements as any)?.transcript_required ? "Yes" : "No"}</strong>
-                      </div>
-                      <div className="p-2 rounded-sm bg-[#e9eee8] border border-[#b8c8b9] flex items-center justify-between">
-                        <span>Essay Required:</span>
-                        <strong className="text-[#0d8274]">{(activeModalOpportunity.requirements as any)?.essay ? "Yes" : "No"}</strong>
+                  {/* Requirements Checklist */}
+                  {activeModalOpportunity.requirements && (
+                    <div>
+                      <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Required Checklist</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-[#102b2b]/85">
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Essay Required</span>
+                          <span className="font-semibold">{(activeModalOpportunity.requirements as any).essay ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Recommendation Letters</span>
+                          <span className="font-semibold">{(activeModalOpportunity.requirements as any).recommendation_letters > 0 ? `✅ ${(activeModalOpportunity.requirements as any).recommendation_letters}` : "❌ None"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Transcript</span>
+                          <span className="font-semibold">{(activeModalOpportunity.requirements as any).transcript_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Resume</span>
+                          <span className="font-semibold">{(activeModalOpportunity.requirements as any).resume_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Portfolio</span>
+                          <span className="font-semibold">{(activeModalOpportunity.requirements as any).portfolio_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>FAFSA Required</span>
+                          <span className="font-semibold">{(activeModalOpportunity.requirements as any).fafsa_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
                       </div>
                     </div>
+                  )}
+
+                  {/* Careers and Keywords */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    {activeModalOpportunity.careers && activeModalOpportunity.careers.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Target Career Fields</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {activeModalOpportunity.careers.map((career, idx) => (
+                            <Badge key={idx} variant="outline" className="bg-[#e9eee8] text-[#102b2b] border-[#b8c8b9] text-[10px] rounded-sm font-medium">
+                              {career}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {activeModalOpportunity.keywords && activeModalOpportunity.keywords.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Tags / Focus Areas</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {activeModalOpportunity.keywords.map((tag, idx) => (
+                            <Badge key={idx} variant="outline" className="bg-[#0d8274]/5 text-[#0d8274] border-[#0d8274]/20 text-[10px] rounded-sm font-medium">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 

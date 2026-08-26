@@ -34,11 +34,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { createClient } from "@/lib/supabase/client";
 import { FundingOpportunity, formatFundingAmount } from "@/lib/funding/types";
 import { toast } from "sonner";
+import { RelativeDate } from "@/components/dashboard/relative-date";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { FundingPaywall } from "@/components/dashboard/funding-paywall";
 
 export default function DashboardScholarshipsPage() {
   const supabase = createClient();
+  const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
   const [opportunities, setOpportunities] = useState<FundingOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hideClosed, setHideClosed] = useState(false);
+
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState("all-matches");
   const [activeModalScholarship, setActiveModalScholarship] = useState<FundingOpportunity | null>(null);
@@ -234,7 +243,11 @@ export default function DashboardScholarshipsPage() {
       const res = await fetch("/api/funding/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ searchQuery })
+        body: JSON.stringify({ 
+          searchQuery, 
+          forceRefresh: true,
+          clientDate: new Date().toISOString().split('T')[0]
+        })
       });
 
       if (!res.ok) throw new Error("Search API error");
@@ -335,6 +348,15 @@ export default function DashboardScholarshipsPage() {
         sch.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (sch.majors || []).some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
 
+      if (hideClosed && sch.deadline) {
+        const deadlineDate = new Date(sch.deadline);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (deadlineDate < today) {
+          return false;
+        }
+      }
+
       if (selectedTab === "saved") {
         return matchesSearch && sch.user_status === "saved";
       }
@@ -353,6 +375,18 @@ export default function DashboardScholarshipsPage() {
 
   const currentList = getFilteredScholarships();
   const totalPotentialValue = opportunities.reduce((sum, item) => sum + (item.amount_max || item.amount_min || 0), 0);
+
+  if (isSubLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] bg-[#e9eee8]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0d8274]" />
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return <FundingPaywall />;
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-16 bg-[#e9eee8] text-[#102b2b]">
@@ -439,6 +473,20 @@ export default function DashboardScholarshipsPage() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* Hide Closed Toggle */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold">
+          <input
+            type="checkbox"
+            id="hideClosedCheckbox"
+            checked={hideClosed}
+            onChange={(e) => setHideClosed(e.target.checked)}
+            className="w-3.5 h-3.5 accent-[#d8f36b] cursor-pointer"
+          />
+          <label htmlFor="hideClosedCheckbox" className="cursor-pointer select-none">
+            Hide Closed Opportunities
+          </label>
+        </div>
       </div>
 
       {/* Loader */}
@@ -513,9 +561,8 @@ export default function DashboardScholarshipsPage() {
                     </div>
                     <div>
                       <span className="text-[10px] text-[#102b2b]/55 block">Deadline</span>
-                      <span className="text-xs font-semibold text-[#102b2b] flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3 h-3 text-[#0d8274]" aria-hidden="true" />
-                        {sch.deadline || "Rolling"}
+                      <span className="flex items-center gap-1 mt-0.5">
+                        <RelativeDate deadline={sch.deadline} />
                       </span>
                     </div>
                   </div>
@@ -586,8 +633,10 @@ export default function DashboardScholarshipsPage() {
               <DialogTitle className="text-xl sm:text-2xl font-bold text-[#102b2b]">
                 {activeModalScholarship.title}
               </DialogTitle>
-              <DialogDescription className="text-sm text-[#102b2b]/60 mt-1">
-                {activeModalScholarship.provider} • Deadline {activeModalScholarship.deadline || "Rolling"}
+              <DialogDescription className="text-sm text-[#102b2b]/60 mt-1 flex flex-wrap items-center gap-1.5">
+                <span>{activeModalScholarship.provider}</span>
+                <span>•</span>
+                <RelativeDate deadline={activeModalScholarship.deadline} />
               </DialogDescription>
 
               <div className="grid grid-cols-2 gap-3 mt-4 p-3 rounded-sm bg-[#f7faf5] border border-[#b8c8b9] text-center">
@@ -656,6 +705,67 @@ export default function DashboardScholarshipsPage() {
                         <strong>Education Levels:</strong> {activeModalScholarship.education_levels?.join(", ") || "All"}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Requirements Checklist */}
+                  {activeModalScholarship.requirements && (
+                    <div>
+                      <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Required Checklist</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-[#102b2b]/85">
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Essay Required</span>
+                          <span className="font-semibold">{(activeModalScholarship.requirements as any).essay ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Recommendation Letters</span>
+                          <span className="font-semibold">{(activeModalScholarship.requirements as any).recommendation_letters > 0 ? `✅ ${(activeModalScholarship.requirements as any).recommendation_letters}` : "❌ None"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Transcript</span>
+                          <span className="font-semibold">{(activeModalScholarship.requirements as any).transcript_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Resume</span>
+                          <span className="font-semibold">{(activeModalScholarship.requirements as any).resume_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>Portfolio</span>
+                          <span className="font-semibold">{(activeModalScholarship.requirements as any).portfolio_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                        <div className="p-2.5 rounded-sm bg-white border border-[#b8c8b9] flex items-center justify-between">
+                          <span>FAFSA Required</span>
+                          <span className="font-semibold">{(activeModalScholarship.requirements as any).fafsa_required ? "✅ Yes" : "❌ No"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Careers and Keywords */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    {activeModalScholarship.careers && activeModalScholarship.careers.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Target Career Fields</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {activeModalScholarship.careers.map((career, idx) => (
+                            <Badge key={idx} variant="outline" className="bg-[#e9eee8] text-[#102b2b] border-[#b8c8b9] text-[10px] rounded-sm font-medium">
+                              {career}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {activeModalScholarship.keywords && activeModalScholarship.keywords.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-[#102b2b]/60 uppercase tracking-wider mb-2">Tags / Focus Areas</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {activeModalScholarship.keywords.map((tag, idx) => (
+                            <Badge key={idx} variant="outline" className="bg-[#0d8274]/5 text-[#0d8274] border-[#0d8274]/20 text-[10px] rounded-sm font-medium">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 
