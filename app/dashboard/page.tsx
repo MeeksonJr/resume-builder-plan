@@ -61,9 +61,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("email, bio, is_pro, full_name, canvas_instance_url")
+    .select("email, bio, is_pro, subscription_status, full_name, canvas_instance_url")
     .eq("id", user.id)
     .single();
+
+  // Derive isPro from either column so a stale is_pro boolean doesn't hide Pro status
+  const isPro = profile?.is_pro === true ||
+    profile?.subscription_status === "active" ||
+    profile?.subscription_status === "trialing";
 
   console.log("[DashboardPage] Raw fetched profile:", profile);
 
@@ -108,7 +113,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Resumes</p><p className="mt-1 text-2xl font-semibold">{resumes?.length || 0}</p></div>
           <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Applications</p><p className="mt-1 text-2xl font-semibold">{applications?.length || 0}</p></div>
           <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Interviews</p><p className="mt-1 text-2xl font-semibold">{interviews?.length || 0}</p></div>
-          <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Plan</p><p className="mt-1 text-2xl font-semibold text-[#d8f36b]">{profile?.is_pro ? "Pro" : "Free"}</p></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Plan</p><p className="mt-1 text-2xl font-semibold text-[#d8f36b]">{isPro ? "Pro" : "Free"}</p></div>
         </div>
       </section>
 
@@ -146,7 +151,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           </div>
 
-          <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={!!profile?.is_pro} />
+          <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={isPro} />
           <WelcomeTour
             resumesCount={resumes?.length || 0}
             applicationsCount={applications?.length || 0}

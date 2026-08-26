@@ -27,13 +27,18 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
+  // Derive isPro from either column so a stale is_pro boolean never hides Pro status
+  const isPro = profile?.is_pro === true ||
+    profile?.subscription_status === "active" ||
+    profile?.subscription_status === "trialing";
+
   return (
     <SidebarProvider>
       <div suppressHydrationWarning>
         <AppSidebar user={user} profile={profile} />
       </div>
       <SidebarInset className="bg-background/50">
-        <TopNav isPro={profile?.is_pro} />
+        <TopNav isPro={isPro} />
         <CommandMenu />
         <main className="flex-1 overflow-y-auto">
           <div className="w-full px-4 py-8 md:px-8 lg:px-10">

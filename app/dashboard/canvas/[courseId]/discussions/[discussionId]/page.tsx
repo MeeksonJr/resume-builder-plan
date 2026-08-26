@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MessageSquare, User, Calendar, HelpCircle } from "lucide-react";
+import { ArrowLeft, MessageSquare, User, Calendar, HelpCircle, CornerDownRight } from "lucide-react";
 
 interface DiscussionDetailPageProps {
   params: Promise<{
@@ -37,9 +37,11 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
   const token = profile.canvas_access_token;
 
   let discussionData: any = null;
+  let discussionThread: any = null;
   let fetchError = false;
 
   try {
+    // 1. Fetch main topic details
     const res = await fetch(`${baseUrl}/api/v1/courses/${courseId}/discussion_topics/${discussionId}`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -49,6 +51,17 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
 
     if (res.ok) {
       discussionData = await res.json();
+
+      // 2. Fetch full thread view (participants and replies)
+      const threadRes = await fetch(`${baseUrl}/api/v1/courses/${courseId}/discussion_topics/${discussionId}/view`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        next: { revalidate: 60 }
+      });
+      if (threadRes.ok) {
+        discussionThread = await threadRes.json();
+      }
     } else {
       fetchError = true;
     }
@@ -70,6 +83,13 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
     );
   }
 
+  // Create participant lookup map
+  const participantsMap = new Map(
+    (discussionThread?.participants || []).map((p: any) => [p.id, p])
+  );
+
+  const replies = discussionThread?.view || [];
+
   return (
     <div className="space-y-8 pb-16 bg-[#e9eee8] text-[#102b2b]">
       {/* Navigation */}
@@ -83,13 +103,14 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Content (Col span 2) */}
+        {/* Thread and Topic Detail (Col span 2) */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Topic Detail */}
           <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm overflow-hidden">
             <CardHeader className="border-b border-[#102b2b]/10 bg-[#f7faf5] py-5">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="rounded-none border-[#102b2b]/15 text-[#52716a] text-[9px] uppercase font-bold tracking-wider flex items-center gap-1">
-                  <MessageSquare className="w-3.5 h-3.5 text-[#0d8274]" /> Discussion
+                  <MessageSquare className="w-3.5 h-3.5 text-[#0d8274]" /> Discussion Board
                 </Badge>
               </div>
               <CardTitle className="text-xl sm:text-2xl font-black mt-3 text-[#102b2b] leading-tight">
@@ -97,9 +118,9 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              {/* Message Body */}
+              {/* Message Prompt Body */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0d8274]">Topic & Prompt Description</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0d8274]">Topic Prompt</h3>
                 {discussionData.message ? (
                   <div 
                     className="prose prose-sm max-w-full text-xs text-[#102b2b] leading-relaxed border border-[#102b2b]/10 p-4 bg-[#f8faf5] overflow-x-auto whitespace-pre-line"
@@ -112,27 +133,82 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
             </CardContent>
           </Card>
 
-          {/* Raw JSON Explorer */}
+          {/* Discussion Thread Replies */}
           <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm overflow-hidden">
             <CardHeader className="border-b border-[#102b2b]/10 bg-[#f7faf5] py-4">
-              <CardTitle className="text-xs font-black uppercase tracking-tight text-[#52716a]">
-                Canvas API JSON Payload Explorer
+              <CardTitle className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#0d8274]" />
+                Forum replies ({replies.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4">
-              <pre className="p-3 bg-[#102b2b] text-[#d8f36b] rounded-none overflow-x-auto text-[10px] font-mono leading-relaxed max-h-[300px]">
-                {JSON.stringify(discussionData, null, 2)}
-              </pre>
+            <CardContent className="p-5 space-y-4">
+              {replies.length === 0 ? (
+                <p className="text-xs text-[#52716a] p-4 text-center italic border border-dashed border-[#102b2b]/10 bg-[#f8faf5]">
+                  No replies posted in this thread yet.
+                </p>
+              ) : (
+                <div className="space-y-5">
+                  {replies.map((reply: any) => {
+                    const author = participantsMap.get(reply.user_id) as any;
+                    return (
+                      <div key={reply.id} className="p-4 bg-[#f8faf5] border border-[#102b2b]/10 rounded-none space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full border border-[#102b2b]/15 overflow-hidden bg-white shrink-0 flex items-center justify-center">
+                            {author?.avatar_image_url ? (
+                              <img src={author.avatar_image_url} alt="replier" className="h-8 w-8 object-cover" />
+                            ) : (
+                              <User className="h-4 w-4 text-[#52716a]" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-xs font-black text-[#102b2b]">{author?.display_name || "Student"}</p>
+                            <p className="text-[9px] text-[#52716a] mt-0.5">{new Date(reply.created_at).toLocaleString()}</p>
+                          </div>
+                        </div>
+                        
+                        <div 
+                          className="prose prose-sm text-xs text-[#102b2b] pl-11 leading-relaxed overflow-x-auto whitespace-pre-line"
+                          dangerouslySetInnerHTML={{ __html: reply.message }}
+                        />
+
+                        {/* Nested Replies / Sub-comments */}
+                        {reply.replies && reply.replies.length > 0 && (
+                          <div className="pl-11 pt-3 border-t border-[#102b2b]/5 mt-3 space-y-3">
+                            {reply.replies.map((sub: any) => {
+                              const subAuthor = participantsMap.get(sub.user_id) as any;
+                              return (
+                                <div key={sub.id} className="p-3 bg-white border border-[#102b2b]/5 flex gap-3 text-[11px]">
+                                  <CornerDownRight className="w-4 h-4 text-[#0d8274] shrink-0 mt-0.5" />
+                                  <div className="space-y-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 font-bold text-[#102b2b]">
+                                      <span>{subAuthor?.display_name || "Student"}</span>
+                                      <span className="text-[9px] text-[#52716a] font-normal">• {new Date(sub.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                    <div 
+                                      className="prose prose-sm text-xs text-[#102b2b]/80 leading-relaxed overflow-x-auto whitespace-pre-line"
+                                      dangerouslySetInnerHTML={{ __html: sub.message }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar Info */}
         <div className="space-y-6">
           <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm overflow-hidden">
             <CardHeader className="border-b border-[#102b2b]/10 bg-[#f7faf5] py-4">
               <CardTitle className="text-sm font-black uppercase tracking-tight">
-                Author & Date
+                Thread Author & Info
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4 text-xs">
@@ -145,19 +221,28 @@ export default async function DiscussionDetailPage({ params }: DiscussionDetailP
                   )}
                 </div>
                 <div>
-                  <p className="font-bold text-[#102b2b]">{discussionData.author?.display_name || "Unknown User"}</p>
-                  <p className="text-[10px] text-[#52716a] mt-0.5">Topic Creator</p>
+                  <p className="font-bold text-[#102b2b]">{discussionData.author?.display_name || "Topic Creator"}</p>
+                  <p className="text-[10px] text-[#52716a] mt-0.5">Author</p>
                 </div>
               </div>
 
               <div className="space-y-1 border-t border-[#102b2b]/5 pt-3">
                 <span className="text-[10px] uppercase font-bold text-[#52716a] tracking-wider flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" /> Created Date
+                  <Calendar className="w-3.5 h-3.5" /> Posted Date
                 </span>
                 <p className="font-extrabold text-[#102b2b]">
                   {new Date(discussionData.created_at).toLocaleString()}
                 </p>
               </div>
+
+              {discussionData.discussion_subentry_count !== undefined && (
+                <div className="space-y-1 border-t border-[#102b2b]/5 pt-3">
+                  <span className="text-[10px] uppercase font-bold text-[#52716a] tracking-wider">Total Responses</span>
+                  <p className="font-extrabold text-[#0d8274] font-mono text-sm">
+                    {discussionData.discussion_subentry_count} Replies
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
