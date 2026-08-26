@@ -30,6 +30,12 @@ export interface FundingOpportunity {
   match_score?: number | null;
   why_you_match?: string[] | null;
   potential_blockers?: string[] | null;
+  ai_analysis?: {
+    matchScore: number;
+    whyYouMatch: string[];
+    potentialBlockers: string[];
+    tailoringTips: string[];
+  } | null;
 }
 
 export function formatFundingAmount(opportunity: FundingOpportunity) {

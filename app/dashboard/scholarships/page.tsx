@@ -120,7 +120,8 @@ export default function DashboardScholarshipsPage() {
           user_status: uState?.status || null,
           essay_draft: uState?.essay_draft || null,
           notes: uState?.notes || null,
-          match_score: uState?.essay_draft ? 98 : basicScore 
+          match_score: uState?.ai_analysis?.matchScore || (uState?.essay_draft ? 98 : basicScore),
+          ai_analysis: uState?.ai_analysis || null
         };
       });
 
@@ -138,10 +139,15 @@ export default function DashboardScholarshipsPage() {
     fetchScholarships();
   }, []);
 
-  // Reset modal sub-states when active modal changes
+  // Reset/Initialize modal sub-states when active modal changes
   useEffect(() => {
-    setAiAnalysis(null);
-    setEssayDraft("");
+    if (activeModalScholarship) {
+      setAiAnalysis(activeModalScholarship.ai_analysis || null);
+      setEssayDraft(activeModalScholarship.essay_draft || "");
+    } else {
+      setAiAnalysis(null);
+      setEssayDraft("");
+    }
     setEssayTips([]);
     setEssayPrompt("");
   }, [activeModalScholarship]);
@@ -278,6 +284,23 @@ export default function DashboardScholarshipsPage() {
 
       const data = await res.json();
       setAiAnalysis(data);
+
+      // Persist AI analysis report to Supabase user_funding_opportunities
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("user_funding_opportunities")
+          .upsert({
+            user_id: user.id,
+            opportunity_id: activeModalScholarship.id,
+            status: activeModalScholarship.user_status || "saved",
+            ai_analysis: data
+          }, { onConflict: "user_id,opportunity_id" });
+        
+        // Reload to update global arrays
+        await fetchScholarships();
+      }
+      toast.success("AI Analysis report calculated and saved!");
     } catch (err: any) {
       console.error("AI Analysis error:", err.message);
       toast.error("AI Analysis failed. Please try again.");
