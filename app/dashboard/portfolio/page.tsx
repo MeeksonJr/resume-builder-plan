@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
     Save,
     Layout,
     Eye,
+    EyeOff,
     Settings2,
     Palette,
     MessageSquare,
@@ -31,7 +32,9 @@ import {
     Sparkles,
     Briefcase,
     Share2,
-    Search
+    Search,
+    PanelRight,
+    Wand2,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
@@ -55,6 +58,8 @@ import {
     ArrowUpRight,
     BarChart3
 } from "lucide-react";
+import { PortfolioLivePreview } from "@/components/portfolio/portfolio-live-preview";
+
 
 export default function PortfolioManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +76,36 @@ export default function PortfolioManagementPage() {
         totalVisits: number;
         uniqueVisitors: number;
     }>({ dailyStats: [], referrers: [], totalVisits: 0, uniqueVisitors: 0 });
+    const [showPreview, setShowPreview] = useState(true);
+    const [isGenerating, setIsGenerating] = useState<string | null>(null);
+    const [profile, setProfile] = useState<any>(null);
     const supabase = createClient();
+
+    const handleAiGenerate = useCallback(async (field: string) => {
+        setIsGenerating(field);
+        try {
+            // Build context from resumes
+            const resumeContext = resumes.slice(0, 3).map((r: any) =>
+                `Title: ${r.title}${r.summary ? `\nSummary: ${r.summary}` : ""}${r.skills ? `\nSkills: ${(r.skills || []).join(", ")}` : ""}`
+            ).join("\n\n") || portfolio?.full_name || "Professional";
+
+            const res = await fetch("/api/portfolio/ai-generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ field, resumeContext }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Generation failed");
+
+            setPortfolio((prev: any) => ({ ...prev, [field]: data.result }));
+            toast.success(`✨ ${field.replace("_", " ")} generated!`);
+        } catch (err: any) {
+            toast.error(err.message || "AI generation failed");
+        } finally {
+            setIsGenerating(null);
+        }
+    }, [resumes, portfolio]);
+
 
     const fetchPortfolio = async () => {
         setIsLoading(true);
@@ -267,7 +301,13 @@ export default function PortfolioManagementPage() {
 
     return (
         <div className="min-h-full bg-[#e9eee8] text-[#102b2b]">
-        <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 animate-in fade-in duration-500 lg:px-10 lg:py-12">
+        <div className="flex h-full min-h-full">
+            {/* Left: Editor Panel */}
+            <div className={cn(
+                "flex flex-col transition-all duration-300",
+                showPreview ? "w-full lg:w-[55%] xl:w-[50%]" : "w-full"
+            )}>
+            <div className="space-y-8 px-5 py-8 animate-in fade-in duration-500 lg:px-8 lg:py-10">
             <div className="flex flex-col gap-6 border-b border-[#102b2b]/15 pb-7 md:flex-row md:items-end md:justify-between">
                 <div className="space-y-2">
                     <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#0d8274]">Showcase / My portfolio</div>
@@ -275,6 +315,15 @@ export default function PortfolioManagementPage() {
                     <p className="max-w-xl text-sm font-medium leading-6 text-[#102b2b]/60">Shape the public page that makes your work easy to understand, trust, and contact.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="hidden h-9 gap-2 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b] lg:flex"
+                        onClick={() => setShowPreview(!showPreview)}
+                    >
+                        {showPreview ? <EyeOff className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+                        {showPreview ? "Hide Preview" : "Show Preview"}
+                    </Button>
                     {portfolio.slug && (
                         <Button variant="outline" size="lg" className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]" asChild>
                             <a href={`/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer">
@@ -289,6 +338,7 @@ export default function PortfolioManagementPage() {
                     </Button>
                 </div>
             </div>
+
 
             <Tabs defaultValue="general" className="w-full">
                 <TabsList className="mb-8 flex h-auto w-full gap-1 overflow-x-auto border-b border-[#102b2b]/15 bg-transparent p-0 scrollbar-hide">
@@ -440,13 +490,27 @@ export default function PortfolioManagementPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="bio">Professional Bio</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="bio">Professional Bio</Label>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 gap-1.5 rounded-none border border-[#0d8274]/30 bg-[#d8f36b]/20 px-2.5 text-[10px] font-black uppercase tracking-widest text-[#0d8274] hover:bg-[#d8f36b]/40"
+                                        disabled={isGenerating === "bio"}
+                                        onClick={() => handleAiGenerate("bio")}
+                                    >
+                                        {isGenerating === "bio" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                        AI Write
+                                    </Button>
+                                </div>
                                 <Textarea
                                     id="bio"
                                     rows={5}
                                     placeholder="Write a brief introduction about yourself and your career goals..."
                                     value={portfolio.bio}
                                     onChange={(e) => setPortfolio({ ...portfolio, bio: e.target.value })}
+                                    className={cn(isGenerating === "bio" && "animate-pulse")}
                                 />
                             </div>
                             <div className="flex items-center gap-2 pt-2">
@@ -586,10 +650,23 @@ export default function PortfolioManagementPage() {
                         <CardContent className="p-8 space-y-8">
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="seo_title" className="flex items-center gap-2">
-                                        Meta Title
-                                        <Badge variant="outline" className="text-[10px] font-black tracking-widest border-primary/10 text-muted-foreground">Title Tag</Badge>
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="seo_title" className="flex items-center gap-2">
+                                            Meta Title
+                                            <Badge variant="outline" className="text-[10px] font-black tracking-widest border-primary/10 text-muted-foreground">Title Tag</Badge>
+                                        </Label>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 gap-1.5 rounded-none border border-[#0d8274]/30 bg-[#d8f36b]/20 px-2.5 text-[10px] font-black uppercase tracking-widest text-[#0d8274] hover:bg-[#d8f36b]/40"
+                                            disabled={!!isGenerating}
+                                            onClick={() => handleAiGenerate("seo_title")}
+                                        >
+                                            {isGenerating === "seo_title" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                            AI Write
+                                        </Button>
+                                    </div>
                                     <Input
                                         id="seo_title"
                                         className="rounded-xl border-primary/10"
@@ -602,10 +679,23 @@ export default function PortfolioManagementPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="seo_description" className="flex items-center gap-2">
-                                        Meta Description
-                                        <Badge variant="outline" className="text-[10px] font-black tracking-widest border-primary/10 text-muted-foreground">Snippet</Badge>
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="seo_description" className="flex items-center gap-2">
+                                            Meta Description
+                                            <Badge variant="outline" className="text-[10px] font-black tracking-widest border-primary/10 text-muted-foreground">Snippet</Badge>
+                                        </Label>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 gap-1.5 rounded-none border border-[#0d8274]/30 bg-[#d8f36b]/20 px-2.5 text-[10px] font-black uppercase tracking-widest text-[#0d8274] hover:bg-[#d8f36b]/40"
+                                            disabled={!!isGenerating}
+                                            onClick={() => handleAiGenerate("seo_description")}
+                                        >
+                                            {isGenerating === "seo_description" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                            AI Write
+                                        </Button>
+                                    </div>
                                     <Textarea
                                         id="seo_description"
                                         className="rounded-xl border-primary/10 min-h-[100px]"
@@ -1267,7 +1357,35 @@ export default function PortfolioManagementPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+            </div>
+            </div>
+
+            {/* Right: Live Preview Panel */}
+            {showPreview && (
+                <div className="hidden lg:flex lg:flex-col lg:flex-1 sticky top-0 h-screen border-l border-[#102b2b]/15 bg-[#0f1f1f] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 animate-pulse rounded-full bg-[#d8f36b]" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Preview</span>
+                        </div>
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
+                            {portfolio?.template || "modern"} template
+                        </span>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                        <PortfolioLivePreview
+                            portfolio={portfolio}
+                            resumes={resumes}
+                            projects={projects}
+                            profile={profile}
+                            testimonials={testimonials}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
         </div>
     );
 }
+
+
