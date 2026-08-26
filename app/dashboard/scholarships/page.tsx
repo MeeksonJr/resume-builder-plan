@@ -24,8 +24,10 @@ import {
   Loader2,
   FileText,
   Copy,
-  Check
+  Check,
+  FileEdit
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +42,7 @@ import { FundingPaywall } from "@/components/dashboard/funding-paywall";
 
 export default function DashboardScholarshipsPage() {
   const supabase = createClient();
+  const router = useRouter();
   const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
   const [opportunities, setOpportunities] = useState<FundingOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +70,7 @@ export default function DashboardScholarshipsPage() {
   const [essayTips, setEssayTips] = useState<string[]>([]);
   const [drafting, setDrafting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Search online loading
   const [scraping, setScraping] = useState(false);
@@ -363,6 +367,53 @@ export default function DashboardScholarshipsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleOpenInEditor = async () => {
+    if (!activeModalScholarship || !essayDraft) return;
+
+    try {
+      setExporting(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please log in first.");
+        return;
+      }
+
+      // Find latest resume
+      const { data: resumes } = await supabase
+        .from("resumes")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      const resumeId = resumes && resumes.length > 0 ? resumes[0].id : null;
+
+      // Insert into cover_letters table
+      const { data: newDoc, error } = await supabase
+        .from("cover_letters")
+        .insert({
+          user_id: user.id,
+          resume_id: resumeId,
+          title: `Essay: ${activeModalScholarship.title}`,
+          content: essayDraft,
+          company_name: activeModalScholarship.provider,
+          job_title: "Scholarship Applicant",
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      toast.success("Essay exported to document editor!");
+      router.push(`/dashboard/cover-letters/${newDoc.id}`);
+    } catch (err: any) {
+      console.error("Failed to export to editor:", err.message);
+      toast.error("Failed to export essay. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Filtering
   const getFilteredScholarships = () => {
     return opportunities.filter((sch) => {
@@ -398,6 +449,24 @@ export default function DashboardScholarshipsPage() {
 
   const currentList = getFilteredScholarships();
   const totalPotentialValue = opportunities.reduce((sum, item) => sum + (item.amount_max || item.amount_min || 0), 0);
+
+  // Compute approaching saved deadlines (closes in <= 3 days)
+  const getApproachingSavedDeadlines = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const limitDate = new Date(today);
+    limitDate.setDate(today.getDate() + 3);
+
+    return opportunities.filter(sch => {
+      if (sch.user_status !== "saved" && sch.user_status !== "applying") return false;
+      if (!sch.deadline) return false;
+      
+      const deadlineDate = new Date(sch.deadline + "T00:00:00");
+      return deadlineDate >= today && deadlineDate <= limitDate;
+    });
+  };
+
+  const approachingList = getApproachingSavedDeadlines();
 
   if (isSubLoading) {
     return (
@@ -443,6 +512,43 @@ export default function DashboardScholarshipsPage() {
           </div>
         </div>
       </div>
+
+      {/* Approaching Saved Deadlines Alert Widget */}
+      {approachingList.length > 0 && (
+        <div className="p-4 sm:p-5 rounded-md bg-amber-50 border border-amber-300 text-amber-900 shadow-sm space-y-3">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 animate-pulse" />
+            <h3 className="font-extrabold text-sm sm:text-base">
+              Approaching Saved Deadlines ({approachingList.length})
+            </h3>
+          </div>
+          <p className="text-xs text-amber-800 leading-relaxed">
+            The following tracked opportunities are closing in 3 days or less. Complete and submit your applications soon!
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+            {approachingList.map((opp) => (
+              <div 
+                key={opp.id} 
+                onClick={() => setActiveModalScholarship(opp)}
+                className="p-3 rounded bg-white border border-amber-200 hover:border-amber-400 cursor-pointer transition-colors shadow-xs flex flex-col justify-between gap-1.5"
+              >
+                <div>
+                  <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">
+                    {opp.kind.toUpperCase()}
+                  </span>
+                  <h4 className="text-xs font-black text-[#102b2b] line-clamp-1">
+                    {opp.title}
+                  </h4>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-red-600 font-bold">
+                  <Clock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Closes: {opp.deadline}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Scraping Search Input */}
       <div className="p-4 sm:p-5 rounded-md bg-white border border-[#b8c8b9] flex flex-col md:flex-row gap-3 items-center">
@@ -911,6 +1017,19 @@ export default function DashboardScholarshipsPage() {
                               <>
                                 <Copy className="w-3.5 h-3.5" />
                                 Copy
+                              </>
+                            )}
+                          </Button>
+                          <Button onClick={handleOpenInEditor} disabled={exporting} variant="outline" size="sm" className="h-8 text-xs border-[#b8c8b9] gap-1">
+                            {exporting ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                Exporting...
+                              </>
+                            ) : (
+                              <>
+                                <FileEdit className="w-3.5 h-3.5 text-[#0d8274]" />
+                                Open in Editor
                               </>
                             )}
                           </Button>

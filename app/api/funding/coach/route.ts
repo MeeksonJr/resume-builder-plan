@@ -122,27 +122,50 @@ export async function POST(req: Request) {
       `;
     }
 
-    // 2. Query active opportunities to inject matching opportunities as grounding context
-    const { data: opportunities } = await supabase
-      .from("funding_opportunities")
-      .select("title, provider, amount_min, amount_max, kind")
-      .eq("is_active", true)
-      .limit(5);
+    // 2. Query user's specific saved/applying/applied opportunities
+    const { data: userOpps } = await supabase
+      .from("user_funding_opportunities")
+      .select(`
+        status,
+        essay_draft,
+        notes,
+        opportunity_id
+      `)
+      .eq("user_id", user.id)
+      .in("status", ["saved", "applying", "applied"]);
 
-    const oppsContext = opportunities && opportunities.length > 0 
-      ? opportunities.map(o => `- ${o.title} (${o.kind}) by ${o.provider}: Amount ${o.amount_max || o.amount_min || "Varies"}`).join("\n")
-      : "No scholarships currently in database.";
+    let userOppsContext = "Candidate has not saved any scholarships to their shortlist yet.";
+    
+    if (userOpps && userOpps.length > 0) {
+      const oppIds = userOpps.map(uo => uo.opportunity_id);
+      const { data: fullOpps } = await supabase
+        .from("funding_opportunities")
+        .select("id, title, provider, amount_min, amount_max, kind, deadline")
+        .in("id", oppIds);
+
+      const fullOppsMap = new Map(fullOpps?.map(o => [o.id, o]) || []);
+      
+      userOppsContext = userOpps
+        .map((uo) => {
+          const fo = fullOppsMap.get(uo.opportunity_id);
+          if (!fo) return null;
+          return `- [${uo.status.toUpperCase()}] "${fo.title}" (${fo.kind}) by ${fo.provider} | Deadline: ${fo.deadline || "Varies"} | Notes: ${uo.notes || "None"} | Essay Drafted: ${uo.essay_draft ? "Yes" : "No"}`;
+        })
+        .filter(Boolean)
+        .join("\n");
+    }
 
     const systemPrompt = `
       You are "Premio AI Coach", a professional scholarship and college funding strategist.
       Your goal is to answer the user's questions about college aid, scholarship essays, Pell grants, or application strategies.
-      Use the candidate's academic profile below to tailor your advice. Reference specific details from their resume when advising them.
+      Use the candidate's academic profile and saved opportunities below to tailor your advice. Reference their saved aid entries directly when appropriate.
 
       CANDIDATE PROFILE:
       ${resumeSummary}
 
-      DATABASE OPPORTUNITIES AVAILABLE:
-      ${oppsContext}
+      CANDIDATE'S SAVED FUNDING SHORTLIST:
+      ${userOppsContext}
+
 
       INSTRUCTIONS:
       - Answer in a encouraging, highly professional, and strategic tone.
