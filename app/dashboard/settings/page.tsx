@@ -7,6 +7,7 @@ import { AppearanceSettings } from "@/components/settings/appearance-settings"
 import { SecuritySettings } from "@/components/settings/security-settings"
 import { DataSettings } from "@/components/settings/data-settings"
 import { CareerSettings } from "@/components/settings/career-settings"
+import { CanvasSettings } from "@/components/settings/canvas-settings"
 
 export const metadata = {
     title: "Settings | ResumeForge",
@@ -57,6 +58,14 @@ export default async function SettingsPage() {
                 description="Set your target role, industry, and career goals for personalized AI assistance."
             >
                 <CareerSettings profile={profile} />
+            </SettingsTab>
+
+            <SettingsTab
+                value="canvas"
+                title="Canvas LMS Integration"
+                description="Connect your Canvas account to synchronize your courses, assignments, and grades."
+            >
+                <CanvasSettings profile={profile} />
             </SettingsTab>
 
             {/* 

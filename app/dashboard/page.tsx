@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { AnalyticsView } from "@/components/dashboard/analytics-view";
 import { WelcomeTour } from "@/components/dashboard/welcome-tour";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
+import { CanvasCourseWidget } from "@/components/dashboard/canvas-course-widget";
 import { ArrowUpRight, Briefcase, FileText, Plus, Sparkles, Target, Upload } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -45,10 +46,27 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, bio, is_pro, full_name")
+    .select("username, bio, is_pro, full_name, canvas_instance_url")
     .eq("id", user.id)
     .single();
 
+  // Fetch Canvas coursework details
+  const { data: canvasCourses } = await supabase
+    .from("canvas_courses")
+    .select("*")
+    .eq("user_id", user.id);
+
+  const { data: canvasAssignments } = await supabase
+    .from("canvas_assignments")
+    .select("*")
+    .eq("user_id", user.id);
+
+  const { data: canvasGrades } = await supabase
+    .from("canvas_grades")
+    .select("*")
+    .eq("user_id", user.id);
+
+  const hasCanvasConfig = !!profile?.canvas_instance_url;
   const displayName = profile?.full_name || profile?.username || user.email?.split("@")[0];
 
   return (
@@ -83,58 +101,71 @@ export default async function DashboardPage() {
         <Link href="/dashboard/interview-prep" className="group border border-[#102b2b]/15 bg-[#f8f4ec] p-5 transition-colors hover:border-[#0d8274]/50 hover:bg-white"><div className="flex items-center justify-between"><span className="flex h-10 w-10 items-center justify-center bg-[#dbe8df]"><Sparkles className="h-5 w-5 text-[#0d8274]" /></span><ArrowUpRight className="h-4 w-4 text-[#0d8274] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div><h2 className="mt-6 font-semibold">Prepare for the room</h2><p className="mt-1 text-sm leading-relaxed text-[#52716a]">Practice answers and turn feedback into a stronger interview plan.</p></Link>
       </div>
 
-      <div className="space-y-8 border-t border-[#102b2b]/15 pt-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-[-.04em]">
-              <FileText className="h-5 w-5 text-[#0d8274]" />
-              <span>Career & Application Documents</span>
-            </h2>
-            <p className="text-xs text-[#52716a] sm:text-sm">
-              Manage the documents and decisions that support your next move.
-            </p>
+      <div className="grid gap-8 lg:grid-cols-3 border-t border-[#102b2b]/15 pt-8">
+        {/* Main Document Workspace */}
+        <div className="lg:col-span-2 space-y-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-[-.04em]">
+                <FileText className="h-5 w-5 text-[#0d8274]" />
+                <span>Career & Application Documents</span>
+              </h2>
+              <p className="text-xs text-[#52716a] sm:text-sm">
+                Manage the documents and decisions that support your next move.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard/resume/new">
+                <Button size="sm" className="rounded-none bg-[#102b2b] text-xs font-medium text-[#f8f4ec] hover:bg-[#164743]">
+                  <Plus className="h-3.5 w-3.5" /> Create resume
+                </Button>
+              </Link>
+              <Link href="/dashboard/cover-letters">
+                <Button size="sm" variant="outline" className="rounded-none border-[#102b2b]/20 text-xs text-[#365950]">
+                  Cover Letters
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link href="/dashboard/resume/new">
-              <Button size="sm" className="rounded-none bg-[#102b2b] text-xs font-medium text-[#f8f4ec] hover:bg-[#164743]">
-                <Plus className="h-3.5 w-3.5" /> Create resume
-              </Button>
-            </Link>
-            <Link href="/dashboard/cover-letters">
-              <Button size="sm" variant="outline" className="rounded-none border-[#102b2b]/20 text-xs text-[#365950]">
-                Cover Letters
-              </Button>
-            </Link>
-          </div>
+          <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={!!profile?.is_pro} />
+          <WelcomeTour
+            resumesCount={resumes?.length || 0}
+            applicationsCount={applications?.length || 0}
+            interviewsCount={interviews?.length || 0}
+            hasPortfolio={!!profile?.username || !!profile?.bio}
+          />
+
+          {resumes && resumes.length > 0 ? (
+            <>
+              <section className="relative">
+                <AnalyticsView resumes={resumes} events={events || []} />
+              </section>
+
+              <section className="relative pt-2">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#0d8274]/20 to-transparent" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0d8274]/60 whitespace-nowrap">Your Resumes & Portfolios</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#0d8274]/20 to-transparent" />
+                </div>
+                <ResumeList resumes={resumes} />
+              </section>
+            </>
+          ) : (
+            <EmptyState />
+          )}
         </div>
 
-        <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={!!profile?.is_pro} />
-        <WelcomeTour
-          resumesCount={resumes?.length || 0}
-          applicationsCount={applications?.length || 0}
-          interviewsCount={interviews?.length || 0}
-          hasPortfolio={!!profile?.username || !!profile?.bio}
-        />
-
-        {resumes && resumes.length > 0 ? (
-          <>
-            <section className="relative">
-              <AnalyticsView resumes={resumes} events={events || []} />
-            </section>
-
-            <section className="relative pt-2">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400/60 whitespace-nowrap">Your Resumes & Portfolios</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
-              </div>
-              <ResumeList resumes={resumes} />
-            </section>
-          </>
-        ) : (
-          <EmptyState />
-        )}
+        {/* Sidebar Workspace */}
+        <div className="space-y-8">
+          <CanvasCourseWidget
+            hasConfig={hasCanvasConfig}
+            courses={canvasCourses || []}
+            assignments={canvasAssignments || []}
+            grades={canvasGrades || []}
+          />
+        </div>
       </div>
     </div>
   );

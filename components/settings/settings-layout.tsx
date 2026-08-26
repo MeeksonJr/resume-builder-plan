@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { User, Palette, Shield, Settings as SettingsIcon, Database, Target } from "lucide-react"
+import { User, Palette, Shield, Settings as SettingsIcon, Database, Target, GraduationCap } from "lucide-react"
 
 interface SettingsLayoutProps {
     children?: React.ReactNode
@@ -35,6 +35,10 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
                     <TabsTrigger value="career" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
                         <Target className="h-4 w-4" />
                         <span className="hidden sm:inline">Career</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="canvas" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
+                        <GraduationCap className="h-4 w-4" />
+                        <span className="hidden sm:inline">Canvas</span>
                     </TabsTrigger>
                     <TabsTrigger value="appearance" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
                         <Palette className="h-4 w-4" />
