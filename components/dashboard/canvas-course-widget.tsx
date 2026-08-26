@@ -63,9 +63,14 @@ export function CanvasCourseWidget({ hasConfig, courses, assignments, grades }: 
             <CardDescription className="text-xs text-[#52716a]">Synced from Canvas</CardDescription>
           </div>
         </div>
-        <Button asChild variant="ghost" size="sm" className="text-xs font-bold text-[#0d8274] hover:bg-white/50 h-8 rounded-none">
-          <Link href="/dashboard/settings">Manage</Link>
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button asChild variant="ghost" size="sm" className="text-xs font-bold text-[#0d8274] hover:bg-white/50 h-8 rounded-none">
+            <Link href="/dashboard/canvas">Workspace</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="text-xs font-bold text-[#102b2b]/55 hover:bg-white/50 h-8 rounded-none">
+            <Link href="/dashboard/settings">Settings</Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-5 space-y-5">
         {/* Course Grades List */}
@@ -81,15 +86,15 @@ export function CanvasCourseWidget({ hasConfig, courses, assignments, grades }: 
               {courses.slice(0, 6).map((course) => {
                 const gradeInfo = gradesMap.get(course.canvas_course_id)
                 return (
-                  <div key={course.id} className="p-2.5 bg-white border border-[#102b2b]/10 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-xs font-black text-[#102b2b] truncate leading-tight" title={course.name}>
+                  <div key={course.id} className="p-2.5 bg-white border border-[#102b2b]/10 flex items-center justify-between gap-2 hover:border-[#0d8274] transition-colors">
+                    <Link href={`/dashboard/canvas/${course.canvas_course_id}`} className="min-w-0 flex-1 block">
+                      <p className="text-xs font-black text-[#102b2b] truncate leading-tight hover:text-[#0d8274]" title={course.name}>
                         {course.name}
                       </p>
                       <p className="text-[10px] text-[#52716a] font-medium mt-0.5 truncate">
                         {course.course_code || "Class"}
                       </p>
-                    </div>
+                    </Link>
                     {gradeInfo && (
                       <div className="text-right shrink-0">
                         <Badge className="rounded-none bg-[#0d8274] text-white hover:bg-[#0d8274] font-bold font-mono text-[10px] px-1.5 py-0.5">

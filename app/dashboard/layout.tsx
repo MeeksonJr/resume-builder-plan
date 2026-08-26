@@ -36,7 +36,7 @@ export default async function DashboardLayout({
         <TopNav isPro={profile?.is_pro} />
         <CommandMenu />
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 lg:px-10">
+          <div className="w-full px-4 py-8 md:px-8 lg:px-10">
             {children}
           </div>
         </main>

@@ -9,13 +9,28 @@ import { ArrowUpRight, Briefcase, FileText, Plus, Sparkles, Target, Upload } fro
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{ success?: string }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) return null;
+
+  const { success } = await searchParams;
+  if (success === "true") {
+    await supabase
+      .from("profiles")
+      .update({
+        is_pro: true,
+        subscription_status: "active"
+      })
+      .eq("id", user.id);
+  }
 
   const { data: resumes } = await supabase
     .from("resumes")
@@ -46,9 +61,11 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, bio, is_pro, full_name, canvas_instance_url")
+    .select("email, bio, is_pro, full_name, canvas_instance_url")
     .eq("id", user.id)
     .single();
+
+  console.log("[DashboardPage] Raw fetched profile:", profile);
 
   // Fetch Canvas coursework details
   const { data: canvasCourses } = await supabase
@@ -67,7 +84,7 @@ export default async function DashboardPage() {
     .eq("user_id", user.id);
 
   const hasCanvasConfig = !!profile?.canvas_instance_url;
-  const displayName = profile?.full_name || profile?.username || user.email?.split("@")[0];
+  const displayName = profile?.full_name || profile?.email?.split("@")[0] || user.email?.split("@")[0];
 
   return (
     <div className="relative space-y-10 pb-20">
@@ -134,7 +151,7 @@ export default async function DashboardPage() {
             resumesCount={resumes?.length || 0}
             applicationsCount={applications?.length || 0}
             interviewsCount={interviews?.length || 0}
-            hasPortfolio={!!profile?.username || !!profile?.bio}
+            hasPortfolio={!!profile?.full_name || !!profile?.bio}
           />
 
           {resumes && resumes.length > 0 ? (
