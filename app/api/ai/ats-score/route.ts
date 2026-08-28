@@ -22,10 +22,13 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { resumeData, jobDescription } = requestSchema.parse(body);
 
-        const { allowed, remaining } = await checkRateLimit("ai_ats");
+        const { allowed, remaining, isPro } = await checkRateLimit("ai_ats");
         if (!allowed) {
             return NextResponse.json({
-                error: "Daily AI limit reached. Please try again tomorrow."
+                error: "LIMIT_EXCEEDED",
+                message: isPro 
+                    ? "You have reached your daily limit for ATS Scoring." 
+                    : "Free users can only run 2 ATS Scoring checks per day. Please upgrade to Pro for unlimited access."
             }, { status: 429 });
         }
 
