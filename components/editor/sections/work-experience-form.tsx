@@ -173,8 +173,9 @@ export function WorkExperienceForm() {
                                     <AccordionContent className="pt-4 pb-4 space-y-4">
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Company Name</Label>
+                                                <Label htmlFor={`company-${exp.id}`}>Company Name</Label>
                                                 <Input
+                                                    id={`company-${exp.id}`}
                                                     value={exp.company}
                                                     onChange={(e) =>
                                                         updateWorkExperience(exp.id, { company: e.target.value })
@@ -183,8 +184,9 @@ export function WorkExperienceForm() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Position Title</Label>
+                                                <Label htmlFor={`position-${exp.id}`}>Position Title</Label>
                                                 <Input
+                                                    id={`position-${exp.id}`}
                                                     value={exp.position}
                                                     onChange={(e) =>
                                                         updateWorkExperience(exp.id, { position: e.target.value })
@@ -196,8 +198,9 @@ export function WorkExperienceForm() {
 
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Start Date</Label>
+                                                <Label htmlFor={`start-date-${exp.id}`}>Start Date</Label>
                                                 <Input
+                                                    id={`start-date-${exp.id}`}
                                                     type="month"
                                                     value={exp.start_date || ""}
                                                     onChange={(e) =>
@@ -206,9 +209,10 @@ export function WorkExperienceForm() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>End Date</Label>
+                                                <Label htmlFor={`end-date-${exp.id}`}>End Date</Label>
                                                 <div className="space-y-2">
                                                     <Input
+                                                        id={`end-date-${exp.id}`}
                                                         type="month"
                                                         value={exp.end_date || ""}
                                                         disabled={exp.is_current}
@@ -218,6 +222,7 @@ export function WorkExperienceForm() {
                                                     />
                                                     <div className="flex items-center space-x-2">
                                                         <Switch
+                                                            id={`is-current-${exp.id}`}
                                                             checked={exp.is_current}
                                                             onCheckedChange={(checked) =>
                                                                 updateWorkExperience(exp.id, {
@@ -226,15 +231,16 @@ export function WorkExperienceForm() {
                                                                 })
                                                             }
                                                         />
-                                                        <Label>I currently work here</Label>
+                                                        <Label htmlFor={`is-current-${exp.id}`}>I currently work here</Label>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Location</Label>
+                                            <Label htmlFor={`location-${exp.id}`}>Location</Label>
                                             <Input
+                                                id={`location-${exp.id}`}
                                                 value={exp.location || ""}
                                                 onChange={(e) =>
                                                     updateWorkExperience(exp.id, { location: e.target.value })

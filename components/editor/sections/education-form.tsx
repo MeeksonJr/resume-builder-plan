@@ -159,8 +159,9 @@ export function EducationForm() {
                                     <AccordionContent className="pt-4 pb-4 space-y-4">
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Institution</Label>
+                                                <Label htmlFor={`institution-${edu.id}`}>Institution</Label>
                                                 <Input
+                                                    id={`institution-${edu.id}`}
                                                     value={edu.institution}
                                                     onChange={(e) =>
                                                         updateEducation(edu.id, { institution: e.target.value })
@@ -169,8 +170,9 @@ export function EducationForm() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Location</Label>
+                                                <Label htmlFor={`location-${edu.id}`}>Location</Label>
                                                 <Input
+                                                    id={`location-${edu.id}`}
                                                     value={edu.location || ""}
                                                     onChange={(e) =>
                                                         updateEducation(edu.id, { location: e.target.value })
@@ -182,8 +184,9 @@ export function EducationForm() {
 
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Degree</Label>
+                                                <Label htmlFor={`degree-${edu.id}`}>Degree</Label>
                                                 <Input
+                                                    id={`degree-${edu.id}`}
                                                     value={edu.degree || ""}
                                                     onChange={(e) =>
                                                         updateEducation(edu.id, { degree: e.target.value })
@@ -192,8 +195,9 @@ export function EducationForm() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Field of Study</Label>
+                                                <Label htmlFor={`field-of-study-${edu.id}`}>Field of Study</Label>
                                                 <Input
+                                                    id={`field-of-study-${edu.id}`}
                                                     value={edu.field_of_study || ""}
                                                     onChange={(e) =>
                                                         updateEducation(edu.id, { field_of_study: e.target.value })
@@ -205,8 +209,9 @@ export function EducationForm() {
 
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label>Start Date</Label>
+                                                <Label htmlFor={`start-date-${edu.id}`}>Start Date</Label>
                                                 <Input
+                                                    id={`start-date-${edu.id}`}
                                                     type="month"
                                                     value={edu.start_date || ""}
                                                     onChange={(e) =>
@@ -215,8 +220,9 @@ export function EducationForm() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>End Date</Label>
+                                                <Label htmlFor={`end-date-${edu.id}`}>End Date</Label>
                                                 <Input
+                                                    id={`end-date-${edu.id}`}
                                                     type="month"
                                                     value={edu.end_date || ""}
                                                     onChange={(e) =>
@@ -227,8 +233,9 @@ export function EducationForm() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>GPA</Label>
+                                            <Label htmlFor={`gpa-${edu.id}`}>GPA</Label>
                                             <Input
+                                                id={`gpa-${edu.id}`}
                                                 value={edu.gpa || ""}
                                                 onChange={(e) =>
                                                     updateEducation(edu.id, { gpa: e.target.value })
