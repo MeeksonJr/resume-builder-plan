@@ -20,72 +20,117 @@ export async function GET(request: Request) {
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor: "#fff",
-                        backgroundImage: "linear-gradient(to bottom right, #eff6ff, #fff)",
+                        backgroundColor: "#0d1b1e",
+                        backgroundImage: "radial-gradient(circle at 10% 20%, rgba(16, 43, 43, 0.4) 0%, rgba(13, 27, 30, 0) 90%), radial-gradient(circle at 90% 80%, rgba(13, 130, 116, 0.15) 0%, rgba(13, 27, 30, 0) 90%)",
                     }}
                 >
+                    {/* Decorative Top Accent Bar */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: "8px",
+                            backgroundImage: "linear-gradient(90deg, #0d8274, #d8f36b)",
+                        }}
+                    />
+
                     <div
                         style={{
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: "white",
-                            padding: "40px 80px",
-                            borderRadius: "20px",
-                            boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
+                            backgroundColor: "rgba(255, 255, 255, 0.03)",
+                            border: "1px solid rgba(255, 255, 255, 0.08)",
+                            padding: "60px 80px",
+                            borderRadius: "24px",
                             textAlign: "center",
+                            boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
+                            maxWidth: "1000px",
                         }}
                     >
-                        <div
-                            style={{
-                                fontSize: 60,
-                                fontWeight: 900,
-                                marginBottom: 20,
-                                lineHeight: 1.2,
-                                backgroundImage: "linear-gradient(90deg, #2563eb, #7c3aed)",
-                                backgroundClip: "text",
-                                color: "transparent",
-                            }}
-                        >
-                            {name}
-                        </div>
-                        <div
-                            style={{
-                                fontSize: 30,
-                                color: "#64748b",
-                                fontWeight: 500,
-                                marginBottom: 40,
-                            }}
-                        >
-                            {title}
-                        </div>
+                        {/* Verified Badge */}
                         <div
                             style={{
                                 display: "flex",
                                 alignItems: "center",
-                                padding: "10px 30px",
-                                backgroundColor: "#f1f5f9",
-                                borderRadius: "50px",
-                                fontSize: 24,
-                                color: "#0f172a",
-                                fontWeight: 600,
+                                gap: "8px",
+                                padding: "6px 14px",
+                                backgroundColor: "rgba(216, 243, 107, 0.1)",
+                                border: "1px solid rgba(216, 243, 107, 0.2)",
+                                borderRadius: "100px",
+                                fontSize: "14px",
+                                color: "#d8f36b",
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: "1.5px",
+                                marginBottom: "28px",
                             }}
                         >
-                            View Verified Resume
+                            ✓ Verified Candidate
+                        </div>
+
+                        {/* Name */}
+                        <div
+                            style={{
+                                fontSize: 64,
+                                fontWeight: 900,
+                                marginBottom: 16,
+                                lineHeight: 1.15,
+                                color: "#ffffff",
+                                letterSpacing: "-1.5px",
+                            }}
+                        >
+                            {name}
+                        </div>
+
+                        {/* Target Title / Subtitle */}
+                        <div
+                            style={{
+                                fontSize: 26,
+                                color: "rgba(255, 255, 255, 0.65)",
+                                fontWeight: 500,
+                                marginBottom: 44,
+                                letterSpacing: "-0.5px",
+                            }}
+                        >
+                            {title}
+                        </div>
+
+                        {/* Action CTA Button */}
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                padding: "12px 36px",
+                                backgroundColor: "#d8f36b",
+                                borderRadius: "12px",
+                                fontSize: 22,
+                                color: "#0d1b1e",
+                                fontWeight: 800,
+                                boxShadow: "0 8px 25px rgba(216, 243, 107, 0.25)",
+                            }}
+                        >
+                            View Resume & Credentials
                         </div>
                     </div>
+
+                    {/* Footer watermark */}
                     <div
                         style={{
                             position: "absolute",
                             bottom: 40,
                             display: "flex",
                             alignItems: "center",
-                            fontSize: 20,
-                            color: "#94a3b8",
+                            fontSize: 18,
+                            color: "rgba(255, 255, 255, 0.35)",
+                            fontWeight: 600,
+                            letterSpacing: "1px",
                         }}
                     >
-                        Built with details
+                        POWERED BY <span style={{ color: "#d8f36b", marginLeft: "6px" }}>RESUMEAI PRO</span>
                     </div>
                 </div>
             ),

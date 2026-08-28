@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SaveVersionDialog } from "@/components/dashboard/resume/save-version-dialog";
-import { VersionHistory } from "@/components/dashboard/resume/version-history";
 import { PersonalInfoForm } from "@/components/editor/sections/personal-info-form";
 import { WorkExperienceForm } from "@/components/editor/sections/work-experience-form";
 import { EducationForm } from "@/components/editor/sections/education-form";
@@ -35,7 +34,6 @@ import { ProjectsForm } from "@/components/editor/sections/projects-form";
 import { CertificationsForm } from "@/components/editor/sections/certifications-form";
 import { LanguagesForm } from "@/components/editor/sections/languages-form";
 import { ResumePreview } from "@/components/editor/resume-preview";
-import { AIAssistant } from "@/components/editor/ai-assistant";
 import { ShareDialog } from "@/components/editor/share-dialog";
 import {
   DropdownMenu,
@@ -45,7 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileJson, FileText, FileCode, Printer, ChevronDown } from "lucide-react";
+import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2 } from "lucide-react";
 import { exportToJSON } from "@/lib/export/json-export";
 import { exportToTxt } from "@/lib/export/txt-export";
 
@@ -55,11 +53,22 @@ import { useResumeStore } from "@/lib/stores/resume-store";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { VisualCustomizer } from "@/components/editor/visual-customizer";
-import { exportToDocx } from "@/lib/export/docx-export";
 import { JobInputDialog } from "@/components/tailoring/job-input-dialog";
 import { OptimizationPanel } from "@/components/tailoring/optimization-panel";
-import { CoverLetterGenerator } from "@/components/cover-letter/generator-panel";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
+
+const CoverLetterGenerator = dynamic(() => import("@/components/cover-letter/generator-panel").then(mod => mod.CoverLetterGenerator), {
+    loading: () => <div className="h-full flex items-center justify-center min-h-[300px]"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+});
+
+const AIAssistant = dynamic(() => import("@/components/editor/ai-assistant").then(mod => mod.AIAssistant), {
+    loading: () => <div className="h-full flex items-center justify-center min-h-[300px]"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+});
+
+const VersionHistory = dynamic(() => import("@/components/dashboard/resume/version-history").then(mod => mod.VersionHistory), {
+    loading: () => <div className="h-full flex items-center justify-center min-h-[200px]"><Loader2 className="animate-spin h-6 w-6 text-primary" /></div>
+});
 
 interface Resume {
   id: string;
@@ -354,6 +363,9 @@ export function ResumeEditor({
         resume_id_param: resume.id,
         event_type_param: "download",
       });
+
+      // Dynamically import docx export helper to keep main editor bundle slim
+      const { exportToDocx } = await import("@/lib/export/docx-export");
 
       await exportToDocx({
         profile: store.profile,
