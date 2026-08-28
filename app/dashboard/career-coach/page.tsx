@@ -2,8 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CareerCoachContent } from "@/components/dashboard/career/career-coach-content";
 import { SkillsGapContent } from "@/components/dashboard/career/skills-gap-content";
+import { SalaryInsightsContent } from "@/components/dashboard/career/salary-insights-content";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Target, BrainCircuit } from "lucide-react";
+import { Target, BrainCircuit, Coins } from "lucide-react";
 
 export default async function CareerCoachPage() {
     const supabase = await createClient();
@@ -54,6 +55,10 @@ export default async function CareerCoachPage() {
                         <BrainCircuit className="h-4 w-4" />
                         Skills Gap Audit
                     </TabsTrigger>
+                    <TabsTrigger value="salary-insights" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
+                        <Coins className="h-4 w-4" />
+                        Salary Insights
+                    </TabsTrigger>
                 </TabsList>
                 <TabsContent value="roadmap" className="mt-0">
                     <CareerCoachContent
@@ -63,6 +68,12 @@ export default async function CareerCoachPage() {
                 </TabsContent>
                 <TabsContent value="skills-gap" className="mt-0">
                     <SkillsGapContent
+                        profile={profile}
+                        resumes={resumes || []}
+                    />
+                </TabsContent>
+                <TabsContent value="salary-insights" className="mt-0">
+                    <SalaryInsightsContent
                         profile={profile}
                         resumes={resumes || []}
                     />
