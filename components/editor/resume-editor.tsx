@@ -513,13 +513,14 @@ export function ResumeEditor({
               onClick={() => setIsOptimizationPanelOpen(true)}
             >
               <Sparkles className="h-4 w-4" />
-              View Analysis ({tailoringResult.score}%)
+              <span className="hidden sm:inline">View Analysis ({tailoringResult.score}%)</span>
+              <span className="sm:hidden">{tailoringResult.score}%</span>
             </Button>
           ) : (
             <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
               <Button variant="outline" size="sm" className="gap-2">
                 <Target className="h-4 w-4" />
-                Target Job
+                <span className="hidden sm:inline">Target Job</span>
               </Button>
             </JobInputDialog>
           )}
@@ -528,7 +529,7 @@ export function ResumeEditor({
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <FileText className="h-4 w-4" />
-                Cover Letter
+                <span className="hidden sm:inline">Cover Letter</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-5xl h-[80vh] flex flex-col p-0">
@@ -547,7 +548,7 @@ export function ResumeEditor({
             <span className="hidden sm:inline">Save</span>
           </Button>
           <select
-            className="h-9 rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+            className="hidden sm:inline-flex h-9 rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
           >

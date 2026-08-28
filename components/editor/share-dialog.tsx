@@ -84,7 +84,7 @@ export function ShareDialog() {
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="min-h-[44px] gap-2 bg-transparent">
                     <Globe className="h-4 w-4" />
-                    Share
+                    <span className="hidden sm:inline">Share</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
