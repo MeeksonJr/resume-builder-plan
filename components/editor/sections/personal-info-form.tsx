@@ -17,13 +17,48 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 export function PersonalInfoForm() {
   const { profile, updateProfile } = useResumeStore();
   const [isImproving, setIsImproving] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncFromProfile = async () => {
+    setIsSyncing(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to sync profile settings");
+        return;
+      }
+      
+      const { data: dbProfile, error } = await supabase
+        .from("profiles")
+        .select("full_name, email, bio")
+        .eq("id", user.id)
+        .single();
+        
+      if (error || !dbProfile) throw new Error("Could not find user profile settings");
+
+      updateProfile({
+        full_name: dbProfile.full_name || profile?.full_name || "",
+        email: dbProfile.email || profile?.email || "",
+        summary: dbProfile.bio || profile?.summary || "",
+      });
+
+      toast.success("Synced basic info from your account settings!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to sync from profile settings");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleImproveSummary = async () => {
     if (!profile?.summary) {
@@ -58,11 +93,27 @@ export function PersonalInfoForm() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
-        <CardDescription>
-          Your basic contact details and professional summary
-        </CardDescription>
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 space-y-0">
+        <div>
+          <CardTitle>Personal Information</CardTitle>
+          <CardDescription>
+            Your basic contact details and professional summary
+          </CardDescription>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSyncFromProfile}
+          disabled={isSyncing}
+          className="gap-1.5 min-h-[40px] text-xs font-semibold self-start sm:self-auto border-dashed hover:border-solid transition-all"
+        >
+          {isSyncing ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3.5 w-3.5 text-indigo-500" />
+          )}
+          Sync Profile
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">

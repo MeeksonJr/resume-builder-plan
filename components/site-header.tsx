@@ -8,7 +8,7 @@ import { Menu, X, ArrowUpRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
-    { name: "Resume builder", href: "/dashboard/resume" },
+    { name: "Resume builder", href: "/dashboard/resumes" },
     { name: "Career tools", href: "/dashboard" },
     { name: "Templates", href: "/dashboard/resumes" },
     { name: "Pricing", href: "/pricing" },

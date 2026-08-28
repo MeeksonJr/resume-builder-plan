@@ -107,7 +107,7 @@ export function SiteFooter() {
                     <div>
                         <h4 className="font-semibold text-white mb-4">Funding & Tools</h4>
                         <ul className="space-y-3 text-sm text-slate-400">
-                            <li><Link href="/dashboard/resume" className="transition-colors hover:text-[#d8f36b]">Resume builder</Link></li>
+                            <li><Link href="/dashboard/resumes" className="transition-colors hover:text-[#d8f36b]">Resume builder</Link></li>
                             <li><Link href="/dashboard/optimize" className="transition-colors hover:text-[#d8f36b]">ATS optimizer</Link></li>
                             <li><Link href="/pricing" className="hover:text-indigo-400 transition-colors">Pricing</Link></li>
                             <li><Link href="/dashboard/interview-prep" className="transition-colors hover:text-[#d8f36b]">Interview prep</Link></li>
