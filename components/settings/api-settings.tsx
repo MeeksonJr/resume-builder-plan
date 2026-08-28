@@ -227,6 +227,17 @@ export function ApiSettings() {
                             curl -H "Authorization: Bearer YOUR_API_KEY" "https://resumeforge.app/api/v1/resumes?id=YOUR_RESUME_UUID"
                         </div>
                     </div>
+
+                    {/* Browser Extension Autofill Context */}
+                    <div className="space-y-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Terminal className="h-3.5 w-3.5" />
+                            Browser Extension Autofill Context (Flat format for form filling)
+                        </span>
+                        <div className="bg-[#102b2b] text-white p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
+                            curl -H "Authorization: Bearer YOUR_API_KEY" https://resumeforge.app/api/v1/autofill
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
