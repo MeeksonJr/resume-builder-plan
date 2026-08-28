@@ -5,6 +5,7 @@ import { AnalyticsView } from "@/components/dashboard/analytics-view";
 import { WelcomeTour } from "@/components/dashboard/welcome-tour";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { CanvasCourseWidget } from "@/components/dashboard/canvas-course-widget";
+import { JobRecommendationsWidget } from "@/components/dashboard/job-recommendations-widget";
 import { ArrowUpRight, Briefcase, FileText, Plus, Sparkles, Target, Upload } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -187,6 +188,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             assignments={canvasAssignments || []}
             grades={canvasGrades || []}
           />
+          <JobRecommendationsWidget />
         </div>
       </div>
     </div>

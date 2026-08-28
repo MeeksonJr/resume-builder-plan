@@ -41,6 +41,7 @@ import {
 import { SortableAccordionItem, SortableDragHandle } from "../sortable-accordion";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CanvasSuggestions } from "../canvas-suggestions";
 
 export function EducationForm() {
     const { education, addEducation, updateEducation, removeEducation } = useResumeStore();
@@ -247,20 +248,32 @@ export function EducationForm() {
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <Label>Highlights / Achievements</Label>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleImproveHighlights(edu.id, edu.highlights?.join("\n") || "")}
-                                                    disabled={improvingId === edu.id || !edu.highlights?.length}
-                                                    className="h-8 gap-1 text-xs"
-                                                >
-                                                    {improvingId === edu.id ? (
-                                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                                    ) : (
-                                                        <Sparkles className="h-3 w-3" />
-                                                    )}
-                                                    Improve with AI
-                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    <CanvasSuggestions
+                                                        onImport={(formattedText) => {
+                                                            const currentText = edu.highlights?.join("\n") || "";
+                                                            const newText = currentText
+                                                                ? `${currentText}\n${formattedText}`
+                                                                : formattedText;
+                                                            updateEducation(edu.id, { highlights: [newText] });
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        type="button"
+                                                        onClick={() => handleImproveHighlights(edu.id, edu.highlights?.join("\n") || "")}
+                                                        disabled={improvingId === edu.id || !edu.highlights?.length}
+                                                        className="h-8 gap-1 text-xs"
+                                                    >
+                                                        {improvingId === edu.id ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Sparkles className="h-3 w-3" />
+                                                        )}
+                                                        Improve with AI
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <RichTextEditor
                                                 content={edu.highlights?.join("\n") || ""}

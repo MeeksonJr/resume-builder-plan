@@ -42,6 +42,7 @@ import {
 import { SortableAccordionItem, SortableDragHandle } from "../sortable-accordion";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CanvasSuggestions } from "../canvas-suggestions";
 
 export function ProjectsForm() {
     const { projects, addProject, updateProject, removeProject } = useResumeStore();
@@ -189,20 +190,32 @@ export function ProjectsForm() {
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <Label>Description</Label>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleImproveDescription(proj.id, proj.description || "")}
-                                                    disabled={improvingId === proj.id || !proj.description}
-                                                    className="h-8 gap-1 text-xs"
-                                                >
-                                                    {improvingId === proj.id ? (
-                                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                                    ) : (
-                                                        <Sparkles className="h-3 w-3" />
-                                                    )}
-                                                    Improve with AI
-                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    <CanvasSuggestions
+                                                        onImport={(formattedText) => {
+                                                            const currentText = proj.description || "";
+                                                            const newText = currentText
+                                                                ? `${currentText}\n${formattedText}`
+                                                                : formattedText;
+                                                            updateProject(proj.id, { description: newText });
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        type="button"
+                                                        onClick={() => handleImproveDescription(proj.id, proj.description || "")}
+                                                        disabled={improvingId === proj.id || !proj.description}
+                                                        className="h-8 gap-1 text-xs"
+                                                    >
+                                                        {improvingId === proj.id ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Sparkles className="h-3 w-3" />
+                                                        )}
+                                                        Improve with AI
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <RichTextEditor
                                                 content={proj.description || ""}
