@@ -58,6 +58,8 @@ export function SiteHeader() {
                     {/* Mobile Menu Toggle */}
                     <button
                         aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                        aria-expanded={mobileMenuOpen}
+                        aria-controls="mobile-nav-menu"
                         className="p-2 text-[#102b2b] hover:text-[#0d8274] md:hidden"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
@@ -69,6 +71,7 @@ export function SiteHeader() {
             {/* Mobile Menu */}
             {mobileMenuOpen && (
                 <motion.div
+                    id="mobile-nav-menu"
                     initial={{ opacity: 0, y: -20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -20, scale: 0.95 }}

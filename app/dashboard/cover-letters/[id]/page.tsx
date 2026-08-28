@@ -3,7 +3,19 @@
 import { useState, useEffect, use, forwardRef, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { RichTextEditor } from "@/components/editor/rich-text-editor";
+import dynamic from "next/dynamic";
+
+const RichTextEditor = dynamic(
+    () => import("@/components/editor/rich-text-editor").then((mod) => mod.RichTextEditor),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="h-[200px] w-full animate-pulse border border-border bg-muted/20 rounded-md flex items-center justify-center text-xs text-muted-foreground">
+                Loading editor...
+            </div>
+        )
+    }
+);
 import {
     Card,
     CardContent,

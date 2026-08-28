@@ -10,7 +10,20 @@ import {
     AlertCircle,
 } from "lucide-react";
 
-import { FeedbackPDFButton } from "@/components/interview/feedback-pdf";
+import dynamic from "next/dynamic";
+
+const FeedbackPDFButton = dynamic(
+    () => import("@/components/interview/feedback-pdf").then((mod) => mod.FeedbackPDFButton),
+    {
+        ssr: false,
+        loading: () => (
+            <button className="inline-flex items-center justify-center rounded-none border border-[#102b2b]/15 bg-transparent px-3 py-1 text-xs font-medium text-[#102b2b] h-8 gap-2" disabled>
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#102b2b] border-t-transparent" />
+                Loading PDF...
+            </button>
+        )
+    }
+);
 
 interface Feedback {
     id: string;
