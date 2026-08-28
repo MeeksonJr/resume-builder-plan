@@ -45,7 +45,7 @@ export function TestimonialsSection() {
     return (
         <section className="relative overflow-hidden bg-[#f8f4ec] py-24 text-[#102b2b]">
 
-            <div className="container relative z-10 mx-auto max-w-7xl px-6 md:px-10">
+            <div className="container relative z-10 mx-auto max-w-[1600px] px-6 md:px-10">
                 <div className="text-center mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

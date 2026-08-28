@@ -41,7 +41,7 @@ const stats = [
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-[#e9eee8] py-32 text-[#102b2b]">
-            <div className="container mx-auto max-w-7xl px-6 md:px-10">
+            <div className="container mx-auto max-w-[1600px] px-6 md:px-10">
                 {/* Hero Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

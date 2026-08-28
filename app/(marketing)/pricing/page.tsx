@@ -104,7 +104,7 @@ const comparisonFeatures = [
 export default function PricingPage() {
     return (
         <div className="min-h-screen bg-[#e9eee8] py-32 text-[#102b2b]">
-            <div className="container mx-auto max-w-7xl px-6 md:px-10">
+            <div className="container mx-auto max-w-[1600px] px-6 md:px-10">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <motion.div

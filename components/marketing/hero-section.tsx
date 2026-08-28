@@ -12,7 +12,7 @@ export function HeroSection() {
             <div className="absolute right-[-12rem] top-[-10rem] h-[34rem] w-[34rem] rounded-full border border-[#d8f36b]/20" />
             <div className="absolute right-[-5rem] top-[-3rem] h-[22rem] w-[22rem] rounded-full border border-[#d8f36b]/15" />
 
-            <div className="container relative z-10 mx-auto max-w-7xl px-6 pb-20 pt-32 md:px-10 md:pb-28 md:pt-44">
+            <div className="container relative z-10 mx-auto max-w-[1600px] px-6 pb-20 pt-32 md:px-10 md:pb-28 md:pt-44">
                 <div className="grid items-center gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(420px,.88fr)] lg:gap-24">
                     <div className="max-w-3xl space-y-8">
                         <motion.div

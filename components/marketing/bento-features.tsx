@@ -70,7 +70,7 @@ export function BentoFeatures() {
     return (
         <section className="relative overflow-hidden bg-[#f8f4ec] py-24 text-[#102b2b]" id="features">
             {/* Mesh Gradient Background */}
-            <div className="container mx-auto max-w-7xl px-6 md:px-10">
+            <div className="container mx-auto max-w-[1600px] px-6 md:px-10">
                 <div className="mx-auto mb-16 max-w-3xl md:text-center">
                     <div className="mb-6 inline-flex items-center gap-2 border border-[#0d8274]/20 bg-[#0d8274]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#0d8274]">
                         <Sparkles className="w-3 h-3" />

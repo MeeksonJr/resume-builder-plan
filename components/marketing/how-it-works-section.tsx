@@ -34,7 +34,7 @@ export function HowItWorksSection() {
     return (
         <section className="relative overflow-hidden bg-[#102b2b] py-24 text-[#f8f4ec]">
             {/* Background decoration */}
-            <div className="container mx-auto max-w-7xl px-6 md:px-10">
+            <div className="container mx-auto max-w-[1600px] px-6 md:px-10">
                 <div className="text-center mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
