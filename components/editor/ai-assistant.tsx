@@ -328,29 +328,31 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
     };
 
     return (
-        <Card className="h-full border-l rounded-none flex flex-col w-[400px]">
-            <CardHeader>
+        <Card className="h-full border-none rounded-none flex flex-col w-[400px] bg-[#f8f4ec] text-[#102b2b]">
+            <CardHeader className="bg-[#e9eee8] border-b border-[#102b2b]/10 py-4">
                 <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-purple-500" />
-                        AI Assistant
+                    <div className="flex items-center gap-2 text-sm font-black uppercase tracking-tight text-[#102b2b]">
+                        <div className="flex h-7 w-7 items-center justify-center bg-[#d8f36b] text-[#102b2b]">
+                            <Sparkles className="h-4 w-4" />
+                        </div>
+                        AI Copilot
                     </div>
-                    <Button variant="ghost" size="icon" onClick={onClose}>
+                    <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-[#52716a] hover:text-[#102b2b] hover:bg-[#102b2b]/5 rounded-none">
                         <X className="h-4 w-4" />
                     </Button>
                 </CardTitle>
-                <CardDescription>
-                    {mode === "menu" && "Get intelligent suggestions to improve your resume"}
-                    {mode === "tailor" && "Paste the job description to tailor your resume"}
-                    {mode === "results" && "Analysis results"}
-                    {mode === "improve" && "Improve any text for your resume"}
-                    {mode === "keywords" && "Keyword Matcher"}
-                    {mode === "job-match" && "Match your resume against a job posting"}
-                    {mode === "tone" && "Adjust the tone of your content"}
-                    {mode === "industry" && "Customize for a specific industry"}
+                <CardDescription className="text-xs text-[#52716a] font-semibold mt-1">
+                    {mode === "menu" && "Intelligent suggestions to upgrade your resume"}
+                    {mode === "tailor" && "Paste job details to tailor achievements"}
+                    {mode === "results" && "Tailoring analysis results"}
+                    {mode === "improve" && "Rewrite and polish resume bullet points"}
+                    {mode === "keywords" && "ATS Keyword Optimizer"}
+                    {mode === "job-match" && "Analyze compatibility with target job"}
+                    {mode === "tone" && "Transform communication tone"}
+                    {mode === "industry" && "Align vocabulary with specific industry"}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 overflow-hidden flex flex-col gap-4">
+            <CardContent className="flex-1 overflow-hidden flex flex-col gap-4 p-5 bg-white/60">
                 {mode === "menu" && (
                     <div className="space-y-4">
                         <div className="bg-muted p-4 rounded-lg text-sm">

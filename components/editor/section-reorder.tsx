@@ -72,15 +72,15 @@ export function SectionReorder() {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                    <LayoutList className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none">
+                    <LayoutList className="h-4 w-4 text-[#a6c0b8]" />
                     <span className="hidden sm:inline">Sections</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b] rounded-none">
                 <SheetHeader>
-                    <SheetTitle>Reorder Sections</SheetTitle>
-                    <SheetDescription>
+                    <SheetTitle className="text-lg font-black uppercase tracking-tight text-[#102b2b]">Reorder Sections</SheetTitle>
+                    <SheetDescription className="text-xs text-[#52716a]">
                         Drag and drop sections to change their order in the editor and PDF.
                     </SheetDescription>
                 </SheetHeader>
@@ -94,8 +94,9 @@ export function SectionReorder() {
                             <div className="space-y-2">
                                 {items.map((id) => (
                                     <SortableItem key={id} id={id} className="w-full">
-                                        <div className="flex items-center gap-3 rounded-lg border bg-card p-4 shadow-sm w-full">
-                                            <span className="font-medium">{SECTION_LABELS[id] || id}</span>
+                                        <div className="flex items-center gap-3 rounded-none border border-[#102b2b]/10 bg-white/70 hover:bg-white p-4 shadow-sm w-full transition-colors cursor-grab active:cursor-grabbing text-[#102b2b] font-bold text-sm">
+                                            <GripVertical className="h-4 w-4 text-[#52716a] shrink-0" />
+                                            <span>{SECTION_LABELS[id] || id}</span>
                                         </div>
                                     </SortableItem>
                                 ))}

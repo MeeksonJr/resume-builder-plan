@@ -23,6 +23,15 @@ import {
   History,
   GitCommit,
   Target,
+  User,
+  Briefcase,
+  GraduationCap,
+  FolderGit,
+  Wrench,
+  Award,
+  Languages,
+  Clock,
+  ChevronRight,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SaveVersionDialog } from "@/components/dashboard/resume/save-version-dialog";
@@ -57,6 +66,7 @@ import { JobInputDialog } from "@/components/tailoring/job-input-dialog";
 import { OptimizationPanel } from "@/components/tailoring/optimization-panel";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CoverLetterGenerator = dynamic(() => import("@/components/cover-letter/generator-panel").then(mod => mod.CoverLetterGenerator), {
     loading: () => <div className="h-full flex items-center justify-center min-h-[300px]"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
@@ -184,6 +194,7 @@ export function ResumeEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [showVersionDialog, setShowVersionDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showCoverLetter, setShowCoverLetter] = useState(false);
 
   // Tailoring State
   // Tailoring state handling is merged below
@@ -428,48 +439,107 @@ export function ResumeEditor({
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col">
       {/* Editor Header */}
-      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border bg-[#102b2b] text-[#f8f4ec] px-6 py-4 shadow-sm">
         <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
-            <Link href="/dashboard">
+          <Button asChild variant="ghost" size="icon" className="h-10 w-10 text-[#a6c0b8] hover:text-[#d8f36b] hover:bg-[#164743] rounded-none">
+            <Link href="/dashboard/resumes">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
           <div>
-            <h1 className="text-lg font-semibold">{resume.title}</h1>
-            <p className="text-xs text-muted-foreground">
-              {hasChanges ? "Unsaved changes" : "All changes saved"}
-            </p>
+            <h1 className="text-lg font-black uppercase tracking-tight text-white">{resume.title}</h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`inline-block h-2 w-2 rounded-full ${hasChanges ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+              <p className="text-xs text-[#a6c0b8] font-semibold">
+                {hasChanges ? "Unsaved changes" : "All changes saved"}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <VisualCustomizer />
-          <SectionReorder />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden min-h-[44px] gap-2 bg-transparent text-muted-foreground hover:text-foreground sm:flex"
-            onClick={() => setShowVersionDialog(true)}
-            title="Create Checkpoint"
-          >
-            <GitCommit className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-3">
+          {/* Design & Layout tools */}
+          <div className="flex items-center gap-1 border-r border-white/10 pr-3">
+            <VisualCustomizer />
+            <SectionReorder />
+          </div>
+
+          {/* AI Toolkit */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-10 gap-2 border-[#d8f36b]/30 bg-[#d8f36b]/10 text-[#d8f36b] hover:bg-[#d8f36b]/20 hover:text-white rounded-none">
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden lg:inline">AI Suite</span>
+                <ChevronDown className="h-3 w-3 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">AI Writing Suite</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
+              
+              <DropdownMenuItem onClick={() => setShowAI(!showAI)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <Sparkles className="h-4 w-4 text-indigo-600" />
+                <span>AI Writing Assistant</span>
+              </DropdownMenuItem>
+
+              <Dialog open={showCoverLetter} onOpenChange={setShowCoverLetter}>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                    <FileText className="h-4 w-4 text-indigo-600" />
+                    <span>AI Cover Letter</span>
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent className="max-w-5xl h-[80vh] flex flex-col p-0 rounded-none">
+                  <CoverLetterGenerator />
+                </DialogContent>
+              </Dialog>
+
+              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">ATS Optimization</DropdownMenuLabel>
+
+              {tailoringResult ? (
+                <DropdownMenuItem onClick={() => setIsOptimizationPanelOpen(true)} className="gap-2.5 cursor-pointer font-semibold text-emerald-700 hover:bg-emerald-50">
+                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                  <span>View Match ({tailoringResult.score}%)</span>
+                </DropdownMenuItem>
+              ) : (
+                <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                    <Target className="h-4 w-4 text-indigo-600" />
+                    <span>Target Job Scan</span>
+                  </DropdownMenuItem>
+                </JobInputDialog>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Versions Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none">
+                <History className="h-4 w-4 text-[#a6c0b8]" />
+                <span className="hidden md:inline">Checkpoints</span>
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Version Control</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
+              <DropdownMenuItem onClick={() => setShowVersionDialog(true)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <GitCommit className="h-4 w-4 text-[#0d8274]" />
+                <span>Create Checkpoint</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowHistory(true)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <Clock className="h-4 w-4 text-[#0d8274]" />
+                <span>Restore Snapshot</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Sheet open={showHistory} onOpenChange={setShowHistory}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden min-h-[44px] gap-2 bg-transparent text-muted-foreground hover:text-foreground sm:flex"
-                title="Version History"
-              >
-                <History className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="w-[300px] sm:w-[400px] overflow-y-auto">
               <SheetHeader>
-                <SheetTitle>Version History</SheetTitle>
+                <SheetTitle>Version Checkpoints</SheetTitle>
               </SheetHeader>
               <div className="mt-4 h-[calc(100vh-100px)]">
                 <VersionHistory />
@@ -477,78 +547,44 @@ export function ResumeEditor({
             </SheetContent>
           </Sheet>
 
+          {/* Share Link */}
           <ShareDialog />
+
+          {/* Preview Toggle */}
           <Button
             variant="outline"
             size="sm"
-            className="hidden min-h-[44px] gap-2 bg-transparent sm:flex"
-            onClick={() => setShowAI(!showAI)}
-          >
-            <Sparkles className="h-4 w-4" />
-            AI Assistant
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden min-h-[44px] gap-2 bg-transparent md:flex"
+            className="hidden h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none md:flex"
             onClick={() => setShowPreview(!showPreview)}
           >
             {showPreview ? (
               <>
-                <EyeOff className="h-4 w-4" />
-                Hide Preview
+                <EyeOff className="h-4 w-4 text-[#a6c0b8]" />
+                <span className="hidden lg:inline">Hide Preview</span>
               </>
             ) : (
               <>
-                <Eye className="h-4 w-4" />
-                Show Preview
+                <Eye className="h-4 w-4 text-[#a6c0b8]" />
+                <span className="hidden lg:inline">Show Preview</span>
               </>
             )}
           </Button>
 
-          {tailoringResult ? (
-            <Button
-              variant="outline"
-              className="gap-2 border-green-500 text-green-600 hover:bg-green-50"
-              onClick={() => setIsOptimizationPanelOpen(true)}
-            >
-              <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">View Analysis ({tailoringResult.score}%)</span>
-              <span className="sm:hidden">{tailoringResult.score}%</span>
-            </Button>
-          ) : (
-            <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Target className="h-4 w-4" />
-                <span className="hidden sm:inline">Target Job</span>
-              </Button>
-            </JobInputDialog>
-          )}
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Cover Letter</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-5xl h-[80vh] flex flex-col p-0">
-              <CoverLetterGenerator />
-            </DialogContent>
-          </Dialog>
-
+          {/* Save Button */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            className="min-h-[44px] gap-2 bg-transparent"
+            className="h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none"
           >
-            <Save className="h-4 w-4" />
+            <Save className="h-4 w-4 text-[#a6c0b8]" />
             <span className="hidden sm:inline">Save</span>
           </Button>
+
+          {/* Template Select Dropdown */}
           <select
-            className="hidden sm:inline-flex h-9 rounded-md border border-input bg-background text-foreground px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-background [&>option]:text-foreground"
+            className="hidden sm:inline-flex h-10 rounded-none border border-white/20 bg-transparent text-[#f8f4ec] px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d8f36b] disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-[#102b2b] [&>option]:text-[#f8f4ec]"
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
           >
@@ -558,31 +594,32 @@ export function ResumeEditor({
             <option value="creative">Creative</option>
           </select>
 
+          {/* Export Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" className="min-h-[44px] gap-2">
+              <Button size="sm" className="h-10 gap-2 bg-[#d8f36b] text-[#102b2b] hover:bg-[#e5ff8b] rounded-none font-bold">
                 <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Export</span>
-                <ChevronDown className="h-3 w-3 opacity-50" />
+                <span>Export</span>
+                <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Export Resume</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDownloadPDF} className="gap-2 cursor-pointer">
-                <Printer className="h-4 w-4" />
-                <span>PDF (Best for sharing)</span>
+            <DropdownMenuContent align="end" className="w-48 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Export formats</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
+              <DropdownMenuItem onClick={handleDownloadPDF} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <Printer className="h-4 w-4 text-[#0d8274]" />
+                <span>PDF Document</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadWord} className="gap-2 cursor-pointer">
-                <FileDown className="h-4 w-4" />
+              <DropdownMenuItem onClick={handleDownloadWord} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <FileDown className="h-4 w-4 text-[#0d8274]" />
                 <span>Word (.docx)</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadTxt} className="gap-2 cursor-pointer">
-                <FileText className="h-4 w-4" />
+              <DropdownMenuItem onClick={handleDownloadTxt} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <FileText className="h-4 w-4 text-[#0d8274]" />
                 <span>Plain Text (.txt)</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadJSON} className="gap-2 cursor-pointer">
-                <FileCode className="h-4 w-4" />
+              <DropdownMenuItem onClick={handleDownloadJSON} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                <FileCode className="h-4 w-4 text-[#0d8274]" />
                 <span>JSON Standard</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -647,18 +684,34 @@ export function ResumeEditor({
         </div>
 
         {/* AI Assistant Sidebar (Desktop) */}
-        {showAI && (
-          <div className="hidden border-l md:block">
-            <AIAssistant onClose={() => setShowAI(false)} />
-          </div>
-        )}
+        <AnimatePresence>
+          {showAI && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 400, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="hidden border-l border-[#102b2b]/15 md:block overflow-hidden bg-background h-full shrink-0"
+            >
+              <AIAssistant onClose={() => setShowAI(false)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* AI Assistant Overlay (Mobile) */}
-        {showAI && (
-          <div className="fixed inset-0 z-50 bg-background md:hidden">
-            <AIAssistant onClose={() => setShowAI(false)} />
-          </div>
-        )}
+        <AnimatePresence>
+          {showAI && (
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="fixed inset-0 z-50 bg-background md:hidden"
+            >
+              <AIAssistant onClose={() => setShowAI(false)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <OptimizationPanel
           isOpen={isOptimizationPanelOpen}
@@ -689,14 +742,44 @@ function EditorForm({
 }) {
   const { sectionOrder } = useResumeStore();
 
+  const getTabIcon = (value: string) => {
+    switch (value) {
+      case "personal":
+        return <User className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      case "experience":
+        return <Briefcase className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      case "education":
+        return <GraduationCap className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      case "projects":
+        return <FolderGit className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      case "skills":
+        return <Wrench className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      case "certifications":
+        return <Award className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      case "languages":
+        return <Languages className="h-4 w-4 mr-2 text-indigo-500 group-data-[state=active]:text-white" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1">
-        <TabsTrigger value="personal" className="min-h-[44px]">
+      <TabsList className="mb-6 flex h-auto flex-wrap justify-start gap-1 bg-[#e9eee8] border border-[#102b2b]/10 p-1.5 rounded-none w-full">
+        <TabsTrigger 
+          value="personal" 
+          className="group rounded-none text-xs font-bold text-[#52716a] hover:text-[#102b2b] hover:bg-white/50 transition-all px-4 py-2.5 flex items-center min-h-[40px] border-none data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] data-[state=active]:shadow-sm"
+        >
+          {getTabIcon("personal")}
           Personal
         </TabsTrigger>
         {sectionOrder.map((sectionId) => (
-          <TabsTrigger key={sectionId} value={sectionId} className="min-h-[44px] capitalize">
+          <TabsTrigger 
+            key={sectionId} 
+            value={sectionId} 
+            className="group rounded-none text-xs font-bold text-[#52716a] hover:text-[#102b2b] hover:bg-white/50 transition-all px-4 py-2.5 flex items-center min-h-[40px] border-none data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] data-[state=active]:shadow-sm capitalize"
+          >
+            {getTabIcon(sectionId)}
             {sectionId}
           </TabsTrigger>
         ))}

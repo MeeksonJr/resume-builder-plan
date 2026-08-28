@@ -94,15 +94,15 @@ export function VisualCustomizer() {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                    <Palette className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none">
+                    <Palette className="h-4 w-4 text-[#a6c0b8]" />
                     <span className="hidden sm:inline">Style</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b] rounded-none">
                 <SheetHeader>
-                    <SheetTitle>Customize Style</SheetTitle>
-                    <SheetDescription>
+                    <SheetTitle className="text-lg font-black uppercase tracking-tight text-[#102b2b]">Customize Style</SheetTitle>
+                    <SheetDescription className="text-xs text-[#52716a]">
                         Change the look and feel of your resume. Changes are reflected in real-time.
                     </SheetDescription>
                 </SheetHeader>

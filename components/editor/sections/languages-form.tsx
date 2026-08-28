@@ -18,7 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, X, Trash2, GripVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
     DndContext,
@@ -33,7 +33,7 @@ import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
-    rectSortingStrategy,
+    verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableItem } from "../sortable-item";
 
@@ -73,87 +73,85 @@ export function LanguagesForm() {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Languages</CardTitle>
-                <CardDescription>
+        <Card className="rounded-none border-[#102b2b]/15 bg-[#f8f4ec] shadow-[4px_4px_0_rgba(16,43,43,0.06)]">
+            <CardHeader className="bg-[#e9eee8] border-b border-[#102b2b]/10 py-4">
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-[#102b2b]">Languages</CardTitle>
+                <CardDescription className="text-xs text-[#52716a] font-semibold mt-1">
                     Languages you speak and your proficiency level
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                    {languages.map((lang) => (
-                        <Badge key={lang.id} variant="secondary" className="px-3 py-1 gap-2">
-                            <input
-                                className="bg-transparent border-none outline-none w-24 text-sm font-medium"
-                                value={lang.language}
-                                onChange={(e) => updateLanguage(lang.id, { language: e.target.value })}
-                            />
-                            <button
-                                onClick={() => removeLanguage(lang.id)}
-                                className="hover:text-destructive transition-colors"
-                                aria-label={`Remove ${lang.language}`}
-                            >
-                                <X className="h-3 w-3" />
-                            </button>
-                        </Badge>
-                    ))}
-                </div>
+            <CardContent className="space-y-4 p-5">
+                {languages.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 p-3 bg-white/60 border border-[#102b2b]/10">
+                        {languages.map((lang) => (
+                            <Badge key={lang.id} variant="secondary" className="px-2.5 py-0.5 rounded-none bg-[#102b2b]/5 text-[#102b2b] border border-[#102b2b]/10 text-xs font-semibold gap-1">
+                                {lang.language || "Untitled"}
+                                <span className="text-[10px] text-[#52716a]">
+                                    ({lang.proficiency})
+                                </span>
+                            </Badge>
+                        ))}
+                    </div>
+                )}
 
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}
                 >
-                    <div className="space-y-4 pt-4 border-t">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <SortableContext items={languages} strategy={rectSortingStrategy}>
-                                {languages.map((lang) => (
-                                    <SortableItem key={lang.id} id={lang.id} className="border rounded-md bg-card pr-2">
-                                        <div className="flex gap-2 items-center p-2 pl-0">
-                                            <div className="flex-1 space-y-2">
-                                                <Label className="text-xs">Language</Label>
-                                                <Input
-                                                    value={lang.language}
-                                                    onChange={(e) => updateLanguage(lang.id, { language: e.target.value })}
-                                                    className="h-8"
-                                                />
-                                            </div>
-                                            <div className="flex-1 space-y-2">
-                                                <Label className="text-xs">Proficiency</Label>
-                                                <Select
-                                                    value={lang.proficiency}
-                                                    onValueChange={(val) => updateLanguage(lang.id, { proficiency: val })}
-                                                >
-                                                    <SelectTrigger className="h-8">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Native or Bilingual">Native or Bilingual</SelectItem>
-                                                        <SelectItem value="Full Professional">Full Professional</SelectItem>
-                                                        <SelectItem value="Professional Working">Professional Working</SelectItem>
-                                                        <SelectItem value="Limited Working">Limited Working</SelectItem>
-                                                        <SelectItem value="Elementary">Elementary</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => removeLanguage(lang.id)}
-                                                className="h-8 w-8 mt-5 text-destructive hover:text-destructive/90"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                    <div className="space-y-3">
+                        <SortableContext items={languages} strategy={verticalListSortingStrategy}>
+                            {languages.map((lang) => (
+                                <SortableItem key={lang.id} id={lang.id} className="w-full">
+                                    <div className="flex items-center gap-3 rounded-none border border-[#102b2b]/10 bg-white p-3 hover:bg-white transition-colors shadow-sm text-[#102b2b] w-full">
+                                        <div className="cursor-grab active:cursor-grabbing p-1">
+                                            <GripVertical className="h-4 w-4 text-[#52716a]" />
                                         </div>
-                                    </SortableItem>
-                                ))}
-                            </SortableContext>
-                        </div>
+                                        
+                                        <div className="flex-1 min-w-0">
+                                            <Label className="text-[10px] font-bold text-[#52716a] uppercase">Language</Label>
+                                            <Input
+                                                value={lang.language}
+                                                onChange={(e) => updateLanguage(lang.id, { language: e.target.value })}
+                                                className="h-9 mt-1 rounded-none border-[#102b2b]/15 bg-[#f8f4ec]/30 focus-visible:ring-[#102b2b]"
+                                            />
+                                        </div>
+
+                                        <div className="w-48 shrink-0">
+                                            <Label className="text-[10px] font-bold text-[#52716a] uppercase">Proficiency</Label>
+                                            <Select
+                                                value={lang.proficiency}
+                                                onValueChange={(val) => updateLanguage(lang.id, { proficiency: val })}
+                                            >
+                                                <SelectTrigger className="h-9 mt-1 rounded-none border-[#102b2b]/15 bg-[#f8f4ec]/30">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-[#f8f4ec] border-[#102b2b]/15">
+                                                    <SelectItem value="Native or Bilingual" className="hover:bg-[#102b2b]/5 cursor-pointer">Native or Bilingual</SelectItem>
+                                                    <SelectItem value="Full Professional" className="hover:bg-[#102b2b]/5 cursor-pointer">Full Professional</SelectItem>
+                                                    <SelectItem value="Professional Working" className="hover:bg-[#102b2b]/5 cursor-pointer">Professional Working</SelectItem>
+                                                    <SelectItem value="Limited Working" className="hover:bg-[#102b2b]/5 cursor-pointer">Limited Working</SelectItem>
+                                                    <SelectItem value="Elementary" className="hover:bg-[#102b2b]/5 cursor-pointer">Elementary</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeLanguage(lang.id)}
+                                            className="h-9 w-9 mt-5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-none shrink-0"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </SortableItem>
+                            ))}
+                        </SortableContext>
                     </div>
                 </DndContext>
 
-                <Button onClick={handleAdd} className="w-full">
+                <Button onClick={handleAdd} className="w-full h-10 rounded-none bg-[#102b2b] hover:bg-[#0d8274] text-white font-bold">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Language
                 </Button>
