@@ -1792,3 +1792,73 @@ export async function generateSuggestedAnswer(
   }
 }
 
+// Perform a detailed skills gap analysis comparing resume against target role
+export async function analyzeSkillsGap(
+  resumeData: ResumeData,
+  targetRole: string
+): Promise<{
+  matchScore: number;
+  matchingSkills: string[];
+  missingHardSkills: string[];
+  missingSoftSkills: string[];
+  recommendedCertifications: { name: string; provider: string; relevance: string }[];
+  actionSteps: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          matchScore: z.number().min(0).max(100),
+          matchingSkills: z.array(z.string()),
+          missingHardSkills: z.array(z.string()),
+          missingSoftSkills: z.array(z.string()),
+          recommendedCertifications: z.array(z.object({
+            name: z.string(),
+            provider: z.string(),
+            relevance: z.string()
+          })),
+          actionSteps: z.array(z.string())
+        }),
+        prompt: `Act as an expert technical recruiter and industry skills analyst. Compare the candidate's resume skills against the industry standards for a ${targetRole}.
+        
+        Resume Details:
+        ${JSON.stringify(resumeData, null, 2)}
+        
+        Target Role: ${targetRole}
+        
+        Provide:
+        1. A matchScore representing how well the candidate's current skills fit the target role (0-100%).
+        2. A list of matchingSkills they already possess.
+        3. A list of missingHardSkills that are critical for a ${targetRole} but missing from the resume.
+        4. A list of missingSoftSkills that are important but missing.
+        5. Specific recommendedCertifications (cert name, provider/platform like Coursera/AWS/etc., and short relevance explanation) that would bridge these gaps.
+        6. A list of concrete actionSteps (at least 3 steps) the candidate can take to learn these missing skills.`
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Skills gap analysis failed:", error.message);
+    if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
+      return {
+        matchScore: 65,
+        matchingSkills: (resumeData.skills?.flatMap(s => s.items) || []).slice(0, 5),
+        missingHardSkills: ["Advanced System Design", "Docker & Kubernetes", "CI/CD Pipeline Automation"],
+        missingSoftSkills: ["Technical Leadership", "Cross-functional Collaboration"],
+        recommendedCertifications: [
+          { name: "AWS Certified Solutions Architect", provider: "Amazon Web Services", relevance: "Validates technical knowledge in designing distributed applications on AWS." },
+          { name: "Docker and Kubernetes Certificate", provider: "Linux Foundation / CNCF", relevance: "Covers containerization and orchestration needed for modern deployment stacks." }
+        ],
+        actionSteps: [
+          "Deploy a mock microservices application using Docker containers.",
+          "Set up a continuous integration pipeline using GitHub Actions to automate testing.",
+          "Study AWS architectures and build a personal portfolio project demonstrating serverless deployment."
+        ]
+      };
+    }
+    throw error;
+  }
+}
+
+

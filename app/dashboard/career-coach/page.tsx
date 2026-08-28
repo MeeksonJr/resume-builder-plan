@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CareerCoachContent } from "@/components/dashboard/career/career-coach-content";
+import { SkillsGapContent } from "@/components/dashboard/career/skills-gap-content";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Target, BrainCircuit } from "lucide-react";
 
 export default async function CareerCoachPage() {
     const supabase = await createClient();
@@ -41,10 +44,30 @@ export default async function CareerCoachPage() {
                 </div>
             </div>
 
-            <CareerCoachContent
-                profile={profile}
-                resumes={resumes || []}
-            />
+            <Tabs defaultValue="roadmap" className="w-full space-y-6">
+                <TabsList className="mb-4 flex flex-wrap h-auto w-full gap-2 border-b border-[#102b2b]/15 bg-transparent p-0 pb-3">
+                    <TabsTrigger value="roadmap" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
+                        <Target className="h-4 w-4" />
+                        Career Roadmap
+                    </TabsTrigger>
+                    <TabsTrigger value="skills-gap" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
+                        <BrainCircuit className="h-4 w-4" />
+                        Skills Gap Audit
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value="roadmap" className="mt-0">
+                    <CareerCoachContent
+                        profile={profile}
+                        resumes={resumes || []}
+                    />
+                </TabsContent>
+                <TabsContent value="skills-gap" className="mt-0">
+                    <SkillsGapContent
+                        profile={profile}
+                        resumes={resumes || []}
+                    />
+                </TabsContent>
+            </Tabs>
             </div>
         </div>
     );
