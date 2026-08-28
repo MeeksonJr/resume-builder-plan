@@ -343,8 +343,8 @@ export default function PortfolioManagementPage() {
             <Tabs defaultValue="general" className="w-full">
                 <TabsList className="mb-8 flex h-auto w-full gap-1 overflow-x-auto border-b border-[#102b2b]/15 bg-transparent p-0 scrollbar-hide">
                     <TabsTrigger value="general" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
-                        <Settings2 className="h-4 w-4" />
-                        General
+                        <User className="h-4 w-4" />
+                        Basic Information
                     </TabsTrigger>
                     <TabsTrigger value="social" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
                         <Globe className="h-4 w-4" />

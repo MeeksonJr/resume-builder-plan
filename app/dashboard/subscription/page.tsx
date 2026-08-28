@@ -58,7 +58,7 @@ export default async function SubscriptionPage() {
                         <CardDescription className="text-base">
                             {isPro
                                 ? "You have full access to all premium features."
-                                : "Upgrade to unlock unlimited AI reviews and more."}
+                                : "Upgrade to Pro for $19/month to unlock unlimited AI reviews, tailored templates, and voice mock interviews."}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 space-y-6">
@@ -115,7 +115,7 @@ export default async function SubscriptionPage() {
                     <CardFooter className="border-t border-border bg-muted/30 pt-6">
                         <form action={isPro ? "/api/stripe/portal" : "/api/stripe/checkout"} method={isPro ? "POST" : "GET"} className="w-full">
                             <Button className="h-11 w-full rounded-none font-black" variant={isPro ? "outline" : "default"}>
-                                {isPro ? "Manage Billing" : "Upgrade to Pro"}
+                                {isPro ? "Manage Billing" : "Upgrade to Pro — $19/mo"}
                             </Button>
                         </form>
                     </CardFooter>

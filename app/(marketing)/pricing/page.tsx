@@ -18,13 +18,15 @@ const plans = [
             "3 AI Interview Sessions",
             "Basic Templates",
             "PDF Export",
-            "ATS Score Check",
+            "ATS Score Check (Basic)",
         ],
         limitations: [
             "No Voice Mode",
             "Limited AI Credits (50/month)",
             "Community Support Only",
             "No Cover Letters",
+            "No Creative Templates",
+            "No Auto-Tailoring & Auto-Keywords",
         ],
         buttonText: "Get Started Free",
         buttonVariant: "outline" as const,
@@ -34,15 +36,16 @@ const plans = [
     {
         name: "Pro",
         description: "For serious job seekers.",
-        price: "$12",
+        price: "$19",
         period: "/month",
         features: [
             "Unlimited Resumes",
             "Unlimited Voice Interviews",
             "Advanced AI Analysis",
-            "All Premium Templates",
+            "All Premium & Creative Templates",
+            "ATS Keyword Auto-Tailoring",
             "Cover Letter Generator",
-            "Public Portfolio",
+            "Public Portfolio & Custom Slug",
             "Priority Support",
             "Interview Recordings",
             "Custom Branding",
@@ -61,8 +64,8 @@ const comparisonFeatures = [
         category: "Resume Builder", features: [
             { name: "Number of Resumes", free: "1", pro: "Unlimited" },
             { name: "AI Content Writer", free: "50 credits/mo", pro: "Unlimited" },
-            { name: "Template Library", free: "3 Basic", pro: "20+ Premium" },
-            { name: "ATS Optimization", free: true, pro: true },
+            { name: "Template Library", free: "3 Basic", pro: "Premium & Creative (incl. 2-column)" },
+            { name: "ATS Optimization & Scoring", free: "Basic Score", pro: "Auto-tailor summary & skills" },
             { name: "Custom Sections", free: false, pro: true },
         ]
     },
@@ -77,7 +80,7 @@ const comparisonFeatures = [
     {
         category: "Additional Features", features: [
             { name: "Cover Letter Generator", free: false, pro: true },
-            { name: "Public Portfolio", free: false, pro: true },
+            { name: "Public Portfolio & Custom Slug", free: false, pro: "Live Link & Custom Slug" },
             { name: "Support", free: "Community", pro: "Priority Email" },
         ]
     },
