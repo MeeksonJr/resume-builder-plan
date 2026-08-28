@@ -137,6 +137,7 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+            <PublicTracker resumeId={resumeId} />
             {/* Force light mode for the resume container to match print styles, or handle themes properly */}
             <main className="container mx-auto px-4 py-8">
                 <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

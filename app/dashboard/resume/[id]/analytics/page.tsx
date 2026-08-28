@@ -164,23 +164,41 @@ export default function ResumeAnalyticsPage() {
 
             setResume(resumeData);
 
-            // Fetch events
-            // Fetch events (views)
-            const { data: viewData } = await supabase
-                .from("resume_views")
-                .select("*")
-                .eq("resume_id", id)
-                .order("viewed_at", { ascending: true });
+            // Fetch events (views and downloads) in parallel
+            const [
+                { data: viewData },
+                { data: downloadData }
+            ] = await Promise.all([
+                supabase
+                    .from("resume_views")
+                    .select("*")
+                    .eq("resume_id", id)
+                    .order("viewed_at", { ascending: true }),
+                supabase
+                    .from("resume_events")
+                    .select("*")
+                    .eq("resume_id", id)
+                    .eq("event_type", "download")
+                    .order("created_at", { ascending: true })
+            ]);
 
-            // Map to compatible event structure
-            const mappedEvents = (viewData || []).map(v => ({
+            // Map to compatible event structure for views
+            const mappedViews = (viewData || []).map(v => ({
                 created_at: v.viewed_at,
                 event_type: 'view',
                 device: v.device_type === 'mobile' ? 'Mobile' : 'Desktop',
                 browser: 'Unknown'
             }));
 
-            setEvents(mappedEvents);
+            // Map to compatible event structure for downloads
+            const mappedDownloads = (downloadData || []).map(d => ({
+                created_at: d.created_at,
+                event_type: 'download',
+                device: d.device === 'mobile' || d.device === 'Mobile' ? 'Mobile' : 'Desktop',
+                browser: d.browser || 'Unknown'
+            }));
+
+            setEvents([...mappedViews, ...mappedDownloads]);
             setLoading(false);
 
             // Fetch full resume data for ATS scoring
