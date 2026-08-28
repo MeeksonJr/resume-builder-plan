@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { analyzeCareerPath, ResumeData } from "@/lib/ai/index";
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
     try {
@@ -11,6 +12,20 @@ export async function POST(req: Request) {
 
         if (!user) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        // Check plan-wise daily rate limits
+        const { allowed, isPro } = await checkRateLimit("career_coach");
+        if (!allowed) {
+            return new NextResponse(
+                JSON.stringify({ 
+                    error: "LIMIT_EXCEEDED", 
+                    message: isPro 
+                        ? "You have reached your daily limit for Career Roadmaps." 
+                        : "Free users can only run 1 Career Roadmap per day. Please upgrade to Pro for unlimited access." 
+                }), 
+                { status: 429, headers: { "Content-Type": "application/json" } }
+            );
         }
 
         const { resumeId, targetRole, targetIndustry, careerGoals } = await req.json();

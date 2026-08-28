@@ -19,10 +19,14 @@ const plans = [
             "Basic Templates",
             "PDF Export",
             "ATS Score Check (Basic)",
+            "AI Career Roadmap (1 daily)",
+            "Skills Gap Audit (1 daily)",
+            "Salary Insights (1 daily)",
         ],
         limitations: [
             "No Voice Mode",
             "Limited AI Credits (50/month)",
+            "Limited AI Saves (1 saved/tool)",
             "Community Support Only",
             "No Cover Letters",
             "No Creative Templates",
@@ -46,6 +50,9 @@ const plans = [
             "ATS Keyword Auto-Tailoring",
             "Cover Letter Generator",
             "Public Portfolio & Custom Slug",
+            "Unlimited Career Roadmaps & Audits",
+            "Unlimited Real-time Salary Insights",
+            "Unlimited AI History Saves & Pinning",
             "Priority Support",
             "Interview Recordings",
             "Custom Branding",
@@ -67,6 +74,14 @@ const comparisonFeatures = [
             { name: "Template Library", free: "3 Basic", pro: "Premium & Creative (incl. 2-column)" },
             { name: "ATS Optimization & Scoring", free: "Basic Score", pro: "Auto-tailor summary & skills" },
             { name: "Custom Sections", free: false, pro: true },
+        ]
+    },
+    {
+        category: "AI Career Intelligence", features: [
+            { name: "Career Coach Roadmaps", free: "1/day, max 1 saved", pro: "Unlimited runs & saves" },
+            { name: "Skills Gap Audits", free: "1/day, max 1 saved", pro: "Unlimited audits & saves" },
+            { name: "Real-time Salary Insights", free: "1/day, max 1 saved", pro: "Unlimited query & history" },
+            { name: "Search History, Pinning & Filtering", free: false, pro: true },
         ]
     },
     {

@@ -4,6 +4,7 @@ import { analyzeSalaryInsights } from "@/lib/ai/index";
 import { ResumeData } from "@/lib/ai/index";
 import { NextResponse } from "next/server";
 import { scrapeAndAggregateSalaries } from "@/lib/scrapers/salary-scraper";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 // Create admin Supabase client to bypass row RLS constraints for writing/updating cache
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -25,6 +26,20 @@ export async function POST(req: Request) {
 
         if (!user) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        // Check plan-wise daily rate limits
+        const { allowed, isPro } = await checkRateLimit("salary_insights");
+        if (!allowed) {
+            return new NextResponse(
+                JSON.stringify({ 
+                    error: "LIMIT_EXCEEDED", 
+                    message: isPro 
+                        ? "You have reached your daily limit for Salary Insights." 
+                        : "Free users can only run 1 Salary Insights check per day. Please upgrade to Pro for unlimited access." 
+                }), 
+                { status: 429, headers: { "Content-Type": "application/json" } }
+            );
         }
 
         const { resumeId, targetRole, location } = await req.json();

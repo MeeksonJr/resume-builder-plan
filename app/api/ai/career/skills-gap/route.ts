@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { analyzeSkillsGap } from "@/lib/ai/index";
 import { ResumeData } from "@/lib/ai/index";
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
     try {
@@ -12,6 +13,20 @@ export async function POST(req: Request) {
 
         if (!user) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        // Check plan-wise daily rate limits
+        const { allowed, isPro } = await checkRateLimit("skills_gap");
+        if (!allowed) {
+            return new NextResponse(
+                JSON.stringify({ 
+                    error: "LIMIT_EXCEEDED", 
+                    message: isPro 
+                        ? "You have reached your daily limit for Skills Gap Audits." 
+                        : "Free users can only run 1 Skills Gap Audit per day. Please upgrade to Pro for unlimited access." 
+                }), 
+                { status: 429, headers: { "Content-Type": "application/json" } }
+            );
         }
 
         const { resumeId, targetRole } = await req.json();
