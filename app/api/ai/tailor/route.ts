@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 // Schema for the AI output
 const tailoringSchema = z.object({
@@ -28,6 +29,20 @@ export async function POST(req: Request) {
 
         if (!user) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        // Check plan-wise daily rate limits
+        const { allowed, isPro } = await checkRateLimit("ai_tailor");
+        if (!allowed) {
+            return new NextResponse(
+                JSON.stringify({ 
+                    error: "LIMIT_EXCEEDED", 
+                    message: isPro 
+                        ? "You have reached your daily limit for resume tailoring." 
+                        : "Resume tailoring is a Pro feature. Please upgrade to Pro to unlock unlimited tailoring." 
+                }), 
+                { status: 429, headers: { "Content-Type": "application/json" } }
+            );
         }
 
         const { resume, jobDescription, jobTitle, company } = await req.json();
