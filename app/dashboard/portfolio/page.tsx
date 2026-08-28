@@ -300,11 +300,11 @@ export default function PortfolioManagementPage() {
     }
 
     return (
-        <div className="min-h-full bg-[#e9eee8] text-[#102b2b]">
-        <div className="flex h-full min-h-full">
+        <div className="min-h-full bg-[#e9eee8] text-[#102b2b] w-full max-w-full overflow-x-hidden">
+        <div className="flex h-full min-h-full w-full max-w-full overflow-hidden">
             {/* Left: Editor Panel */}
             <div className={cn(
-                "flex flex-col transition-all duration-300",
+                "flex flex-col transition-all duration-300 min-w-0 overflow-hidden",
                 showPreview ? "w-full lg:w-[55%] xl:w-[50%]" : "w-full"
             )}>
             <div className="space-y-8 px-5 py-8 animate-in fade-in duration-500 lg:px-8 lg:py-10">
@@ -341,45 +341,45 @@ export default function PortfolioManagementPage() {
 
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="mb-8 flex h-auto w-full gap-1 overflow-x-auto border-b border-[#102b2b]/15 bg-transparent p-0 scrollbar-hide">
-                    <TabsTrigger value="general" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                <TabsList className="mb-8 flex flex-wrap h-auto w-full gap-2 border-b border-[#102b2b]/15 bg-transparent p-0 pb-4">
+                    <TabsTrigger value="general" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <User className="h-4 w-4" />
                         Basic Information
                     </TabsTrigger>
-                    <TabsTrigger value="social" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="social" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <Globe className="h-4 w-4" />
                         Social
                     </TabsTrigger>
-                    <TabsTrigger value="seo" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="seo" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <Search className="h-4 w-4" />
                         SEO & Social
                     </TabsTrigger>
-                    <TabsTrigger value="share" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="share" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <Share2 className="h-4 w-4" />
                         Share
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="appearance" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <Palette className="h-4 w-4" />
                         Visuals
                     </TabsTrigger>
-                    <TabsTrigger value="content" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="content" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <Layout className="h-4 w-4" />
                         Gallery
                     </TabsTrigger>
-                    <TabsTrigger value="messages" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="messages" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <MessageSquare className="h-4 w-4" />
                         Messages
                         {messages.length > 0 && (
-                            <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] bg-primary text-white border-none font-black">
+                            <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] bg-[#d8f36b] text-[#102b2b] border-none font-black">
                                 {messages.length}
                             </Badge>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="testimonials" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="testimonials" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <Trophy className="h-4 w-4" />
                         Proof
                     </TabsTrigger>
-                    <TabsTrigger value="insights" className="h-12 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-4 font-bold text-[#102b2b]/55 transition-all data-[state=active]:border-[#0d8274] data-[state=active]:bg-[#d8f36b]/45 data-[state=active]:text-[#102b2b]">
+                    <TabsTrigger value="insights" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
                         <BarChart3 className="h-4 w-4" />
                         Insights
                     </TabsTrigger>
