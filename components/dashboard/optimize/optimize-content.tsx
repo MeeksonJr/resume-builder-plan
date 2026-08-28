@@ -37,7 +37,7 @@ interface OptimizeContentProps {
 }
 
 export function OptimizeContent({ resumes, targetRole }: OptimizeContentProps) {
-    const { fetchResume, saveAllChanges, saveVersion, setProfile } = useResumeStore();
+    const { fetchResume, saveAllChanges, saveVersion, setProfile, addSkill } = useResumeStore();
     const [selectedResume, setSelectedResume] = useState(resumes[0]?.id || "");
     const [isLoading, setIsLoading] = useState(false);
     const [analysis, setAnalysis] = useState<any | null>(null);
@@ -120,12 +120,25 @@ export function OptimizeContent({ resumes, targetRole }: OptimizeContentProps) {
             }
 
             // 3. Add Keywords (Skills)
-            // Skipped for MVP as discussed
+            if (tailoringAnalysis.keywordsToAdd && tailoringAnalysis.keywordsToAdd.length > 0) {
+                const currentState = useResumeStore.getState();
+                const existingSkillNames = new Set(currentState.skills.map(s => s.name.toLowerCase()));
+                
+                tailoringAnalysis.keywordsToAdd.forEach((keyword: string) => {
+                    if (!existingSkillNames.has(keyword.toLowerCase())) {
+                        addSkill({
+                            name: keyword,
+                            category: "Tailored Additions",
+                            proficiency_level: 3
+                        });
+                    }
+                });
+            }
 
             // 4. Save Version
             await saveVersion(
                 "Tailored Version",
-                `Auto-tailored for job application. Updated summary.`
+                `Auto-tailored for job application. Updated summary and skills.`
             );
 
             // 5. Save current state

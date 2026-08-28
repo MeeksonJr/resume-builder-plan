@@ -542,6 +542,7 @@ export function ResumeEditor({
             <option value="modern">Modern</option>
             <option value="minimal">Minimal</option>
             <option value="classic">Classic</option>
+            <option value="creative">Creative</option>
           </select>
 
           <DropdownMenu>
