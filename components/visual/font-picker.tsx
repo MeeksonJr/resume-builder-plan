@@ -22,11 +22,11 @@ export function FontPicker() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <Label className="text-sm font-semibold flex items-center gap-2">
-                    <Type className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-xs font-bold text-[#52716a] uppercase tracking-wider flex items-center gap-2">
+                    <Type className="h-4 w-4 text-[#0d8274]" />
                     Typography
                 </Label>
-                <span className="text-xs text-muted-foreground">{currentFont}</span>
+                <span className="text-xs font-mono font-bold text-[#102b2b] bg-[#d8f36b]/40 px-2 py-0.5 rounded-none">{currentFont}</span>
             </div>
 
             <div className="grid grid-cols-1 gap-2">
@@ -35,18 +35,18 @@ export function FontPicker() {
                         key={font.value}
                         variant="outline"
                         className={cn(
-                            "justify-between font-normal h-auto py-3 px-4 transition-all",
-                            currentFont === font.value && "border-primary bg-primary/5 ring-1 ring-primary"
+                            "justify-between font-normal h-auto py-3 px-4 transition-all rounded-none border border-[#102b2b]/15 bg-white/70 hover:bg-white text-[#102b2b]",
+                            currentFont === font.value && "border-2 border-[#102b2b] bg-[#d8f36b]/20 shadow-sm font-bold"
                         )}
                         style={{ fontFamily: font.value }}
                         onClick={() => updateVisualConfig({ fontFamily: font.value })}
                     >
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="text-base">{font.name}</span>
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{font.type}</span>
+                        <div className="flex flex-col items-start gap-0.5">
+                            <span className="text-sm font-bold">{font.name}</span>
+                            <span className="text-[9px] text-[#52716a] uppercase tracking-widest font-semibold">{font.type}</span>
                         </div>
                         {currentFont === font.value && (
-                            <Check className="h-4 w-4 text-primary" />
+                            <Check className="h-4 w-4 text-[#102b2b]" />
                         )}
                     </Button>
                 ))}

@@ -92,11 +92,11 @@ export function PersonalInfoForm() {
   if (!profile) return null;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 space-y-0">
+    <Card className="rounded-none border-[#102b2b]/15 bg-[#f8f4ec] shadow-[4px_4px_0_rgba(16,43,43,0.06)]">
+      <CardHeader className="bg-[#e9eee8] border-b border-[#102b2b]/10 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 space-y-0">
         <div>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-sm font-black uppercase tracking-tight text-[#102b2b]">Personal Information</CardTitle>
+          <CardDescription className="text-xs text-[#52716a] font-semibold mt-1">
             Your basic contact details and professional summary
           </CardDescription>
         </div>
@@ -105,112 +105,112 @@ export function PersonalInfoForm() {
           size="sm"
           onClick={handleSyncFromProfile}
           disabled={isSyncing}
-          className="gap-1.5 min-h-[40px] text-xs font-semibold self-start sm:self-auto border-dashed hover:border-solid transition-all"
+          className="gap-1.5 h-9 rounded-none border-[#102b2b]/20 bg-white/80 hover:bg-white text-[#102b2b] text-xs font-bold transition-all shadow-sm"
         >
           {isSyncing ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <RefreshCw className="h-3.5 w-3.5 text-indigo-500" />
+            <RefreshCw className="h-3.5 w-3.5 text-[#0d8274]" />
           )}
           Sync Profile
         </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 p-5">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="fullName" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">Full Name</Label>
             <Input
               id="fullName"
               value={profile.full_name || ""}
               onChange={(e) => updateProfile({ full_name: e.target.value })}
               placeholder="John Doe"
-              className="min-h-[44px]"
+              className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">Email</Label>
             <Input
               id="email"
               type="email"
               value={profile.email || ""}
               onChange={(e) => updateProfile({ email: e.target.value })}
               placeholder="john@example.com"
-              className="min-h-[44px]"
+              className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
             />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="phone" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">Phone</Label>
             <Input
               id="phone"
               value={profile.phone || ""}
               onChange={(e) => updateProfile({ phone: e.target.value })}
               placeholder="+1 (555) 123-4567"
-              className="min-h-[44px]"
+              className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="location" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">Location</Label>
             <Input
               id="location"
               value={profile.location || ""}
               onChange={(e) => updateProfile({ location: e.target.value })}
               placeholder="San Francisco, CA"
-              className="min-h-[44px]"
+              className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
             />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="linkedin">LinkedIn URL</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="linkedin" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">LinkedIn URL</Label>
             <Input
               id="linkedin"
               value={profile.linkedin_url || ""}
               onChange={(e) => updateProfile({ linkedin_url: e.target.value })}
               placeholder="linkedin.com/in/johndoe"
-              className="min-h-[44px]"
+              className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="website">Website</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="website" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">Website</Label>
             <Input
               id="website"
               value={profile.website_url || ""}
               onChange={(e) => updateProfile({ website_url: e.target.value })}
               placeholder="johndoe.com"
-              className="min-h-[44px]"
+              className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="github">GitHub URL</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="github" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">GitHub URL</Label>
           <Input
             id="github"
             value={profile.github_url || ""}
             onChange={(e) => updateProfile({ github_url: e.target.value })}
             placeholder="github.com/johndoe"
-            className="min-h-[44px]"
+            className="h-10 rounded-none border-[#102b2b]/15 bg-white/80 focus-visible:ring-[#102b2b]"
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="summary">Professional Summary</Label>
+            <Label htmlFor="summary" className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider">Professional Summary</Label>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleImproveSummary}
               disabled={isImproving || !profile.summary}
-              className="min-h-[44px] gap-1 text-xs"
+              className="h-8 gap-1.5 rounded-none border-[#102b2b]/15 bg-white/80 hover:bg-[#d8f36b]/30 text-[#102b2b] text-xs font-bold"
             >
               {isImproving ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
               ) : (
-                <Sparkles className="h-3 w-3" />
+                <Sparkles className="h-3 w-3 text-indigo-600" />
               )}
               Improve with AI
             </Button>

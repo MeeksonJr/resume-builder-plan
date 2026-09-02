@@ -75,34 +75,34 @@ export function CertificationsForm() {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Certifications</CardTitle>
-                <CardDescription>
+        <Card className="rounded-none border-[#102b2b]/15 bg-[#f8f4ec] shadow-[4px_4px_0_rgba(16,43,43,0.06)]">
+            <CardHeader className="bg-[#e9eee8] border-b border-[#102b2b]/10 py-4">
+                <CardTitle className="text-sm font-black uppercase tracking-tight text-[#102b2b]">Certifications</CardTitle>
+                <CardDescription className="text-xs text-[#52716a] font-semibold mt-1">
                     Add your licenses and certifications
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-5">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragEnd={handleDragEnd}
                 >
-                    <Accordion type="single" collapsible className="w-full space-y-4">
+                    <Accordion type="single" collapsible className="w-full space-y-3">
                         <SortableContext
                             items={certifications}
                             strategy={verticalListSortingStrategy}
                         >
                             {certifications.map((cert, index) => (
-                                <SortableAccordionItem key={cert.id} id={cert.id} value={cert.id} className="border rounded-lg px-4 bg-card">
-                                    <div className="flex items-center py-2">
-                                        <SortableDragHandle className="mr-2" />
-                                        <AccordionTrigger className="flex-1 hover:no-underline py-2">
+                                <SortableAccordionItem key={cert.id} id={cert.id} value={cert.id} className="border border-[#102b2b]/10 rounded-none px-4 bg-white/80 shadow-sm">
+                                    <div className="flex items-center py-2.5">
+                                        <SortableDragHandle className="mr-2 text-[#52716a]" />
+                                        <AccordionTrigger className="flex-1 hover:no-underline py-1">
                                             <div className="text-left">
-                                                <div className="font-semibold">
+                                                <div className="font-bold text-sm text-[#102b2b]">
                                                     {cert.name || "New Certification"}
                                                 </div>
-                                                <div className="text-sm text-muted-foreground">
+                                                <div className="text-xs text-[#52716a] font-medium">
                                                     {cert.issuer || "Issuing Organization"}
                                                 </div>
                                             </div>
@@ -111,7 +111,7 @@ export function CertificationsForm() {
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => removeCertification(cert.id)}
-                                            className="text-destructive hover:text-destructive/90"
+                                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-none"
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -191,7 +191,7 @@ export function CertificationsForm() {
                     </Accordion>
                 </DndContext>
 
-                <Button onClick={handleAdd} className="w-full">
+                <Button onClick={handleAdd} className="w-full h-10 rounded-none bg-[#102b2b] hover:bg-[#0d8274] text-white font-bold">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Certification
                 </Button>

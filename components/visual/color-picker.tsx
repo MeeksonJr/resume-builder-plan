@@ -23,22 +23,22 @@ export function ColorPicker() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <Label className="text-sm font-semibold flex items-center gap-2">
-                    <Palette className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-xs font-bold text-[#52716a] uppercase tracking-wider flex items-center gap-2">
+                    <Palette className="h-4 w-4 text-[#0d8274]" />
                     Color Theme
                 </Label>
-                <div className="w-6 h-6 rounded-full border border-border" style={{ backgroundColor: currentColor }} />
+                <div className="w-6 h-6 rounded-none border border-[#102b2b]/20 shadow-sm" style={{ backgroundColor: currentColor }} />
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2.5">
                 {ACCENT_COLORS.map((color) => (
                     <button
                         key={color.value}
                         onClick={() => updateVisualConfig({ accentColor: color.value })}
                         title={color.name}
                         className={cn(
-                            "h-8 w-8 rounded-full border border-border shadow-sm transition-transform hover:scale-110 flex items-center justify-center relative",
-                            currentColor === color.value && "ring-2 ring-primary ring-offset-2"
+                            "h-9 w-9 rounded-none border border-[#102b2b]/20 shadow-sm transition-all hover:scale-105 flex items-center justify-center relative",
+                            currentColor === color.value && "ring-2 ring-[#102b2b] ring-offset-2 ring-offset-[#f8f4ec] font-bold"
                         )}
                         style={{ backgroundColor: color.value }}
                     >
@@ -49,15 +49,15 @@ export function ColorPicker() {
                 ))}
             </div>
 
-            <div className="pt-2">
-                <Label className="text-xs text-muted-foreground mb-2 block">Custom Hex Code</Label>
+            <div className="pt-2 space-y-1.5">
+                <Label className="text-[10px] font-bold text-[#52716a] uppercase tracking-wider block">Custom Hex Code</Label>
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <div className="absolute left-2 top-2.5 w-4 h-4 rounded-full border border-border" style={{ backgroundColor: currentColor }} />
+                        <div className="absolute left-2.5 top-3 w-4 h-4 rounded-none border border-[#102b2b]/30 shadow-xs" style={{ backgroundColor: currentColor }} />
                         <Input
                             value={currentColor}
                             onChange={(e) => updateVisualConfig({ accentColor: e.target.value })}
-                            className="pl-8 font-mono text-sm"
+                            className="pl-9 h-10 rounded-none border-[#102b2b]/15 bg-white/80 font-mono text-sm uppercase focus-visible:ring-[#102b2b]"
                             maxLength={7}
                         />
                     </div>
