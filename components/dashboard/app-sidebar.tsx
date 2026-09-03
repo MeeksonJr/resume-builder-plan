@@ -79,9 +79,10 @@ const getNavItems = (isAdmin: boolean) => {
         },
         {
             title: "Applications",
-            href: "/dashboard/tracker",
+            href: "/dashboard/jobs",
             icon: Briefcase,
             items: [
+                { title: "Matched Jobs", href: "/dashboard/jobs" },
                 { title: "Job Tracker", href: "/dashboard/tracker" },
                 { title: "Cover Letters", href: "/dashboard/cover-letters" },
             ],

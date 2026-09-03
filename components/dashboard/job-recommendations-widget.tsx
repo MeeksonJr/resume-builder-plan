@@ -115,6 +115,12 @@ export function JobRecommendationsWidget() {
             <CardDescription className="text-xs text-[#52716a]">Curated matches for: {targetRole}</CardDescription>
           </div>
         </div>
+
+        <Button asChild size="sm" variant="ghost" className="text-xs font-bold text-[#0d8274] hover:text-[#102b2b] gap-1 p-0 h-auto">
+          <Link href="/dashboard/jobs">
+            View All ({jobs.length}) <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </Button>
       </CardHeader>
 
       <CardContent className="p-4 space-y-4">
