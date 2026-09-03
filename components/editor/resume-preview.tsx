@@ -187,6 +187,43 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
                         .resume-preview-root span {
                             line-height: var(--resume-line-height) !important;
                         }
+                        @media print {
+                            @page {
+                                margin: 12mm 15mm;
+                                size: auto;
+                            }
+                            body {
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            .resume-preview-root {
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                box-shadow: none !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                            }
+                            /* Prevent splitting across page breaks */
+                            .resume-preview-root section,
+                            .resume-preview-root .resume-section,
+                            .resume-preview-root article,
+                            .resume-preview-root [data-break-avoid],
+                            .resume-preview-root .break-inside-avoid,
+                            .resume-preview-root .experience-item,
+                            .resume-preview-root .education-item,
+                            .resume-preview-root .project-item {
+                                break-inside: avoid !important;
+                                page-break-inside: avoid !important;
+                            }
+                            /* Prevent orphaned headings */
+                            .resume-preview-root h1,
+                            .resume-preview-root h2,
+                            .resume-preview-root h3,
+                            .resume-preview-root h4 {
+                                break-after: avoid !important;
+                                page-break-after: avoid !important;
+                            }
+                        }
                     `,
                 }}
             />

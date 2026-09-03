@@ -1,83 +1,125 @@
 import { saveAs } from "file-saver";
 
-interface ResumeData {
-    profile: any;
-    workExperiences: any[];
-    education: any[];
-    skills: any[];
-    projects: any[];
-    certifications: any[];
-    languages: any[];
+export interface JsonResumeData {
+  profile: any;
+  workExperiences: any[];
+  education: any[];
+  skills: any[];
+  projects: any[];
+  certifications: any[];
+  languages: any[];
 }
 
-export function exportToJSON(data: ResumeData) {
-    const { profile, workExperiences, education, skills, projects, certifications, languages } = data;
+function stripHtml(html?: string | null): string {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]*>?/gm, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .trim();
+}
 
-    // Map to a structure inspired by JSON Resume (https://jsonresume.org/schema/)
-    const jsonResume = {
-        basics: {
-            name: profile.full_name,
-            label: profile.summary?.substring(0, 100).replace(/<[^>]*>?/gm, ''), // Simple text summary
-            email: profile.email,
-            phone: profile.phone,
-            url: profile.website_url,
-            summary: profile.summary?.replace(/<[^>]*>?/gm, ''), // Stripped HTML
-            location: {
-                address: profile.location,
-            },
-            profiles: [
-                {
-                    network: "LinkedIn",
-                    url: profile.linkedin_url,
-                },
-                {
-                    network: "GitHub",
-                    url: profile.github_url,
-                },
-            ].filter(p => p.url),
-        },
-        work: workExperiences.map(exp => ({
-            name: exp.company,
-            position: exp.position,
-            location: exp.location,
-            startDate: exp.start_date,
-            endDate: exp.is_current ? "Present" : exp.end_date,
-            summary: exp.description?.replace(/<[^>]*>?/gm, ''),
-            highlights: exp.highlights || [],
-        })),
-        education: education.map(edu => ({
-            institution: edu.institution,
-            area: edu.field_of_study,
-            studyType: edu.degree,
-            startDate: edu.start_date,
-            endDate: edu.end_date,
-            score: edu.gpa,
-            courses: edu.highlights || [],
-        })),
-        skills: skills.map(skill => ({
-            name: skill.name,
-            level: skill.proficiency_level ? `${skill.proficiency_level}/5` : undefined,
-            category: skill.category,
-        })),
-        projects: projects.map(proj => ({
-            name: proj.name,
-            description: proj.description?.replace(/<[^>]*>?/gm, ''),
-            url: proj.url,
-            keywords: proj.technologies || [],
-            highlights: proj.highlights || [],
-        })),
-        languages: languages.map(lang => ({
-            language: lang.language,
-            fluency: lang.proficiency,
-        })),
-        certifications: certifications.map(cert => ({
-            name: cert.name,
-            issuer: cert.issuer,
-            date: cert.issue_date,
-        })),
-    };
+/**
+ * Builds an official JSON Resume compliant object (v1.0.0)
+ * Reference: https://jsonresume.org/schema/
+ */
+export function generateJSONResume(data: JsonResumeData): Record<string, any> {
+  const {
+    profile = {},
+    workExperiences = [],
+    education = [],
+    skills = [],
+    projects = [],
+    certifications = [],
+    languages = [],
+  } = data;
 
-    const blob = new Blob([JSON.stringify(jsonResume, null, 2)], { type: "application/json" });
-    const fileName = `${profile.full_name?.replace(/\s+/g, "_") || "Resume"}.json`;
-    saveAs(blob, fileName);
+  const profiles: Array<{ network: string; username?: string; url: string }> = [];
+  if (profile.linkedin_url) {
+    profiles.push({ network: "LinkedIn", url: profile.linkedin_url });
+  }
+  if (profile.github_url) {
+    profiles.push({ network: "GitHub", url: profile.github_url });
+  }
+
+  return {
+    $schema: "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+    basics: {
+      name: profile.full_name || "Candidate",
+      label: profile.target_role || profile.summary?.slice(0, 80) || "Professional",
+      email: profile.email || undefined,
+      phone: profile.phone || undefined,
+      url: profile.website_url || undefined,
+      summary: stripHtml(profile.summary) || undefined,
+      location: profile.location
+        ? {
+            address: profile.location,
+            city: profile.location.split(",")[0]?.trim(),
+          }
+        : undefined,
+      profiles: profiles.length > 0 ? profiles : undefined,
+    },
+    work: workExperiences.map((exp) => ({
+      name: exp.company || "Company",
+      position: exp.position || "Position",
+      location: exp.location || undefined,
+      startDate: exp.start_date || undefined,
+      endDate: exp.is_current ? "Present" : exp.end_date || undefined,
+      summary: stripHtml(exp.description) || undefined,
+      highlights: Array.isArray(exp.highlights)
+        ? exp.highlights.map((h: string) => stripHtml(h)).filter(Boolean)
+        : [],
+    })),
+    education: education.map((edu) => ({
+      institution: edu.institution || "Institution",
+      area: edu.field_of_study || undefined,
+      studyType: edu.degree || undefined,
+      startDate: edu.start_date || undefined,
+      endDate: edu.end_date || undefined,
+      score: edu.gpa || undefined,
+      courses: Array.isArray(edu.achievements || edu.highlights)
+        ? (edu.achievements || edu.highlights).map((c: string) => stripHtml(c)).filter(Boolean)
+        : [],
+    })),
+    skills: skills.map((skill) => ({
+      name: skill.name,
+      level: skill.proficiency_level ? `${skill.proficiency_level}/5` : undefined,
+      keywords: skill.category ? [skill.category] : [],
+    })),
+    projects: projects.map((proj) => ({
+      name: proj.name || "Project",
+      description: stripHtml(proj.description) || undefined,
+      url: proj.url || undefined,
+      keywords: Array.isArray(proj.technologies) ? proj.technologies : [],
+      highlights: Array.isArray(proj.highlights)
+        ? proj.highlights.map((h: string) => stripHtml(h)).filter(Boolean)
+        : [],
+    })),
+    certificates: certifications.map((cert) => ({
+      name: cert.name,
+      date: cert.issue_date || cert.date || undefined,
+      issuer: cert.issuer || undefined,
+      url: cert.url || undefined,
+    })),
+    languages: languages.map((lang) => ({
+      language: lang.language,
+      fluency: lang.proficiency || undefined,
+    })),
+  };
+}
+
+/**
+ * Exports and downloads JSON Resume file
+ */
+export function exportToJSON(data: JsonResumeData) {
+  const jsonResume = generateJSONResume(data);
+  const blob = new Blob([JSON.stringify(jsonResume, null, 2)], {
+    type: "application/json;charset=utf-8",
+  });
+  const fileName = `${data.profile?.full_name?.replace(/\s+/g, "_") || "Resume"}.json`;
+  saveAs(blob, fileName);
 }

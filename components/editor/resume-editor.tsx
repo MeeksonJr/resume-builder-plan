@@ -57,9 +57,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2, Upload } from "lucide-react";
+import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2, Upload, Copy } from "lucide-react";
 import { exportToJSON } from "@/lib/export/json-export";
-import { exportToTxt } from "@/lib/export/txt-export";
+import { exportToTxt, generateResumePlainText } from "@/lib/export/txt-export";
 import { JsonImportDialog } from "@/components/import/json-import-dialog";
 import type { ParsedResumeData } from "@/lib/export/json-import";
 
@@ -452,6 +452,12 @@ export function ResumeEditor({
     const store = useResumeStore.getState();
     const loadingToast = toast.loading("Generating JSON file...");
     try {
+      const supabase = createClient();
+      await supabase.rpc("record_resume_event", {
+        resume_id_param: resume.id,
+        event_type_param: "download",
+      });
+
       exportToJSON({
         profile: store.profile,
         workExperiences: store.workExperiences,
@@ -461,7 +467,7 @@ export function ResumeEditor({
         certifications: store.certifications,
         languages: store.languages,
       });
-      toast.success("JSON exported", { id: loadingToast });
+      toast.success("JSON Resume exported", { id: loadingToast });
     } catch (error) {
       console.error(error);
       toast.error("Failed to export JSON", { id: loadingToast });
@@ -472,6 +478,12 @@ export function ResumeEditor({
     const store = useResumeStore.getState();
     const loadingToast = toast.loading("Generating Text file...");
     try {
+      const supabase = createClient();
+      await supabase.rpc("record_resume_event", {
+        resume_id_param: resume.id,
+        event_type_param: "download",
+      });
+
       exportToTxt({
         profile: store.profile,
         workExperiences: store.workExperiences,
@@ -482,10 +494,39 @@ export function ResumeEditor({
         languages: store.languages,
         sectionOrder: store.sectionOrder,
       });
-      toast.success("Text file exported", { id: loadingToast });
+      toast.success("Plain text file exported", { id: loadingToast });
     } catch (error) {
       console.error(error);
       toast.error("Failed to export Text file", { id: loadingToast });
+    }
+  };
+
+  const handleCopyPlainText = async () => {
+    const store = useResumeStore.getState();
+    try {
+      const text = generateResumePlainText({
+        profile: store.profile,
+        workExperiences: store.workExperiences,
+        education: store.education,
+        skills: store.skills,
+        projects: store.projects,
+        certifications: store.certifications,
+        languages: store.languages,
+        sectionOrder: store.sectionOrder,
+      });
+
+      await navigator.clipboard.writeText(text);
+
+      const supabase = createClient();
+      await supabase.rpc("record_resume_event", {
+        resume_id_param: resume.id,
+        event_type_param: "download",
+      });
+
+      toast.success("Plain text copied to clipboard! Ready to paste into application portals.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to copy plain text to clipboard");
     }
   };
 
@@ -753,25 +794,50 @@ export function ResumeEditor({
                 <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
-              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Export formats</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-64 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Export Formats</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-[#102b2b]/10" />
-              <DropdownMenuItem onClick={handleDownloadPDF} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <Printer className="h-4 w-4 text-[#0d8274]" />
-                <span>PDF Document</span>
+              
+              <DropdownMenuItem onClick={handleDownloadPDF} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5 py-2">
+                <Printer className="h-4 w-4 text-[#0d8274] shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[#102b2b]">PDF Document</span>
+                  <span className="text-[10px] text-[#52716a]">Print & vector layout</span>
+                </div>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadWord} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <FileDown className="h-4 w-4 text-[#0d8274]" />
-                <span>Word (.docx)</span>
+
+              <DropdownMenuItem onClick={handleDownloadWord} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5 py-2">
+                <FileDown className="h-4 w-4 text-[#0d8274] shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[#102b2b]">Word (.docx)</span>
+                  <span className="text-[10px] text-[#52716a]">Editable Microsoft Word</span>
+                </div>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadTxt} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <FileText className="h-4 w-4 text-[#0d8274]" />
-                <span>Plain Text (.txt)</span>
+
+              <DropdownMenuItem onClick={handleDownloadTxt} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5 py-2">
+                <FileText className="h-4 w-4 text-[#0d8274] shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[#102b2b]">Plain Text (.txt)</span>
+                  <span className="text-[10px] text-[#52716a]">ATS scanner compliant</span>
+                </div>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDownloadJSON} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <FileCode className="h-4 w-4 text-[#0d8274]" />
-                <span>JSON Standard</span>
+
+              <DropdownMenuItem onClick={handleCopyPlainText} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5 py-2">
+                <Copy className="h-4 w-4 text-[#0d8274] shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[#102b2b]">Copy Plain Text</span>
+                  <span className="text-[10px] text-[#52716a]">Instant paste for portals</span>
+                </div>
               </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={handleDownloadJSON} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5 py-2">
+                <FileCode className="h-4 w-4 text-[#0d8274] shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-[#102b2b]">JSON Resume</span>
+                  <span className="text-[10px] text-[#52716a]">v1.0 schema format</span>
+                </div>
+              </DropdownMenuItem>
+
               <DropdownMenuSeparator className="bg-[#102b2b]/10" />
               <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Import</DropdownMenuLabel>
               <JsonImportDialog onImport={handleJSONImport}>
