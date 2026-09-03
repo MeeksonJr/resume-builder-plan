@@ -16,7 +16,8 @@ import {
     Flag,
     BookOpen,
     Sparkles,
-    CheckCircle2
+    CheckCircle2,
+    Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -629,9 +630,10 @@ export function KanbanBoard() {
                                                                 href={`/dashboard/cover-letters/${app.cover_letter_id}`}
                                                                 onClick={(e: any) => e.stopPropagation()}
                                                             >
-                                                                <Badge className="rounded-none bg-[#e9eee8] border border-[#102b2b]/10 hover:border-[#0d8274] hover:bg-[#dbe8df] text-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1">
-                                                                    <FileText className="w-2.5 h-2.5 text-[#0d8274]" />
-                                                                    Letter
+                                                                <Badge className="rounded-none bg-[#e9eee8] border border-[#102b2b]/15 hover:border-[#0d8274] hover:bg-[#dbe8df] text-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-semibold">
+                                                                    <Mail className="w-2.5 h-2.5 text-[#0d8274]" />
+                                                                    Cover Letter
+                                                                    <ExternalLink className="w-2 h-2 ml-0.5 opacity-60" />
                                                                 </Badge>
                                                             </Link>
                                                         )}
