@@ -41,7 +41,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumeId, targetRole, difficulty, questionCount = 12, sessionMode = 'text', interviewerVoice } = await req.json();
+        const { resumeId, targetRole, targetCompany, difficulty, questionCount = 12, sessionMode = 'text', interviewerVoice } = await req.json();
 
         if (!targetRole || !difficulty) {
             return new NextResponse("Target role and difficulty are required", { status: 400 });
@@ -57,7 +57,8 @@ export async function POST(req: Request) {
         const { questions } = await generateInterviewQuestions(
             resumeData as any,
             targetRole,
-            difficulty as "junior" | "mid" | "senior"
+            difficulty as "junior" | "mid" | "senior",
+            targetCompany
         );
 
         // Limit to requested count
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
                 user_id: user.id,
                 resume_id: resumeId || null,
                 target_role: targetRole,
+                target_company: targetCompany || null,
                 difficulty,
                 question_count: selectedQuestions.length,
                 session_mode: sessionMode,
@@ -85,6 +87,8 @@ export async function POST(req: Request) {
             session_id: session.id,
             question_type: q.type,
             question_text: q.question,
+            star_tip: q.star_tip || null,
+            expected_competencies: q.expected_competencies || [],
             sort_order: index,
         }));
 

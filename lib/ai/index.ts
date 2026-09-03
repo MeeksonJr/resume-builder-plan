@@ -1034,16 +1034,20 @@ export async function analyzeResumeQuality(
  * Generate personalized interview questions based on resume and target role
  */
 export async function generateInterviewQuestions(
-  resumeData: ResumeData,
+  resumeData: any,
   targetRole: string,
-  difficulty: "junior" | "mid" | "senior"
+  difficulty: "junior" | "mid" | "senior",
+  targetCompany?: string
 ): Promise<{
   questions: {
     type: "behavioral" | "technical" | "situational";
     question: string;
+    star_tip?: string;
+    expected_competencies?: string[];
   }[];
 }> {
   try {
+    const companyContext = targetCompany ? `Target Company / Interview Loop: ${targetCompany}` : "Target Company: Top-tier tech company";
     const result = await withFallback(async (model) => {
       return generateObject({
         model,
@@ -1051,11 +1055,15 @@ export async function generateInterviewQuestions(
           questions: z.array(z.object({
             type: z.enum(["behavioral", "technical", "situational"]),
             question: z.string(),
+            star_tip: z.string().describe("Specific STAR answering recommendation referencing candidate background"),
+            expected_competencies: z.array(z.string()).describe("2-3 core competencies evaluated, e.g., System Architecture, Problem Solving"),
           })),
         }),
-        prompt: `You are an expert technical interviewer. Generate 12 personalized interview questions for a ${targetRole} position at the ${difficulty} level.
+        prompt: `You are an executive technical hiring manager and interview coach at a leading technology firm. Generate 12 highly personalized interview questions for a ${targetRole} position at the ${difficulty} level.
+        
+        ${companyContext}
 
-        Candidate's Resume:
+        Candidate's Resume & Background:
         ${JSON.stringify(resumeData, null, 2)}
         
         Target Role: ${targetRole}
@@ -1064,29 +1072,27 @@ export async function generateInterviewQuestions(
         Generate questions across three categories:
         
         1. **Behavioral Questions (30%)** - Focus on past experiences
-           - Ask about specific projects/roles mentioned in their resume
-           - Use "Tell me about a time when..." format
-           - Focus on teamwork, leadership, conflict resolution
-           ${difficulty === "senior" ? "- Include questions about mentoring and strategic decision-making" : ""}
+           - Ask about specific projects, roles, and metrics directly mentioned in their resume
+           - Use "Tell me about a time when..." or "In your role at [Company], you mentioned [achievement]..."
+           - Focus on teamwork, technical leadership, conflict resolution, trade-offs
+           ${difficulty === "senior" ? "- Include questions about strategic technical bets, cross-functional consensus, and engineering culture" : ""}
         
-        2. **Technical Questions (40%)** - Role-specific knowledge
-           - Reference technologies and skills from their resume
+        2. **Technical Questions (40%)** - Role-specific architecture and problem-solving
+           - Reference specific programming languages, frameworks, databases, and systems from their resume
            - Adjust complexity based on experience level
-           ${difficulty === "junior" ? "- Focus on fundamentals and core concepts" : ""}
-           ${difficulty === "mid" ? "- Include system design and best practices" : ""}
-           ${difficulty === "senior" ? "- Include architecture decisions and scaling challenges" : ""}
+           ${difficulty === "junior" ? "- Focus on foundational algorithms, data structures, and debugging principles" : ""}
+           ${difficulty === "mid" ? "- Include distributed system design, API contracts, caching, and resiliency best practices" : ""}
+           ${difficulty === "senior" ? "- Include multi-region scaling, architectural bottlenecks, data consistency, and tech debt triage" : ""}
         
-        3. **Situational Questions (30%)** - Hypothetical scenarios
-           - Present realistic challenges for the target role
-           - Test problem-solving and decision-making
-           - Align with the candidate's experience level
+        3. **Situational Questions (30%)** - Real-world scenarios at ${targetCompany || "a high-growth company"}
+           - Present realistic incident responses, conflicting priorities, and ambiguity
+           - Test execution velocity vs. architectural purity
         
-        Important:
-        - Make questions specific to their background (e.g., "I see you worked on [project], tell me about...")
-        - Ensure difficulty matches the ${difficulty} level
-        - Mix easy, medium, and hard questions
-        - Questions should be concise but clear
-        - Total: 12 questions`,
+        For EVERY question:
+        - Provide a concise, actionable 'star_tip' (Situation, Task, Action, Result) explaining how the candidate can best structure their answer using their own background.
+        - Provide 2-3 'expected_competencies' (e.g., ["System Design", "Scalability", "Trade-Off Analysis"]).
+        
+        Total: 12 questions.`,
       });
     });
 
@@ -1094,21 +1100,45 @@ export async function generateInterviewQuestions(
   } catch (error: any) {
     console.warn("[AI] Interview question generation failed:", error.message);
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
-      // Return mock questions as fallback
+      // Return mock questions with STAR tips as fallback
       return {
         questions: [
-          { type: "behavioral", question: "[MOCK] Tell me about a time when you faced a significant technical challenge. How did you approach it?" },
-          { type: "technical", question: "[MOCK] How would you design a scalable system for handling 1 million concurrent users?" },
-          { type: "situational", question: "[MOCK] If you discovered a critical bug in production just before a major release, what would you do?" },
-          { type: "behavioral", question: "[MOCK] Describe a situation where you had to work with a difficult team member. How did you handle it?" },
-          { type: "technical", question: "[MOCK] Explain the difference between synchronous and asynchronous programming. When would you use each?" },
-          { type: "situational", question: "[MOCK] How would you prioritize tasks if you had three urgent deadlines on the same day?" },
-          { type: "behavioral", question: "[MOCK] Tell me about a project you're most proud of. What was your role and what did you achieve?" },
-          { type: "technical", question: "[MOCK] What strategies do you use to ensure code quality and maintainability?" },
-          { type: "situational", question: "[MOCK] If a stakeholder requested a feature that you believed would negatively impact the product, how would you handle it?" },
-          { type: "behavioral", question: "[MOCK] Describe a time when you had to learn a new technology quickly. How did you approach it?" },
-          { type: "technical", question: "[MOCK] How do you approach debugging a complex issue in a large codebase?" },
-          { type: "situational", question: "[MOCK] If you joined a team with poor documentation and no onboarding process, what would be your first steps?" },
+          { 
+            type: "behavioral", 
+            question: "[MOCK] Tell me about a time when you faced a significant technical challenge in a past project. How did you approach it?",
+            star_tip: "S: Set the context of the project and user impact. T: Define the blocker. A: Detail your technical investigation and solution. R: Quantify the outcome.",
+            expected_competencies: ["Problem Solving", "Resilience", "Technical Execution"]
+          },
+          { 
+            type: "technical", 
+            question: "[MOCK] How would you design a scalable caching and event-driven architecture for 1 million concurrent users?",
+            star_tip: "S/T: Clarify read vs write ratios. A: Discuss Redis caching strategies, invalidation, and Kafka messaging. R: Address failure modes.",
+            expected_competencies: ["Distributed Systems", "Scalability", "Data Consistency"]
+          },
+          { 
+            type: "situational", 
+            question: "[MOCK] If you discovered a critical latency regression in production right before a major product launch, what would be your step-by-step triage?",
+            star_tip: "S/T: Acknowledge the launch timeline. A: Outline observability tracing, rollback procedures, and emergency fixes. R: Conduct a blameless post-mortem.",
+            expected_competencies: ["Incident Response", "Crisis Management", "Observability"]
+          },
+          { 
+            type: "behavioral", 
+            question: "[MOCK] Describe a situation where you had a fundamental architectural disagreement with a team member or lead. How did you reach consensus?",
+            star_tip: "S: Contextualize the architectural debate. T: State differing viewpoints. A: Use data, benchmarks, or prototypes to evaluate. R: Achieve commitment.",
+            expected_competencies: ["Collaboration", "Technical Communication", "Decision Making"]
+          },
+          { 
+            type: "technical", 
+            question: "[MOCK] Explain how you ensure data consistency across multiple microservices or decoupled databases.",
+            star_tip: "S/T: Identify transactional boundaries. A: Compare two-phase commit vs saga patterns with idempotent events. R: Discuss eventual consistency.",
+            expected_competencies: ["Database Architecture", "Microservices", "Event-Driven Design"]
+          },
+          { 
+            type: "situational", 
+            question: "[MOCK] If a product manager asked for a feature by end-of-week that would incur severe technical debt, how would you respond?",
+            star_tip: "S/T: Frame the business urgency. A: Offer a scoped MVP with documented fast-follow refactoring tickets. R: Align stakeholders without burning bridges.",
+            expected_competencies: ["Stakeholder Management", "Pragmatism", "Tech Debt Management"]
+          },
         ],
       };
     }

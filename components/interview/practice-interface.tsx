@@ -15,7 +15,10 @@ import {
     CheckCircle2,
     Volume2,
     VolumeX,
-    Mic
+    Mic,
+    Sparkles,
+    Target,
+    Lightbulb
 } from "lucide-react";
 import { toast } from "sonner";
 import { AnswerRecorder } from "@/components/interview/answer-recorder";
@@ -219,13 +222,40 @@ export function PracticeInterface({ session, questions, initialAnswers = [] }: P
                                     {isSpeaking ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                                 </Button>
                             </div>
-                            <CardTitle className="text-xl leading-relaxed">
+                            <CardTitle className="text-xl leading-relaxed font-bold text-[#102b2b]">
                                 {currentQuestion.question_text}
                             </CardTitle>
+
+                            {/* Target Competencies */}
+                            {currentQuestion.expected_competencies && currentQuestion.expected_competencies.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                                        <Target className="w-3 h-3 text-[#0d8274]" />
+                                        Target Competencies:
+                                    </span>
+                                    {currentQuestion.expected_competencies.map((comp: string, idx: number) => (
+                                        <Badge key={idx} variant="outline" className="rounded-none text-[10px] border-[#102b2b]/15 bg-white text-[#102b2b] font-medium py-0">
+                                            {comp}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                    {/* AI STAR Coaching Tip */}
+                    {currentQuestion.star_tip && (
+                        <div className="border border-[#0d8274]/25 bg-[#0d8274]/5 p-3.5 space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#0d8274]">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>AI STAR Answering Framework Tip</span>
+                            </div>
+                            <p className="text-xs text-[#102b2b]/85 leading-relaxed">
+                                {currentQuestion.star_tip}
+                            </p>
+                        </div>
+                    )}
                     {/* Answer History specific to current question */}
                     {currentQuestionAnswers.length > 0 && (
                         <div className="mb-6">

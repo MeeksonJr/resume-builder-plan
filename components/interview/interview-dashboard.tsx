@@ -55,6 +55,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
     const [form, setForm] = useState({
         resumeId: resumes[0]?.id || "",
         targetRole: targetRole || "",
+        targetCompany: "",
         difficulty: "mid",
         questionCount: 12,
         sessionMode: "text",
@@ -188,71 +189,82 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                 </div>
                                 <Brain className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 text-primary/10" />
                             </div>
-                            <div className="space-y-8 p-8">
+                            <div className="space-y-6 p-8">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Session Mode</Label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div
                                             className={cn(
-                                                "cursor-pointer border-2 p-5 transition-all duration-300",
+                                                "cursor-pointer border-2 p-4 transition-all duration-300",
                                                 form.sessionMode === 'text'
                                                     ? "border-[#0d8274] bg-[#0d8274]/10 ring-1 ring-[#0d8274]/20"
                                                     : "border-[#102b2b]/15 bg-[#f4f7f1] hover:border-[#0d8274]/50"
                                             )}
                                             onClick={() => setForm({ ...form, sessionMode: 'text' })}
                                         >
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <MessageSquare className="h-5 w-5 text-primary" />
-                                                <span className="font-black uppercase tracking-tight text-sm">Standard</span>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <MessageSquare className="h-4 w-4 text-[#0d8274]" />
+                                                <span className="font-black uppercase tracking-tight text-sm text-[#102b2b]">Standard</span>
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Text-based analysis</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium">Text & STAR Analysis</p>
                                         </div>
                                         <div
                                             className={cn(
-                                                "cursor-pointer border-2 p-5 transition-all duration-300",
+                                                "cursor-pointer border-2 p-4 transition-all duration-300",
                                                 form.sessionMode === 'voice'
                                                     ? "border-[#0d8274] bg-[#0d8274]/10 ring-1 ring-[#0d8274]/20"
                                                     : "border-[#102b2b]/15 bg-[#f4f7f1] hover:border-[#0d8274]/50"
                                             )}
                                             onClick={() => setForm({ ...form, sessionMode: 'voice' })}
                                         >
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Mic className="h-5 w-5 text-primary" />
-                                                <span className="font-black uppercase tracking-tight text-sm">Simulated</span>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Mic className="h-4 w-4 text-[#0d8274]" />
+                                                <span className="font-black uppercase tracking-tight text-sm text-[#102b2b]">Simulated</span>
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Immersive voice</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium">Immersive Audio</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="target-role" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Target Role *</Label>
                                         <Input
                                             id="target-role"
                                             placeholder="Software Engineer"
-                                            className="h-12 rounded-none border-[#102b2b]/20 bg-[#f4f7f1] font-bold shadow-none focus:ring-[#0d8274]"
+                                            className="h-11 rounded-none border-[#102b2b]/20 bg-white font-medium shadow-none focus:ring-[#0d8274]"
                                             value={form.targetRole}
                                             onChange={(e) => setForm({ ...form, targetRole: e.target.value })}
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="difficulty" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Experience Level</Label>
-                                        <Select
-                                            value={form.difficulty}
-                                            onValueChange={(v) => setForm({ ...form, difficulty: v })}
-                                        >
-                                            <SelectTrigger className="h-12 rounded-xl bg-slate-900/40 border-primary/10 font-bold">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-slate-950 border-primary/10 rounded-xl">
-                                                <SelectItem value="junior">Junior (0-2 years)</SelectItem>
-                                                <SelectItem value="mid">Mid-Level (2-5 years)</SelectItem>
-                                                <SelectItem value="senior">Senior (5+ years)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <Label htmlFor="target-company" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Target Company (Optional)</Label>
+                                        <Input
+                                            id="target-company"
+                                            placeholder="e.g. Google, Stripe, Meta"
+                                            className="h-11 rounded-none border-[#102b2b]/20 bg-white font-medium shadow-none focus:ring-[#0d8274]"
+                                            value={form.targetCompany}
+                                            onChange={(e) => setForm({ ...form, targetCompany: e.target.value })}
+                                        />
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="difficulty" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Experience Level</Label>
+                                    <Select
+                                        value={form.difficulty}
+                                        onValueChange={(v) => setForm({ ...form, difficulty: v })}
+                                    >
+                                        <SelectTrigger className="h-11 rounded-none bg-white border-[#102b2b]/20 font-medium text-[#102b2b]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white border-[#102b2b]/20 rounded-none text-[#102b2b]">
+                                            <SelectItem value="junior">Junior (0-2 years)</SelectItem>
+                                            <SelectItem value="mid">Mid-Level (2-5 years)</SelectItem>
+                                            <SelectItem value="senior">Senior (5+ years)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 {form.sessionMode === 'voice' && (
@@ -263,10 +275,10 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                                 value={form.interviewerVoice}
                                                 onValueChange={(v) => setForm({ ...form, interviewerVoice: v })}
                                             >
-                                                <SelectTrigger className="h-12 rounded-xl bg-slate-900/40 border-primary/10 flex-1 font-bold">
+                                                <SelectTrigger className="h-11 rounded-none bg-white border-[#102b2b]/20 flex-1 font-medium text-[#102b2b]">
                                                     <SelectValue placeholder="Select a voice" />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-slate-950 border-primary/10 rounded-xl">
+                                                <SelectContent className="bg-white border-[#102b2b]/20 rounded-none text-[#102b2b]">
                                                     {voices.filter(v => v.lang.startsWith('en')).map((voice) => (
                                                         <SelectItem key={voice.name} value={voice.name}>
                                                             {voice.name}
@@ -277,7 +289,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                className="h-12 w-12 rounded-xl border-primary/10 hover:bg-primary/10"
+                                                className="h-11 w-11 rounded-none border-[#102b2b]/20 bg-white hover:bg-muted"
                                                 type="button"
                                                 onClick={() => {
                                                     if (form.interviewerVoice) {
@@ -289,24 +301,24 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                                 }}
                                                 disabled={!form.interviewerVoice}
                                             >
-                                                <Volume2 className="h-4 w-4" />
+                                                <Volume2 className="h-4 w-4 text-[#102b2b]" />
                                             </Button>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
                                     {resumes.length > 0 && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="resume" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Context (Optional)</Label>
+                                            <Label htmlFor="resume" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Active Resume</Label>
                                             <Select
                                                 value={form.resumeId}
                                                 onValueChange={(v) => setForm({ ...form, resumeId: v })}
                                             >
-                                                <SelectTrigger className="h-12 rounded-xl bg-slate-900/40 border-primary/10 font-bold">
+                                                <SelectTrigger className="h-11 rounded-none bg-white border-[#102b2b]/20 font-medium text-[#102b2b]">
                                                     <SelectValue placeholder="Select a resume" />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-slate-950 border-primary/10 rounded-xl">
+                                                <SelectContent className="bg-white border-[#102b2b]/20 rounded-none text-[#102b2b]">
                                                     {resumes.map((resume) => (
                                                         <SelectItem key={resume.id} value={resume.id}>
                                                             {resume.title}
@@ -318,15 +330,15 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                     )}
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="count" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Length</Label>
+                                        <Label htmlFor="count" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Questions</Label>
                                         <Select
                                             value={form.questionCount.toString()}
                                             onValueChange={(v) => setForm({ ...form, questionCount: parseInt(v) })}
                                         >
-                                            <SelectTrigger className="h-12 rounded-xl bg-slate-900/40 border-primary/10 font-bold">
+                                            <SelectTrigger className="h-11 rounded-none bg-white border-[#102b2b]/20 font-medium text-[#102b2b]">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-slate-950 border-primary/10 rounded-xl">
+                                            <SelectContent className="bg-white border-[#102b2b]/20 rounded-none text-[#102b2b]">
                                                 <SelectItem value="5">5 questions (Quick)</SelectItem>
                                                 <SelectItem value="10">10 questions (Standard)</SelectItem>
                                                 <SelectItem value="12">12 questions (Full)</SelectItem>
@@ -335,16 +347,16 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                     </div>
                                 </div>
 
-                                <Button onClick={handleCreateSession} disabled={isCreating} className="h-14 w-full gap-3 rounded-none bg-[#d8f36b] text-md font-bold uppercase tracking-widest text-[#102b2b] shadow-none hover:bg-[#c8e95a]">
+                                <Button onClick={handleCreateSession} disabled={isCreating} className="h-12 w-full gap-3 rounded-none bg-[#102b2b] text-sm font-bold uppercase tracking-widest text-[#d8f36b] shadow-none hover:bg-[#0d8274]">
                                     {isCreating ? (
                                         <>
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                            Calibrating AI...
+                                            <Loader2 className="h-5 w-5 animate-spin text-[#d8f36b]" />
+                                            Analyzing Resume & Calibrating AI...
                                         </>
                                     ) : (
                                         <>
-                                            <Sparkles className="h-5 w-5" />
-                                            Initialize Session
+                                            <Sparkles className="h-5 w-5 text-[#d8f36b]" />
+                                            Initialize Interview Session
                                         </>
                                     )}
                                 </Button>
@@ -380,10 +392,15 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                         <CardHeader className="pb-4">
                                             <div className="flex items-start justify-between">
                                                 <div className="space-y-1.5">
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest py-0 h-4 border-primary/20 bg-primary/5 text-primary">
                                                             Round #{sessions.length - i}
                                                         </Badge>
+                                                        {session.target_company && (
+                                                            <Badge className="text-[9px] font-bold py-0 h-4 rounded-none bg-[#102b2b] text-[#d8f36b]">
+                                                                {session.target_company}
+                                                            </Badge>
+                                                        )}
                                                         <span className="text-xs text-muted-foreground font-black uppercase tracking-widest flex items-center gap-1.5 opacity-60">
                                                             <Clock className="h-3 w-3" />
                                                             {formatDistanceToNow(new Date(session.created_at), { addSuffix: true })}
