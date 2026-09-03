@@ -96,6 +96,12 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         </div>
                                         {edu.gpa && <span className="text-sm text-gray-500">GPA: {edu.gpa}</span>}
                                     </div>
+                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
+                                        <div
+                                            className="text-sm leading-relaxed text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
+                                        />
+                                    )}
                                 </div>
                             ))}
                         </div>

@@ -132,6 +132,12 @@ export const CreativeTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span className="font-medium text-gray-700">{edu.degree} in {edu.field_of_study}</span>
                                         {edu.gpa && <span className="text-[11px] text-gray-500">GPA: {edu.gpa}</span>}
                                     </div>
+                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
+                                        <div
+                                            className="text-xs leading-relaxed text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
+                                        />
+                                    )}
                                 </div>
                             ))}
                         </div>

@@ -89,6 +89,12 @@ export const ClassicTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span>{edu.start_date} – {edu.end_date}</span>
                                     </div>
                                     {edu.gpa && <p className="text-sm">GPA: {edu.gpa}</p>}
+                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
+                                        <div
+                                            className="text-sm leading-relaxed text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
+                                        />
+                                    )}
                                 </div>
                             ))}
                         </div>
