@@ -2,53 +2,51 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 
 const TrafficChart = dynamic(() => import("@/components/analytics/charts").then(mod => mod.TrafficChart), {
-    loading: () => <div className="h-[300px] w-full flex items-center justify-center bg-muted/20 animate-pulse rounded-xl">Loading Chart...</div>
+    loading: () => <div className="h-[300px] w-full flex items-center justify-center bg-muted/20 animate-pulse rounded-none">Loading Traffic Chart...</div>
 });
 
 const DeviceChart = dynamic(() => import("@/components/analytics/charts").then(mod => mod.DeviceChart), {
-    loading: () => <div className="h-[200px] w-full flex items-center justify-center bg-muted/20 animate-pulse rounded-xl">Loading...</div>
+    loading: () => <div className="h-[200px] w-full flex items-center justify-center bg-muted/20 animate-pulse rounded-none">Loading Device Chart...</div>
 });
+
 import {
     ArrowLeft,
-    BarChart3,
     Download,
     Eye,
     Globe,
-    Smartphone,
-    Laptop,
-    Chrome,
     Calendar,
     MousePointer2,
     Zap,
     CheckCircle2,
     AlertCircle,
     Info,
-    TrendingDown,
     ShieldCheck,
     Search,
-    Lock as LockIcon
+    Lock as LockIcon,
+    ExternalLink,
+    Edit3,
+    TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useSubscriptionStore } from "@/lib/stores/subscription-store";
-import { format, subDays, startOfDay, isWithinInterval, differenceInHours } from "date-fns";
+import { format, subDays, startOfDay, differenceInHours } from "date-fns";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ['#102b2b', '#0d8274', '#d8f36b', '#f59e0b', '#6366f1'];
 
 export default function ResumeAnalyticsPage() {
     const { id } = useParams();
     const router = useRouter();
     const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
 
-    // Check subscription on mount
     useEffect(() => {
         checkSubscription();
     }, [checkSubscription]);
@@ -61,30 +59,25 @@ export default function ResumeAnalyticsPage() {
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
     const fetchATSScore = useCallback(async (resumeId: string, force: boolean = false) => {
-        // Gate check
         if (!isPro && !isSubLoading) {
-            toast.error("Upgrade to Pro to use AI Analytics!");
-            router.push("/dashboard/subscription");
             return;
         }
 
         setLoadingATS(true);
         const supabase = createClient();
         try {
-            // 1. Check Cache (if not forced)
             if (!force) {
                 const { data: cache } = await supabase
                     .from("resume_ats_cache")
                     .select("*")
                     .eq("resume_id", resumeId)
-                    .order("created_at", { ascending: false }) // Get latest
+                    .order("created_at", { ascending: false })
                     .limit(1)
-                    .single();
+                    .maybeSingle();
 
                 if (cache) {
                     const hoursSinceUpdate = differenceInHours(new Date(), new Date(cache.created_at));
                     if (hoursSinceUpdate < 24) {
-                        console.log("Using cached ATS data");
                         setAtsData(cache.analysis_data);
                         setLastUpdated(new Date(cache.created_at));
                         setLoadingATS(false);
@@ -93,7 +86,6 @@ export default function ResumeAnalyticsPage() {
                 }
             }
 
-            // 2. Fetch all resume parts (if no cache or stale/forced)
             const [
                 { data: profile },
                 { data: workExperiences },
@@ -102,6 +94,7 @@ export default function ResumeAnalyticsPage() {
                 { data: projects },
                 { data: certifications },
                 { data: languages },
+                { data: currentResume }
             ] = await Promise.all([
                 supabase.from("personal_info").select("*").eq("resume_id", resumeId).maybeSingle(),
                 supabase.from("work_experiences").select("*").eq("resume_id", resumeId),
@@ -110,111 +103,102 @@ export default function ResumeAnalyticsPage() {
                 supabase.from("projects").select("*").eq("resume_id", resumeId),
                 supabase.from("certifications").select("*").eq("resume_id", resumeId),
                 supabase.from("languages").select("*").eq("resume_id", resumeId),
+                supabase.from("resumes").select("title").eq("id", resumeId).maybeSingle(),
             ]);
 
-            const resumeData = {
+            const fullResumeData = {
+                title: currentResume?.title,
                 profile,
-                workExperiences: workExperiences || [],
-                education: education || [],
-                skills: skills || [],
-                projects: projects || [],
-                certifications: certifications || [],
-                languages: languages || [],
+                workExperiences,
+                education,
+                skills,
+                projects,
+                certifications,
+                languages
             };
 
             const response = await fetch("/api/ai/ats-score", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ resumeData }),
+                body: JSON.stringify({ resumeData: fullResumeData })
             });
 
-            if (!response.ok) throw new Error("ATS Scoring failed");
+            if (!response.ok) throw new Error("Failed to analyze resume");
+
             const data = await response.json();
-
-            // 3. Save to Cache
-            const { error: cacheError } = await supabase.from("resume_ats_cache").insert({
-                resume_id: resumeId,
-                ats_score: data.score,
-                analysis_data: data
-            });
-
-            if (cacheError) console.error("Failed to cache ATS data:", cacheError);
-
             setAtsData(data);
             setLastUpdated(new Date());
 
-        } catch (err) {
-            console.error("ATS Fetch Error:", err);
-            toast.error("Failed to analyze resume");
+            await supabase
+                .from("resume_ats_cache")
+                .insert({
+                    resume_id: resumeId,
+                    analysis_data: data,
+                    created_at: new Date().toISOString()
+                });
+
+        } catch (error) {
+            console.error("ATS Calculation error:", error);
+            toast.error("Failed to run ATS scoring");
         } finally {
             setLoadingATS(false);
         }
-    }, []);
+    }, [isPro, isSubLoading]);
 
     useEffect(() => {
+        if (!id) return;
+
         async function fetchData() {
+            setLoading(true);
             const supabase = createClient();
 
-            // Fetch resume details
             const { data: resumeData } = await supabase
                 .from("resumes")
-                .select("title")
+                .select("*")
                 .eq("id", id)
-                .single();
+                .maybeSingle();
+
+            if (!resumeData) {
+                setLoading(false);
+                return;
+            }
 
             setResume(resumeData);
 
-            // Fetch events (views and downloads) in parallel
-            const [
-                { data: viewData },
-                { data: downloadData }
-            ] = await Promise.all([
+            const [{ data: views }, { data: downloads }] = await Promise.all([
                 supabase
                     .from("resume_views")
                     .select("*")
                     .eq("resume_id", id)
-                    .order("viewed_at", { ascending: true }),
+                    .order("created_at", { ascending: false }),
                 supabase
-                    .from("resume_events")
+                    .from("resume_downloads")
                     .select("*")
                     .eq("resume_id", id)
-                    .eq("event_type", "download")
-                    .order("created_at", { ascending: true })
+                    .order("created_at", { ascending: false })
             ]);
 
-            // Map to compatible event structure for views
-            const mappedViews = (viewData || []).map(v => ({
-                created_at: v.viewed_at,
-                event_type: 'view',
-                device: v.device_type === 'mobile' ? 'Mobile' : 'Desktop',
-                browser: 'Unknown'
-            }));
-
-            // Map to compatible event structure for downloads
-            const mappedDownloads = (downloadData || []).map(d => ({
-                created_at: d.created_at,
-                event_type: 'download',
-                device: d.device === 'mobile' || d.device === 'Mobile' ? 'Mobile' : 'Desktop',
-                browser: d.browser || 'Unknown'
-            }));
+            const mappedViews = (views || []).map(v => ({ ...v, event_type: 'view' }));
+            const mappedDownloads = (downloads || []).map(d => ({ ...d, event_type: 'download' }));
 
             setEvents([...mappedViews, ...mappedDownloads]);
             setLoading(false);
 
-            // Fetch full resume data for ATS scoring
             fetchATSScore(id as string);
         }
 
         fetchData();
     }, [id, fetchATSScore]);
 
-    if (loading) return (
-        <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#102b2b]"></div>
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Loading Resume Analytics...</p>
+            </div>
+        );
+    }
 
-    // Process Data for Charts
     const last30Days = Array.from({ length: 30 }, (_, i) => {
         const date = subDays(new Date(), 29 - i);
         return {
@@ -234,109 +218,208 @@ export default function ResumeAnalyticsPage() {
         }
     });
 
-    // Device breakdown
     const deviceData = Object.entries(
         events.reduce((acc: Record<string, number>, event) => {
-            const device = event.device || 'Unknown';
+            const device = event.device || 'Desktop';
             acc[device] = (acc[device] || 0) + 1;
-            return acc;
-        }, {})
-    ).map(([name, value]) => ({ name, value: value as number }));
-
-    // Browser breakdown
-    const browserData = Object.entries(
-        events.reduce((acc: Record<string, number>, event) => {
-            const browser = event.browser || 'Unknown';
-            acc[browser] = (acc[browser] || 0) + 1;
             return acc;
         }, {})
     ).map(([name, value]) => ({ name, value: value as number }));
 
     const totalViews = events.filter(e => e.event_type === 'view').length;
     const totalDownloads = events.filter(e => e.event_type === 'download').length;
+    const engagementRate = totalViews > 0 ? Math.round((totalDownloads / totalViews) * 100) : 0;
 
     return (
-        <div className="space-y-8 p-6 lg:p-10">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tight">{resume?.title} Analytics</h1>
-                        <p className="text-muted-foreground font-medium">Detailed performance metrics for this resume</p>
+        <div className="mx-auto max-w-7xl space-y-8 px-2 sm:px-4 py-4">
+            {/* Editorial Breadcrumb & Header */}
+            <div className="border-b border-[#102b2b]/15 pb-6">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">
+                    <Link href="/dashboard/resumes" className="hover:text-[#0d8274] transition-colors">
+                        Resumes
+                    </Link>
+                    <span>/</span>
+                    <span className="text-[#102b2b] truncate max-w-[200px]">{resume?.title || "Resume"}</span>
+                    <span>/</span>
+                    <span className="text-[#0d8274]">Analytics</span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => router.push(`/dashboard/resumes`)}
+                            className="h-9 w-9 rounded-none border-neutral-300 hover:bg-neutral-100 shrink-0"
+                            title="Back to Resumes"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-black text-[#102b2b] tracking-tight">
+                                {resume?.title || "Untitled Resume"} Performance
+                            </h1>
+                            <p className="text-xs text-neutral-500 font-medium mt-0.5">
+                                Real-time engagement telemetry, device metrics, and ATS scan results
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                        {resume?.is_public && resume?.slug && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="h-9 rounded-none border-neutral-300 gap-1.5 text-xs font-bold"
+                            >
+                                <Link href={`/r/${resume.slug}`} target="_blank">
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    Public View
+                                </Link>
+                            </Button>
+                        )}
+                        <Button
+                            size="sm"
+                            asChild
+                            className="h-9 rounded-none bg-[#102b2b] text-white hover:bg-[#164743] gap-1.5 text-xs font-bold"
+                        >
+                            <Link href={`/dashboard/resume/${id}`}>
+                                <Edit3 className="h-3.5 w-3.5 text-[#d8f36b]" />
+                                Edit Resume
+                            </Link>
+                        </Button>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 border border-neutral-200 text-xs font-bold text-neutral-700">
+                            <Calendar className="h-3.5 w-3.5 text-[#0d8274]" />
+                            <span>Last 30 Days</span>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-2xl border border-primary/20">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-bold text-primary uppercase">Last 30 Days</span>
-                </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl hover:shadow-2xl transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-primary/60">Total Views</CardTitle>
-                        <Eye className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black">{totalViews}</div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl hover:shadow-2xl transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-primary/60">Total Downloads</CardTitle>
-                        <Download className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black">{totalDownloads}</div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl hover:shadow-2xl transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-primary/60">Success Rate</CardTitle>
-                        <MousePointer2 className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black">
-                            {totalViews > 0 ? Math.round((totalDownloads / totalViews) * 100) : 0}%
+            {/* KPI Summary Cards */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                    <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Total Views</span>
+                        <div className="h-7 w-7 rounded-none bg-[#102b2b] text-white flex items-center justify-center">
+                            <Eye className="h-3.5 w-3.5 text-[#d8f36b]" />
                         </div>
+                    </CardHeader>
+                    <CardContent className="p-0 pt-1">
+                        <div className="text-3xl font-black text-[#102b2b]">{totalViews}</div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1">Unique page visits</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl hover:shadow-2xl transition-all">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-xs font-black uppercase text-primary/60">Status</CardTitle>
-                        <Globe className="h-4 w-4 text-emerald-500" />
+
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                    <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">PDF Downloads</span>
+                        <div className="h-7 w-7 rounded-none bg-[#0d8274] text-white flex items-center justify-center">
+                            <Download className="h-3.5 w-3.5 text-white" />
+                        </div>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black text-emerald-500">Live</div>
+                    <CardContent className="p-0 pt-1">
+                        <div className="text-3xl font-black text-[#102b2b]">{totalDownloads}</div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1">Saved or printed copies</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                    <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Conversion Rate</span>
+                        <div className="h-7 w-7 rounded-none bg-neutral-800 text-white flex items-center justify-center">
+                            <MousePointer2 className="h-3.5 w-3.5 text-[#d8f36b]" />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0 pt-1">
+                        <div className="text-3xl font-black text-[#102b2b]">{engagementRate}%</div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1">Views that converted to download</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                    <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Link Status</span>
+                        <div className={cn(
+                            "h-7 w-7 rounded-none text-white flex items-center justify-center",
+                            resume?.is_public ? "bg-emerald-700" : "bg-neutral-600"
+                        )}>
+                            {resume?.is_public ? (
+                                <Globe className="h-3.5 w-3.5 text-emerald-200" />
+                            ) : (
+                                <LockIcon className="h-3.5 w-3.5 text-neutral-200" />
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0 pt-1">
+                        <div className={cn(
+                            "text-xl font-black flex items-center gap-1.5",
+                            resume?.is_public ? "text-emerald-700" : "text-neutral-700"
+                        )}>
+                            {resume?.is_public ? (
+                                <>
+                                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    Public Active
+                                </>
+                            ) : (
+                                "Private Only"
+                            )}
+                        </div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1">
+                            {resume?.is_public ? "Accessible via direct link" : "Only accessible in editor"}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
+            {/* Charts Grid */}
             <div className="grid gap-6 md:grid-cols-7">
-                <Card className="md:col-span-4 bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-black uppercase">Traffic Over Time</CardTitle>
-                        <CardDescription>Daily views and downloads over the last 30 days</CardDescription>
+                <Card className="md:col-span-4 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs">
+                    <CardHeader className="p-0 pb-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-base font-black uppercase text-[#102b2b] tracking-tight">
+                                    Traffic Over Time
+                                </CardTitle>
+                                <CardDescription className="text-xs text-neutral-500">
+                                    Daily impressions and downloads over the last 30 days
+                                </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs font-semibold">
+                                <span className="flex items-center gap-1 text-neutral-700">
+                                    <span className="h-2 w-2 bg-[#102b2b] rounded-none" /> Views
+                                </span>
+                                <span className="flex items-center gap-1 text-neutral-700">
+                                    <span className="h-2 w-2 bg-[#0d8274] rounded-none" /> Downloads
+                                </span>
+                            </div>
+                        </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0 pt-2">
                         <TrafficChart data={last30Days} />
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-3 bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-black uppercase">Device Breakdown</CardTitle>
-                        <CardDescription>Where your visitors are coming from</CardDescription>
+                <Card className="md:col-span-3 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs">
+                    <CardHeader className="p-0 pb-4">
+                        <CardTitle className="text-base font-black uppercase text-[#102b2b] tracking-tight">
+                            Device Distribution
+                        </CardTitle>
+                        <CardDescription className="text-xs text-neutral-500">
+                            Client hardware breakdown from recruiters & visitors
+                        </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center">
+                    <CardContent className="p-0 pt-2 flex flex-col items-center">
                         <DeviceChart data={deviceData} />
-                        <div className="grid grid-cols-2 gap-4 mt-4 w-full">
+                        <div className="grid grid-cols-2 gap-2 mt-4 w-full">
                             {deviceData.map((device, idx) => (
-                                <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-muted/30">
-                                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
-                                    <span className="text-xs font-bold truncate">{device.name} ({device.value})</span>
+                                <div key={idx} className="flex items-center justify-between p-2 rounded-none bg-neutral-50 border border-neutral-200 text-xs">
+                                    <div className="flex items-center gap-1.5 truncate">
+                                        <div className="h-2 w-2 shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                                        <span className="font-bold text-neutral-800 truncate">{device.name}</span>
+                                    </div>
+                                    <span className="font-mono text-neutral-500">{device.value}</span>
                                 </div>
                             ))}
                         </div>
@@ -344,164 +427,191 @@ export default function ResumeAnalyticsPage() {
                 </Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="lg:col-span-1 bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl overflow-hidden">
-                    <CardHeader className="border-b bg-primary/5 flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg font-black flex items-center gap-2">
-                            <ShieldCheck className="h-5 w-5 text-primary" />
-                            ATS COMPATIBILITY
-                        </CardTitle>
-                        {atsData && (
-                            <div className="flex items-center gap-3">
-                                {lastUpdated && (
-                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                                        Last Updated: {format(lastUpdated, "MMM d, h:mm a")}
-                                    </span>
-                                )}
+            {/* ATS & Optimization Section */}
+            <div className="grid gap-6 md:grid-cols-3">
+                {/* ATS Score Meter */}
+                <Card className="md:col-span-1 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center justify-between border-b border-neutral-100 pb-3 mb-6">
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="h-5 w-5 text-[#0d8274]" />
+                                <h3 className="font-black text-sm uppercase tracking-wider text-[#102b2b]">
+                                    ATS Benchmark
+                                </h3>
+                            </div>
+                            {atsData && (
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-7 text-xs font-bold gap-1"
+                                    className="h-7 text-xs font-bold gap-1 rounded-none border-neutral-300 hover:bg-neutral-100"
                                     onClick={() => fetchATSScore(id as string, true)}
                                     disabled={loadingATS}
                                 >
-                                    {!isPro ? (
-                                        <LockIcon className="h-3 w-3 text-muted-foreground" />
-                                    ) : (
-                                        <Zap className={cn("h-3 w-3", loadingATS ? "text-muted-foreground" : "text-amber-500")} />
-                                    )}
-                                    {loadingATS ? "Analyzing..." : "Re-Check"}
+                                    <Zap className={cn("h-3 w-3", loadingATS ? "text-neutral-400 animate-spin" : "text-amber-500")} />
+                                    {loadingATS ? "Scanning..." : "Re-Scan"}
                                 </Button>
-                            </div>
-                        )}
-                    </CardHeader>
-                    <CardContent className="p-8 flex flex-col items-center justify-center space-y-6">
+                            )}
+                        </div>
+
                         {loadingATS ? (
-                            <div className="py-12 flex flex-col items-center gap-4">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                                <p className="text-sm font-bold animate-pulse text-primary">SCANNING RESUME...</p>
+                            <div className="py-12 flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#102b2b]"></div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 animate-pulse">
+                                    Analyzing Resume Structure...
+                                </p>
                             </div>
                         ) : atsData ? (
-                            <>
-                                <div className="relative h-40 w-40 flex items-center justify-center">
+                            <div className="flex flex-col items-center text-center space-y-4">
+                                <div className="relative h-36 w-36 flex items-center justify-center">
                                     <svg className="h-full w-full -rotate-90">
                                         <circle
-                                            cx="80"
-                                            cy="80"
-                                            r="70"
+                                            cx="72"
+                                            cy="72"
+                                            r="60"
                                             fill="transparent"
-                                            stroke="hsl(var(--muted))"
-                                            strokeWidth="12"
-                                            className="opacity-20"
+                                            stroke="#e5e7eb"
+                                            strokeWidth="10"
                                         />
                                         <circle
-                                            cx="80"
-                                            cy="80"
-                                            r="70"
+                                            cx="72"
+                                            cy="72"
+                                            r="60"
                                             fill="transparent"
-                                            stroke="hsl(var(--primary))"
-                                            strokeWidth="12"
-                                            strokeDasharray={440}
-                                            strokeDashoffset={440 - (440 * atsData.score) / 100}
-                                            strokeLinecap="round"
+                                            stroke="#0d8274"
+                                            strokeWidth="10"
+                                            strokeDasharray={377}
+                                            strokeDashoffset={377 - (377 * atsData.score) / 100}
+                                            strokeLinecap="square"
                                             className="transition-all duration-1000 ease-out"
                                         />
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-5xl font-black">{atsData.score}</span>
-                                        <span className="text-xs font-bold uppercase text-muted-foreground mt-1">SCORE</span>
+                                        <span className="text-4xl font-black text-[#102b2b]">{atsData.score}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                                            OUT OF 100
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="text-center space-y-2">
-                                    <p className="text-sm font-bold text-muted-foreground leading-snug">
+
+                                <div className="space-y-1.5">
+                                    <span className={cn(
+                                        "inline-block px-2.5 py-0.5 text-xs font-black uppercase tracking-wider rounded-none",
+                                        atsData.score >= 80 ? "bg-emerald-50 text-emerald-700 border border-emerald-300" :
+                                            atsData.score >= 60 ? "bg-amber-50 text-amber-700 border border-amber-300" :
+                                                "bg-rose-50 text-rose-700 border border-rose-300"
+                                    )}>
+                                        {atsData.score >= 80 ? "ATS Optimized" : atsData.score >= 60 ? "Good Potential" : "Needs Revision"}
+                                    </span>
+                                    <p className="text-xs text-neutral-600 leading-relaxed max-w-[260px] mx-auto">
                                         {atsData.overallFeedback}
                                     </p>
-                                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-black">
-                                        {atsData.score >= 80 ? "EXCELLENT" : atsData.score >= 60 ? "GOOD" : "NEEDS WORK"}
-                                    </Badge>
                                 </div>
-                            </>
+                            </div>
                         ) : (
-                            <div className="py-12 text-center space-y-4">
-                                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto" />
-                                <p className="text-sm font-medium text-muted-foreground">Could not calculate ATS score.</p>
-                                <Button onClick={() => fetchATSScore(id as string)} variant="outline" size="sm" className="rounded-xl font-bold">
-                                    Retry Scan
+                            <div className="py-8 text-center space-y-3">
+                                <AlertCircle className="h-10 w-10 text-neutral-400 mx-auto" />
+                                <p className="text-xs font-medium text-neutral-500">No ATS analysis cached.</p>
+                                <Button
+                                    onClick={() => fetchATSScore(id as string)}
+                                    size="sm"
+                                    className="rounded-none bg-[#102b2b] text-white hover:bg-[#164743] font-bold text-xs"
+                                >
+                                    Run Scan
                                 </Button>
                             </div>
                         )}
-                    </CardContent>
+                    </div>
+
+                    {lastUpdated && (
+                        <p className="text-[10px] text-neutral-400 font-mono text-center pt-4 border-t border-neutral-100">
+                            Last scanned {format(lastUpdated, "MMM d, h:mm a")}
+                        </p>
+                    )}
                 </Card>
 
-                <Card className="lg:col-span-2 bg-white dark:bg-slate-950 border-2 border-primary/5 shadow-xl">
-                    <CardHeader className="border-b bg-primary/5">
-                        <CardTitle className="text-lg font-black flex items-center gap-2">
-                            <Zap className="h-5 w-5 text-primary" />
-                            CRITICAL OPTIMIZATIONS
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        {loadingATS ? (
-                            <div className="p-12 space-y-4">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-16 bg-muted animate-pulse rounded-2xl" />
-                                ))}
-                            </div>
-                        ) : atsData ? (
-                            <div className="divide-y divide-primary/5">
-                                {atsData.breakdown.map((item: any, idx: number) => (
-                                    <div key={idx} className="p-5 flex items-start gap-4 hover:bg-primary/[0.02] transition-colors">
-                                        <div className={cn(
-                                            "h-10 w-10 shrink-0 rounded-xl flex items-center justify-center font-black",
-                                            item.score >= 80 ? "bg-emerald-500/10 text-emerald-500" :
-                                                item.score >= 50 ? "bg-amber-500/10 text-amber-500" :
-                                                    "bg-rose-500/10 text-rose-500"
-                                        )}>
-                                            {item.score}
-                                        </div>
-                                        <div className="space-y-2 flex-1 min-w-0">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <h4 className="font-black text-sm uppercase tracking-tight">{item.category}</h4>
-                                                {item.score < 80 && (
-                                                    <Badge variant="secondary" className="text-[10px] font-black tracking-tighter bg-amber-500/10 text-amber-600 border-none">
-                                                        HIGH IMPACT
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <ul className="space-y-1.5 pt-1">
-                                                {item.feedback.map((f: string, fidx: number) => (
-                                                    <li key={fidx} className="text-xs text-muted-foreground flex items-start gap-2 leading-relaxed">
-                                                        <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", item.score >= 80 ? "text-emerald-500" : "text-muted-foreground/40")} />
-                                                        {f}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                {/* AI Optimizations & Breakdown */}
+                <Card className="md:col-span-2 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs">
+                    <div className="border-b border-neutral-100 pb-3 mb-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-amber-500" />
+                            <h3 className="font-black text-sm uppercase tracking-wider text-[#102b2b]">
+                                Actionable Optimizations
+                            </h3>
+                        </div>
+                        <span className="text-xs text-neutral-400 font-medium">Targeted suggestions</span>
+                    </div>
+
+                    {loadingATS ? (
+                        <div className="py-8 space-y-3">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="h-14 bg-neutral-100 animate-pulse rounded-none" />
+                            ))}
+                        </div>
+                    ) : atsData?.breakdown ? (
+                        <div className="divide-y divide-neutral-100">
+                            {atsData.breakdown.map((item: any, idx: number) => (
+                                <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-start gap-3">
+                                    <div className={cn(
+                                        "h-8 w-8 shrink-0 flex items-center justify-center font-black text-xs",
+                                        item.score >= 80 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                                            item.score >= 50 ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                                                "bg-rose-50 text-rose-700 border border-rose-200"
+                                    )}>
+                                        {item.score}
                                     </div>
-                                ))}
-                                {atsData.missingKeywords.length > 0 && (
-                                    <div className="p-5 bg-primary/[0.03]">
-                                        <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
-                                            <Info className="h-3.5 w-3.5" />
-                                            Target Industry Keywords
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {atsData.missingKeywords.map((kw: string, kidx: number) => (
-                                                <Badge key={kidx} variant="outline" className="bg-white dark:bg-slate-900 border-primary/20 text-primary font-bold text-[10px] px-3 py-1 rounded-lg">
-                                                    +{kw}
-                                                </Badge>
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <h4 className="font-bold text-xs uppercase tracking-tight text-neutral-900">
+                                                {item.category}
+                                            </h4>
+                                            {item.score < 80 && (
+                                                <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-none">
+                                                    Action Required
+                                                </span>
+                                            )}
+                                        </div>
+                                        <ul className="space-y-1">
+                                            {item.feedback?.map((f: string, fidx: number) => (
+                                                <li key={fidx} className="text-xs text-neutral-600 flex items-start gap-1.5 leading-snug">
+                                                    <CheckCircle2 className={cn(
+                                                        "h-3.5 w-3.5 shrink-0 mt-0.5",
+                                                        item.score >= 80 ? "text-emerald-600" : "text-neutral-400"
+                                                    )} />
+                                                    <span>{f}</span>
+                                                </li>
                                             ))}
-                                        </div>
+                                        </ul>
                                     </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="p-12 text-center opacity-40 grayscale py-32">
-                                <Search className="h-12 w-12 mx-auto mb-4" />
-                                <p className="font-bold">No Optimization Data</p>
-                            </div>
-                        )}
-                    </CardContent>
+                                </div>
+                            ))}
+
+                            {atsData.missingKeywords?.length > 0 && (
+                                <div className="pt-4 mt-2">
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <Info className="h-3.5 w-3.5 text-[#0d8274]" />
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                                            Suggested Industry Keywords
+                                        </h4>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {atsData.missingKeywords.map((kw: string, kidx: number) => (
+                                            <span
+                                                key={kidx}
+                                                className="inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-neutral-50 text-neutral-800 border border-neutral-200"
+                                            >
+                                                +{kw}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="py-12 text-center text-neutral-400">
+                            <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-xs font-medium">Scan your resume to view prioritized optimizations.</p>
+                        </div>
+                    )}
                 </Card>
             </div>
         </div>

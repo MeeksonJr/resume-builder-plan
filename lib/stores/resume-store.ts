@@ -127,6 +127,7 @@ interface ResumeState {
   certifications: Certification[];
   languages: Language[];
   sectionOrder: string[];
+  title: string;
   visualConfig: VisualConfig;
   template: string;
   slug: string | null;
@@ -156,6 +157,8 @@ interface ResumeState {
   setLanguages: (languages: Language[]) => void;
   setSectionOrder: (order: string[]) => void;
   setTemplate: (template: string) => void;
+  setTitle: (title: string) => void;
+  updateResumeTitle: (title: string) => Promise<void>;
   setIsPublic: (isPublic: boolean) => void;
   setSlug: (slug: string) => void;
   setLanguage: (language: string) => void;
@@ -209,6 +212,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   projects: [],
   certifications: [],
   languages: [],
+  title: "Untitled Resume",
   template: "modern",
   slug: null,
   is_public: false,
@@ -224,6 +228,21 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
   setTailoringResult: (result) => set({ tailoringResult: result }),
   setTargetJob: (job) => set({ targetJob: job }),
+
+  setTitle: (title) => set({ title, hasChanges: true }),
+  updateResumeTitle: async (newTitle: string) => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    set({ title: trimmed, hasChanges: true });
+    const { resumeId } = get();
+    if (resumeId) {
+      const supabase = createClient();
+      await supabase
+        .from("resumes")
+        .update({ title: trimmed, updated_at: new Date().toISOString() })
+        .eq("id", resumeId);
+    }
+  },
 
   setResumeId: (id) => set({ resumeId: id }),
   setVisualConfig: (config) => set({ visualConfig: config }),
@@ -685,10 +704,11 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         }
       );
 
-      // Update resume timestamp, template, and section order
+      // Update resume timestamp, template, title, and section order
       const { error: resumeUpdateError } = await supabase
         .from("resumes")
         .update({
+          title: state.title,
           updated_at: new Date().toISOString(),
           template_id: state.template,
           slug: state.slug || null,
@@ -786,6 +806,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
           display_order: e.sort_order
         })),
 
+        title: resume.title || "Untitled Resume",
         template: resume.template_id || "modern",
         slug: resume.slug,
         is_public: resume.is_public,

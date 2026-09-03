@@ -32,7 +32,11 @@ import {
   Languages,
   Clock,
   ChevronRight,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SaveVersionDialog } from "@/components/dashboard/resume/save-version-dialog";
 import { PersonalInfoForm } from "@/components/editor/sections/personal-info-form";
@@ -217,6 +221,9 @@ export function ResumeEditor({
     setCertifications,
     setLanguages,
     setTemplate,
+    setTitle,
+    updateResumeTitle,
+    title: storeTitle,
     setIsPublic,
     setSlug,
     setSectionOrder,
@@ -231,6 +238,32 @@ export function ResumeEditor({
     setTargetJob,
     updateProfile
   } = useResumeStore();
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState(resume.title || "Untitled Resume");
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (storeTitle) {
+      setTitleInput(storeTitle);
+    }
+  }, [storeTitle]);
+
+  const handleSaveTitle = async () => {
+    const trimmed = titleInput.trim();
+    if (trimmed && trimmed !== storeTitle) {
+      setTitle(trimmed);
+      try {
+        await updateResumeTitle(trimmed);
+        toast.success("Resume renamed");
+      } catch (err) {
+        toast.error("Failed to rename resume");
+      }
+    } else {
+      setTitleInput(storeTitle || resume.title || "Untitled Resume");
+    }
+    setIsEditingTitle(false);
+  };
 
   // Prevent outer dashboard main from creating outer scrollbars while editor is active
   useEffect(() => {
@@ -247,6 +280,7 @@ export function ResumeEditor({
   // Initialize store with data
   useEffect(() => {
     setResumeId(resume.id);
+    setTitle(resume.title || "Untitled Resume");
     setTemplate(resume.template_id || "modern");
     setIsPublic(resume.is_public || false);
     setSlug(resume.slug || "");
@@ -500,8 +534,57 @@ export function ResumeEditor({
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div>
-            <h1 className="text-lg font-black uppercase tracking-tight text-white">{resume.title}</h1>
+          <div className="min-w-0">
+            {isEditingTitle ? (
+              <div className="flex items-center gap-1.5">
+                <Input
+                  ref={titleInputRef}
+                  value={titleInput}
+                  onChange={(e) => setTitleInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveTitle();
+                    if (e.key === "Escape") {
+                      setTitleInput(storeTitle || resume.title || "Untitled Resume");
+                      setIsEditingTitle(false);
+                    }
+                  }}
+                  autoFocus
+                  className="h-8 max-w-[240px] sm:max-w-[340px] bg-[#164743] border-[#256f68] text-white text-sm font-bold focus-visible:ring-1 focus-visible:ring-[#d8f36b] rounded-none"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleSaveTitle}
+                  className="h-8 w-8 text-[#d8f36b] hover:bg-[#164743] rounded-none shrink-0"
+                  title="Save title"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    setTitleInput(storeTitle || resume.title || "Untitled Resume");
+                    setIsEditingTitle(false);
+                  }}
+                  className="h-8 w-8 text-[#a6c0b8] hover:bg-[#164743] rounded-none shrink-0"
+                  title="Cancel"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div
+                onClick={() => setIsEditingTitle(true)}
+                className="group flex items-center gap-2 cursor-pointer py-0.5 rounded-none"
+                title="Click to rename resume"
+              >
+                <h1 className="text-lg font-black uppercase tracking-tight text-white group-hover:text-[#d8f36b] transition-colors truncate max-w-[240px] sm:max-w-[360px]">
+                  {storeTitle || resume.title || "Untitled Resume"}
+                </h1>
+                <Pencil className="h-3.5 w-3.5 text-[#a6c0b8] opacity-60 group-hover:opacity-100 group-hover:text-[#d8f36b] transition-all shrink-0" />
+              </div>
+            )}
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`inline-block h-2 w-2 rounded-full ${hasChanges ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
               <p className="text-xs text-[#a6c0b8] font-semibold">
