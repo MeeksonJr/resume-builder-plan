@@ -34,8 +34,7 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
 
     if (!profile) return null;
 
-    const accentStyle = { color: visualConfig.accentColor };
-    const borderStyle = { borderColor: visualConfig.accentColor };
+    const accent = visualConfig.accentColor || "var(--resume-accent, #0070f3)";
 
     const renderSection = (id: string) => {
         switch (id) {
@@ -43,26 +42,26 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                 return workExperiences.length > 0 && (
                     <section key="experience">
                         <h2
-                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
-                            style={borderStyle}
+                            className="font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={{ borderColor: accent, color: accent, fontSize: "var(--resume-font-xs)" }}
                         >
                             Experience
                         </h2>
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {workExperiences.map((exp) => (
                                 <div key={exp.id} className="break-inside-avoid">
                                     <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
-                                        <h3 className="font-semibold text-base">{exp.position}</h3>
-                                        <span className="text-xs text-gray-500 italic">
+                                        <h3 className="font-semibold" style={{ fontSize: "var(--resume-font-base)" }}>{exp.position}</h3>
+                                        <span className="text-gray-500 italic whitespace-nowrap" style={{ fontSize: "var(--resume-font-xs)" }}>
                                             {exp.start_date} – {exp.is_current ? "Present" : exp.end_date}
                                         </span>
                                     </div>
-                                    <div className="text-sm mb-2">
-                                        <span className="font-medium">{exp.company}</span>
-                                        {exp.location && <span className="text-gray-500">, {exp.location}</span>}
-                                    </div>
+                                    <p className="text-gray-600 mb-1" style={{ fontSize: "var(--resume-font-sm)" }}>
+                                        {exp.company} {exp.location && `· ${exp.location}`}
+                                    </p>
                                     <div
-                                        className="text-sm leading-6 text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0 font-normal"
+                                        className="text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                        style={{ fontSize: "var(--resume-font-sm)" }}
                                         dangerouslySetInnerHTML={{ __html: exp.description }}
                                     />
                                 </div>
@@ -74,8 +73,8 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                 return education.length > 0 && (
                     <section key="education">
                         <h2
-                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
-                            style={borderStyle}
+                            className="font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={{ borderColor: accent, color: accent, fontSize: "var(--resume-font-xs)" }}
                         >
                             Education
                         </h2>
@@ -83,18 +82,19 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             {education.map((edu) => (
                                 <div key={edu.id} className="break-inside-avoid">
                                     <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
-                                        <h3 className="font-semibold text-base">{edu.institution}</h3>
-                                        <span className="text-xs text-gray-500 italic">
+                                        <h3 className="font-semibold" style={{ fontSize: "var(--resume-font-base)" }}>{edu.institution}</h3>
+                                        <span className="text-gray-500 italic whitespace-nowrap" style={{ fontSize: "var(--resume-font-xs)" }}>
                                             {edu.start_date} – {edu.end_date}
                                         </span>
                                     </div>
-                                    <div className="text-sm">
+                                    <div style={{ fontSize: "var(--resume-font-sm)" }}>
                                         <span>{edu.degree} in {edu.field_of_study}</span>
                                         {edu.gpa && <span className="text-gray-500 ml-2">(GPA: {edu.gpa})</span>}
                                     </div>
                                     {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
                                         <div
-                                            className="text-sm leading-relaxed text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                            className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                            style={{ fontSize: "var(--resume-font-sm)" }}
                                             dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
                                         />
                                     )}
@@ -107,8 +107,8 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                 return projects.length > 0 && (
                     <section key="projects">
                         <h2
-                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
-                            style={borderStyle}
+                            className="font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={{ borderColor: accent, color: accent, fontSize: "var(--resume-font-xs)" }}
                         >
                             Projects
                         </h2>
@@ -116,20 +116,21 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             {projects.map((proj) => (
                                 <div key={proj.id} className="break-inside-avoid">
                                     <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
-                                        <h3 className="font-semibold text-base">{proj.name}</h3>
+                                        <h3 className="font-semibold" style={{ fontSize: "var(--resume-font-base)" }}>{proj.name}</h3>
                                         {proj.url && (
-                                            <a href={proj.url} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:underline italic">
+                                            <a href={proj.url} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: accent, fontSize: "var(--resume-font-xs)" }}>
                                                 View Project
                                             </a>
                                         )}
                                     </div>
                                     {proj.technologies.length > 0 && (
-                                        <div className="text-xs text-gray-500 mb-1 italic">
+                                        <div className="text-gray-500 mb-1 italic" style={{ fontSize: "var(--resume-font-xs)" }}>
                                             {proj.technologies.join(", ")}
                                         </div>
                                     )}
                                     <div
-                                        className="text-sm leading-6 text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0 font-normal"
+                                        className="text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                        style={{ fontSize: "var(--resume-font-sm)" }}
                                         dangerouslySetInnerHTML={{ __html: proj.description }}
                                     />
                                 </div>
@@ -141,33 +142,45 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                 return skills.length > 0 && (
                     <section key="skills">
                         <h2
-                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
-                            style={borderStyle}
+                            className="font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={{ borderColor: accent, color: accent, fontSize: "var(--resume-font-xs)" }}
                         >
                             Skills
                         </h2>
-                        <p className="text-sm leading-6">
-                            {skills.map(s => s.name).join(" • ")}
-                        </p>
+                        <div className="flex flex-wrap gap-x-6 gap-y-2" style={{ fontSize: "var(--resume-font-sm)" }}>
+                            {Object.entries(
+                                skills.reduce((acc: any, s: any) => {
+                                    const cat = s.category || "General";
+                                    if (!acc[cat]) acc[cat] = [];
+                                    acc[cat].push(s.name);
+                                    return acc;
+                                }, {})
+                            ).map(([category, skillNames]: any) => (
+                                <div key={category}>
+                                    <span className="font-semibold">{category}: </span>
+                                    <span className="text-gray-600">{skillNames.join(", ")}</span>
+                                </div>
+                            ))}
+                        </div>
                     </section>
                 );
             case "certifications":
                 return certifications.length > 0 && (
                     <section key="certifications">
                         <h2
-                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
-                            style={borderStyle}
+                            className="font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={{ borderColor: accent, color: accent, fontSize: "var(--resume-font-xs)" }}
                         >
                             Certifications
                         </h2>
-                        <div className="space-y-2">
+                        <div className="space-y-2" style={{ fontSize: "var(--resume-font-sm)" }}>
                             {certifications.map((cert) => (
-                                <div key={cert.id} className="flex justify-between text-sm break-inside-avoid">
-                                    <span className="font-medium">{cert.name}</span>
-                                    <div className="text-gray-600">
-                                        <span>{cert.issuer}</span>
-                                        {cert.issue_date && <span> • {cert.issue_date}</span>}
+                                <div key={cert.id} className={cn("flex justify-between items-baseline", isRtl && "flex-row-reverse")}>
+                                    <div>
+                                        <span className="font-semibold">{cert.name}</span>
+                                        {cert.issuer && <span className="text-gray-600"> — {cert.issuer}</span>}
                                     </div>
+                                    {cert.issue_date && <span className="text-gray-500 whitespace-nowrap" style={{ fontSize: "var(--resume-font-xs)" }}>{cert.issue_date}</span>}
                                 </div>
                             ))}
                         </div>
@@ -177,12 +190,12 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                 return languages.length > 0 && (
                     <section key="languages">
                         <h2
-                            className="text-xs font-bold uppercase tracking-widest border-b pb-1 mb-4"
-                            style={borderStyle}
+                            className="font-bold uppercase tracking-widest border-b pb-1 mb-4"
+                            style={{ borderColor: accent, color: accent, fontSize: "var(--resume-font-xs)" }}
                         >
                             Languages
                         </h2>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        <div className="flex flex-wrap gap-x-6 gap-y-2" style={{ fontSize: "var(--resume-font-sm)" }}>
                             {languages.map((lang) => (
                                 <div key={lang.id} className="flex gap-2">
                                     <span className="font-medium">{lang.language}:</span>
@@ -199,32 +212,34 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
 
     return (
         <div
-            className={cn(
-                "bg-white p-10 min-h-[1056px] h-full transition-all duration-300",
-                visualConfig.fontSize === "small" ? "text-[13px]" : visualConfig.fontSize === "large" ? "text-[16px]" : "text-[14px]",
-                visualConfig.lineHeight === "tight" ? "leading-tight" : visualConfig.lineHeight === "relaxed" ? "leading-relaxed" : "leading-normal"
-            )}
-            style={{ fontFamily: visualConfig.fontFamily, color: "#374151" }}
+            className="bg-white min-h-[1056px] h-full transition-all duration-300"
+            style={{
+                fontFamily: "var(--resume-font)",
+                fontSize: "var(--resume-font-base)",
+                lineHeight: "var(--resume-line-height)",
+                padding: "var(--resume-padding)",
+                color: "#374151",
+            }}
         >
             {/* Header - Centered */}
             <header className="text-center mb-8">
                 <h1
-                    className="text-3xl font-normal uppercase tracking-[0.2em] mb-3"
-                    style={{ color: visualConfig.accentColor }}
+                    className="font-normal uppercase tracking-[0.2em] mb-3"
+                    style={{ color: accent, fontSize: "var(--resume-font-xxxl)" }}
                 >
                     {profile.full_name || "Your Name"}
                 </h1>
-                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs uppercase tracking-wider text-gray-500">
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 uppercase tracking-wider text-gray-500" style={{ fontSize: "var(--resume-font-xs)" }}>
                     {profile.email && <span>{profile.email}</span>}
                     {profile.phone && <span>{profile.phone}</span>}
                     {profile.location && <span>{profile.location}</span>}
                     {profile.linkedin_url && (
-                        <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="hover:underline">
+                        <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="hover:underline" style={{ color: accent }}>
                             LinkedIn
                         </a>
                     )}
                     {profile.website_url && (
-                        <a href={profile.website_url} target="_blank" rel="noreferrer" className="hover:underline">
+                        <a href={profile.website_url} target="_blank" rel="noreferrer" className="hover:underline" style={{ color: accent }}>
                             Portfolio
                         </a>
                     )}
@@ -236,7 +251,8 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                 {profile.summary && (
                     <section>
                         <div
-                            className="text-sm leading-7 text-justify prose-sm prose-p:my-0 font-normal"
+                            className="text-justify prose-sm prose-p:my-0 font-normal"
+                            style={{ fontSize: "var(--resume-font-sm)" }}
                             dangerouslySetInnerHTML={{ __html: profile.summary }}
                         />
                     </section>

@@ -60,6 +60,39 @@ function hexToHsl(hex: string): string {
     return `${h} ${s}% ${l}%`;
 }
 
+/** Build a proper CSS font-family string with fallbacks */
+function buildFontFamily(font: string): string {
+    const serifFonts = ["Merriweather", "Playfair Display", "Lora"];
+    const monoFonts = ["Source Code Pro"];
+    const fontName = font.includes(" ") ? `'${font}'` : font;
+
+    if (serifFonts.includes(font)) return `${fontName}, Georgia, 'Times New Roman', serif`;
+    if (monoFonts.includes(font)) return `${fontName}, 'Courier New', Courier, monospace`;
+    return `${fontName}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+}
+
+/** Map font size setting to actual CSS values with clear differences */
+const FONT_SIZE_MAP: Record<string, { base: string; sm: string; xs: string; lg: string; xl: string; xxl: string; xxxl: string }> = {
+    small: { base: "12px", sm: "11px", xs: "9.5px", lg: "13px", xl: "15px", xxl: "18px", xxxl: "24px" },
+    standard: { base: "14px", sm: "12.5px", xs: "11px", lg: "16px", xl: "18px", xxl: "22px", xxxl: "30px" },
+    large: { base: "16px", sm: "14px", xs: "12.5px", lg: "18px", xl: "21px", xxl: "26px", xxxl: "36px" },
+};
+
+/** Map line height setting to CSS value */
+const LINE_HEIGHT_MAP: Record<string, string> = {
+    tight: "1.25",
+    standard: "1.5",
+    relaxed: "1.75",
+};
+
+/** Map margin setting to CSS padding value (applied inside templates) */
+const MARGIN_MAP: Record<string, string> = {
+    compact: "1.25rem 1.5rem",
+    vertical: "1.25rem 1.5rem",
+    standard: "2.25rem 2.25rem",
+    wide: "3.25rem 3.25rem",
+    horizontal: "3.25rem 3.25rem",
+};
 
 export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((props, ref) => {
     const store = useResumeStore();
@@ -75,9 +108,13 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     const currentConfig = data?.resume?.visual_config || visualConfig;
     const accentColor = currentConfig?.accentColor || "#0070f3";
     const fontFamily = currentConfig?.fontFamily || "Inter";
-    const fontSizeMap = { small: "0.875rem", standard: "1rem", large: "1.125rem" };
-    const lineHeightMap = { tight: "1.2", standard: "1.5", relaxed: "1.75" };
-    const marginMap = { vertical: "1rem", standard: "2.5rem", horizontal: "3.5rem" }; // Using map for nav_style/margins
+    const fontSize = currentConfig?.fontSize || "standard";
+    const lineHeight = currentConfig?.lineHeight || "standard";
+    const marginSetting = currentConfig?.margins || currentConfig?.nav_style || "standard";
+
+    const fontSizes = FONT_SIZE_MAP[fontSize] || FONT_SIZE_MAP.standard;
+    const lineHeightValue = LINE_HEIGHT_MAP[lineHeight] || LINE_HEIGHT_MAP.standard;
+    const paddingValue = MARGIN_MAP[marginSetting] || MARGIN_MAP.standard;
 
     const renderTemplate = () => {
         const templateProps = { data, isRtl, language };
@@ -97,7 +134,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     return (
         <div
             ref={ref}
-            className="print:shadow-none h-full bg-white text-black min-h-[1056px] isolate"
+            className="print:shadow-none h-full bg-white text-black min-h-[1056px] isolate resume-preview-root"
             dir={isRtl ? "rtl" : "ltr"}
             lang={language}
             data-theme="light"
@@ -105,12 +142,42 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
                 colorScheme: "light",
                 "--primary": hexToHsl(accentColor),
                 "--ring": hexToHsl(accentColor),
-                fontFamily: fontFamily,
-                fontSize: fontSizeMap[(currentConfig?.fontSize || "standard") as keyof typeof fontSizeMap],
-                lineHeight: lineHeightMap[(currentConfig?.lineHeight || "standard") as keyof typeof lineHeightMap],
-                padding: marginMap[(currentConfig?.nav_style || "standard") as keyof typeof marginMap],
+                "--resume-accent": accentColor,
+                "--resume-font": buildFontFamily(fontFamily),
+                "--resume-font-base": fontSizes.base,
+                "--resume-font-sm": fontSizes.sm,
+                "--resume-font-xs": fontSizes.xs,
+                "--resume-font-lg": fontSizes.lg,
+                "--resume-font-xl": fontSizes.xl,
+                "--resume-font-xxl": fontSizes.xxl,
+                "--resume-font-xxxl": fontSizes.xxxl,
+                "--resume-line-height": lineHeightValue,
+                "--resume-padding": paddingValue,
+                fontFamily: buildFontFamily(fontFamily),
+                fontSize: fontSizes.base,
+                lineHeight: lineHeightValue,
             } as React.CSSProperties}
         >
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        .resume-preview-root,
+                        .resume-preview-root *:not(svg):not(path) {
+                            font-family: var(--resume-font) !important;
+                        }
+                        .resume-preview-root .prose,
+                        .resume-preview-root .prose-sm,
+                        .resume-preview-root .prose-sm p,
+                        .resume-preview-root .prose-sm ul,
+                        .resume-preview-root .prose-sm li,
+                        .resume-preview-root p,
+                        .resume-preview-root li,
+                        .resume-preview-root span {
+                            line-height: var(--resume-line-height) !important;
+                        }
+                    `,
+                }}
+            />
             {renderTemplate()}
         </div>
     );
