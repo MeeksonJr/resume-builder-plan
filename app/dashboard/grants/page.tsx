@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Building2, 
   HelpCircle, 
@@ -14,16 +14,22 @@ import {
   GraduationCap, 
   ArrowRight, 
   Search, 
-  ExternalLink,
-  Clock,
-  Calculator,
-  BookmarkCheck,
-  Bookmark,
-  Loader2,
-  ChevronRight,
-  Copy,
-  Check,
-  FileEdit
+  ExternalLink, 
+  Clock, 
+  Calculator, 
+  BookmarkCheck, 
+  Bookmark, 
+  Loader2, 
+  ChevronRight, 
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
+  Copy, 
+  Check, 
+  FileEdit,
+  LayoutGrid,
+  List,
+  ArrowUpDown
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,6 +37,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { FundingOpportunity, formatFundingAmount } from "@/lib/funding/types";
 import { toast } from "sonner";
@@ -46,12 +59,25 @@ export default function DashboardGrantsPage() {
   const [loading, setLoading] = useState(true);
   const [hideClosed, setHideClosed] = useState(false);
 
+  // Pagination, Sort & View Mode States
+  const listingsRef = useRef<HTMLDivElement>(null);
+  const [pageSize, setPageSize] = useState<number | "all">(12);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"match" | "amount_desc" | "deadline" | "newest">("match");
+  const [minAmount, setMinAmount] = useState<"all" | "1000" | "5000" | "10000">("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("All");
   const [activeModalOpportunity, setActiveModalOpportunity] = useState<FundingOpportunity | null>(null);
+
+  // Reset to page 1 whenever any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedType, hideClosed, sortBy, minAmount, pageSize]);
 
   // AI Assistant States
   const [aiAnalysis, setAiAnalysis] = useState<{
@@ -411,25 +437,87 @@ export default function DashboardGrantsPage() {
     }
   };
 
-  // Filter
-  const filteredGrants = opportunities.filter((g) => {
-    const matchesSearch = 
-      g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      g.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (g.majors || []).some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Filter & Sort
+  const getFilteredGrants = () => {
+    const list = opportunities.filter((g) => {
+      const matchesSearch = 
+        g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        g.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (g.majors || []).some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    if (hideClosed && g.deadline) {
-      const deadlineDate = new Date(g.deadline);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (deadlineDate < today) {
-        return false;
+      if (hideClosed && g.deadline) {
+        const deadlineDate = new Date(g.deadline);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (deadlineDate < today) {
+          return false;
+        }
+      }
+
+      if (minAmount !== "all") {
+        const val = g.amount_max || g.amount_min || 0;
+        if (val < Number(minAmount)) {
+          return false;
+        }
+      }
+
+      const isMatch = selectedType === "All" || g.kind.toLowerCase() === selectedType.toLowerCase() || (g.keywords || []).some(k => k.toLowerCase() === selectedType.toLowerCase());
+      return matchesSearch && isMatch;
+    });
+
+    return list.sort((a, b) => {
+      if (sortBy === "match") {
+        return (b.match_score || 85) - (a.match_score || 85);
+      }
+      if (sortBy === "amount_desc") {
+        return (b.amount_max || b.amount_min || 0) - (a.amount_max || a.amount_min || 0);
+      }
+      if (sortBy === "deadline") {
+        if (!a.deadline && !b.deadline) return 0;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      }
+      if (sortBy === "newest") {
+        const dateB = b.fetched_at || (b as any).created_at || 0;
+        const dateA = a.fetched_at || (a as any).created_at || 0;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      }
+      return 0;
+    });
+  };
+
+  const filteredGrants = getFilteredGrants();
+  const totalFiltered = filteredGrants.length;
+  const numericPageSize = pageSize === "all" ? totalFiltered : Number(pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / (numericPageSize || 1)));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * numericPageSize;
+  const endIndex = pageSize === "all" ? totalFiltered : Math.min(startIndex + numericPageSize, totalFiltered);
+  const paginatedGrants = pageSize === "all" ? filteredGrants : filteredGrants.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (listingsRef.current) {
+      listingsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (safeCurrentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (safeCurrentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", safeCurrentPage - 1, safeCurrentPage, safeCurrentPage + 1, "...", totalPages);
       }
     }
-
-    const isMatch = selectedType === "All" || g.kind.toLowerCase() === selectedType.toLowerCase() || (g.keywords || []).some(k => k.toLowerCase() === selectedType.toLowerCase());
-    return matchesSearch && isMatch;
-  });
+    return pages;
+  };
 
   const approachingList = opportunities.filter(sch => {
     if (sch.user_status !== "saved" && sch.user_status !== "applying") return false;
@@ -557,45 +645,143 @@ export default function DashboardGrantsPage() {
         </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          {["All", "Federal", "State", "Research", "Emergency"].map((type) => (
-            <button
-              key={type}
-              onClick={() => setSelectedType(type)}
-              className={`text-xs px-3.5 py-1.5 rounded-xl font-medium transition-all cursor-pointer ${
-                selectedType === type
-                  ? "bg-[#d8f36b] text-[#102b2b]"
-                  : "bg-[#102b2b] border border-[#102b2b] text-[#e9eee8]/75 hover:text-[#d8f36b]"
-              }`}
-            >
-              {type === "All" ? "All Aid Types" : `${type} Grants`}
-            </button>
-          ))}
+      {/* Filter Tabs & Toolbar */}
+      <div className="space-y-3">
+        {/* Row 1: Primary Category Pills, FAFSA Link & Hide Closed Toggle */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {["All", "Federal", "State", "Research", "Emergency"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setSelectedType(type)}
+                className={`text-xs px-3.5 py-1.5 rounded-sm font-bold transition-all cursor-pointer ${
+                  selectedType === type
+                    ? "bg-[#d8f36b] text-[#102b2b] shadow-xs"
+                    : "bg-[#102b2b] border border-[#102b2b] text-[#e9eee8]/80 hover:text-[#d8f36b]"
+                }`}
+              >
+                {type === "All" ? "All Aid Types" : `${type} Grants`}
+              </button>
+            ))}
+
+            <Button size="sm" className="h-8 rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-bold text-xs gap-1.5 cursor-pointer ml-auto sm:ml-0" asChild>
+              <a href="https://studentaid.gov/h/apply-for-aid/fafsa" target="_blank" rel="noopener noreferrer">
+                FAFSA Portal
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </Button>
+          </div>
+
+          {/* Hide Closed Toggle */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold shrink-0">
+            <input
+              type="checkbox"
+              id="hideClosedCheckboxGrants"
+              checked={hideClosed}
+              onChange={(e) => setHideClosed(e.target.checked)}
+              className="w-3.5 h-3.5 accent-[#d8f36b] cursor-pointer"
+            />
+            <label htmlFor="hideClosedCheckboxGrants" className="cursor-pointer select-none">
+              Hide Closed Opportunities
+            </label>
+          </div>
         </div>
 
-        {/* Hide Closed Toggle */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold">
-          <input
-            type="checkbox"
-            id="hideClosedCheckboxGrants"
-            checked={hideClosed}
-            onChange={(e) => setHideClosed(e.target.checked)}
-            className="w-3.5 h-3.5 accent-[#d8f36b] cursor-pointer"
-          />
-          <label htmlFor="hideClosedCheckboxGrants" className="cursor-pointer select-none">
-            Hide Closed Opportunities
-          </label>
+        {/* Row 2: Secondary Filters Toolbar (Sort, Value, Items/Page, View Mode) */}
+        <div className="p-3 rounded-md bg-white border border-[#b8c8b9] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+          {/* Left: Sort & Value Filters */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[#102b2b]/70 uppercase tracking-wider">Sort:</span>
+              <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <SelectTrigger className="h-8 w-[160px] rounded-sm bg-[#f7faf5] border-[#b8c8b9] text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274]">
+                  <ArrowUpDown className="w-3 h-3 text-[#0d8274] mr-1.5" />
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent className="rounded-sm border-[#b8c8b9]">
+                  <SelectItem value="match" className="text-xs font-medium">Best Match %</SelectItem>
+                  <SelectItem value="amount_desc" className="text-xs font-medium">Highest Value ($$$)</SelectItem>
+                  <SelectItem value="deadline" className="text-xs font-medium">Nearest Deadline</SelectItem>
+                  <SelectItem value="newest" className="text-xs font-medium">Newest Added</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Min Funding Filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[#102b2b]/70 uppercase tracking-wider">Value:</span>
+              <Select value={minAmount} onValueChange={(val: any) => setMinAmount(val)}>
+                <SelectTrigger className="h-8 w-[130px] rounded-sm bg-[#f7faf5] border-[#b8c8b9] text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274]">
+                  <DollarSign className="w-3 h-3 text-[#0d8274] mr-1" />
+                  <SelectValue placeholder="Amount" />
+                </SelectTrigger>
+                <SelectContent className="rounded-sm border-[#b8c8b9]">
+                  <SelectItem value="all" className="text-xs font-medium">All Amounts</SelectItem>
+                  <SelectItem value="10000" className="text-xs font-medium">$10,000+ Min</SelectItem>
+                  <SelectItem value="5000" className="text-xs font-medium">$5,000+ Min</SelectItem>
+                  <SelectItem value="1000" className="text-xs font-medium">$1,000+ Min</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Right: Results Counter, Page Size & View Mode Switcher */}
+          <div className="flex items-center justify-between md:justify-end gap-3 flex-wrap">
+            {/* Range Counter */}
+            <div className="text-[11px] font-semibold text-[#102b2b]/70 hidden sm:block">
+              Showing <span className="font-bold text-[#102b2b]">{totalFiltered === 0 ? 0 : startIndex + 1}–{endIndex}</span> of <span className="font-bold text-[#102b2b]">{totalFiltered}</span>
+            </div>
+
+            {/* Items Per Page */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[#102b2b]/70 uppercase tracking-wider">Show:</span>
+              <Select value={String(pageSize)} onValueChange={(val) => setPageSize(val === "all" ? "all" : Number(val))}>
+                <SelectTrigger className="h-8 w-[90px] rounded-sm bg-[#f7faf5] border-[#b8c8b9] text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274]">
+                  <SelectValue placeholder="Page Size" />
+                </SelectTrigger>
+                <SelectContent className="rounded-sm border-[#b8c8b9]">
+                  <SelectItem value="12" className="text-xs font-medium">12 / page</SelectItem>
+                  <SelectItem value="24" className="text-xs font-medium">24 / page</SelectItem>
+                  <SelectItem value="48" className="text-xs font-medium">48 / page</SelectItem>
+                  <SelectItem value="all" className="text-xs font-medium">Show All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* View Mode Switcher (Grid vs Compact List) */}
+            <div className="flex items-center bg-[#e9eee8] p-0.5 rounded-sm border border-[#b8c8b9]">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
+                  viewMode === "grid"
+                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    : "text-[#102b2b]/60 hover:text-[#102b2b]"
+                }`}
+                title="Grid View (Large Cards)"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    : "text-[#102b2b]/60 hover:text-[#102b2b]"
+                }`}
+                title="Compact List View (Dense Rows)"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      
-      <Button size="sm" className="rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-medium text-xs gap-1.5 cursor-pointer" asChild>
-        <a href="https://studentaid.gov/h/apply-for-aid/fafsa" target="_blank" rel="noopener noreferrer">
-          FAFSA Portal
-          <ExternalLink className="w-3.5 h-3.5" />
-        </a>
-      </Button>
+
+      {/* Anchor for smooth scrolling when changing page */}
+      <div ref={listingsRef} className="scroll-mt-4" />
 
       {/* Loading & Grid */}
       {loading ? (
@@ -613,9 +799,9 @@ export default function DashboardGrantsPage() {
             No active grants found matching this filter. Try a live web scrape using the search bar above to fetch matching opportunities globally.
           </p>
         </div>
-      ) : (
+      ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filteredGrants.map((opp) => {
+          {paginatedGrants.map((opp) => {
             const isSaved = opp.user_status === "saved";
             const isApplied = opp.user_status === "applying";
 
@@ -714,6 +900,178 @@ export default function DashboardGrantsPage() {
               </Card>
             );
           })}
+        </div>
+      ) : (
+        /* Compact List View (Dense Rows) */
+        <div className="space-y-2.5">
+          {paginatedGrants.map((opp) => {
+            const isSaved = opp.user_status === "saved";
+            const isApplied = opp.user_status === "applying";
+
+            return (
+              <div
+                key={opp.id}
+                onClick={() => setActiveModalOpportunity(opp)}
+                className="p-3.5 sm:p-4 rounded-md bg-[#f7faf5] hover:bg-white border border-[#b8c8b9] hover:border-[#0d8274] transition-all duration-150 cursor-pointer shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3 group"
+              >
+                {/* Left: Badge, Title & Provider */}
+                <div className="space-y-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="bg-[#0d8274]/10 text-[#0d8274] border-[#0d8274]/30 text-[10px] font-semibold py-0.5 px-2 rounded-sm uppercase">
+                      {opp.kind}
+                    </Badge>
+                    <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-sm bg-[#d8f36b] text-[#102b2b] border border-[#102b2b]/15 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" aria-hidden="true" />
+                      {opp.match_score || 85}% Fit
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm sm:text-base font-bold text-[#102b2b] group-hover:text-[#0d8274] transition-colors truncate">
+                    {opp.title}
+                  </h3>
+                  <p className="text-xs text-[#102b2b]/65 truncate">
+                    {opp.provider}
+                  </p>
+                </div>
+
+                {/* Middle: Value & Deadline */}
+                <div className="flex items-center gap-6 shrink-0 md:text-right border-t md:border-t-0 pt-2 md:pt-0 border-neutral-200">
+                  <div className="min-w-[110px]">
+                    <span className="text-[10px] text-[#102b2b]/55 uppercase block">Value</span>
+                    <span className="text-sm sm:text-base font-black text-[#0d8274] font-mono">
+                      {formatFundingAmount(opp)}
+                    </span>
+                  </div>
+
+                  <div className="min-w-[120px]">
+                    <span className="text-[10px] text-[#102b2b]/55 uppercase block">Deadline</span>
+                    <div className="text-xs mt-0.5">
+                      <RelativeDate deadline={opp.deadline} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2 shrink-0 justify-end pt-2 md:pt-0 border-t md:border-t-0 border-neutral-200">
+                  <button
+                    onClick={(e) => handleToggleSave(opp.id, opp.user_status, e)}
+                    aria-label={isSaved ? "Remove from saved" : "Save"}
+                    className="p-2 rounded-sm text-[#102b2b]/55 hover:text-[#0d8274] hover:bg-[#e9eee8] transition-colors cursor-pointer"
+                  >
+                    {isSaved ? (
+                      <BookmarkCheck className="w-4 h-4 text-[#0d8274] fill-[#0d8274]/20" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={(e) => handleToggleTrack(opp.id, opp.user_status, e)}
+                    className={`text-[11px] font-medium px-2.5 py-1.5 rounded-sm transition-colors cursor-pointer ${
+                      isApplied
+                        ? "bg-[#d8f36b] text-[#102b2b] border border-[#102b2b]/15"
+                        : "text-[#102b2b]/70 hover:text-[#102b2b] bg-[#e9eee8]"
+                    }`}
+                  >
+                    {isApplied ? "✓ In Progress" : "+ Track"}
+                  </button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs font-semibold rounded-sm border-[#b8c8b9] text-[#0d8274] group-hover:bg-[#0d8274] group-hover:text-white transition-colors"
+                  >
+                    Details
+                    <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Bottom Pagination Bar */}
+      {totalPages > 1 && pageSize !== "all" && (
+        <div className="p-4 rounded-md bg-white border border-[#b8c8b9] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
+          <div className="text-xs font-semibold text-[#102b2b]/70 text-center sm:text-left">
+            Showing <span className="font-bold text-[#102b2b]">{startIndex + 1}–{endIndex}</span> of <span className="font-bold text-[#102b2b]">{totalFiltered}</span> grants
+            <span className="text-neutral-400 mx-2">•</span>
+            Page <span className="font-bold text-[#102b2b]">{safeCurrentPage}</span> of <span className="font-bold text-[#102b2b]">{totalPages}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            {/* First Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(1)}
+              disabled={safeCurrentPage === 1}
+              className="h-8 w-8 p-0 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] disabled:opacity-40"
+              title="First Page"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+
+            {/* Previous Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(safeCurrentPage - 1)}
+              disabled={safeCurrentPage === 1}
+              className="h-8 px-2.5 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-xs font-bold gap-1 disabled:opacity-40"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Prev</span>
+            </Button>
+
+            {/* Page Number Buttons */}
+            {getPageNumbers().map((p, idx) =>
+              p === "..." ? (
+                <span key={`ellipsis-${idx}`} className="px-1.5 text-xs text-neutral-400 select-none">
+                  ...
+                </span>
+              ) : (
+                <Button
+                  key={`page-${p}`}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(Number(p))}
+                  className={`h-8 w-8 p-0 rounded-sm text-xs font-bold transition-colors ${
+                    p === safeCurrentPage
+                      ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-2xs hover:bg-[#164743] hover:text-[#d8f36b]"
+                      : "border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8]"
+                  }`}
+                >
+                  {p}
+                </Button>
+              )
+            )}
+
+            {/* Next Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(safeCurrentPage + 1)}
+              disabled={safeCurrentPage === totalPages}
+              className="h-8 px-2.5 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-xs font-bold gap-1 disabled:opacity-40"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Button>
+
+            {/* Last Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(totalPages)}
+              disabled={safeCurrentPage === totalPages}
+              className="h-8 w-8 p-0 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] disabled:opacity-40"
+              title="Last Page"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 
