@@ -43,6 +43,7 @@ import { SortableAccordionItem, SortableDragHandle } from "../sortable-accordion
 import { useState } from "react";
 import { toast } from "sonner";
 import { CanvasSuggestions } from "../canvas-suggestions";
+import { ACTION_VERBS, METRIC_REGEX } from "@/lib/utils/resume-strength";
 
 export function ProjectsForm() {
     const { projects, addProject, updateProject, removeProject } = useResumeStore();
@@ -61,7 +62,8 @@ export function ProjectsForm() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     text,
-                    type: "description",
+                    type: "bullet",
+                    context: "Rewrite this project overview and highlights into high-impact STAR resume bullet points (Situation, Task, Action, Result) showcasing engineering decisions, technical scope, and quantifiable results.",
                 }),
             });
 
@@ -69,7 +71,7 @@ export function ProjectsForm() {
 
             const { improved } = await response.json();
             updateProject(id, { description: improved });
-            toast.success("Description improved!");
+            toast.success("Polished project with STAR formula!");
         } catch {
             toast.error("Failed to improve description");
         } finally {
@@ -201,19 +203,19 @@ export function ProjectsForm() {
                                                         }}
                                                     />
                                                     <Button
-                                                        variant="ghost"
+                                                        variant="outline"
                                                         size="sm"
                                                         type="button"
                                                         onClick={() => handleImproveDescription(proj.id, proj.description || "")}
                                                         disabled={improvingId === proj.id || !proj.description}
-                                                        className="h-8 gap-1 text-xs"
+                                                        className="h-8 gap-1.5 rounded-none border-[#102b2b]/20 bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] hover:text-white text-xs font-bold"
                                                     >
                                                         {improvingId === proj.id ? (
-                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                                         ) : (
-                                                            <Sparkles className="h-3 w-3" />
+                                                            <Sparkles className="h-3.5 w-3.5" />
                                                         )}
-                                                        Improve with AI
+                                                        ✨ Polish with STAR (AI)
                                                     </Button>
                                                 </div>
                                             </div>
@@ -224,6 +226,35 @@ export function ProjectsForm() {
                                                 }
                                                 placeholder="Describe what you built..."
                                             />
+                                            {/* Live ATS Signals */}
+                                            {(() => {
+                                                const cleanText = (proj.description || "").replace(/<[^>]*>/g, " ");
+                                                const detectedVerbs = ACTION_VERBS.filter(v => new RegExp(`\\b${v}\\b`, "i").test(cleanText));
+                                                const hasMetric = METRIC_REGEX.test(cleanText);
+
+                                                return (
+                                                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#52716a]">
+                                                            Live Signals:
+                                                        </span>
+                                                        <span className={`inline-flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 border ${
+                                                            detectedVerbs.length >= 2
+                                                                ? "border-[#0d8274]/30 bg-[#0d8274]/10 text-[#0d8274] font-bold"
+                                                                : "border-[#102b2b]/15 bg-[#f8f4ec] text-[#52716a]"
+                                                        }`}>
+                                                            {detectedVerbs.length >= 2 ? "✓" : "•"} {detectedVerbs.length} Action Verbs
+                                                            {detectedVerbs.length > 0 && ` (${detectedVerbs.slice(0, 2).join(", ")})`}
+                                                        </span>
+                                                        <span className={`inline-flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 border ${
+                                                            hasMetric
+                                                                ? "border-[#0d8274]/30 bg-[#0d8274]/10 text-[#0d8274] font-bold"
+                                                                : "border-amber-500/30 bg-amber-50 text-amber-800"
+                                                        }`}>
+                                                            {hasMetric ? "✓ Metric Quantified" : "⚠️ Add Metric (scale, speed, users)"}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </AccordionContent>
                                 </SortableAccordionItem>

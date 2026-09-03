@@ -33,13 +33,23 @@ import { toast } from "sonner";
 interface ResumeStrengthMeterProps {
   onNavigateTab?: (tab: string) => void;
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ResumeStrengthMeter({
   onNavigateTab,
   className,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: ResumeStrengthMeterProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = typeof controlledOpen === "boolean";
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+  const setIsOpen = (open: boolean) => {
+    if (controlledOnOpenChange) controlledOnOpenChange(open);
+    else setInternalOpen(open);
+  };
   const [activeFilter, setActiveFilter] = useState<"all" | "missing" | "passed">("all");
   const [jobDescription, setJobDescription] = useState("");
   const [isScanningATS, setIsScanningATS] = useState(false);

@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
+import { ACTION_VERBS, METRIC_REGEX } from "@/lib/utils/resume-strength";
 
 export function WorkExperienceForm() {
     const { workExperiences, addWorkExperience, updateWorkExperience, removeWorkExperience } = useResumeStore();
@@ -69,7 +70,8 @@ export function WorkExperienceForm() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     text,
-                    type: "description",
+                    type: "bullet",
+                    context: "Rewrite these job achievements into high-impact STAR resume bullet points (Situation, Task, Action, Result) using strong action verbs and quantifiable metrics (%, $, numbers).",
                 }),
             });
 
@@ -77,7 +79,7 @@ export function WorkExperienceForm() {
 
             const { improved } = await response.json();
             updateWorkExperience(id, { description: improved });
-            toast.success("Description improved!");
+            toast.success("Polished with STAR formula! ATS score updated.");
         } catch {
             toast.error("Failed to improve description");
         } finally {
@@ -251,20 +253,20 @@ export function WorkExperienceForm() {
 
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
-                                                <Label>Description</Label>
+                                                <Label>Description & Achievements</Label>
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={() => handleImproveDescription(exp.id, exp.description || "")}
                                                     disabled={improvingId === exp.id || !exp.description}
-                                                    className="h-8 gap-1 text-xs"
+                                                    className="h-8 gap-1.5 rounded-none border-[#102b2b]/20 bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] hover:text-white text-xs font-bold"
                                                 >
                                                     {improvingId === exp.id ? (
-                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                                     ) : (
-                                                        <Sparkles className="h-3 w-3" />
+                                                        <Sparkles className="h-3.5 w-3.5" />
                                                     )}
-                                                    Improve with AI
+                                                    ✨ Polish with STAR (AI)
                                                 </Button>
                                             </div>
                                             <RichTextEditor
@@ -274,6 +276,35 @@ export function WorkExperienceForm() {
                                                 }
                                                 placeholder="Describe your responsibilities and achievements..."
                                             />
+                                            {/* Live ATS Signals */}
+                                            {(() => {
+                                                const cleanText = (exp.description || "").replace(/<[^>]*>/g, " ");
+                                                const detectedVerbs = ACTION_VERBS.filter(v => new RegExp(`\\b${v}\\b`, "i").test(cleanText));
+                                                const hasMetric = METRIC_REGEX.test(cleanText);
+
+                                                return (
+                                                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#52716a]">
+                                                            Live Signals:
+                                                        </span>
+                                                        <span className={`inline-flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 border ${
+                                                            detectedVerbs.length >= 2
+                                                                ? "border-[#0d8274]/30 bg-[#0d8274]/10 text-[#0d8274] font-bold"
+                                                                : "border-[#102b2b]/15 bg-[#f8f4ec] text-[#52716a]"
+                                                        }`}>
+                                                            {detectedVerbs.length >= 2 ? "✓" : "•"} {detectedVerbs.length} Action Verbs
+                                                            {detectedVerbs.length > 0 && ` (${detectedVerbs.slice(0, 2).join(", ")})`}
+                                                        </span>
+                                                        <span className={`inline-flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 border ${
+                                                            hasMetric
+                                                                ? "border-[#0d8274]/30 bg-[#0d8274]/10 text-[#0d8274] font-bold"
+                                                                : "border-amber-500/30 bg-amber-50 text-amber-800"
+                                                        }`}>
+                                                            {hasMetric ? "✓ Metric Quantified" : "⚠️ Add Metric (%, $, counts)"}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </AccordionContent>
                                 </SortableAccordionItem>

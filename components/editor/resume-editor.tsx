@@ -71,6 +71,7 @@ import { toast } from "sonner";
 import { VisualCustomizer } from "@/components/editor/visual-customizer";
 import { JobInputDialog } from "@/components/tailoring/job-input-dialog";
 import { ResumeStrengthMeter } from "./resume-strength-meter";
+import { LiveATSDock } from "./live-ats-dock";
 import { OptimizationPanel } from "@/components/tailoring/optimization-panel";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import dynamic from "next/dynamic";
@@ -203,6 +204,7 @@ export function ResumeEditor({
   const [showVersionDialog, setShowVersionDialog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [showAtsAudit, setShowAtsAudit] = useState(false);
 
   // Tailoring State
   // Tailoring state handling is merged below
@@ -593,7 +595,11 @@ export function ResumeEditor({
             </div>
           </div>
           <div className="ml-1 sm:ml-3">
-            <ResumeStrengthMeter onNavigateTab={setActiveTab} />
+            <ResumeStrengthMeter
+              open={showAtsAudit}
+              onOpenChange={setShowAtsAudit}
+              onNavigateTab={setActiveTab}
+            />
           </div>
         </div>
 
@@ -797,8 +803,14 @@ export function ResumeEditor({
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="edit" className="flex-1 overflow-hidden">
-                <div className="h-full overflow-y-auto p-4">
-                  <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
+                <div className="flex h-full flex-col overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
+                  </div>
+                  <LiveATSDock
+                    onOpenAudit={() => setShowAtsAudit(true)}
+                    onNavigateTab={setActiveTab}
+                  />
                 </div>
               </TabsContent>
               <TabsContent value="preview" className="flex-1 overflow-hidden h-full m-0 p-0">
@@ -811,8 +823,14 @@ export function ResumeEditor({
           <div className="hidden h-full md:block">
             <ResizablePanelGroup direction="horizontal" id="resume-editor-panel-group">
               <ResizablePanel defaultSize={showPreview ? 50 : 100} minSize={30} id="editor-panel">
-                <div className="h-full overflow-y-auto p-4">
-                  <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
+                <div className="flex h-full flex-col overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
+                  </div>
+                  <LiveATSDock
+                    onOpenAudit={() => setShowAtsAudit(true)}
+                    onNavigateTab={setActiveTab}
+                  />
                 </div>
               </ResizablePanel>
               {showPreview && (

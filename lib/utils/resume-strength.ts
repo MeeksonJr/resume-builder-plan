@@ -34,7 +34,7 @@ export interface ResumeStrengthReport {
   completedCount: number;
 }
 
-const ACTION_VERBS = [
+export const ACTION_VERBS = [
   "accelerated", "achieved", "administered", "analyzed", "architected",
   "automated", "built", "championed", "collaborated", "constructed",
   "created", "delivered", "deployed", "designed", "developed",
@@ -48,7 +48,7 @@ const ACTION_VERBS = [
   "spearheaded", "standardized", "streamlined", "supervised", "transformed"
 ];
 
-const METRIC_REGEX = /(\b\d+(?:[\.,]\d+)?%|\$\d+(?:[\.,]\d+)?[kKmMbB]?|\b\d+[kKmMbB]\b|\b\d+\+\b|\b(?:saved|increased|reduced|grew|cut|scaled by)\s+\d+|\b\d+\s+(?:users|clients|customers|downloads|stars|commits|teams|dollars|revenue|hours|seconds|percent))/i;
+export const METRIC_REGEX = /(\b\d+(?:[\.,]\d+)?%|\$\d+(?:[\.,]\d+)?[kKmMbB]?|\b\d+[kKmMbB]\b|\b\d+\+\b|\b(?:saved|increased|reduced|grew|cut|scaled by)\s+\d+|\b\d+\s+(?:users|clients|customers|downloads|stars|commits|teams|dollars|revenue|hours|seconds|percent))/i;
 
 export function calculateResumeStrength(data: {
   profile?: {
