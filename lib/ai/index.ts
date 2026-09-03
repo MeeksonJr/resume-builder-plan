@@ -879,6 +879,64 @@ export async function generateProjectFromRepo(
   }
 }
 
+/**
+ * Generate high-impact resume project from Canvas LMS Course & Assignments
+ */
+export async function generateProjectFromCourse(
+  courseName: string,
+  courseCode: string,
+  grade: string | null,
+  assignments: string[] = []
+): Promise<{
+  name: string;
+  description: string;
+  technologies: string[];
+  highlights: string[];
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          name: z.string().describe("Concise professional project name derived from the course"),
+          description: z.string().describe("1-2 sentence overview of the technical system built or studied"),
+          technologies: z.array(z.string()).describe("3-6 modern industry technologies and tools relevant to this coursework"),
+          highlights: z.array(z.string()).length(3).describe("3 high-impact STAR resume bullet points (Action verb + Context + Quantifiable result)"),
+        }),
+        prompt: `You are an executive career coach and technical resume strategist.
+        
+A candidate completed the following university coursework in Canvas LMS and wants to feature it as a high-impact technical project on their resume:
+
+Course Title: ${courseName}
+Course Code: ${courseCode || "Academic Project"}
+Grade Earned: ${grade || "Completed with Distinction"}
+Key Projects & Course Assignments:
+${assignments.length > 0 ? assignments.map(a => `- ${a}`).join("\n") : "- Full-stack application capstone and architectural analysis"}
+
+Instructions:
+1. Formulate a technical project title (e.g. "Scalable Web Platform - Full Stack Engineering Capstone").
+2. Summarize the overarching project scope in 1-2 concise sentences.
+3. Extract 4-6 modern, relevant technologies and frameworks (e.g., React, TypeScript, Node.js, SQL, Docker).
+4. Write 3 exceptional resume bullet points using the STAR methodology (Situation, Task, Action, Result). Emphasize engineering decisions, scale, and performance. Avoid passive student language like "learned" or "studied"; use active engineering verbs ("Architected", "Engineered", "Implemented", "Benchmarked").`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI: Course to Project]", error.message);
+    return {
+      name: `${courseName} Technical Project`,
+      description: `Engineered comprehensive software application demonstrating advanced principles in ${courseName}.`,
+      technologies: ["TypeScript", "Python", "SQL", "Git", "REST APIs"],
+      highlights: [
+        `Architected modular software solution applying core principles from ${courseName}, achieving top academic evaluation (${grade || "A"}).`,
+        `Designed and implemented performant data pipelines and application workflows to process structured datasets.`,
+        `Conducted rigorous automated testing and system profiling, ensuring reliability and adherence to production standards.`
+      ],
+    };
+  }
+}
+
 // Comprehensive resume quality analysis and scoring
 export async function analyzeResumeQuality(
   resumeData: ResumeData,

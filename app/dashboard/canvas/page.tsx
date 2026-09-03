@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { GraduationCap, Calendar, Clock, BookOpen, AlertCircle, ArrowLeft, RefreshCw, CheckCircle2, ChevronRight, Settings } from "lucide-react";
 import { CanvasSyncButton } from "./sync-button";
+import { CanvasCoursesGrid } from "@/components/canvas/canvas-courses-grid";
 
 export default async function CanvasWorkspacePage() {
   const supabase = await createClient();
@@ -43,6 +44,13 @@ export default async function CanvasWorkspacePage() {
     .select("*")
     .eq("user_id", user.id);
 
+  const { data: resumesRaw } = await supabase
+    .from("resumes")
+    .select("id, title")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false });
+
+  const resumes = resumesRaw || [];
   const gradesMap = new Map(grades?.map(g => [g.canvas_course_id, g]) || []);
   const hasConfig = !!profile?.canvas_instance_url;
 
@@ -155,49 +163,12 @@ export default async function CanvasWorkspacePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                {courses.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-[#102b2b]/15">
-                    <p className="text-sm text-[#52716a] italic">No courses synced. Trigger a sync using the button above.</p>
-                  </div>
-                ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {courses.map((course) => {
-                      const gradeInfo = gradesMap.get(course.canvas_course_id);
-                      return (
-                        <Link 
-                          key={course.id} 
-                          href={`/dashboard/canvas/${course.canvas_course_id}`}
-                          className="p-4 border border-[#102b2b]/10 hover:border-[#0d8274] bg-[#f8faf5] hover:bg-white transition-all flex flex-col justify-between gap-4 group"
-                        >
-                          <div>
-                            <div className="flex justify-between items-start gap-2">
-                              <Badge variant="outline" className="rounded-none border-[#102b2b]/15 text-[#52716a] text-[9px] uppercase tracking-wider font-bold">
-                                {course.course_code || "Class"}
-                              </Badge>
-                              {gradeInfo && (
-                                <Badge className="rounded-none bg-[#0d8274] text-white font-mono text-xs px-2 py-0.5">
-                                  Grade: {gradeInfo.current_grade || "N/A"}
-                                </Badge>
-                              )}
-                            </div>
-                            <h3 className="font-extrabold text-base text-[#102b2b] mt-3 group-hover:text-[#0d8274] transition-colors leading-tight line-clamp-2">
-                              {course.name}
-                            </h3>
-                          </div>
-
-                          <div className="flex items-center justify-between border-t border-[#102b2b]/5 pt-3 mt-2 text-xs">
-                            <span className="text-[#52716a] font-medium">
-                              {assignments.filter(a => a.canvas_course_id === course.canvas_course_id).length} assignments
-                            </span>
-                            <span className="text-[#0d8274] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                              View Syllabus <ChevronRight className="w-4 h-4" />
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+                <CanvasCoursesGrid
+                  courses={courses}
+                  grades={grades || []}
+                  assignments={assignments}
+                  resumes={resumes}
+                />
               </CardContent>
             </Card>
           </div>

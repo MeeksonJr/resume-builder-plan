@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CourseWorkspaceView } from "./course-workspace-view";
 import { AIStudyPlanWidget } from "./ai-study-plan";
+import { CourseAddToResumeButton } from "@/components/canvas/course-add-to-resume-button";
 
 export default async function CourseDetailPage({
   params
@@ -19,6 +20,15 @@ export default async function CourseDetailPage({
   if (!user) {
     redirect("/auth/login");
   }
+
+  // Fetch user resumes for conversion
+  const { data: resumesRaw } = await supabase
+    .from("resumes")
+    .select("id, title")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false });
+
+  const resumes = resumesRaw || [];
 
   // Fetch course details
   const { data: course, error: courseError } = await supabase
@@ -108,7 +118,7 @@ export default async function CourseDetailPage({
       </div>
 
       {/* Class Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4 border-b border-[#102b2b]/15 pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#102b2b]/15 pb-6">
         <div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="rounded-none border-[#102b2b]/15 bg-[#f8faf5] text-[#52716a] text-[10px] uppercase font-bold tracking-wider">
@@ -127,6 +137,18 @@ export default async function CourseDetailPage({
             LMS ID: {course.canvas_course_id} • Last synced: {new Date(course.synced_at).toLocaleDateString()}
           </p>
         </div>
+
+        <CourseAddToResumeButton
+          course={{
+            id: course.id,
+            canvas_course_id: course.canvas_course_id,
+            name: course.name,
+            course_code: course.course_code || "Class",
+            grade: grade?.current_grade || (grade?.current_score ? `${grade.current_score}%` : null),
+            assignments: assignments.map((a: any) => a.name),
+          }}
+          resumes={resumes}
+        />
       </div>
 
       {/* Main Grid: Assignments and AI study plan */}
