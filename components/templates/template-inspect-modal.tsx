@@ -76,7 +76,7 @@ export function TemplateInspectModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-6xl w-[95vw] h-[92vh] p-0 rounded-none bg-[#f5f7f1] border-[#102b2b]/20 flex flex-col overflow-hidden shadow-2xl">
+            <DialogContent className="!max-w-[95vw] sm:!max-w-[92vw] lg:!max-w-[88vw] xl:!max-w-6xl w-[95vw] h-[92vh] p-0 rounded-none bg-[#f5f7f1] border-[#102b2b]/20 flex flex-col overflow-hidden shadow-2xl">
                 {/* Modal Top Bar */}
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] px-6 py-3.5 shrink-0">
                     <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export function TemplateInspectModal({
                 </div>
 
                 {/* Main Scrollable High-Res Document Preview Area */}
-                <div className="relative grow overflow-y-auto overflow-x-auto bg-gray-200/80 p-8 flex justify-center">
+                <div className="relative grow overflow-y-auto overflow-x-auto bg-gray-200/80 p-8 flex justify-center items-start">
                     <div
                         style={{
                             transform: `scale(${zoomLevel})`,
@@ -191,7 +191,7 @@ export function TemplateInspectModal({
                             transition: "transform 0.15s ease-out",
                             width: "820px",
                         }}
-                        className="bg-white shadow-2xl mb-12 border border-gray-300"
+                        className="bg-white shadow-2xl mb-16 border border-gray-300 min-h-[1056px] h-auto shrink-0"
                     >
                         <ResumePreview data={previewData} readOnly />
                     </div>

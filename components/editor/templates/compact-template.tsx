@@ -215,7 +215,7 @@ export const CompactTemplate = ({ data, isRtl, language }: TemplateProps) => {
 
     return (
         <div
-            className="bg-white text-black min-h-[1056px] h-full transition-all duration-300"
+            className="bg-white text-black min-h-[1056px] h-auto transition-all duration-300"
             style={{
                 fontFamily: "var(--resume-font)",
                 fontSize: "var(--resume-font-base)",
