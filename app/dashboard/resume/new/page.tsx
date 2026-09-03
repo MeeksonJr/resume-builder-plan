@@ -188,10 +188,10 @@ export default function NewResumePage() {
                             location: w.location || null,
                             start_date: w.start_date || null,
                             end_date: w.end_date || null,
-                            is_current: w.is_current,
+                            is_current: !!w.is_current,
                             description: w.description || null,
                             highlights: w.highlights || [],
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -206,8 +206,8 @@ export default function NewResumePage() {
                             start_date: e.start_date || null,
                             end_date: e.end_date || null,
                             gpa: e.gpa || null,
-                            highlights: e.highlights || [],
-                            display_order: i,
+                            achievements: e.highlights || [],
+                            sort_order: i,
                         }))
                     );
                 }
@@ -219,7 +219,7 @@ export default function NewResumePage() {
                             name: s.name,
                             category: s.category || null,
                             proficiency_level: s.proficiency_level || 3,
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -233,7 +233,7 @@ export default function NewResumePage() {
                             technologies: p.technologies || [],
                             url: p.url || null,
                             highlights: p.highlights || [],
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -246,7 +246,7 @@ export default function NewResumePage() {
                             issuer: c.issuer || null,
                             issue_date: c.issue_date || null,
                             credential_url: c.credential_url || null,
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -255,9 +255,9 @@ export default function NewResumePage() {
                     await supabase.from("languages").insert(
                         importedData.languages.map((l, i) => ({
                             resume_id: resumeId,
-                            language: l.name,
+                            name: l.name,
                             proficiency: l.proficiency || "Professional working",
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -292,10 +292,10 @@ export default function NewResumePage() {
                             location: w.location,
                             start_date: w.start_date,
                             end_date: w.end_date,
-                            is_current: w.is_current,
+                            is_current: !!w.is_current,
                             description: w.description,
                             highlights: w.highlights || [],
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -310,8 +310,8 @@ export default function NewResumePage() {
                             start_date: e.start_date,
                             end_date: e.end_date,
                             gpa: e.gpa || null,
-                            highlights: e.highlights || [],
-                            display_order: i,
+                            achievements: e.highlights || [],
+                            sort_order: i,
                         }))
                     );
                 }
@@ -323,7 +323,7 @@ export default function NewResumePage() {
                             name: s.name,
                             category: s.category,
                             proficiency_level: 4,
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -337,7 +337,7 @@ export default function NewResumePage() {
                             technologies: p.technologies || [],
                             url: p.url,
                             highlights: p.highlights || [],
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }
@@ -350,7 +350,7 @@ export default function NewResumePage() {
                             issuer: c.issuer,
                             issue_date: c.issue_date,
                             credential_url: null,
-                            display_order: i,
+                            sort_order: i,
                         }))
                     );
                 }

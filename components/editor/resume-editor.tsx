@@ -359,8 +359,9 @@ export function ResumeEditor({
     try {
       await saveAllChanges();
       toast.success("Resume saved successfully");
-    } catch {
-      toast.error("Failed to save resume");
+    } catch (err: any) {
+      console.error("Failed to save resume:", err);
+      toast.error(err?.message || "Failed to save resume");
     } finally {
       setIsSaving(false);
     }
@@ -470,22 +471,22 @@ export function ResumeEditor({
       } as any);
     }
     if (data.workExperiences.length > 0) {
-      setWorkExperiences(data.workExperiences.map((w, i) => ({ ...w, id: `imported-work-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+      setWorkExperiences(data.workExperiences.map((w, i) => ({ ...w, id: `temp-work-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
     }
     if (data.education.length > 0) {
-      setEducation(data.education.map((e, i) => ({ ...e, id: `imported-edu-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+      setEducation(data.education.map((e, i) => ({ ...e, id: `temp-edu-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
     }
     if (data.skills.length > 0) {
-      setSkills(data.skills.map((s, i) => ({ ...s, id: `imported-skill-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+      setSkills(data.skills.map((s, i) => ({ ...s, id: `temp-skill-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
     }
     if (data.projects.length > 0) {
-      setProjects(data.projects.map((p, i) => ({ ...p, id: `imported-proj-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+      setProjects(data.projects.map((p, i) => ({ ...p, id: `temp-proj-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
     }
     if (data.certifications.length > 0) {
-      setCertifications(data.certifications.map((c, i) => ({ ...c, id: `imported-cert-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+      setCertifications(data.certifications.map((c, i) => ({ ...c, id: `temp-cert-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
     }
     if (data.languages.length > 0) {
-      setLanguages(data.languages.map((l, i) => ({ ...l, id: `imported-lang-${i}-${Date.now()}`, name: l.name, language: l.name, sort_order: i, display_order: i })) as any);
+      setLanguages(data.languages.map((l, i) => ({ ...l, id: `temp-lang-${i}-${Date.now()}`, name: l.name, language: l.name, sort_order: i, display_order: i })) as any);
     }
   };
 

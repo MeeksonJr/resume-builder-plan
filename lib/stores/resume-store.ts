@@ -485,30 +485,46 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         mapToDb: (item: any) => any,
         updateLocalState: (id: string, newId: string) => void
       ) => {
+        const isNewItem = (id: any) =>
+          !id ||
+          typeof id !== "string" ||
+          id.startsWith("temp-") ||
+          id.startsWith("imported-") ||
+          !isValidUUID(id);
+
         const currentIds = collection
-          .filter((item) => !item.id.startsWith("temp-") && isValidUUID(item.id))
+          .filter((item) => !isNewItem(item.id))
           .map((item) => item.id);
 
         // 1. Reconciliation: Delete orphaned records
         if (currentIds.length > 0) {
-          await supabase
+          const { error: delError } = await supabase
             .from(tableName)
             .delete()
             .eq("resume_id", state.resumeId)
-            .not("id", "in", currentIds);
-        } else {
-          await supabase
+            .not("id", "in", `(${currentIds.join(",")})`);
+
+          if (delError) {
+            console.error(`Error deleting orphaned records from ${tableName}:`, delError);
+          }
+        } else if (collection.length === 0) {
+          // If the collection is explicitly empty, remove all records for this resume
+          const { error: delError } = await supabase
             .from(tableName)
             .delete()
             .eq("resume_id", state.resumeId);
+
+          if (delError) {
+            console.error(`Error clearing ${tableName}:`, delError);
+          }
         }
 
         const errors: any[] = [];
         for (const item of collection) {
           const dbItem = mapToDb(item);
 
-          if (item.id.startsWith("temp-")) {
-            // Insert new
+          if (isNewItem(item.id)) {
+            // Insert new item
             const { data, error } = await supabase
               .from(tableName)
               .insert({ ...dbItem, resume_id: state.resumeId })
@@ -522,11 +538,12 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
               errors.push(error);
             }
           } else {
-            // Update existing
+            // Update existing item
             const { error } = await supabase
               .from(tableName)
               .update(dbItem)
-              .eq("id", item.id);
+              .eq("id", item.id)
+              .eq("resume_id", state.resumeId);
 
             if (error) {
               console.error(`Error updating ${tableName}:`, JSON.stringify(error, null, 2));
@@ -545,15 +562,15 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         state.workExperiences,
         "work_experiences",
         (exp) => ({
-          company: exp.company,
-          position: exp.position,
-          location: exp.location,
+          company: exp.company || "",
+          position: exp.position || "",
+          location: exp.location || null,
           start_date: normalizeDate(exp.start_date),
           end_date: normalizeDate(exp.end_date),
-          is_current: exp.is_current,
-          description: exp.description,
-          highlights: exp.highlights,
-          sort_order: exp.display_order,
+          is_current: !!exp.is_current,
+          description: exp.description || "",
+          highlights: exp.highlights || [],
+          sort_order: exp.display_order ?? exp.sort_order ?? 0,
         }),
         (oldId, newId) => {
           set((s) => ({
@@ -569,15 +586,15 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         state.education,
         "education",
         (edu) => ({
-          institution: edu.institution,
-          degree: edu.degree,
-          field_of_study: edu.field_of_study,
-          location: edu.location,
+          institution: edu.institution || "",
+          degree: edu.degree || "",
+          field_of_study: edu.field_of_study || "",
+          location: edu.location || null,
           start_date: normalizeDate(edu.start_date),
           end_date: normalizeDate(edu.end_date),
-          gpa: edu.gpa,
-          achievements: edu.highlights,
-          sort_order: edu.display_order,
+          gpa: edu.gpa || null,
+          achievements: edu.highlights || edu.achievements || [],
+          sort_order: edu.display_order ?? edu.sort_order ?? 0,
         }),
         (oldId, newId) => {
           set((s) => ({
@@ -593,10 +610,10 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         state.skills,
         "skills",
         (skill) => ({
-          name: skill.name,
-          category: skill.category,
-          proficiency_level: skill.proficiency_level,
-          sort_order: skill.display_order,
+          name: skill.name || "",
+          category: skill.category || "General",
+          proficiency_level: skill.proficiency_level ?? 3,
+          sort_order: skill.display_order ?? skill.sort_order ?? 0,
         }),
         (oldId, newId) => {
           set((s) => ({
@@ -612,12 +629,12 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         state.projects,
         "projects",
         (proj) => ({
-          name: proj.name,
-          description: proj.description,
-          technologies: proj.technologies,
-          url: proj.url,
-          highlights: proj.highlights,
-          sort_order: proj.display_order,
+          name: proj.name || "Untitled Project",
+          description: proj.description || "",
+          technologies: proj.technologies || [],
+          url: proj.url || null,
+          highlights: proj.highlights || [],
+          sort_order: proj.display_order ?? proj.sort_order ?? 0,
         }),
         (oldId, newId) => {
           set((s) => ({
@@ -633,13 +650,13 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         state.certifications,
         "certifications",
         (cert) => ({
-          name: cert.name,
-          issuer: cert.issuer,
+          name: cert.name || "",
+          issuer: cert.issuer || "",
           issue_date: normalizeDate(cert.issue_date),
           expiry_date: normalizeDate(cert.expiry_date),
-          credential_id: cert.credential_id,
-          credential_url: cert.credential_url,
-          sort_order: cert.display_order,
+          credential_id: cert.credential_id || null,
+          credential_url: cert.credential_url || null,
+          sort_order: cert.display_order ?? cert.sort_order ?? 0,
         }),
         (oldId, newId) => {
           set((s) => ({
@@ -655,9 +672,9 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
         state.languages,
         "languages",
         (lang) => ({
-          name: lang.language,
-          proficiency: lang.proficiency,
-          sort_order: lang.display_order,
+          name: lang.language || lang.name || "",
+          proficiency: lang.proficiency || "Professional",
+          sort_order: lang.display_order ?? lang.sort_order ?? 0,
         }),
         (oldId, newId) => {
           set((s) => ({
