@@ -104,13 +104,16 @@ export const ExecutiveTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span className="font-semibold text-gray-700">{edu.degree} in {edu.field_of_study}</span>
                                         {edu.gpa && <span className="text-gray-500 font-mono">GPA: {edu.gpa}</span>}
                                     </div>
-                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
-                                        <div
-                                            className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
-                                            style={{ fontSize: "var(--resume-font-sm)" }}
-                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        const hl = edu.highlights || edu.achievements || [];
+                                        return hl.length > 0 && hl.some((h: string) => h && h.trim()) ? (
+                                            <div
+                                                className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                                style={{ fontSize: "var(--resume-font-sm)" }}
+                                                dangerouslySetInnerHTML={{ __html: hl.join("\n") }}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                         </div>
@@ -213,13 +216,18 @@ export const ExecutiveTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                 Global Languages
                             </h2>
                         </div>
-                        <div className="flex flex-wrap gap-x-8 gap-y-1" style={{ fontSize: "var(--resume-font-sm)" }}>
-                            {languages.map((lang) => (
-                                <div key={lang.id} className="flex gap-2">
-                                    <span className="font-semibold text-gray-800">{lang.language}:</span>
-                                    <span className="text-gray-600">{lang.proficiency}</span>
-                                </div>
-                            ))}
+                        <div className="flex flex-wrap gap-2" style={{ fontSize: "var(--resume-font-sm)" }}>
+                            {languages.map((lang) => {
+                                const langName = lang.language || lang.name || "Language";
+                                return (
+                                    <div key={lang.id} className="inline-flex items-center gap-1.5 border border-neutral-300 px-2.5 py-1 rounded-sm bg-neutral-50/50">
+                                        <span className="font-semibold text-gray-900">{langName}</span>
+                                        {lang.proficiency && (
+                                            <span className="text-xs text-gray-500 italic">({lang.proficiency})</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </section>
                 );

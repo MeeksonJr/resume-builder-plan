@@ -89,13 +89,16 @@ export const ClassicTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span>{edu.start_date} – {edu.end_date}</span>
                                     </div>
                                     {edu.gpa && <p style={{ fontSize: "var(--resume-font-sm)" }}>GPA: {edu.gpa}</p>}
-                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
-                                        <div
-                                            className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
-                                            style={{ fontSize: "var(--resume-font-sm)" }}
-                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        const hl = edu.highlights || edu.achievements || [];
+                                        return hl.length > 0 && hl.some((h: string) => h && h.trim()) ? (
+                                            <div
+                                                className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                                style={{ fontSize: "var(--resume-font-sm)" }}
+                                                dangerouslySetInnerHTML={{ __html: hl.join("\n") }}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                         </div>
@@ -175,11 +178,14 @@ export const ClassicTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             Languages
                         </h2>
                         <div className="flex flex-wrap gap-x-8 gap-y-1">
-                            {languages.map((lang) => (
-                                <p key={lang.id} style={{ fontSize: "var(--resume-font-sm)" }}>
-                                    <span className="font-semibold">{lang.language}:</span> {lang.proficiency}
-                                </p>
-                            ))}
+                            {languages.map((lang) => {
+                                const langName = lang.language || lang.name || "Language";
+                                return (
+                                    <p key={lang.id} style={{ fontSize: "var(--resume-font-sm)" }}>
+                                        <span className="font-semibold">{langName}:</span> {lang.proficiency}
+                                    </p>
+                                );
+                            })}
                         </div>
                     </section>
                 );

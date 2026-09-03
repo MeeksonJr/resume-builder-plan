@@ -91,13 +91,16 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span>{edu.degree} in {edu.field_of_study}</span>
                                         {edu.gpa && <span className="text-gray-500 ml-2">(GPA: {edu.gpa})</span>}
                                     </div>
-                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
-                                        <div
-                                            className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
-                                            style={{ fontSize: "var(--resume-font-sm)" }}
-                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        const hl = edu.highlights || edu.achievements || [];
+                                        return hl.length > 0 && hl.some((h: string) => h && h.trim()) ? (
+                                            <div
+                                                className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                                style={{ fontSize: "var(--resume-font-sm)" }}
+                                                dangerouslySetInnerHTML={{ __html: hl.join("\n") }}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                         </div>
@@ -195,13 +198,18 @@ export const MinimalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                         >
                             Languages
                         </h2>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2" style={{ fontSize: "var(--resume-font-sm)" }}>
-                            {languages.map((lang) => (
-                                <div key={lang.id} className="flex gap-2">
-                                    <span className="font-medium">{lang.language}:</span>
-                                    <span className="text-gray-600">{lang.proficiency}</span>
-                                </div>
-                            ))}
+                        <div className="flex flex-wrap gap-2" style={{ fontSize: "var(--resume-font-sm)" }}>
+                            {languages.map((lang) => {
+                                const langName = lang.language || lang.name || "Language";
+                                return (
+                                    <div key={lang.id} className="inline-flex items-center gap-1.5 border border-neutral-200 px-2 py-0.5 text-neutral-800">
+                                        <span className="font-semibold">{langName}</span>
+                                        {lang.proficiency && (
+                                            <span className="text-xs text-neutral-500">({lang.proficiency})</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </section>
                 );

@@ -94,13 +94,16 @@ export const CompactTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         </span>
                                     </div>
                                     {edu.gpa && <p className="text-gray-500 text-[10.5px]">GPA: {edu.gpa}</p>}
-                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
-                                        <div
-                                            className="text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
-                                            style={{ fontSize: "var(--resume-font-xs)" }}
-                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        const hl = edu.highlights || edu.achievements || [];
+                                        return hl.length > 0 && hl.some((h: string) => h && h.trim()) ? (
+                                            <div
+                                                className="text-gray-700 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                                style={{ fontSize: "var(--resume-font-xs)" }}
+                                                dangerouslySetInnerHTML={{ __html: hl.join("\n") }}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                         </div>
@@ -198,13 +201,18 @@ export const CompactTemplate = ({ data, isRtl, language }: TemplateProps) => {
                         >
                             Languages
                         </h2>
-                        <div className="flex flex-wrap gap-x-6 gap-y-0.5 text-xs" style={{ fontSize: "var(--resume-font-xs)" }}>
-                            {languages.map((lang) => (
-                                <div key={lang.id} className="flex gap-1.5">
-                                    <span className="font-medium text-gray-800">{lang.language}:</span>
-                                    <span className="text-gray-500">{lang.proficiency}</span>
-                                </div>
-                            ))}
+                        <div className="flex flex-wrap gap-2 text-xs" style={{ fontSize: "var(--resume-font-xs)" }}>
+                            {languages.map((lang) => {
+                                const langName = lang.language || lang.name || "Language";
+                                return (
+                                    <div key={lang.id} className="inline-flex items-center gap-1 border border-gray-200 px-2 py-0.5 rounded-xs">
+                                        <span className="font-semibold text-gray-800">{langName}</span>
+                                        {lang.proficiency && (
+                                            <span className="text-gray-500 font-mono text-[10px]">({lang.proficiency})</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </section>
                 );

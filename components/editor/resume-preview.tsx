@@ -104,7 +104,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     const { data } = props;
 
     // If data is provided, use the template from data.resume, otherwise use store template
-    const template = data?.resume?.template || storeTemplate;
+    const template = data?.resume?.template_id || data?.resume?.template || storeTemplate;
     const isRtl = data?.resume?.is_rtl ?? store.is_rtl;
     const language = data?.resume?.language ?? store.language;
 

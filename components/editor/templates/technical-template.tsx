@@ -169,13 +169,16 @@ export const TechnicalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span className="text-gray-700 font-medium">{edu.degree} in {edu.field_of_study}</span>
                                         {edu.gpa && <span className="font-mono text-gray-500">GPA: {edu.gpa}</span>}
                                     </div>
-                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
-                                        <div
-                                            className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
-                                            style={{ fontSize: "var(--resume-font-sm)" }}
-                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        const hl = edu.highlights || edu.achievements || [];
+                                        return hl.length > 0 && hl.some((h: string) => h && h.trim()) ? (
+                                            <div
+                                                className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                                style={{ fontSize: "var(--resume-font-sm)" }}
+                                                dangerouslySetInnerHTML={{ __html: hl.join("\n") }}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                         </div>
@@ -209,13 +212,18 @@ export const TechnicalTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                 Languages
                             </h2>
                         </div>
-                        <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs">
-                            {languages.map((lang) => (
-                                <div key={lang.id} className="flex gap-1.5">
-                                    <span className="font-bold text-gray-800">{lang.language}:</span>
-                                    <span className="text-gray-600">{lang.proficiency}</span>
-                                </div>
-                            ))}
+                        <div className="flex flex-wrap gap-2 font-mono text-xs">
+                            {languages.map((lang) => {
+                                const langName = lang.language || lang.name || "Language";
+                                return (
+                                    <div key={lang.id} className="inline-flex items-center gap-1.5 bg-neutral-50 border border-neutral-300 px-2 py-0.5 rounded-none">
+                                        <span className="font-bold text-gray-800">{langName}</span>
+                                        {lang.proficiency && (
+                                            <span className="text-gray-500">[{lang.proficiency}]</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </section>
                 );

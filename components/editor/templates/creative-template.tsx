@@ -131,13 +131,16 @@ export const CreativeTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                         <span className="font-medium text-gray-700">{edu.degree} in {edu.field_of_study}</span>
                                         {edu.gpa && <span className="text-gray-500" style={{ fontSize: "var(--resume-font-xs)" }}>GPA: {edu.gpa}</span>}
                                     </div>
-                                    {edu.highlights && edu.highlights.length > 0 && edu.highlights.some((h: string) => h.trim()) && (
-                                        <div
-                                            className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
-                                            style={{ fontSize: "var(--resume-font-xs)" }}
-                                            dangerouslySetInnerHTML={{ __html: edu.highlights.join("\n") }}
-                                        />
-                                    )}
+                                    {(() => {
+                                        const hl = edu.highlights || edu.achievements || [];
+                                        return hl.length > 0 && hl.some((h: string) => h && h.trim()) ? (
+                                            <div
+                                                className="text-gray-700 mt-1 prose-sm prose-p:my-0 prose-ul:my-0 prose-li:my-0"
+                                                style={{ fontSize: "var(--resume-font-xs)" }}
+                                                dangerouslySetInnerHTML={{ __html: hl.join("\n") }}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ))}
                         </div>
@@ -186,12 +189,17 @@ export const CreativeTemplate = ({ data, isRtl, language }: TemplateProps) => {
                     <div key="languages" className="space-y-2">
                         <h3 className="font-bold uppercase tracking-wider text-gray-700 border-b pb-1" style={{ fontSize: "var(--resume-font-xs)" }}>Languages</h3>
                         <div className="space-y-1.5 pt-1">
-                            {languages.map((lang) => (
-                                <div key={lang.id} className="flex justify-between" style={{ fontSize: "var(--resume-font-xs)" }}>
-                                    <span className="font-semibold text-gray-800">{lang.language}</span>
-                                    <span className="text-gray-500 italic" style={{ fontSize: "var(--resume-font-xs)" }}>{lang.proficiency}</span>
-                                </div>
-                            ))}
+                            {languages.map((lang) => {
+                                const langName = lang.language || lang.name || "Language";
+                                return (
+                                    <div key={lang.id} className="flex justify-between" style={{ fontSize: "var(--resume-font-xs)" }}>
+                                        <span className="font-semibold text-gray-800">{langName}</span>
+                                        {lang.proficiency && (
+                                            <span className="text-gray-500 italic">{lang.proficiency}</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );
