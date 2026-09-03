@@ -146,7 +146,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     return (
         <div
             ref={ref}
-            className="print:shadow-none min-h-[1056px] h-auto bg-white text-black isolate resume-preview-root"
+            className="print:shadow-none min-h-[1056px] h-auto w-full max-w-full overflow-hidden break-words [overflow-wrap:anywhere] bg-white text-black isolate resume-preview-root"
             dir={isRtl ? "rtl" : "ltr"}
             lang={language}
             data-theme="light"

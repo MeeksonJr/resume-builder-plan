@@ -43,6 +43,7 @@ import { ProjectsForm } from "@/components/editor/sections/projects-form";
 import { CertificationsForm } from "@/components/editor/sections/certifications-form";
 import { LanguagesForm } from "@/components/editor/sections/languages-form";
 import { ResumePreview } from "@/components/editor/resume-preview";
+import { ResumePreviewPanel } from "@/components/editor/resume-preview-panel";
 import { ShareDialog } from "@/components/editor/share-dialog";
 import {
   DropdownMenu,
@@ -477,7 +478,7 @@ export function ResumeEditor({
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col">
+    <div className="-mx-4 -my-8 md:-mx-8 md:-my-8 lg:-mx-10 lg:-my-8 flex h-[calc(100vh-4rem)] flex-col overflow-hidden">
       {/* Editor Header */}
       <div className="flex items-center justify-between border-b border-border bg-[#102b2b] text-[#f8f4ec] px-6 py-4 shadow-sm">
         <div className="flex items-center gap-3 sm:gap-4">
@@ -704,12 +705,8 @@ export function ResumeEditor({
                   <EditorForm activeTab={activeTab} setActiveTab={setActiveTab} />
                 </div>
               </TabsContent>
-              <TabsContent value="preview" className="flex-1 overflow-hidden">
-                <div className="h-full overflow-y-auto" style={{ backgroundColor: 'hsl(var(--muted) / 0.3)' }}>
-                  <div className="p-4">
-                    <ResumePreview />
-                  </div>
-                </div>
+              <TabsContent value="preview" className="flex-1 overflow-hidden h-full m-0 p-0">
+                <ResumePreviewPanel />
               </TabsContent>
             </Tabs>
           </div>
@@ -726,11 +723,7 @@ export function ResumeEditor({
                 <>
                   <ResizableHandle withHandle />
                   <ResizablePanel defaultSize={50} minSize={30} id="preview-panel">
-                    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'hsl(var(--muted) / 0.3)' }}>
-                      <div className="p-4">
-                        <ResumePreview />
-                      </div>
-                    </div>
+                    <ResumePreviewPanel />
                   </ResizablePanel>
                 </>
               )}
