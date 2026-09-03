@@ -232,6 +232,18 @@ export function ResumeEditor({
     updateProfile
   } = useResumeStore();
 
+  // Prevent outer dashboard main from creating outer scrollbars while editor is active
+  useEffect(() => {
+    const main = document.querySelector("main.flex-1") as HTMLElement | null;
+    if (main) {
+      const originalOverflow = main.style.overflow;
+      main.style.overflow = "hidden";
+      return () => {
+        main.style.overflow = originalOverflow;
+      };
+    }
+  }, []);
+
   // Initialize store with data
   useEffect(() => {
     setResumeId(resume.id);
@@ -478,7 +490,7 @@ export function ResumeEditor({
   };
 
   return (
-    <div className="-mx-4 -my-8 md:-mx-8 md:-my-8 lg:-mx-10 lg:-my-8 flex h-[calc(100vh-4rem)] flex-col overflow-hidden">
+    <div className="-my-4 -mx-1 sm:-mx-2 md:-mx-4 lg:-mx-5 flex h-[calc(100vh-6.5rem)] flex-col overflow-hidden border border-[#102b2b]/15 bg-white shadow-md rounded-none">
       {/* Editor Header */}
       <div className="flex items-center justify-between border-b border-border bg-[#102b2b] text-[#f8f4ec] px-6 py-4 shadow-sm">
         <div className="flex items-center gap-3 sm:gap-4">
