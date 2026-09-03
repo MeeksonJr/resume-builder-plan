@@ -38,6 +38,7 @@ export default async function AllResumesPage({
 
     const totalCount = resumes?.length || 0;
     const publicCount = resumes?.filter((r) => r.is_public).length || 0;
+    const totalViews = resumes?.reduce((sum, r) => sum + (r.view_count || 0), 0) || 0;
     const mostRecent = resumes?.[0];
 
     // Get unique templates for filter
@@ -98,40 +99,52 @@ export default async function AllResumesPage({
             </div>
 
             {/* Quick KPI Summary Strip */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-0">
+                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
                     <div className="h-10 w-10 rounded-none bg-[#102b2b] text-white flex items-center justify-center shrink-0">
                         <FileText className="h-5 w-5 text-[#d8f36b]" />
                     </div>
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
                             Total Resumes
                         </p>
                         <p className="text-2xl font-black text-[#102b2b]">{totalCount}</p>
                     </div>
                 </div>
 
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5">
+                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
                     <div className="h-10 w-10 rounded-none bg-emerald-700 text-white flex items-center justify-center shrink-0">
                         <Globe className="h-5 w-5 text-emerald-200" />
                     </div>
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
                             Public Links Live
                         </p>
                         <p className="text-2xl font-black text-[#102b2b]">{publicCount}</p>
                     </div>
                 </div>
 
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5">
+                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
                     <div className="h-10 w-10 rounded-none bg-[#0d8274] text-white flex items-center justify-center shrink-0">
-                        <Clock className="h-5 w-5 text-[#f8f4ec]" />
+                        <Sparkles className="h-5 w-5 text-[#f8f4ec]" />
                     </div>
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                            Latest Update
+                    <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
+                            Cumulative Views
                         </p>
-                        <p className="text-sm font-bold text-[#102b2b] truncate max-w-[180px]">
+                        <p className="text-2xl font-black text-[#102b2b]">{totalViews}</p>
+                    </div>
+                </div>
+
+                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
+                    <div className="h-10 w-10 rounded-none bg-neutral-800 text-white flex items-center justify-center shrink-0">
+                        <Clock className="h-5 w-5 text-neutral-300" />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
+                            Latest Activity
+                        </p>
+                        <p className="text-sm font-bold text-[#102b2b] truncate">
                             {mostRecent
                                 ? formatDistanceToNow(new Date(mostRecent.updated_at), { addSuffix: true })
                                 : "None"}
@@ -163,7 +176,7 @@ export default async function AllResumesPage({
             {resumes && resumes.length === 0 && !params.search && !params.template ? (
                 <EmptyState />
             ) : filteredResumes.length > 0 ? (
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 min-w-0">
                     {filteredResumes.map((resume) => (
                         <ResumeLibraryCard key={resume.id} resume={resume} />
                     ))}
