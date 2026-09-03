@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Sparkles, 
   Search, 
@@ -13,6 +13,9 @@ import {
   Clock, 
   ExternalLink, 
   ChevronRight,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
   SlidersHorizontal,
   Award,
   AlertCircle,
@@ -25,7 +28,10 @@ import {
   FileText,
   Copy,
   Check,
-  FileEdit
+  FileEdit,
+  LayoutGrid,
+  List,
+  ArrowUpDown
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -33,6 +39,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { FundingOpportunity, formatFundingAmount } from "@/lib/funding/types";
 import { toast } from "sonner";
@@ -48,12 +61,25 @@ export default function DashboardScholarshipsPage() {
   const [loading, setLoading] = useState(true);
   const [hideClosed, setHideClosed] = useState(false);
 
+  // Pagination, Sort & View Mode States
+  const listingsRef = useRef<HTMLDivElement>(null);
+  const [pageSize, setPageSize] = useState<number | "all">(12);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"match" | "amount_desc" | "deadline" | "newest">("match");
+  const [minAmount, setMinAmount] = useState<"all" | "1000" | "5000" | "10000">("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState("all-matches");
   const [activeModalScholarship, setActiveModalScholarship] = useState<FundingOpportunity | null>(null);
+
+  // Reset to page 1 whenever any filter or option changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedTab, hideClosed, sortBy, minAmount, pageSize]);
 
   // AI Assistant States
   const [aiAnalysis, setAiAnalysis] = useState<{
@@ -414,9 +440,9 @@ export default function DashboardScholarshipsPage() {
     }
   };
 
-  // Filtering
+  // Filtering & Sorting
   const getFilteredScholarships = () => {
-    return opportunities.filter((sch) => {
+    const list = opportunities.filter((sch) => {
       const matchesSearch = 
         sch.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         sch.provider.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -427,6 +453,13 @@ export default function DashboardScholarshipsPage() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         if (deadlineDate < today) {
+          return false;
+        }
+      }
+
+      if (minAmount !== "all") {
+        const val = sch.amount_max || sch.amount_min || 0;
+        if (val < Number(minAmount)) {
           return false;
         }
       }
@@ -445,9 +478,60 @@ export default function DashboardScholarshipsPage() {
       }
       return matchesSearch;
     });
+
+    return list.sort((a, b) => {
+      if (sortBy === "match") {
+        return (b.match_score || 85) - (a.match_score || 85);
+      }
+      if (sortBy === "amount_desc") {
+        return (b.amount_max || b.amount_min || 0) - (a.amount_max || a.amount_min || 0);
+      }
+      if (sortBy === "deadline") {
+        if (!a.deadline && !b.deadline) return 0;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      }
+      if (sortBy === "newest") {
+        const dateB = b.fetched_at || (b as any).created_at || 0;
+        const dateA = a.fetched_at || (a as any).created_at || 0;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      }
+      return 0;
+    });
   };
 
   const currentList = getFilteredScholarships();
+  const totalFiltered = currentList.length;
+  const numericPageSize = pageSize === "all" ? totalFiltered : Number(pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / (numericPageSize || 1)));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * numericPageSize;
+  const endIndex = pageSize === "all" ? totalFiltered : Math.min(startIndex + numericPageSize, totalFiltered);
+  const paginatedList = pageSize === "all" ? currentList : currentList.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (listingsRef.current) {
+      listingsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (safeCurrentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (safeCurrentPage >= totalPages - 3) {
+        pages.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", safeCurrentPage - 1, safeCurrentPage, safeCurrentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
   const totalPotentialValue = opportunities.reduce((sum, item) => sum + (item.amount_max || item.amount_min || 0), 0);
 
   // Compute approaching saved deadlines (closes in <= 3 days)
@@ -582,41 +666,139 @@ export default function DashboardScholarshipsPage() {
       </div>
 
       {/* Tabs & Search Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full sm:w-auto">
-          <TabsList className="bg-[#102b2b] border border-[#102b2b] p-1 rounded-md h-auto min-h-11">
-            <TabsTrigger value="all-matches" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
-              All Matches ({opportunities.length})
-            </TabsTrigger>
-            <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
-              95%+ Fit
-            </TabsTrigger>
-            <TabsTrigger value="no-essay" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
-              No Essay
-            </TabsTrigger>
-            <TabsTrigger value="saved" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
-              Saved ({opportunities.filter(o => o.user_status === 'saved').length})
-            </TabsTrigger>
-            <TabsTrigger value="applying" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
-              In Progress ({opportunities.filter(o => o.user_status === 'applying').length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="space-y-3">
+        {/* Row 1: Primary Category Tabs & Hide Closed Checkbox */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full lg:w-auto">
+            <TabsList className="bg-[#102b2b] border border-[#102b2b] p-1 rounded-md h-auto min-h-11 flex flex-wrap">
+              <TabsTrigger value="all-matches" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+                All Matches ({opportunities.length})
+              </TabsTrigger>
+              <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+                95%+ Fit
+              </TabsTrigger>
+              <TabsTrigger value="no-essay" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+                No Essay
+              </TabsTrigger>
+              <TabsTrigger value="saved" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+                Saved ({opportunities.filter(o => o.user_status === 'saved').length})
+              </TabsTrigger>
+              <TabsTrigger value="applying" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+                In Progress ({opportunities.filter(o => o.user_status === 'applying').length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        {/* Hide Closed Toggle */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold">
-          <input
-            type="checkbox"
-            id="hideClosedCheckbox"
-            checked={hideClosed}
-            onChange={(e) => setHideClosed(e.target.checked)}
-            className="w-3.5 h-3.5 accent-[#d8f36b] cursor-pointer"
-          />
-          <label htmlFor="hideClosedCheckbox" className="cursor-pointer select-none">
-            Hide Closed Opportunities
-          </label>
+          {/* Hide Closed Toggle */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold shrink-0">
+            <input
+              type="checkbox"
+              id="hideClosedCheckbox"
+              checked={hideClosed}
+              onChange={(e) => setHideClosed(e.target.checked)}
+              className="w-3.5 h-3.5 accent-[#d8f36b] cursor-pointer"
+            />
+            <label htmlFor="hideClosedCheckbox" className="cursor-pointer select-none">
+              Hide Closed Opportunities
+            </label>
+          </div>
+        </div>
+
+        {/* Row 2: Secondary Filters Toolbar (Sort, Value, Items/Page, View Mode) */}
+        <div className="p-3 rounded-md bg-white border border-[#b8c8b9] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+          {/* Left: Sort & Value Filters */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[#102b2b]/70 uppercase tracking-wider">Sort:</span>
+              <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <SelectTrigger className="h-8 w-[160px] rounded-sm bg-[#f7faf5] border-[#b8c8b9] text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274]">
+                  <ArrowUpDown className="w-3 h-3 text-[#0d8274] mr-1.5" />
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent className="rounded-sm border-[#b8c8b9]">
+                  <SelectItem value="match" className="text-xs font-medium">Best Match %</SelectItem>
+                  <SelectItem value="amount_desc" className="text-xs font-medium">Highest Value ($$$)</SelectItem>
+                  <SelectItem value="deadline" className="text-xs font-medium">Nearest Deadline</SelectItem>
+                  <SelectItem value="newest" className="text-xs font-medium">Newest Added</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Min Funding Filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[#102b2b]/70 uppercase tracking-wider">Value:</span>
+              <Select value={minAmount} onValueChange={(val: any) => setMinAmount(val)}>
+                <SelectTrigger className="h-8 w-[130px] rounded-sm bg-[#f7faf5] border-[#b8c8b9] text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274]">
+                  <DollarSign className="w-3 h-3 text-[#0d8274] mr-1" />
+                  <SelectValue placeholder="Amount" />
+                </SelectTrigger>
+                <SelectContent className="rounded-sm border-[#b8c8b9]">
+                  <SelectItem value="all" className="text-xs font-medium">All Amounts</SelectItem>
+                  <SelectItem value="10000" className="text-xs font-medium">$10,000+ Min</SelectItem>
+                  <SelectItem value="5000" className="text-xs font-medium">$5,000+ Min</SelectItem>
+                  <SelectItem value="1000" className="text-xs font-medium">$1,000+ Min</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Right: Results Counter, Page Size & View Mode Switcher */}
+          <div className="flex items-center justify-between md:justify-end gap-3 flex-wrap">
+            {/* Range Counter */}
+            <div className="text-[11px] font-semibold text-[#102b2b]/70 hidden sm:block">
+              Showing <span className="font-bold text-[#102b2b]">{totalFiltered === 0 ? 0 : startIndex + 1}–{endIndex}</span> of <span className="font-bold text-[#102b2b]">{totalFiltered}</span>
+            </div>
+
+            {/* Items Per Page */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-[#102b2b]/70 uppercase tracking-wider">Show:</span>
+              <Select value={String(pageSize)} onValueChange={(val) => setPageSize(val === "all" ? "all" : Number(val))}>
+                <SelectTrigger className="h-8 w-[90px] rounded-sm bg-[#f7faf5] border-[#b8c8b9] text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274]">
+                  <SelectValue placeholder="Page Size" />
+                </SelectTrigger>
+                <SelectContent className="rounded-sm border-[#b8c8b9]">
+                  <SelectItem value="12" className="text-xs font-medium">12 / page</SelectItem>
+                  <SelectItem value="24" className="text-xs font-medium">24 / page</SelectItem>
+                  <SelectItem value="48" className="text-xs font-medium">48 / page</SelectItem>
+                  <SelectItem value="all" className="text-xs font-medium">Show All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* View Mode Switcher (Grid vs Compact List) */}
+            <div className="flex items-center bg-[#e9eee8] p-0.5 rounded-sm border border-[#b8c8b9]">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
+                  viewMode === "grid"
+                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    : "text-[#102b2b]/60 hover:text-[#102b2b]"
+                }`}
+                title="Grid View (Large Cards)"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    : "text-[#102b2b]/60 hover:text-[#102b2b]"
+                }`}
+                title="Compact List View (Dense Rows)"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Anchor for smooth scrolling when changing page */}
+      <div ref={listingsRef} className="scroll-mt-4" />
 
       {/* Loader */}
       {loading ? (
@@ -635,10 +817,10 @@ export default function DashboardScholarshipsPage() {
             Our global database has no opportunities matching this criteria. Click the search button above to scrape active opportunities live from the internet!
           </p>
         </div>
-      ) : (
-        /* Scholarship Grid */
+      ) : viewMode === "grid" ? (
+        /* Scholarship Grid (Card Mode) */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {currentList.map((sch) => {
+          {paginatedList.map((sch) => {
             const isSaved = sch.user_status === "saved";
             const isApplied = sch.user_status === "applying";
 
@@ -740,6 +922,187 @@ export default function DashboardScholarshipsPage() {
               </Card>
             );
           })}
+        </div>
+      ) : (
+        /* Compact List View (Dense Rows) */
+        <div className="space-y-2.5">
+          {paginatedList.map((sch) => {
+            const isSaved = sch.user_status === "saved";
+            const isApplied = sch.user_status === "applying";
+
+            return (
+              <div
+                key={sch.id}
+                onClick={() => setActiveModalScholarship(sch)}
+                className="p-3.5 sm:p-4 rounded-md bg-[#f7faf5] hover:bg-white border border-[#b8c8b9] hover:border-[#0d8274] transition-all duration-150 cursor-pointer shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3 group"
+              >
+                {/* Left: Badge, Title & Provider */}
+                <div className="space-y-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="bg-[#0d8274]/10 text-[#0d8274] border-[#0d8274]/30 text-[10px] font-semibold py-0.5 px-2 rounded-sm uppercase">
+                      {sch.kind}
+                    </Badge>
+                    <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-sm bg-[#d8f36b] text-[#102b2b] border border-[#102b2b]/15 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" aria-hidden="true" />
+                      {sch.match_score || 85}% Fit
+                    </span>
+                    {(sch.requirements as any)?.essay ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#e9eee8] text-[#102b2b]/60 font-medium">
+                        Essay Req.
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#d8f36b]/40 text-[#102b2b] font-medium">
+                        No Essay
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-sm sm:text-base font-bold text-[#102b2b] group-hover:text-[#0d8274] transition-colors truncate">
+                    {sch.title}
+                  </h3>
+                  <p className="text-xs text-[#102b2b]/65 truncate">
+                    {sch.provider}
+                  </p>
+                </div>
+
+                {/* Middle: Value & Deadline */}
+                <div className="flex items-center gap-6 shrink-0 md:text-right border-t md:border-t-0 pt-2 md:pt-0 border-neutral-200">
+                  <div className="min-w-[110px]">
+                    <span className="text-[10px] text-[#102b2b]/55 uppercase block">Value</span>
+                    <span className="text-sm sm:text-base font-black text-[#0d8274] font-mono">
+                      {formatFundingAmount(sch)}
+                    </span>
+                  </div>
+
+                  <div className="min-w-[120px]">
+                    <span className="text-[10px] text-[#102b2b]/55 uppercase block">Deadline</span>
+                    <div className="text-xs mt-0.5">
+                      <RelativeDate deadline={sch.deadline} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2 shrink-0 justify-end pt-2 md:pt-0 border-t md:border-t-0 border-neutral-200">
+                  <button
+                    onClick={(e) => handleToggleSave(sch.id, sch.user_status, e)}
+                    aria-label={isSaved ? "Remove from saved" : "Save"}
+                    className="p-2 rounded-sm text-[#102b2b]/55 hover:text-[#0d8274] hover:bg-[#e9eee8] transition-colors cursor-pointer"
+                  >
+                    {isSaved ? (
+                      <BookmarkCheck className="w-4 h-4 text-[#0d8274] fill-[#0d8274]/20" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={(e) => handleToggleApplied(sch.id, sch.user_status, e)}
+                    className={`text-[11px] font-medium px-2.5 py-1.5 rounded-sm transition-colors cursor-pointer ${
+                      isApplied
+                        ? "bg-[#d8f36b] text-[#102b2b] border border-[#102b2b]/15"
+                        : "text-[#102b2b]/70 hover:text-[#102b2b] bg-[#e9eee8]"
+                    }`}
+                  >
+                    {isApplied ? "✓ In Progress" : "+ Track"}
+                  </button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs font-semibold rounded-sm border-[#b8c8b9] text-[#0d8274] group-hover:bg-[#0d8274] group-hover:text-white transition-colors"
+                  >
+                    Details
+                    <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Bottom Pagination Bar */}
+      {totalPages > 1 && pageSize !== "all" && (
+        <div className="p-4 rounded-md bg-white border border-[#b8c8b9] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
+          <div className="text-xs font-semibold text-[#102b2b]/70 text-center sm:text-left">
+            Showing <span className="font-bold text-[#102b2b]">{startIndex + 1}–{endIndex}</span> of <span className="font-bold text-[#102b2b]">{totalFiltered}</span> scholarships
+            <span className="text-neutral-400 mx-2">•</span>
+            Page <span className="font-bold text-[#102b2b]">{safeCurrentPage}</span> of <span className="font-bold text-[#102b2b]">{totalPages}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            {/* First Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(1)}
+              disabled={safeCurrentPage === 1}
+              className="h-8 w-8 p-0 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] disabled:opacity-40"
+              title="First Page"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+
+            {/* Previous Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(safeCurrentPage - 1)}
+              disabled={safeCurrentPage === 1}
+              className="h-8 px-2.5 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-xs font-bold gap-1 disabled:opacity-40"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Prev</span>
+            </Button>
+
+            {/* Page Number Buttons */}
+            {getPageNumbers().map((p, idx) =>
+              p === "..." ? (
+                <span key={`ellipsis-${idx}`} className="px-1.5 text-xs text-neutral-400 select-none">
+                  ...
+                </span>
+              ) : (
+                <Button
+                  key={`page-${p}`}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(Number(p))}
+                  className={`h-8 w-8 p-0 rounded-sm text-xs font-bold transition-colors ${
+                    p === safeCurrentPage
+                      ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-2xs hover:bg-[#164743] hover:text-[#d8f36b]"
+                      : "border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8]"
+                  }`}
+                >
+                  {p}
+                </Button>
+              )
+            )}
+
+            {/* Next Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(safeCurrentPage + 1)}
+              disabled={safeCurrentPage === totalPages}
+              className="h-8 px-2.5 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-xs font-bold gap-1 disabled:opacity-40"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Button>
+
+            {/* Last Page */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(totalPages)}
+              disabled={safeCurrentPage === totalPages}
+              className="h-8 w-8 p-0 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] disabled:opacity-40"
+              title="Last Page"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 
