@@ -54,6 +54,7 @@ interface ModernTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    canvasCourses?: any[]
     accentColor?: string
     layoutStyle?: string
 }
@@ -64,6 +65,7 @@ export function ModernTemplate({
     projects,
     profile,
     testimonials,
+    canvasCourses = [],
     accentColor = "#3b82f6",
     layoutStyle = "professional",
 }: ModernTemplateProps) {
@@ -424,6 +426,49 @@ export function ModernTemplate({
                         </section>
                     )}
 
+                    {/* Verified Academic Coursework (Canvas LMS) */}
+                    {canvasCourses && canvasCourses.length > 0 && (
+                        <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
+                            <div className="space-y-10">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 p-4 shadow-lg">
+                                            <GraduationCap className="h-7 w-7 text-emerald-600" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-4xl font-heading font-black">Academic Credentials</h2>
+                                            <p className="text-muted-foreground text-lg">Canvas LMS Verified Coursework & Skills</p>
+                                        </div>
+                                    </div>
+                                    <Badge className="bg-emerald-600 text-white font-bold px-3 py-1.5 self-start sm:self-auto gap-1.5 rounded-full shadow-sm">
+                                        <CheckCircle className="h-4 w-4" />
+                                        Verified via Canvas LMS
+                                    </Badge>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {canvasCourses.map((course: any) => (
+                                        <Card key={course.id} className="glass-card p-6 hover:shadow-xl hover:-translate-y-1 transition-all border-emerald-500/20 relative overflow-hidden group">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="space-y-1">
+                                                    <span className="text-xs font-mono font-bold text-emerald-600 uppercase tracking-wider">
+                                                        {course.course_code || "ACADEMIC"}
+                                                    </span>
+                                                    <h3 className="font-heading font-bold text-lg text-foreground group-hover:text-emerald-700 transition-colors">
+                                                        {course.name}
+                                                    </h3>
+                                                </div>
+                                                <div className="rounded-full bg-emerald-500/10 p-2 shrink-0">
+                                                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
                     {/* Testimonials */}
                     {testimonials && testimonials.length > 0 && (
                         <section className="container max-w-6xl mx-auto px-6 py-20 border-t glass-border">
@@ -628,25 +673,44 @@ export function ModernTemplate({
                                     {/* Header */}
                                     <div className="text-center space-y-4 pb-6 border-b-2 border-primary/20">
                                         <h1 className="text-4xl font-heading font-black">
-                                            {selectedResume.contact_info?.full_name || displayName}
+                                            {selectedResume.personal_info?.fullName || selectedResume.contact_info?.full_name || displayName}
                                         </h1>
+                                        {selectedResume.target_role && (
+                                            <p className="text-lg font-bold text-primary">{selectedResume.target_role}</p>
+                                        )}
                                         <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-                                            {selectedResume.contact_info?.email && (
+                                            {(selectedResume.personal_info?.email || selectedResume.contact_info?.email) && (
                                                 <div className="flex items-center gap-1.5">
-                                                    <Mail className="h-4 w-4" />
-                                                    {selectedResume.contact_info.email}
+                                                    <Mail className="h-4 w-4 text-primary" />
+                                                    {selectedResume.personal_info?.email || selectedResume.contact_info?.email}
                                                 </div>
                                             )}
-                                            {selectedResume.contact_info?.phone && (
+                                            {(selectedResume.personal_info?.phone || selectedResume.contact_info?.phone) && (
                                                 <div className="flex items-center gap-1.5">
-                                                    <Phone className="h-4 w-4" />
-                                                    {selectedResume.contact_info.phone}
+                                                    <Phone className="h-4 w-4 text-primary" />
+                                                    {selectedResume.personal_info?.phone || selectedResume.contact_info?.phone}
                                                 </div>
                                             )}
-                                            {selectedResume.contact_info?.location && (
+                                            {(selectedResume.personal_info?.location || selectedResume.contact_info?.location) && (
                                                 <div className="flex items-center gap-1.5">
-                                                    <MapPin className="h-4 w-4" />
-                                                    {selectedResume.contact_info.location}
+                                                    <MapPin className="h-4 w-4 text-primary" />
+                                                    {selectedResume.personal_info?.location || selectedResume.contact_info?.location}
+                                                </div>
+                                            )}
+                                            {selectedResume.personal_info?.linkedin && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <Linkedin className="h-4 w-4 text-primary" />
+                                                    <a href={selectedResume.personal_info.linkedin} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                                        LinkedIn
+                                                    </a>
+                                                </div>
+                                            )}
+                                            {selectedResume.personal_info?.github && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <Github className="h-4 w-4 text-primary" />
+                                                    <a href={selectedResume.personal_info.github} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                                        GitHub
+                                                    </a>
                                                 </div>
                                             )}
                                         </div>

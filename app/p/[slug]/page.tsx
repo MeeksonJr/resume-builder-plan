@@ -72,18 +72,58 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
         notFound();
     }
 
-    // 2. Fetch profile, resumes, projects, and testimonials
+    // 2. Fetch profile, resumes, projects, testimonials, and Canvas verified courses
     const [
         { data: profile },
-        { data: resumes },
+        { data: rawResumes },
         { data: projects },
-        { data: testimonials }
+        { data: testimonials },
+        { data: canvasCourses }
     ] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", portfolio.user_id).single(),
         supabase.from("resumes").select("*").eq("user_id", portfolio.user_id).order("updated_at", { ascending: false }),
         supabase.from("projects").select("*").eq("user_id", portfolio.user_id).order("created_at", { ascending: false }),
-        supabase.from("portfolio_testimonials").select("*").eq("portfolio_id", portfolio.id).eq("is_active", true)
+        supabase.from("portfolio_testimonials").select("*").eq("portfolio_id", portfolio.id).eq("is_active", true),
+        supabase.from("canvas_courses").select("id, name, course_code").eq("user_id", portfolio.user_id),
     ]);
+
+    // 2b. Hydrate resumes with their full child tables (summary, skills, work, education, projects)
+    const resumeIds = (rawResumes || []).map(r => r.id);
+    let enrichedResumes: any[] = rawResumes || [];
+
+    if (resumeIds.length > 0) {
+        const [
+            { data: allPersonalInfo },
+            { data: allWork },
+            { data: allSkills },
+            { data: allEdu },
+            { data: allProjects }
+        ] = await Promise.all([
+            supabase.from("personal_info").select("*").in("resume_id", resumeIds),
+            supabase.from("work_experiences").select("*").in("resume_id", resumeIds).order("sort_order"),
+            supabase.from("skills").select("*").in("resume_id", resumeIds).order("sort_order"),
+            supabase.from("education").select("*").in("resume_id", resumeIds).order("sort_order"),
+            supabase.from("projects").select("*").in("resume_id", resumeIds).order("sort_order"),
+        ]);
+
+        enrichedResumes = (rawResumes || []).map(r => {
+            const pi = allPersonalInfo?.find(p => p.resume_id === r.id);
+            const skills = allSkills?.filter(s => s.resume_id === r.id).flatMap(s => s.skills || (s.name ? [s.name] : []));
+            const work = allWork?.filter(w => w.resume_id === r.id);
+            const edu = allEdu?.filter(e => e.resume_id === r.id);
+            const projs = allProjects?.filter(p => p.resume_id === r.id);
+
+            return {
+                ...r,
+                personal_info: pi || null,
+                professional_summary: pi?.summary || "",
+                skills: skills || [],
+                work_experiences: work || [],
+                education: edu || [],
+                projects: projs || [],
+            };
+        });
+    }
 
     // 3. Increment view count (fire and forget)
     try {
@@ -104,7 +144,7 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
     // 4. Filter to only featured items
     const featuredProjectIds = portfolio.featured_projects || [];
     const featuredResumes = (portfolio.featured_resumes || [])
-        .map((id: string) => resumes?.find((r) => r.id === id))
+        .map((id: string) => enrichedResumes.find((r) => r.id === id))
         .filter(Boolean);
 
     // Improved project filtering
@@ -126,10 +166,11 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
 
     const templateProps = {
         portfolio,
-        resumes: featuredResumes.length > 0 ? featuredResumes : (resumes || []),
+        resumes: featuredResumes.length > 0 ? featuredResumes : enrichedResumes,
         projects: featuredProjects,
         profile: profile || { email: portfolio.user_id },
         testimonials: testimonials || [],
+        canvasCourses: canvasCourses || [],
         accentColor: portfolio.accent_color || "#3b82f6",
         layoutStyle, // Passing the layout style
     };

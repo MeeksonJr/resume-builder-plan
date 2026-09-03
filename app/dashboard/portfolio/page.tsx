@@ -35,7 +35,18 @@ import {
     Search,
     PanelRight,
     Wand2,
+    QrCode,
+    Copy,
+    Check,
+    Download,
 } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -77,6 +88,8 @@ export default function PortfolioManagementPage() {
         uniqueVisitors: number;
     }>({ dailyStats: [], referrers: [], totalVisits: 0, uniqueVisitors: 0 });
     const [showPreview, setShowPreview] = useState(true);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [copiedLink, setCopiedLink] = useState(false);
     const [isGenerating, setIsGenerating] = useState<string | null>(null);
     const [profile, setProfile] = useState<any>(null);
     const supabase = createClient();
@@ -325,12 +338,23 @@ export default function PortfolioManagementPage() {
                         {showPreview ? "Hide Preview" : "Show Preview"}
                     </Button>
                     {portfolio.slug && (
-                        <Button variant="outline" size="lg" className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]" asChild>
-                            <a href={`/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer">
-                                <Eye className="mr-2 h-5 w-5" />
-                                Preview
-                            </a>
-                        </Button>
+                        <>
+                            <Button variant="outline" size="lg" className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]" asChild>
+                                <a href={`/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer">
+                                    <Eye className="mr-2 h-5 w-5" />
+                                    Preview
+                                </a>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]"
+                                onClick={() => setShowShareModal(true)}
+                            >
+                                <Share2 className="mr-2 h-4 w-4 text-[#0d8274]" />
+                                Share
+                            </Button>
+                        </>
                     )}
                     <Button onClick={handleSave} disabled={isSaving} size="lg" className="h-11 gap-2 rounded-none bg-[#102b2b] px-7 font-black text-[#d8f36b] shadow-none hover:bg-[#0d8274]">
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -1383,6 +1407,177 @@ export default function PortfolioManagementPage() {
                     </div>
                 </div>
             )}
+
+            {/* Share Portfolio Dialog */}
+            <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+                <DialogContent className="max-w-xl rounded-none border border-[#102b2b]/20 bg-[#f8f4ec] p-6 text-[#102b2b]">
+                    <DialogHeader className="space-y-2 border-b border-[#102b2b]/15 pb-4">
+                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#0d8274]">
+                            <Share2 className="h-4 w-4" />
+                            Distribution & Networking
+                        </div>
+                        <DialogTitle className="text-2xl font-heading font-black text-[#102b2b]">
+                            Share your career portfolio
+                        </DialogTitle>
+                        <DialogDescription className="text-sm text-[#102b2b]/70">
+                            Give recruiters and hiring managers direct, interactive access to your verified background, projects, and resumes.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-6 pt-2">
+                        {/* Public Link Box */}
+                        <div className="space-y-2">
+                            <Label className="text-xs font-black uppercase tracking-widest text-[#102b2b]/70">
+                                Direct Portfolio Link
+                            </Label>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    readOnly
+                                    value={typeof window !== "undefined" ? `${window.location.origin}/p/${portfolio?.slug || ""}` : `/p/${portfolio?.slug || ""}`}
+                                    className="h-11 rounded-none border-[#102b2b]/20 bg-white font-mono text-xs text-[#102b2b]"
+                                />
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
+                                        navigator.clipboard.writeText(url);
+                                        setCopiedLink(true);
+                                        toast.success("Portfolio link copied to clipboard!");
+                                        setTimeout(() => setCopiedLink(false), 2000);
+                                    }}
+                                    className="h-11 shrink-0 rounded-none bg-[#102b2b] px-4 font-bold text-[#d8f36b] hover:bg-[#0d8274]"
+                                >
+                                    {copiedLink ? <Check className="mr-1.5 h-4 w-4" /> : <Copy className="mr-1.5 h-4 w-4" />}
+                                    {copiedLink ? "Copied" : "Copy"}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* QR Code Section */}
+                        <div className="border border-[#102b2b]/15 bg-[#f4f7f1] p-4">
+                            <div className="flex flex-col sm:flex-row items-center gap-5">
+                                <div className="rounded-none border border-[#102b2b]/20 bg-white p-2 shadow-sm shrink-0">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/p/${portfolio?.slug || ""}` : "")}`}
+                                        alt="Portfolio QR Code"
+                                        className="h-28 w-28"
+                                    />
+                                </div>
+                                <div className="space-y-2 text-center sm:text-left">
+                                    <h4 className="text-sm font-bold text-[#102b2b] flex items-center justify-center sm:justify-start gap-1.5">
+                                        <QrCode className="h-4 w-4 text-[#0d8274]" />
+                                        Printable Portfolio QR Code
+                                    </h4>
+                                    <p className="text-xs leading-relaxed text-[#102b2b]/65">
+                                        Place this scannable QR code directly on your paper resume or business card for instantaneous recruiter mobile viewing.
+                                    </p>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#d8f36b]"
+                                        asChild
+                                    >
+                                        <a
+                                            href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/p/${portfolio?.slug || ""}` : "")}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            download={`portfolio-qr-${portfolio?.slug}.png`}
+                                        >
+                                            <Download className="mr-1.5 h-3.5 w-3.5 text-[#0d8274]" />
+                                            Open High-Res QR
+                                        </a>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Social Share Buttons */}
+                        <div className="space-y-2">
+                            <Label className="text-xs font-black uppercase tracking-widest text-[#102b2b]/70">
+                                Share to Networks
+                            </Label>
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
+                                        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank");
+                                    }}
+                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#0077b5] hover:text-white"
+                                >
+                                    <Linkedin className="mr-1.5 h-4 w-4" />
+                                    LinkedIn
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
+                                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Check out my verified career portfolio: ")}&url=${encodeURIComponent(url)}`, "_blank");
+                                    }}
+                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#102b2b] hover:text-white"
+                                >
+                                    <Twitter className="mr-1.5 h-4 w-4" />
+                                    X / Twitter
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
+                                        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Check out my career portfolio: " + url)}`, "_blank");
+                                    }}
+                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#25D366] hover:text-white"
+                                >
+                                    <MessageSquare className="mr-1.5 h-4 w-4" />
+                                    WhatsApp
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
+                                        window.location.href = `mailto:?subject=${encodeURIComponent("Career Portfolio - " + (portfolio?.full_name || "Portfolio"))}&body=${encodeURIComponent("Here is my verified career portfolio: " + url)}`;
+                                    }}
+                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#0d8274] hover:text-white"
+                                >
+                                    <Mail className="mr-1.5 h-4 w-4" />
+                                    Email
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* GitHub README Badge Snippet */}
+                        <div className="space-y-2 border-t border-[#102b2b]/15 pt-4">
+                            <Label className="text-xs font-black uppercase tracking-widest text-[#102b2b]/70">
+                                GitHub Profile README Badge (Markdown)
+                            </Label>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    readOnly
+                                    value={typeof window !== "undefined" ? `[![Portfolio](https://img.shields.io/badge/Portfolio-View_Live-102b2b?style=for-the-badge)](${window.location.origin}/p/${portfolio?.slug || ""})` : ""}
+                                    className="h-9 rounded-none border-[#102b2b]/20 bg-white font-mono text-[11px] text-[#102b2b]"
+                                />
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={() => {
+                                        const snippet = `[![Portfolio](https://img.shields.io/badge/Portfolio-View_Live-102b2b?style=for-the-badge)](${window.location.origin}/p/${portfolio?.slug || ""})`;
+                                        navigator.clipboard.writeText(snippet);
+                                        toast.success("README Markdown badge snippet copied!");
+                                    }}
+                                    className="h-9 shrink-0 rounded-none bg-[#102b2b] px-3 font-bold text-xs text-[#d8f36b] hover:bg-[#0d8274]"
+                                >
+                                    <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
         </div>
     );

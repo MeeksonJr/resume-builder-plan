@@ -34,6 +34,7 @@ interface CreativeTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    canvasCourses?: any[]
     accentColor?: string
     layoutStyle?: string
 }
@@ -44,6 +45,7 @@ export function CreativeTemplate({
     projects,
     profile,
     testimonials,
+    canvasCourses = [],
     accentColor = "#3b82f6",
     layoutStyle = "professional",
 }: CreativeTemplateProps) {

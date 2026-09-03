@@ -35,6 +35,7 @@ interface CorporateTemplateProps {
     projects: any[]
     profile: any
     testimonials: any[]
+    canvasCourses?: any[]
     accentColor?: string
     layoutStyle?: string
 }
@@ -45,6 +46,7 @@ export function CorporateTemplate({
     projects,
     profile,
     testimonials,
+    canvasCourses = [],
     accentColor = "#3b82f6",
     layoutStyle = "professional",
 }: CorporateTemplateProps) {
