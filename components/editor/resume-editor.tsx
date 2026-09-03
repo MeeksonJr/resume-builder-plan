@@ -63,6 +63,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { VisualCustomizer } from "@/components/editor/visual-customizer";
 import { JobInputDialog } from "@/components/tailoring/job-input-dialog";
+import { ResumeStrengthMeter } from "./resume-strength-meter";
 import { OptimizationPanel } from "@/components/tailoring/optimization-panel";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import dynamic from "next/dynamic";
@@ -440,7 +441,7 @@ export function ResumeEditor({
     <div className="flex h-[calc(100vh-64px)] flex-col">
       {/* Editor Header */}
       <div className="flex items-center justify-between border-b border-border bg-[#102b2b] text-[#f8f4ec] px-6 py-4 shadow-sm">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Button asChild variant="ghost" size="icon" className="h-10 w-10 text-[#a6c0b8] hover:text-[#d8f36b] hover:bg-[#164743] rounded-none">
             <Link href="/dashboard/resumes">
               <ArrowLeft className="h-5 w-5" />
@@ -454,6 +455,9 @@ export function ResumeEditor({
                 {hasChanges ? "Unsaved changes" : "All changes saved"}
               </p>
             </div>
+          </div>
+          <div className="ml-1 sm:ml-3">
+            <ResumeStrengthMeter onNavigateTab={setActiveTab} />
           </div>
         </div>
 
