@@ -2,7 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, MoreHorizontal, DollarSign, Calendar, ExternalLink, Briefcase, FileText, GraduationCap, Trash2 } from "lucide-react";
+import { 
+    Plus, 
+    MoreHorizontal, 
+    DollarSign, 
+    Calendar, 
+    ExternalLink, 
+    Briefcase, 
+    FileText, 
+    GraduationCap, 
+    Trash2,
+    Clock,
+    Flag,
+    BookOpen,
+    Sparkles,
+    CheckCircle2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -38,12 +53,17 @@ interface Application {
     role: string;
     status: 'applied' | 'interviewing' | 'offered' | 'rejected' | 'archived';
     salary_range: string | null;
+    salary_target?: string | null;
     location: string | null;
     url: string | null;
     notes: string | null;
     applied_at: string;
+    interview_date?: string | null;
+    priority?: 'low' | 'medium' | 'high' | null;
+    resume_id?: string | null;
     cover_letter_id: string | null;
     linked_opportunities: string[] | null;
+    linked_canvas_courses?: string[] | null;
 }
 
 const COLUMNS = [
@@ -61,31 +81,43 @@ export function KanbanBoard() {
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
 
-    // Cover Letters & Scholarships context state
+    // Linked Resources State
+    const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
     const [coverLetters, setCoverLetters] = useState<any[]>([]);
     const [shortlist, setShortlist] = useState<any[]>([]);
+    const [canvasCourses, setCanvasCourses] = useState<{ id: string; name: string; course_code: string }[]>([]);
 
     // Form State (New Job)
     const [company, setCompany] = useState("");
     const [role, setRole] = useState("");
     const [status, setStatus] = useState("applied");
+    const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
     const [salaryRange, setSalaryRange] = useState("");
+    const [salaryTarget, setSalaryTarget] = useState("");
+    const [interviewDate, setInterviewDate] = useState("");
     const [location, setLocation] = useState("");
     const [url, setUrl] = useState("");
     const [notes, setNotes] = useState("");
+    const [resumeId, setResumeId] = useState<string>("none");
     const [coverLetterId, setCoverLetterId] = useState<string>("none");
     const [selectedOpps, setSelectedOpps] = useState<string[]>([]);
+    const [selectedCanvasCourses, setSelectedCanvasCourses] = useState<string[]>([]);
 
     // Form State (Edit Job)
     const [editCompany, setEditCompany] = useState("");
     const [editRole, setEditRole] = useState("");
     const [editStatus, setEditStatus] = useState("applied");
+    const [editPriority, setEditPriority] = useState<"low" | "medium" | "high">("medium");
     const [editSalaryRange, setEditSalaryRange] = useState("");
+    const [editSalaryTarget, setEditSalaryTarget] = useState("");
+    const [editInterviewDate, setEditInterviewDate] = useState("");
     const [editLocation, setEditLocation] = useState("");
     const [editUrl, setEditUrl] = useState("");
     const [editNotes, setEditNotes] = useState("");
+    const [editResumeId, setEditResumeId] = useState<string>("none");
     const [editCoverLetterId, setEditCoverLetterId] = useState<string>("none");
     const [editSelectedOpps, setEditSelectedOpps] = useState<string[]>([]);
+    const [editSelectedCanvasCourses, setEditSelectedCanvasCourses] = useState<string[]>([]);
 
     const supabase = createClient();
 
@@ -93,14 +125,29 @@ export function KanbanBoard() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Fetch cover letters
+        // 1. Fetch resumes
+        const { data: userResumes } = await supabase
+            .from("resumes")
+            .select("id, title")
+            .eq("user_id", user.id)
+            .order("updated_at", { ascending: false });
+        if (userResumes) setResumes(userResumes);
+
+        // 2. Fetch cover letters
         const { data: cl } = await supabase
             .from("cover_letters")
             .select("id, title")
             .eq("user_id", user.id);
         if (cl) setCoverLetters(cl);
 
-        // Fetch saved scholarships/grants
+        // 3. Fetch Canvas courses
+        const { data: courses } = await supabase
+            .from("canvas_courses")
+            .select("id, name, course_code")
+            .eq("user_id", user.id);
+        if (courses) setCanvasCourses(courses);
+
+        // 4. Fetch saved scholarships/grants
         const { data: uo } = await supabase
             .from("user_funding_opportunities")
             .select("opportunity_id")
@@ -151,12 +198,17 @@ export function KanbanBoard() {
             company,
             role,
             status,
+            priority,
             salary_range: salaryRange || null,
+            salary_target: salaryTarget || null,
+            interview_date: interviewDate ? new Date(interviewDate).toISOString() : null,
             location: location || null,
             url: url || null,
             notes: notes || null,
+            resume_id: resumeId === "none" ? null : resumeId,
             cover_letter_id: coverLetterId === "none" ? null : coverLetterId,
             linked_opportunities: selectedOpps,
+            linked_canvas_courses: selectedCanvasCourses,
         });
 
         if (error) {
@@ -166,12 +218,17 @@ export function KanbanBoard() {
             setCompany("");
             setRole("");
             setStatus("applied");
+            setPriority("medium");
             setSalaryRange("");
+            setSalaryTarget("");
+            setInterviewDate("");
             setLocation("");
             setUrl("");
             setNotes("");
+            setResumeId("none");
             setCoverLetterId("none");
             setSelectedOpps([]);
+            setSelectedCanvasCourses([]);
             setIsDialogOpen(false);
             fetchApplications();
         }
@@ -182,12 +239,17 @@ export function KanbanBoard() {
         setEditCompany(app.company);
         setEditRole(app.role);
         setEditStatus(app.status);
+        setEditPriority(app.priority || "medium");
         setEditSalaryRange(app.salary_range || "");
+        setEditSalaryTarget(app.salary_target || "");
+        setEditInterviewDate(app.interview_date ? app.interview_date.substring(0, 10) : "");
         setEditLocation(app.location || "");
         setEditUrl(app.url || "");
         setEditNotes(app.notes || "");
+        setEditResumeId(app.resume_id || "none");
         setEditCoverLetterId(app.cover_letter_id || "none");
         setEditSelectedOpps(app.linked_opportunities || []);
+        setEditSelectedCanvasCourses(app.linked_canvas_courses || []);
         setIsEditOpen(true);
     };
 
@@ -200,12 +262,17 @@ export function KanbanBoard() {
                 company: editCompany,
                 role: editRole,
                 status: editStatus,
+                priority: editPriority,
                 salary_range: editSalaryRange || null,
+                salary_target: editSalaryTarget || null,
+                interview_date: editInterviewDate ? new Date(editInterviewDate).toISOString() : null,
                 location: editLocation || null,
                 url: editUrl || null,
                 notes: editNotes || null,
+                resume_id: editResumeId === "none" ? null : editResumeId,
                 cover_letter_id: editCoverLetterId === "none" ? null : editCoverLetterId,
                 linked_opportunities: editSelectedOpps,
+                linked_canvas_courses: editSelectedCanvasCourses,
             })
             .eq("id", selectedApp.id);
 
@@ -261,6 +328,24 @@ export function KanbanBoard() {
                 prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
             );
         }
+    };
+
+    const handleToggleCanvasCourse = (courseCode: string, isEdit: boolean) => {
+        if (isEdit) {
+            setEditSelectedCanvasCourses(prev =>
+                prev.includes(courseCode) ? prev.filter(x => x !== courseCode) : [...prev, courseCode]
+            );
+        } else {
+            setSelectedCanvasCourses(prev =>
+                prev.includes(courseCode) ? prev.filter(x => x !== courseCode) : [...prev, courseCode]
+            );
+        }
+    };
+
+    // Helper: Map resume ID to Title
+    const getResumeTitle = (id?: string | null) => {
+        if (!id) return null;
+        return resumes.find(r => r.id === id)?.title || "Resume Attached";
     };
 
     if (loading) {
@@ -319,18 +404,40 @@ export function KanbanBoard() {
                                     <Input id="application-role" value={role} onChange={e => setRole(e.target.value)} placeholder="Software Engineer" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
                                 </div>
                             </div>
+
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="application-salary" className="font-bold">Salary Range (Optional)</Label>
-                                    <Input id="application-salary" value={salaryRange} onChange={e => setSalaryRange(e.target.value)} placeholder="e.g. $100k - $120k" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                    <Label htmlFor="application-priority" className="font-bold">Priority</Label>
+                                    <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
+                                        <SelectTrigger id="application-priority" className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-none">
+                                            <SelectItem value="low">Low Priority</SelectItem>
+                                            <SelectItem value="medium">Medium Priority</SelectItem>
+                                            <SelectItem value="high">🔥 High Priority</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="application-location" className="font-bold">Location (Optional)</Label>
-                                    <Input id="application-location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. New York, Remote" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                    <Label htmlFor="application-interview" className="font-bold">Next Interview Date</Label>
+                                    <Input id="application-interview" type="date" value={interviewDate} onChange={e => setInterviewDate(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
                                 </div>
                             </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="application-salary" className="font-bold">Salary Range</Label>
+                                    <Input id="application-salary" value={salaryRange} onChange={e => setSalaryRange(e.target.value)} placeholder="e.g. $120k - $150k" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="application-location" className="font-bold">Location</Label>
+                                    <Input id="application-location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Remote, San Francisco" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                </div>
+                            </div>
+
                             <div className="space-y-1.5">
-                                <Label className="font-bold">Status</Label>
+                                <Label className="font-bold">Status Column</Label>
                                 <Select value={status} onValueChange={setStatus}>
                                     <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
                                         <SelectValue />
@@ -342,9 +449,29 @@ export function KanbanBoard() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
                             <div className="space-y-1.5">
-                                <Label htmlFor="application-url" className="font-bold">Job Link URL (Optional)</Label>
-                                <Input id="application-url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://linkedin.com/jobs/..." className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                <Label htmlFor="application-url" className="font-bold">Job Link URL</Label>
+                                <Input id="application-url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://company.com/careers/..." className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                            </div>
+
+                            {/* Linked Resume */}
+                            <div className="space-y-1.5 border-t border-[#102b2b]/10 pt-3">
+                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    Link Candidate Resume
+                                </Label>
+                                <Select value={resumeId} onValueChange={setResumeId}>
+                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                        <SelectValue placeholder="Select a resume" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-none">
+                                        <SelectItem value="none">None (No specific resume linked)</SelectItem>
+                                        {resumes.map(r => (
+                                            <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {/* Linked Cover Letter */}
@@ -366,15 +493,38 @@ export function KanbanBoard() {
                                 </Select>
                             </div>
 
+                            {/* Linked Canvas LMS Coursework */}
+                            {canvasCourses.length > 0 && (
+                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
+                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                        <BookOpen className="w-3.5 h-3.5" />
+                                        Attach Synced Canvas Coursework
+                                    </Label>
+                                    <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
+                                        {canvasCourses.map(course => (
+                                            <label key={course.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={selectedCanvasCourses.includes(course.course_code || course.name)}
+                                                    onChange={() => handleToggleCanvasCourse(course.course_code || course.name, false)}
+                                                    className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
+                                                />
+                                                <span className="truncate font-medium" title={course.name}>
+                                                    {course.course_code}: {course.name}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Linked Scholarships/Grants */}
-                            <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
-                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                    <GraduationCap className="w-3.5 h-3.5" />
-                                    Link Shortlisted Aid Opportunities
-                                </Label>
-                                {shortlist.length === 0 ? (
-                                    <p className="text-[10px] text-muted-foreground italic">No saved scholarships or grants found in your shortlist.</p>
-                                ) : (
+                            {shortlist.length > 0 && (
+                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
+                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                        <GraduationCap className="w-3.5 h-3.5" />
+                                        Link Shortlisted Aid Opportunities
+                                    </Label>
                                     <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
                                         {shortlist.map(opp => (
                                             <label key={opp.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
@@ -388,12 +538,12 @@ export function KanbanBoard() {
                                             </label>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="application-notes" className="font-bold">Notes</Label>
-                                <Textarea id="application-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add application details, keywords, or referral info..." className="rounded-none border-[#102b2b]/15 bg-white min-h-[70px]" />
+                                <Textarea id="application-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add interview notes, recruiter contacts, or referral details..." className="rounded-none border-[#102b2b]/15 bg-white min-h-[70px]" />
                             </div>
                             <Button onClick={handleAddJob} className="w-full h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold">Track Application</Button>
                         </div>
@@ -423,9 +573,16 @@ export function KanbanBoard() {
                                         >
                                             <CardContent className="p-3.5 space-y-3">
                                                 <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <h3 className="font-bold text-sm leading-tight group-hover:text-[#0d8274] transition-colors">{app.role}</h3>
-                                                        <p className="text-xs text-muted-foreground font-semibold mt-1">{app.company}</p>
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <h3 className="font-bold text-sm leading-tight group-hover:text-[#0d8274] transition-colors">{app.role}</h3>
+                                                            {app.priority === "high" && (
+                                                                <span className="text-[9px] font-bold px-1.5 py-0.2 bg-red-100 text-red-700 border border-red-200">
+                                                                    High
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground font-semibold">{app.company}</p>
                                                     </div>
                                                     <div onClick={e => e.stopPropagation()}>
                                                         <Select defaultValue={app.status} onValueChange={(v) => handleStatusUpdate(app.id, v)}>
@@ -441,9 +598,32 @@ export function KanbanBoard() {
                                                     </div>
                                                 </div>
 
+                                                {/* Interview Milestone Date Pill */}
+                                                {app.interview_date && (
+                                                    <div className="flex items-center gap-1.5 p-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold">
+                                                        <Clock className="w-3 h-3 text-amber-600" />
+                                                        <span>Interview: {format(new Date(app.interview_date), "MMM d, yyyy")}</span>
+                                                    </div>
+                                                )}
+
                                                 {/* Attached Artifact Badges */}
-                                                {(app.cover_letter_id || (app.linked_opportunities && app.linked_opportunities.length > 0)) && (
+                                                {(app.resume_id || app.cover_letter_id || (app.linked_opportunities && app.linked_opportunities.length > 0) || (app.linked_canvas_courses && app.linked_canvas_courses.length > 0)) && (
                                                     <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-[#102b2b]/5">
+                                                        {/* Linked Resume */}
+                                                        {app.resume_id && (
+                                                            <Link 
+                                                                href={`/dashboard/resume/${app.resume_id}`}
+                                                                onClick={(e: any) => e.stopPropagation()}
+                                                            >
+                                                                <Badge className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] hover:text-white text-[9px] px-1.5 py-0.5 flex items-center gap-1">
+                                                                    <FileText className="w-2.5 h-2.5 text-[#d8f36b]" />
+                                                                    <span className="max-w-[110px] truncate">{getResumeTitle(app.resume_id)}</span>
+                                                                    <ExternalLink className="w-2 h-2 ml-0.5 opacity-60" />
+                                                                </Badge>
+                                                            </Link>
+                                                        )}
+
+                                                        {/* Linked Cover Letter */}
                                                         {app.cover_letter_id && (
                                                             <Link 
                                                                 href={`/dashboard/cover-letters/${app.cover_letter_id}`}
@@ -451,10 +631,26 @@ export function KanbanBoard() {
                                                             >
                                                                 <Badge className="rounded-none bg-[#e9eee8] border border-[#102b2b]/10 hover:border-[#0d8274] hover:bg-[#dbe8df] text-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1">
                                                                     <FileText className="w-2.5 h-2.5 text-[#0d8274]" />
-                                                                    Doc linked
+                                                                    Letter
                                                                 </Badge>
                                                             </Link>
                                                         )}
+
+                                                        {/* Linked Canvas Courses */}
+                                                        {app.linked_canvas_courses && app.linked_canvas_courses.map((code, i) => (
+                                                            <Link
+                                                                key={`canvas-${i}`}
+                                                                href="/dashboard/canvas"
+                                                                onClick={(e: any) => e.stopPropagation()}
+                                                            >
+                                                                <Badge className="rounded-none bg-emerald-50 border border-emerald-300 text-emerald-800 text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-semibold hover:bg-emerald-100">
+                                                                    <BookOpen className="w-2.5 h-2.5 text-emerald-600" />
+                                                                    {code}
+                                                                </Badge>
+                                                            </Link>
+                                                        ))}
+
+                                                        {/* Linked Aid Opportunities */}
                                                         {app.linked_opportunities && app.linked_opportunities.map((oppId, i) => (
                                                             <Badge key={i} className="rounded-none bg-[#d8f36b]/40 border border-[#102b2b]/10 text-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-semibold">
                                                                 <GraduationCap className="w-2.5 h-2.5 text-[#0d8274]" />
@@ -464,16 +660,32 @@ export function KanbanBoard() {
                                                     </div>
                                                 )}
 
-                                                <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground pt-1.5">
-                                                    <span className="flex items-center gap-1 border border-[#102b2b]/10 bg-[#e9eee8] px-1.5 py-0.5">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {format(new Date(app.applied_at), "MMM d")}
-                                                    </span>
-                                                    {app.salary_range && (
-                                                        <span className="flex items-center gap-1 border border-[#0d8274]/20 bg-[#d8f36b]/45 px-1.5 py-0.5 text-[#102b2b]">
-                                                            <DollarSign className="h-3 w-3" />
-                                                            {app.salary_range}
+                                                <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-muted-foreground pt-1.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="flex items-center gap-1 border border-[#102b2b]/10 bg-[#e9eee8] px-1.5 py-0.5">
+                                                            <Calendar className="h-3 w-3" />
+                                                            {format(new Date(app.applied_at), "MMM d")}
                                                         </span>
+                                                        {app.salary_range && (
+                                                            <span className="flex items-center gap-1 border border-[#0d8274]/20 bg-[#d8f36b]/45 px-1.5 py-0.5 text-[#102b2b]">
+                                                                <DollarSign className="h-3 w-3" />
+                                                                {app.salary_range}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* External Job Link icon */}
+                                                    {app.url && (
+                                                        <a 
+                                                            href={app.url} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            onClick={e => e.stopPropagation()}
+                                                            className="p-1 hover:text-[#0d8274] transition-colors"
+                                                            title="Open posting link"
+                                                        >
+                                                            <ExternalLink className="w-3.5 h-3.5" />
+                                                        </a>
                                                     )}
                                                 </div>
                                             </CardContent>
@@ -505,6 +717,27 @@ export function KanbanBoard() {
                                     <Input id="edit-role" value={editRole} onChange={e => setEditRole(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
                                 </div>
                             </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="edit-priority" className="font-bold">Priority</Label>
+                                    <Select value={editPriority} onValueChange={(v: any) => setEditPriority(v)}>
+                                        <SelectTrigger id="edit-priority" className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-none">
+                                            <SelectItem value="low">Low Priority</SelectItem>
+                                            <SelectItem value="medium">Medium Priority</SelectItem>
+                                            <SelectItem value="high">🔥 High Priority</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="edit-interview" className="font-bold">Next Interview Date</Label>
+                                    <Input id="edit-interview" type="date" value={editInterviewDate} onChange={e => setEditInterviewDate(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                </div>
+                            </div>
+
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-1.5">
                                     <Label htmlFor="edit-salary" className="font-bold">Salary Range</Label>
@@ -515,6 +748,7 @@ export function KanbanBoard() {
                                     <Input id="edit-location" value={editLocation} onChange={e => setEditLocation(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
                                 </div>
                             </div>
+
                             <div className="space-y-1.5">
                                 <Label className="font-bold">Status</Label>
                                 <Select value={editStatus} onValueChange={(v: any) => setEditStatus(v)}>
@@ -528,9 +762,29 @@ export function KanbanBoard() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
                             <div className="space-y-1.5">
                                 <Label htmlFor="edit-url" className="font-bold">Job Link URL</Label>
                                 <Input id="edit-url" value={editUrl} onChange={e => setEditUrl(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                            </div>
+
+                            {/* Linked Resume in Edit */}
+                            <div className="space-y-1.5 border-t border-[#102b2b]/10 pt-3">
+                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    Link Candidate Resume
+                                </Label>
+                                <Select value={editResumeId} onValueChange={setEditResumeId}>
+                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                        <SelectValue placeholder="Select a resume" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-none">
+                                        <SelectItem value="none">None (No specific resume linked)</SelectItem>
+                                        {resumes.map(r => (
+                                            <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {/* Linked Cover Letter in Edit */}
@@ -552,15 +806,38 @@ export function KanbanBoard() {
                                 </Select>
                             </div>
 
+                            {/* Linked Canvas Courses in Edit */}
+                            {canvasCourses.length > 0 && (
+                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
+                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                        <BookOpen className="w-3.5 h-3.5" />
+                                        Attach Synced Canvas Coursework
+                                    </Label>
+                                    <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
+                                        {canvasCourses.map(course => (
+                                            <label key={course.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={editSelectedCanvasCourses.includes(course.course_code || course.name)}
+                                                    onChange={() => handleToggleCanvasCourse(course.course_code || course.name, true)}
+                                                    className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
+                                                />
+                                                <span className="truncate font-medium" title={course.name}>
+                                                    {course.course_code}: {course.name}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Linked Scholarships/Grants in Edit */}
-                            <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
-                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                    <GraduationCap className="w-3.5 h-3.5" />
-                                    Link Shortlisted Aid Opportunities
-                                </Label>
-                                {shortlist.length === 0 ? (
-                                    <p className="text-[10px] text-muted-foreground italic">No saved scholarships or grants found in your shortlist.</p>
-                                ) : (
+                            {shortlist.length > 0 && (
+                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
+                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                        <GraduationCap className="w-3.5 h-3.5" />
+                                        Link Shortlisted Aid Opportunities
+                                    </Label>
                                     <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
                                         {shortlist.map(opp => (
                                             <label key={opp.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
@@ -574,8 +851,8 @@ export function KanbanBoard() {
                                             </label>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="edit-notes" className="font-bold">Notes</Label>
