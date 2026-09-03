@@ -32,6 +32,7 @@ import {
   Rocket
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -131,11 +132,16 @@ export default function DashboardJobsPage() {
       const data = await res.json();
       const fetchedJobs = data.jobs || [];
       setJobs(fetchedJobs);
-      setResumes(data.resumes || []);
+      const fetchedResumes = data.resumes || [];
+      setResumes(fetchedResumes);
       if (data.activeResume) {
         setSelectedResumeId(data.activeResume.id);
         setActiveResumeTitle(data.activeResume.title);
-        if (!searchRole) setSearchRole(data.activeResume.targetRole || "Software Engineer");
+        if (!searchRole) setSearchRole(data.activeResume.target_role || data.activeResume.targetRole || "Software Engineer");
+      } else if (fetchedResumes.length > 0) {
+        setSelectedResumeId(fetchedResumes[0].id);
+        setActiveResumeTitle(fetchedResumes[0].title);
+        if (!searchRole) setSearchRole(fetchedResumes[0].target_role || fetchedResumes[0].targetRole || "Software Engineer");
       }
 
       // Populate already tracked jobs
@@ -197,17 +203,51 @@ export default function DashboardJobsPage() {
     }
   };
 
+  // Helper to open Autopilot modal with guaranteed selected resume
+  const openAutopilotModal = (job: ScrapedJob) => {
+    let effectiveId = selectedResumeId;
+    if (!effectiveId && resumes.length > 0) {
+      effectiveId = resumes[0].id;
+      setSelectedResumeId(resumes[0].id);
+      setActiveResumeTitle(resumes[0].title);
+    }
+    setTailorModalJob(job);
+    setTailorSuccessData(null);
+  };
+
   // Execute 1-Click Application Autopilot (Resume + Cover Letter + Job Tracker)
   const handleExecuteTailor = async () => {
-    if (!tailorModalJob || !selectedResumeId) return;
+    const effectiveResumeId = selectedResumeId || resumes[0]?.id;
+    console.log("[AUTOPILOT_CLICK]", {
+      tailorModalJob,
+      selectedResumeId,
+      effectiveResumeId,
+      resumesCount: resumes.length,
+    });
+
+    if (!tailorModalJob) {
+      toast.error("No job selected. Please choose a job.");
+      return;
+    }
+
+    if (!effectiveResumeId) {
+      toast.error("Please create a resume first in Resume Builder before using Autopilot.");
+      return;
+    }
 
     try {
       setTailoringInProgress(true);
+      console.log("[AUTOPILOT_STARTING_FETCH]", {
+        resumeId: effectiveResumeId,
+        role: tailorModalJob.role,
+        company: tailorModalJob.company,
+      });
+
       const res = await fetch("/api/jobs/autopilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          resumeId: selectedResumeId,
+          resumeId: effectiveResumeId,
           jobTitle: tailorModalJob.role,
           company: tailorModalJob.company,
           jobDescription: tailorModalJob.description,
@@ -220,6 +260,8 @@ export default function DashboardJobsPage() {
       });
 
       const data = await res.json();
+      console.log("[AUTOPILOT_RESPONSE]", { status: res.status, data });
+
       if (!res.ok) {
         if (data.error === "LIMIT_EXCEEDED") {
           toast.error(data.message || "Daily AI limit reached.");
@@ -241,7 +283,7 @@ export default function DashboardJobsPage() {
       });
       toast.success(`Application packet ready for ${tailorModalJob.company}!`);
     } catch (err: any) {
-      console.error(err);
+      console.error("[AUTOPILOT_ERROR]", err);
       toast.error(err.message || "Could not generate application packet.");
     } finally {
       setTailoringInProgress(false);
@@ -759,7 +801,7 @@ export default function DashboardJobsPage() {
                     {/* 1-Click Application Autopilot Action */}
                     <Button
                       size="sm"
-                      onClick={() => setTailorModalJob(job)}
+                      onClick={() => openAutopilotModal(job)}
                       className="flex-1 h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-xs transition-colors"
                       title="Generate Tailored Resume + AI Cover Letter + Tracker"
                     >
@@ -869,7 +911,7 @@ export default function DashboardJobsPage() {
 
                   <Button
                     size="sm"
-                    onClick={() => setTailorModalJob(job)}
+                    onClick={() => openAutopilotModal(job)}
                     className="h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1 cursor-pointer transition-colors shadow-2xs"
                     title="Generate Tailored Resume + AI Cover Letter + Tracker"
                   >
@@ -1017,6 +1059,49 @@ export default function DashboardJobsPage() {
                 <p className="text-xs text-[#102b2b]/70 line-clamp-2">{tailorModalJob.description}</p>
               </div>
 
+              {/* Source Resume Selection */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-[#102b2b] uppercase tracking-wider block">
+                    Source Resume to Clone & Tailor:
+                  </label>
+                  {resumes.length === 0 && (
+                    <span className="text-[10px] text-amber-700 font-bold">Resume required</span>
+                  )}
+                </div>
+                {resumes.length > 0 ? (
+                  <Select
+                    value={selectedResumeId || resumes[0]?.id || ""}
+                    onValueChange={(val) => {
+                      setSelectedResumeId(val);
+                      const r = resumes.find(item => item.id === val);
+                      if (r) setActiveResumeTitle(r.title);
+                    }}
+                  >
+                    <SelectTrigger className="h-9 rounded-sm bg-white border-[#b8c8b9] text-xs font-semibold text-[#102b2b]">
+                      <SelectValue placeholder="Select Source Resume" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-sm border-[#b8c8b9]">
+                      {resumes.map((r) => (
+                        <SelectItem key={r.id} value={r.id} className="text-xs font-medium">
+                          {r.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-sm text-xs text-amber-900 flex items-center justify-between">
+                    <span>No resumes found in your account yet.</span>
+                    <Link
+                      href="/dashboard/resumes/new"
+                      className="underline font-bold text-amber-950 hover:text-black ml-2"
+                    >
+                      Create Resume &rarr;
+                    </Link>
+                  </div>
+                )}
+              </div>
+
               {/* Tone Selection */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-[#102b2b] uppercase tracking-wider block">
@@ -1040,7 +1125,9 @@ export default function DashboardJobsPage() {
                 <ul className="space-y-1.5 text-[#102b2b]/85">
                   <li className="flex items-center gap-2">
                     <span className="text-base">📄</span>
-                    <span><strong className="text-[#102b2b]">Tailored Resume:</strong> Cloned to &quot;{activeResumeTitle} — {tailorModalJob.company}&quot; with STAR bullet keywords.</span>
+                    <span>
+                      <strong className="text-[#102b2b]">Tailored Resume:</strong> Cloned from &quot;{resumes.find(r => r.id === (selectedResumeId || resumes[0]?.id))?.title || activeResumeTitle || "Your Resume"}&quot; to &quot;{resumes.find(r => r.id === (selectedResumeId || resumes[0]?.id))?.title || activeResumeTitle || "Resume"} — {tailorModalJob.company}&quot; with STAR bullet keywords.
+                    </span>
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-base">✉️</span>
@@ -1055,6 +1142,7 @@ export default function DashboardJobsPage() {
 
               <DialogFooter className="pt-2 gap-2">
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setTailorModalJob(null)}
@@ -1064,6 +1152,7 @@ export default function DashboardJobsPage() {
                   Cancel
                 </Button>
                 <Button
+                  type="button"
                   size="sm"
                   onClick={handleExecuteTailor}
                   disabled={tailoringInProgress}
