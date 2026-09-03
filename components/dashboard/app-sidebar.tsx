@@ -18,6 +18,7 @@ import {
     ChevronsUpDown,
     Plus,
     Search,
+    Coins,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -85,6 +86,7 @@ const getNavItems = (isAdmin: boolean) => {
                 { title: "Matched Jobs", href: "/dashboard/jobs" },
                 { title: "Job Tracker", href: "/dashboard/tracker" },
                 { title: "Cover Letters", href: "/dashboard/cover-letters" },
+                { title: "Salary & Negotiation", href: "/dashboard/salary" },
             ],
         },
         {

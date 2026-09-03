@@ -669,10 +669,26 @@ export function KanbanBoard() {
                                                             {format(new Date(app.applied_at), "MMM d")}
                                                         </span>
                                                         {app.salary_range && (
-                                                            <span className="flex items-center gap-1 border border-[#0d8274]/20 bg-[#d8f36b]/45 px-1.5 py-0.5 text-[#102b2b]">
-                                                                <DollarSign className="h-3 w-3" />
+                                                            <Link
+                                                                href={`/dashboard/salary?role=${encodeURIComponent(app.role)}&company=${encodeURIComponent(app.company)}`}
+                                                                onClick={e => e.stopPropagation()}
+                                                                title="Benchmark Salary & Negotiation Strategy"
+                                                                className="flex items-center gap-1 border border-[#0d8274]/20 bg-[#d8f36b]/45 px-1.5 py-0.5 text-[#102b2b] hover:bg-[#d8f36b] transition-colors font-medium"
+                                                            >
+                                                                <DollarSign className="h-3 w-3 text-[#0d8274]" />
                                                                 {app.salary_range}
-                                                            </span>
+                                                            </Link>
+                                                        )}
+                                                        {app.salary_target && !app.salary_range && (
+                                                            <Link
+                                                                href={`/dashboard/salary?role=${encodeURIComponent(app.role)}&company=${encodeURIComponent(app.company)}`}
+                                                                onClick={e => e.stopPropagation()}
+                                                                title="Benchmark Salary & Negotiation Strategy"
+                                                                className="flex items-center gap-1 border border-[#0d8274]/30 bg-[#0d8274]/10 px-1.5 py-0.5 text-[#0d8274] font-bold hover:bg-[#0d8274]/20 transition-colors"
+                                                            >
+                                                                <DollarSign className="h-3 w-3" />
+                                                                Target: {app.salary_target}
+                                                            </Link>
                                                         )}
                                                     </div>
 
