@@ -298,51 +298,51 @@ export default function ResumeAnalyticsPage() {
             </div>
 
             {/* KPI Summary Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs min-w-0 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Total Views</span>
-                        <div className="h-7 w-7 rounded-none bg-[#102b2b] text-white flex items-center justify-center">
+                        <div className="h-7 w-7 rounded-none bg-[#102b2b] text-white flex items-center justify-center shrink-0">
                             <Eye className="h-3.5 w-3.5 text-[#d8f36b]" />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 pt-1">
-                        <div className="text-3xl font-black text-[#102b2b]">{totalViews}</div>
-                        <p className="text-xs text-neutral-500 font-medium mt-1">Unique page visits</p>
+                        <div className="text-3xl font-black text-[#102b2b] truncate">{totalViews}</div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1 truncate">Unique page visits</p>
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs min-w-0 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">PDF Downloads</span>
-                        <div className="h-7 w-7 rounded-none bg-[#0d8274] text-white flex items-center justify-center">
+                        <div className="h-7 w-7 rounded-none bg-[#0d8274] text-white flex items-center justify-center shrink-0">
                             <Download className="h-3.5 w-3.5 text-white" />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 pt-1">
-                        <div className="text-3xl font-black text-[#102b2b]">{totalDownloads}</div>
-                        <p className="text-xs text-neutral-500 font-medium mt-1">Saved or printed copies</p>
+                        <div className="text-3xl font-black text-[#102b2b] truncate">{totalDownloads}</div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1 truncate">Saved or printed copies</p>
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs min-w-0 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Conversion Rate</span>
-                        <div className="h-7 w-7 rounded-none bg-neutral-800 text-white flex items-center justify-center">
+                        <div className="h-7 w-7 rounded-none bg-neutral-800 text-white flex items-center justify-center shrink-0">
                             <MousePointer2 className="h-3.5 w-3.5 text-[#d8f36b]" />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 pt-1">
-                        <div className="text-3xl font-black text-[#102b2b]">{engagementRate}%</div>
-                        <p className="text-xs text-neutral-500 font-medium mt-1">Views that converted to download</p>
+                        <div className="text-3xl font-black text-[#102b2b] truncate">{engagementRate}%</div>
+                        <p className="text-xs text-neutral-500 font-medium mt-1 truncate">Views converted to download</p>
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs">
+                <Card className="rounded-none border border-[#102b2b]/15 bg-[#f9faf6] p-4 shadow-xs min-w-0 overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Link Status</span>
                         <div className={cn(
-                            "h-7 w-7 rounded-none text-white flex items-center justify-center",
+                            "h-7 w-7 rounded-none text-white flex items-center justify-center shrink-0",
                             resume?.is_public ? "bg-emerald-700" : "bg-neutral-600"
                         )}>
                             {resume?.is_public ? (
@@ -354,19 +354,19 @@ export default function ResumeAnalyticsPage() {
                     </CardHeader>
                     <CardContent className="p-0 pt-1">
                         <div className={cn(
-                            "text-xl font-black flex items-center gap-1.5",
+                            "text-xl font-black flex items-center gap-1.5 truncate",
                             resume?.is_public ? "text-emerald-700" : "text-neutral-700"
                         )}>
                             {resume?.is_public ? (
                                 <>
-                                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    Public Active
+                                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                                    <span className="truncate">Public Active</span>
                                 </>
                             ) : (
-                                "Private Only"
+                                <span className="truncate">Private Only</span>
                             )}
                         </div>
-                        <p className="text-xs text-neutral-500 font-medium mt-1">
+                        <p className="text-xs text-neutral-500 font-medium mt-1 truncate">
                             {resume?.is_public ? "Accessible via direct link" : "Only accessible in editor"}
                         </p>
                     </CardContent>
@@ -374,10 +374,10 @@ export default function ResumeAnalyticsPage() {
             </div>
 
             {/* Charts Grid */}
-            <div className="grid gap-6 md:grid-cols-7">
-                <Card className="md:col-span-4 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs">
+            <div className="grid gap-6 md:grid-cols-7 min-w-0">
+                <Card className="md:col-span-4 rounded-none border border-[#102b2b]/15 bg-white p-5 sm:p-6 shadow-xs min-w-0 overflow-hidden">
                     <CardHeader className="p-0 pb-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
                             <div>
                                 <CardTitle className="text-base font-black uppercase text-[#102b2b] tracking-tight">
                                     Traffic Over Time
@@ -386,22 +386,22 @@ export default function ResumeAnalyticsPage() {
                                     Daily impressions and downloads over the last 30 days
                                 </CardDescription>
                             </div>
-                            <div className="flex items-center gap-3 text-xs font-semibold">
-                                <span className="flex items-center gap-1 text-neutral-700">
-                                    <span className="h-2 w-2 bg-[#102b2b] rounded-none" /> Views
+                            <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
+                                <span className="flex items-center gap-1.5 text-neutral-700">
+                                    <span className="h-2.5 w-2.5 bg-[#102b2b] inline-block" /> Views
                                 </span>
-                                <span className="flex items-center gap-1 text-neutral-700">
-                                    <span className="h-2 w-2 bg-[#0d8274] rounded-none" /> Downloads
+                                <span className="flex items-center gap-1.5 text-neutral-700">
+                                    <span className="h-2.5 w-2.5 bg-[#0d8274] inline-block" /> Downloads
                                 </span>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-0 pt-2">
+                    <CardContent className="p-0 pt-2 min-w-0">
                         <TrafficChart data={last30Days} />
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-3 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs">
+                <Card className="md:col-span-3 rounded-none border border-[#102b2b]/15 bg-white p-5 sm:p-6 shadow-xs min-w-0 overflow-hidden">
                     <CardHeader className="p-0 pb-4">
                         <CardTitle className="text-base font-black uppercase text-[#102b2b] tracking-tight">
                             Device Distribution
@@ -410,16 +410,16 @@ export default function ResumeAnalyticsPage() {
                             Client hardware breakdown from recruiters & visitors
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="p-0 pt-2 flex flex-col items-center">
+                    <CardContent className="p-0 pt-2 flex flex-col items-center min-w-0">
                         <DeviceChart data={deviceData} />
-                        <div className="grid grid-cols-2 gap-2 mt-4 w-full">
+                        <div className="grid grid-cols-2 gap-2 mt-4 w-full min-w-0">
                             {deviceData.map((device, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-2 rounded-none bg-neutral-50 border border-neutral-200 text-xs">
-                                    <div className="flex items-center gap-1.5 truncate">
+                                <div key={idx} className="flex items-center justify-between p-2 rounded-none bg-neutral-50 border border-neutral-200 text-xs min-w-0">
+                                    <div className="flex items-center gap-1.5 truncate min-w-0">
                                         <div className="h-2 w-2 shrink-0" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
                                         <span className="font-bold text-neutral-800 truncate">{device.name}</span>
                                     </div>
-                                    <span className="font-mono text-neutral-500">{device.value}</span>
+                                    <span className="font-mono text-neutral-500 ml-1 shrink-0">{device.value}</span>
                                 </div>
                             ))}
                         </div>
@@ -428,9 +428,9 @@ export default function ResumeAnalyticsPage() {
             </div>
 
             {/* ATS & Optimization Section */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3 min-w-0">
                 {/* ATS Score Meter */}
-                <Card className="md:col-span-1 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs flex flex-col justify-between">
+                <Card className="md:col-span-1 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs flex flex-col justify-between min-w-0 overflow-hidden">
                     <div>
                         <div className="flex items-center justify-between border-b border-neutral-100 pb-3 mb-6">
                             <div className="flex items-center gap-2">
@@ -480,7 +480,7 @@ export default function ResumeAnalyticsPage() {
                                             stroke="#0d8274"
                                             strokeWidth="10"
                                             strokeDasharray={377}
-                                            strokeDashoffset={377 - (377 * atsData.score) / 100}
+                                            strokeDashoffset={377 - (377 * (atsData.score || 0)) / 100}
                                             strokeLinecap="square"
                                             className="transition-all duration-1000 ease-out"
                                         />
@@ -530,7 +530,7 @@ export default function ResumeAnalyticsPage() {
                 </Card>
 
                 {/* AI Optimizations & Breakdown */}
-                <Card className="md:col-span-2 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs">
+                <Card className="md:col-span-2 rounded-none border border-[#102b2b]/15 bg-white p-6 shadow-xs min-w-0 overflow-hidden">
                     <div className="border-b border-neutral-100 pb-3 mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Zap className="h-5 w-5 text-amber-500" />
