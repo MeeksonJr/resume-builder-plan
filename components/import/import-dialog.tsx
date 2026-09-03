@@ -43,7 +43,7 @@ export function ImportDialog({ children }: { children: React.ReactNode }) {
 
             // Redirect to the new resume editor
             if (data.id) {
-                router.push(`/dashboard/resume/${data.id}/edit`);
+                router.push(`/dashboard/resume/${data.id}`);
             }
         } catch (error) {
             console.error(error);
@@ -69,7 +69,7 @@ export function ImportDialog({ children }: { children: React.ReactNode }) {
             toast.success("Profile imported successfully!");
             setIsOpen(false);
             if (data.id) {
-                router.push(`/dashboard/resume/${data.id}/edit`);
+                router.push(`/dashboard/resume/${data.id}`);
             }
         } catch (error) {
             console.error(error);

@@ -52,9 +52,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2 } from "lucide-react";
+import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2, Upload } from "lucide-react";
 import { exportToJSON } from "@/lib/export/json-export";
 import { exportToTxt } from "@/lib/export/txt-export";
+import { JsonImportDialog } from "@/components/import/json-import-dialog";
+import type { ParsedResumeData } from "@/lib/export/json-import";
 
 // import { VersionHistory } from "@/components/editor/version-history"; // Removed generic import
 import { SectionReorder } from "@/components/editor/section-reorder";
@@ -437,6 +439,43 @@ export function ResumeEditor({
     }
   };
 
+  const handleJSONImport = (data: ParsedResumeData) => {
+    const store = useResumeStore.getState();
+    const currentProfile = store.profile || {} as any;
+    // Merge imported data into the store
+    if (data.profile) {
+      setProfile({
+        ...currentProfile,
+        full_name: data.profile.full_name || currentProfile.full_name || "",
+        email: data.profile.email || currentProfile.email || "",
+        phone: data.profile.phone || currentProfile.phone || "",
+        location: data.profile.location || currentProfile.location || "",
+        linkedin_url: data.profile.linkedin_url || currentProfile.linkedin_url || "",
+        github_url: data.profile.github_url || currentProfile.github_url || "",
+        website_url: data.profile.website_url || currentProfile.website_url || "",
+        summary: data.profile.summary || currentProfile.summary || "",
+      } as any);
+    }
+    if (data.workExperiences.length > 0) {
+      setWorkExperiences(data.workExperiences.map((w, i) => ({ ...w, id: `imported-work-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+    }
+    if (data.education.length > 0) {
+      setEducation(data.education.map((e, i) => ({ ...e, id: `imported-edu-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+    }
+    if (data.skills.length > 0) {
+      setSkills(data.skills.map((s, i) => ({ ...s, id: `imported-skill-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+    }
+    if (data.projects.length > 0) {
+      setProjects(data.projects.map((p, i) => ({ ...p, id: `imported-proj-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+    }
+    if (data.certifications.length > 0) {
+      setCertifications(data.certifications.map((c, i) => ({ ...c, id: `imported-cert-${i}-${Date.now()}`, sort_order: i, display_order: i })) as any);
+    }
+    if (data.languages.length > 0) {
+      setLanguages(data.languages.map((l, i) => ({ ...l, id: `imported-lang-${i}-${Date.now()}`, name: l.name, language: l.name, sort_order: i, display_order: i })) as any);
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col">
       {/* Editor Header */}
@@ -607,7 +646,7 @@ export function ResumeEditor({
                 <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
+            <DropdownMenuContent align="end" className="w-52 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
               <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Export formats</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-[#102b2b]/10" />
               <DropdownMenuItem onClick={handleDownloadPDF} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
@@ -626,6 +665,14 @@ export function ResumeEditor({
                 <FileCode className="h-4 w-4 text-[#0d8274]" />
                 <span>JSON Standard</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Import</DropdownMenuLabel>
+              <JsonImportDialog onImport={handleJSONImport}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
+                  <Upload className="h-4 w-4 text-[#0d8274]" />
+                  <span>Import JSON Resume</span>
+                </DropdownMenuItem>
+              </JsonImportDialog>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

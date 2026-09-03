@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { ResumesFilterBar } from "@/components/dashboard/resumes-filter-bar"
 import { DuplicateResumeAction, AnalyticsLinkAction } from "@/components/dashboard/resume-actions"
 import { EmptyState } from "@/components/dashboard/empty-state"
+import { ImportResumeButton } from "@/components/dashboard/import-resume-button"
 
 export const metadata = {
     title: "All Resumes | ResumeForge",
@@ -72,12 +73,15 @@ export default async function AllResumesPage({
                         Keep every tailored version ready for the next opportunity.
                     </p>
                 </div>
-                <Button asChild className="min-h-11 rounded-none bg-[#d8f36b] px-5 font-bold text-[#102b2b] shadow-none hover:bg-[#c9e95c]">
-                    <Link href="/dashboard/resume/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create New Resume
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                    <ImportResumeButton />
+                    <Button asChild className="min-h-11 rounded-none bg-[#d8f36b] px-5 font-bold text-[#102b2b] shadow-none hover:bg-[#c9e95c]">
+                        <Link href="/dashboard/resume/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create New Resume
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             {/* Filters - Client-side for interactivity */}
