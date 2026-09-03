@@ -119,7 +119,8 @@ export default function DashboardJobsPage() {
       if (!res.ok) throw new Error("Failed to load jobs feed");
 
       const data = await res.json();
-      setJobs(data.jobs || []);
+      const fetchedJobs = data.jobs || [];
+      setJobs(fetchedJobs);
       setResumes(data.resumes || []);
       if (data.activeResume) {
         setSelectedResumeId(data.activeResume.id);
@@ -128,10 +129,14 @@ export default function DashboardJobsPage() {
       }
 
       // Populate already tracked jobs
-      const tracked = (data.jobs || [])
+      const tracked = fetchedJobs
         .filter((j: any) => j.is_tracked)
         .map((j: any) => j.id);
       setTrackedJobIds(tracked);
+
+      if (queryParam) {
+        toast.success(`Retrieved ${fetchedJobs.length} live job matches for "${queryParam}"`);
+      }
     } catch (err: any) {
       console.error(err);
       toast.error("Could not load job matches.");
@@ -154,6 +159,7 @@ export default function DashboardJobsPage() {
 
   const handleSearchLive = () => {
     setScraping(true);
+    setSelectedTab("all"); // Reset to 'all' so new search results are immediately shown
     fetchFeed(selectedResumeId, searchRole, searchLocation);
   };
 
@@ -230,9 +236,27 @@ export default function DashboardJobsPage() {
   // Filter & Sort Logic
   const getFilteredJobs = () => {
     const list = jobs.filter((job) => {
-      // Search text match
-      const text = `${job.role} ${job.company} ${job.location} ${(job.matching_skills || []).join(" ")}`.toLowerCase();
-      const matchesSearch = searchRole ? text.includes(searchRole.toLowerCase()) : true;
+      // Search text match (intelligent token & synonym matching)
+      let matchesSearch = true;
+      if (searchRole && searchRole.trim()) {
+        const normalizedText = `${job.role} ${job.company} ${job.location} ${(job.matching_skills || []).join(" ")} ${job.description || ""}`
+          .toLowerCase()
+          .replace(/front\s*-\s*end|front\s+end/g, "frontend")
+          .replace(/back\s*-\s*end|back\s+end/g, "backend")
+          .replace(/full\s*-\s*stack|full\s+stack/g, "fullstack");
+
+        const queryTokens = searchRole
+          .toLowerCase()
+          .replace(/front\s*-\s*end|front\s+end/g, "frontend")
+          .replace(/back\s*-\s*end|back\s+end/g, "backend")
+          .replace(/full\s*-\s*stack|full\s+stack/g, "fullstack")
+          .split(/\s+/)
+          .filter(t => t.length > 2); // Ignore single characters or noise words
+
+        if (queryTokens.length > 0) {
+          matchesSearch = queryTokens.some(tok => normalizedText.includes(tok));
+        }
+      }
 
       // Min Salary Filter
       if (minSalary !== "all") {

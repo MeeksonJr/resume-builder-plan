@@ -124,11 +124,13 @@ export async function scrapeLiveJobs(
   if (RAPIDAPI_KEY) {
     try {
       console.log(`[SCRAPER:JOBS] Fetching live jobs for query="${query}", location="${location}"...`);
-      const url = new URL("https://jobs-api14.p.rapidapi.com/list");
+      const countryCode = "US";
+      const url = new URL("https://jobs-api14.p.rapidapi.com/v2/indeed/search");
       url.searchParams.set("query", query);
-      url.searchParams.set("location", location);
-      url.searchParams.set("distance", "50");
-      url.searchParams.set("language", "en_GB");
+      url.searchParams.set("countryCode", countryCode);
+      if (location && !location.toLowerCase().includes("remote")) {
+        url.searchParams.set("location", location);
+      }
 
       const response = await fetch(url.toString(), {
         method: "GET",
@@ -136,39 +138,78 @@ export async function scrapeLiveJobs(
           "X-RapidAPI-Host": "jobs-api14.p.rapidapi.com",
           "X-RapidAPI-Key": RAPIDAPI_KEY,
         },
-        next: { revalidate: 3600 }, // Cache for 1 hour
+        cache: "no-store",
       });
 
       if (response.ok) {
         const json = await response.json();
-        const jobs = json?.jobs || json?.data || [];
-        if (Array.isArray(jobs) && jobs.length > 0) {
-          console.log(`[SCRAPER:JOBS] ✅ Retrieved ${jobs.length} live jobs from RapidAPI`);
-          return jobs.map((j: any, idx: number): ScrapedJob => {
-            const isRemote = (j.location || "").toLowerCase().includes("remote") ||
+        const rawJobs = json.data || [];
+        if (Array.isArray(rawJobs) && rawJobs.length > 0) {
+          console.log(`[SCRAPER:JOBS] ✅ Retrieved ${rawJobs.length} live jobs from Indeed RapidAPI`);
+          return rawJobs.map((j: any, idx: number): ScrapedJob => {
+            const locText = j.location?.location || (j.location?.country ? `${j.location.country}` : "Remote");
+            const isRemote = locText.toLowerCase().includes("remote") ||
               (j.title || "").toLowerCase().includes("remote") ||
-              location.toLowerCase().includes("remote");
+              location.toLowerCase().includes("remote") ||
+              (j.description || "").toLowerCase().includes("remote");
+
+            // Extract salary if mentioned in description
+            let salMin = isRemote ? 120000 : 100000;
+            let salMax = isRemote ? 175000 : 150000;
+            let salRange = isRemote ? "$120,000 - $175,000 / yr" : "$100,000 - $150,000 / yr";
+
+            const desc = j.description || "";
+            const salaryMatch = desc.match(/\$([0-9]{2,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)\s*-\s*\$([0-9]{2,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/);
+            if (salaryMatch) {
+              const num1 = parseInt(salaryMatch[1].replace(/,/g, ""), 10);
+              const num2 = parseInt(salaryMatch[2].replace(/,/g, ""), 10);
+              if (num1 && num2) {
+                salMin = Math.min(num1, num2);
+                salMax = Math.max(num1, num2);
+                salRange = `$${salMin.toLocaleString()} - $${salMax.toLocaleString()} / yr`;
+              }
+            }
+
+            // Extract requirements lines from description
+            const reqs: string[] = [];
+            const lines = desc.split("\n").map((l: string) => l.trim()).filter(Boolean);
+            let inReqSection = false;
+            for (const line of lines) {
+              if (/requirements|qualifications|what you need|skills/i.test(line)) {
+                inReqSection = true;
+                continue;
+              }
+              if (inReqSection) {
+                if (/benefits|what we offer|about the role|responsibilities|perks/i.test(line)) {
+                  break;
+                }
+                if (line.length > 10 && line.length < 160) {
+                  reqs.push(line.replace(/^[•\-\*]\s*/, ""));
+                  if (reqs.length >= 4) break;
+                }
+              }
+            }
 
             return {
               id: j.id || `live-job-${idx}-${Date.now()}`,
-              company: j.company || "Leading Tech Firm",
-              company_logo: j.image || j.companyLogo || undefined,
+              company: j.company?.name || "Leading Technology Company",
+              company_logo: j.company?.image || undefined,
               role: j.title || query,
-              location: j.location || (isRemote ? "Remote (US/Global)" : location),
+              location: isRemote && !locText.toLowerCase().includes("remote") ? `${locText} (Remote)` : locText,
               is_remote: isRemote,
-              salary_min: j.salaryMin || (isRemote ? 115000 : 95000),
-              salary_max: j.salaryMax || (isRemote ? 165000 : 145000),
-              salary_range: j.salary || (isRemote ? "$115,000 - $165,000 / yr" : "$95,000 - $145,000 / yr"),
-              employment_type: j.employmentType || "Full-time",
-              description: j.description || `Exciting opportunity for a ${j.title || query} to design and build scalable products.`,
-              requirements: Array.isArray(j.requirements) ? j.requirements : [
-                "Proven proficiency in modern application development",
-                "Strong collaboration and communication skills",
-                "Experience working in an Agile delivery environment"
+              salary_min: salMin,
+              salary_max: salMax,
+              salary_range: salRange,
+              employment_type: "Full-time",
+              description: desc.length > 50 ? desc.substring(0, 750) + "..." : `Opportunity for a ${j.title || query}.`,
+              requirements: reqs.length > 0 ? reqs : [
+                "Strong background in modern application development",
+                "Demonstrated experience designing and shipping scalable systems",
+                "Proven cross-functional technical communication and collaboration"
               ],
-              url: j.jobProviders?.[0]?.url || j.url || "https://indeed.com",
-              posted_at: j.datePosted || new Date().toISOString(),
-              source: "RapidAPI (Live Aggregator)",
+              url: j.applyUrl || "https://indeed.com",
+              posted_at: j.datePublishedTimestamp ? new Date(j.datePublishedTimestamp).toISOString() : new Date().toISOString(),
+              source: "Indeed (RapidAPI Live)",
             };
           });
         }
