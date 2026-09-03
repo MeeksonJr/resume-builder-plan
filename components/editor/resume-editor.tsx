@@ -631,10 +631,14 @@ export function ResumeEditor({
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
           >
-            <option value="modern">Modern</option>
-            <option value="minimal">Minimal</option>
-            <option value="classic">Classic</option>
-            <option value="creative">Creative</option>
+            <option value="modern">Modern Clean</option>
+            <option value="classic">Ivy League Classic</option>
+            <option value="minimal">Minimalist Nordic</option>
+            <option value="creative">Creative Studio</option>
+            <option value="executive">Executive Leadership</option>
+            <option value="technical">Technical Developer</option>
+            <option value="compact">High-Density Compact</option>
+            <option value="elegant">Editorial Elegance</option>
           </select>
 
           {/* Export Dropdown */}

@@ -6,6 +6,10 @@ import { ModernTemplate } from "./templates/modern-template";
 import { MinimalTemplate } from "./templates/minimal-template";
 import { ClassicTemplate } from "./templates/classic-template";
 import { CreativeTemplate } from "./templates/creative-template";
+import { ExecutiveTemplate } from "./templates/executive-template";
+import { TechnicalTemplate } from "./templates/technical-template";
+import { CompactTemplate } from "./templates/compact-template";
+import { ElegantTemplate } from "./templates/elegant-template";
 
 interface ResumePreviewProps extends React.HTMLAttributes<HTMLDivElement> {
     data?: {
@@ -125,6 +129,14 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
                 return <ClassicTemplate {...templateProps} />;
             case "creative":
                 return <CreativeTemplate {...templateProps} />;
+            case "executive":
+                return <ExecutiveTemplate {...templateProps} />;
+            case "technical":
+                return <TechnicalTemplate {...templateProps} />;
+            case "compact":
+                return <CompactTemplate {...templateProps} />;
+            case "elegant":
+                return <ElegantTemplate {...templateProps} />;
             case "modern":
             default:
                 return <ModernTemplate {...templateProps} />;
