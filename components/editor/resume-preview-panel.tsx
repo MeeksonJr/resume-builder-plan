@@ -11,18 +11,27 @@ interface ResumePreviewPanelProps {
     readOnly?: boolean;
 }
 
-const RESUME_BASE_WIDTH = 800; // Standard 8.5in proportional width in pixels
+const RESUME_BASE_WIDTH = 800; // Standard proportional width for resume layout
 
 export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
+    const documentRef = useRef<HTMLDivElement>(null);
 
     const [containerWidth, setContainerWidth] = useState<number>(0);
-    const [contentHeight, setContentHeight] = useState<number>(1056);
     const [isFitMode, setIsFitMode] = useState<boolean>(true);
     const [customScale, setCustomScale] = useState<number>(1);
+    const [supportsZoom, setSupportsZoom] = useState<boolean>(true);
+    const [fallbackHeight, setFallbackHeight] = useState<number | null>(null);
 
-    // Track container width
+    // Detect CSS zoom support
+    useEffect(() => {
+        if (typeof document !== "undefined") {
+            const hasZoom = "zoom" in document.documentElement.style;
+            setSupportsZoom(hasZoom);
+        }
+    }, []);
+
+    // Track container width for Fit Width mode
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -45,36 +54,38 @@ export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) 
         return () => ro.disconnect();
     }, []);
 
-    // Track content height so the scaled box doesn't leave blank space
+    // Fallback height observer ONLY for browsers without native CSS zoom
     useEffect(() => {
-        const content = contentRef.current;
-        if (!content) return;
+        if (supportsZoom) return;
+
+        const doc = documentRef.current;
+        if (!doc) return;
 
         const updateHeight = () => {
-            if (content) {
-                setContentHeight(Math.max(1056, content.scrollHeight));
+            if (doc) {
+                const rect = doc.getBoundingClientRect();
+                setFallbackHeight(rect.height);
             }
         };
 
         updateHeight();
-
-        const ro = new ResizeObserver(() => {
-            updateHeight();
-        });
-
-        ro.observe(content);
+        const ro = new ResizeObserver(updateHeight);
+        ro.observe(doc);
         return () => ro.disconnect();
-    }, []);
+    }, [supportsZoom]);
 
     // Calculate auto-fit scale based on available container width
     const fitScale = Math.max(
         0.35,
-        containerWidth > 32
-            ? parseFloat(((containerWidth - 32) / RESUME_BASE_WIDTH).toFixed(3))
-            : 0.8
+        Math.min(
+            1.2,
+            containerWidth > 32
+                ? parseFloat(((containerWidth - 32) / RESUME_BASE_WIDTH).toFixed(3))
+                : 0.8
+        )
     );
 
-    // Active scale to apply
+    // Active scale
     const activeScale = isFitMode ? fitScale : customScale;
 
     const handleZoomIn = () => {
@@ -96,13 +107,10 @@ export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) 
         setCustomScale(1);
     };
 
-    const scaledWidth = Math.round(RESUME_BASE_WIDTH * activeScale);
-    const scaledHeight = Math.round(contentHeight * activeScale);
-
     return (
         <div className="flex flex-col h-full overflow-hidden bg-neutral-100 border-l border-[#102b2b]/15">
-            {/* Zoom / Scale Top Toolbar */}
-            <div className="flex items-center justify-between border-b border-[#102b2b]/15 bg-white/95 px-4 py-2 shrink-0 text-xs">
+            {/* Zoom Controls Toolbar */}
+            <div className="flex items-center justify-between border-b border-[#102b2b]/15 bg-white/95 px-4 py-2 shrink-0 text-xs shadow-xs">
                 <div className="flex items-center gap-2">
                     <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#52716a]">
                         Zoom
@@ -174,34 +182,47 @@ export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) 
                 className="relative flex-1 overflow-y-auto overflow-x-auto p-4 flex justify-center items-start scrollbar-thin scrollbar-thumb-neutral-300 hover:scrollbar-thumb-neutral-400"
                 style={{ backgroundColor: "hsl(var(--muted) / 0.35)" }}
             >
-                {/* Scaled Wrapper: occupies the exact visual dimensions of the scaled resume */}
-                <div
-                    style={{
-                        width: `${scaledWidth}px`,
-                        height: `${scaledHeight}px`,
-                        position: "relative",
-                        flexShrink: 0,
-                    }}
-                    className="mx-auto"
-                >
-                    {/* Inner Document: 800px wide, transformed smoothly from top-left */}
+                {supportsZoom ? (
+                    /* Modern CSS zoom: naturally scales layout dimensions with ZERO artificial empty space */
                     <div
-                        ref={contentRef}
+                        ref={documentRef}
                         style={{
                             width: `${RESUME_BASE_WIDTH}px`,
-                            minHeight: "1056px",
-                            transform: `scale(${activeScale})`,
-                            transformOrigin: "0 0",
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            transition: isFitMode ? "transform 0.15s ease-out" : "none",
-                        }}
-                        className="bg-white shadow-xl border border-neutral-300/80"
+                            zoom: activeScale,
+                        } as any}
+                        className="bg-white shadow-xl border border-neutral-300/80 mx-auto min-h-[1056px] h-auto shrink-0 mb-8 transition-[zoom] duration-150"
                     >
                         <ResumePreview data={data} readOnly={readOnly} />
                     </div>
-                </div>
+                ) : (
+                    /* Transform fallback for older browsers: uses actual getBoundingClientRect height */
+                    <div
+                        style={{
+                            width: `${Math.round(RESUME_BASE_WIDTH * activeScale)}px`,
+                            height: fallbackHeight ? `${fallbackHeight}px` : "auto",
+                            position: "relative",
+                            flexShrink: 0,
+                            marginBottom: "2rem",
+                        }}
+                        className="mx-auto"
+                    >
+                        <div
+                            ref={documentRef}
+                            style={{
+                                width: `${RESUME_BASE_WIDTH}px`,
+                                minHeight: "1056px",
+                                transform: `scale(${activeScale})`,
+                                transformOrigin: "0 0",
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                            }}
+                            className="bg-white shadow-xl border border-neutral-300/80"
+                        >
+                            <ResumePreview data={data} readOnly={readOnly} />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
