@@ -357,15 +357,17 @@ export default function NewResumePage() {
             } else {
                 // Blank canvas with candidate's personal profile
                 if (profile) {
+                    const contactSettings = profile.settings?.contact || {};
                     await supabase.from("personal_info").upsert({
                         resume_id: resumeId,
-                        full_name: profile.full_name,
-                        email: profile.email,
-                        phone: profile.phone,
-                        location: profile.location,
-                        linkedin: profile.linkedin_url,
-                        github: profile.github_url,
-                        website: profile.website_url,
+                        full_name: profile.full_name || null,
+                        email: profile.email || null,
+                        phone: contactSettings.phone || profile.phone || null,
+                        location: profile.location || null,
+                        linkedin: contactSettings.linkedin || profile.linkedin_url || null,
+                        github: contactSettings.github || profile.github_url || null,
+                        website: profile.website_url || null,
+                        summary: profile.bio || null,
                     }, { onConflict: "resume_id" });
                 }
             }

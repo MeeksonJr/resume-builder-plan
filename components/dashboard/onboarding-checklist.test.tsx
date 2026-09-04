@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { OnboardingChecklist } from "./onboarding-checklist";
 import React from "react";
@@ -12,29 +12,43 @@ vi.mock("framer-motion", () => ({
 }));
 
 describe("OnboardingChecklist component", () => {
-  it("renders onboarding checklist when steps are incomplete", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("renders Career Launchpad with initial milestones", () => {
     render(<OnboardingChecklist resumeCount={0} isPro={false} />);
-    expect(screen.getByText("Set up your workspace")).toBeDefined();
-    expect(screen.getByText("Create your first resume")).toBeDefined();
-    expect(screen.getByText("Unlock Pro features")).toBeDefined();
-    expect(screen.getByText("0/2 Steps")).toBeDefined();
+    expect(screen.getByText("Career Launchpad & Milestones")).toBeDefined();
+    expect(screen.getByText("Novice Explorer")).toBeDefined();
+    expect(screen.getByText("Document Architect")).toBeDefined();
+    expect(screen.getByText("0 of 6 Badges Unlocked")).toBeDefined();
   });
 
-  it("calculates partial progress correctly", () => {
-    render(<OnboardingChecklist resumeCount={1} isPro={false} />);
-    expect(screen.getByText("Set up your workspace")).toBeDefined();
-    expect(screen.getByText("1/2 Steps")).toBeDefined();
+  it("calculates progress and unlocked badges correctly", () => {
+    render(
+      <OnboardingChecklist
+        resumeCount={1}
+        applicationsCount={3}
+        interviewsCount={1}
+        isPro={false}
+      />
+    );
+    expect(screen.getByText("Active Contender")).toBeDefined();
+    expect(screen.getByText("3 of 6 Badges Unlocked")).toBeDefined();
   });
 
-  it("returns null if all steps are completed", () => {
-    const { container } = render(<OnboardingChecklist resumeCount={1} isPro={true} />);
-    expect(container.firstChild).toBeNull();
+  it("toggles collapse state when clicking Collapse/Expand", () => {
+    render(<OnboardingChecklist resumeCount={1} />);
+    const toggleButton = screen.getByText(/Collapse/i);
+    fireEvent.click(toggleButton);
+    expect(screen.getByText(/Expand/i)).toBeDefined();
   });
 
-  it("can be dismissed by clicking close button", () => {
+  it("can be dismissed by clicking the close button", () => {
     render(<OnboardingChecklist resumeCount={0} isPro={false} />);
-    const closeButton = screen.getByText("Dismiss");
+    const closeButton = screen.getByTitle("Dismiss Launchpad");
     fireEvent.click(closeButton);
-    expect(screen.queryByText("Set up your workspace")).toBeNull();
+    expect(screen.queryByText("Career Launchpad & Milestones")).toBeNull();
+    expect(localStorage.getItem("career_launchpad_dismissed")).toBe("true");
   });
 });

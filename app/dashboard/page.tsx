@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { ResumeList } from "@/components/dashboard/resume-list";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { AnalyticsView } from "@/components/dashboard/analytics-view";
-import { WelcomeTour } from "@/components/dashboard/welcome-tour";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { CanvasCourseWidget } from "@/components/dashboard/canvas-course-widget";
 import { JobRecommendationsWidget } from "@/components/dashboard/job-recommendations-widget";
@@ -65,6 +64,23 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     .select("email, bio, is_pro, subscription_status, full_name, canvas_instance_url")
     .eq("id", user.id)
     .single();
+
+  const { data: savedAts } = await supabase
+    .from("saved_ats_analyses")
+    .select("score")
+    .eq("user_id", user.id);
+
+  const { data: savedSalary } = await supabase
+    .from("saved_salary_insights")
+    .select("id")
+    .eq("user_id", user.id);
+
+  const { data: portfolios } = await supabase
+    .from("portfolios")
+    .select("id")
+    .eq("user_id", user.id);
+
+  const highestAtsScore = Math.max(0, ...(savedAts?.map((a: any) => a.score || 0) || [0]));
 
   // Derive isPro from either column so a stale is_pro boolean doesn't hide Pro status
   const isPro = profile?.is_pro === true ||
@@ -152,12 +168,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           </div>
 
-          <OnboardingChecklist resumeCount={resumes?.length || 0} isPro={isPro} />
-          <WelcomeTour
-            resumesCount={resumes?.length || 0}
+          <OnboardingChecklist
+            resumeCount={resumes?.length || 0}
+            atsScore={highestAtsScore}
+            savedAtsCount={savedAts?.length || 0}
             applicationsCount={applications?.length || 0}
             interviewsCount={interviews?.length || 0}
-            hasPortfolio={!!profile?.full_name || !!profile?.bio}
+            salaryInsightsCount={savedSalary?.length || 0}
+            hasPortfolio={(portfolios && portfolios.length > 0) || !!profile?.full_name}
+            isPro={isPro}
           />
 
           {resumes && resumes.length > 0 ? (
