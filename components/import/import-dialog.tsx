@@ -82,7 +82,7 @@ export function ImportDialog({ children }: { children: React.ReactNode }) {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="w-[95vw] max-w-xl sm:max-w-xl p-6 md:p-8">
                 <DialogHeader>
                     <DialogTitle>Import Resume</DialogTitle>
                     <DialogDescription>
@@ -102,7 +102,7 @@ export function ImportDialog({ children }: { children: React.ReactNode }) {
                     </TabsList>
 
                     <TabsContent value="pdf" className="space-y-4 py-4">
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="pdf-upload">LinkedIn PDF Export</Label>
                             <div className="flex items-center justify-center w-full">
                                 <label

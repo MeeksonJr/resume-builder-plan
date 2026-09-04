@@ -41,7 +41,7 @@ export function JobInputDialog({ children, onResumeTailor, isLoading }: JobInput
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="w-[95vw] max-w-3xl sm:max-w-3xl p-6 md:p-8">
                 <DialogHeader>
                     <DialogTitle>Target a Specific Job</DialogTitle>
                     <DialogDescription>

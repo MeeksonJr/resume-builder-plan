@@ -191,15 +191,15 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                 New Session
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="overflow-hidden rounded-none border-[#102b2b]/20 bg-[#e9eee8] p-0 shadow-2xl sm:max-w-[550px]">
-                            <div className="relative flex h-24 items-center border-b border-[#102b2b]/15 bg-[#102b2b] px-8 text-[#e9eee8]">
+                        <DialogContent className="w-[95vw] max-w-3xl sm:max-w-3xl max-h-[90vh] flex flex-col overflow-hidden rounded-none border-[#102b2b]/20 bg-[#e9eee8] p-0 shadow-2xl">
+                            <div className="relative flex h-24 items-center border-b border-[#102b2b]/15 bg-[#102b2b] px-8 text-[#e9eee8] shrink-0">
                                 <div>
                                     <DialogTitle className="text-2xl font-black uppercase tracking-tight">Practice Session</DialogTitle>
                                     <DialogDescription className="font-bold text-muted-foreground/80">Customize your AI-powered interview experience.</DialogDescription>
                                 </div>
                                 <Brain className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 text-primary/10" />
                             </div>
-                            <div className="space-y-6 p-8">
+                            <div className="space-y-6 p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">Session Mode</Label>
                                     <div className="grid grid-cols-2 gap-4">

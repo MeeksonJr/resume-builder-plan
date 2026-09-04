@@ -113,8 +113,8 @@ export function InterviewPrepDialog({ children, application }: InterviewPrepDial
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto bg-slate-950/95 border-primary/10 shadow-3xl backdrop-blur-2xl p-0 rounded-3xl custom-scrollbar">
-                <div className="relative h-32 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border-b border-primary/5 flex items-center px-10">
+            <DialogContent className="w-[96vw] max-w-5xl sm:max-w-5xl h-[90vh] max-h-[880px] flex flex-col p-0 overflow-hidden bg-slate-950/95 border-primary/10 shadow-3xl backdrop-blur-2xl rounded-3xl">
+                <div className="relative h-32 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border-b border-primary/5 flex items-center px-10 shrink-0">
                     <div className="relative z-10 space-y-1">
                         <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className="gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border-primary/20 bg-primary/5 text-primary">
@@ -130,7 +130,7 @@ export function InterviewPrepDialog({ children, application }: InterviewPrepDial
                     <Sparkles className="absolute right-10 top-1/2 -translate-y-1/2 h-20 w-20 text-primary/5 animate-pulse" />
                 </div>
 
-                <div className="p-10">
+                <div className="p-8 md:p-10 flex-1 overflow-y-auto custom-scrollbar">
                     {questions.length === 0 ? (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}

@@ -389,164 +389,257 @@ export function KanbanBoard() {
                             Add Job
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-none border-[#102b2b]/15 bg-[#f8f4ec]">
-                        <DialogHeader>
-                            <DialogTitle className="font-heading font-black text-xl uppercase text-[#102b2b]">Track New Application</DialogTitle>
-                            <DialogDescription className="text-xs text-[#52716a]">Add details about a job and link your career materials.</DialogDescription>
+                    <DialogContent className="w-[96vw] max-w-5xl sm:max-w-5xl h-[90vh] max-h-[880px] flex flex-col p-0 overflow-hidden rounded-none border-[#102b2b]/20 bg-[#f8f4ec] shadow-2xl">
+                        <DialogHeader className="sr-only">
+                            <DialogTitle>Track New Application</DialogTitle>
+                            <DialogDescription>Add a new job application and link your career materials.</DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-3 text-xs text-[#102b2b]">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="application-company" className="font-bold">Company *</Label>
-                                    <Input id="application-company" value={company} onChange={e => setCompany(e.target.value)} placeholder="Google" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+
+                        {/* Top Command Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] shrink-0">
+                            <div className="space-y-0.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8f36b]">Application Pipeline</span>
+                                    <Badge className="rounded-none bg-[#d8f36b]/15 text-[#d8f36b] border-[#d8f36b]/30 text-[10px] uppercase font-black">New Card</Badge>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="application-role" className="font-bold">Role *</Label>
-                                    <Input id="application-role" value={role} onChange={e => setRole(e.target.value)} placeholder="Software Engineer" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
+                                <h2 className="text-xl font-black uppercase tracking-tight text-white mt-0.5">
+                                    {role ? `${role}${company ? ` — ${company}` : ''}` : "Track New Application"}
+                                </h2>
+                                <p className="text-xs text-[#a6c0b8]">
+                                    Add opportunity parameters, target compensation, and link your tailored resumes and coursework.
+                                </p>
                             </div>
-
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="application-priority" className="font-bold">Priority</Label>
-                                    <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
-                                        <SelectTrigger id="application-priority" className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-none">
-                                            <SelectItem value="low">Low Priority</SelectItem>
-                                            <SelectItem value="medium">Medium Priority</SelectItem>
-                                            <SelectItem value="high">🔥 High Priority</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="application-interview" className="font-bold">Next Interview Date</Label>
-                                    <Input id="application-interview" type="date" value={interviewDate} onChange={e => setInterviewDate(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
+                            <div className="flex items-center gap-3 pr-6">
+                                <Badge variant="outline" className="rounded-none border-[#d8f36b]/40 text-[#d8f36b] bg-[#d8f36b]/10 text-xs font-bold uppercase tracking-wider px-3 py-1">
+                                    {COLUMNS.find(c => c.id === status)?.label || status}
+                                </Badge>
                             </div>
+                        </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="application-salary" className="font-bold">Salary Range</Label>
-                                    <Input id="application-salary" value={salaryRange} onChange={e => setSalaryRange(e.target.value)} placeholder="e.g. $120k - $150k" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="application-location" className="font-bold">Location</Label>
-                                    <Input id="application-location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Remote, San Francisco" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                            </div>
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs text-[#102b2b]">
+                                {/* Left Column: 7 cols - Opportunity Details */}
+                                <div className="lg:col-span-7 space-y-6">
+                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-4">
+                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2.5">
+                                            <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274] flex items-center gap-2">
+                                                <Briefcase className="w-3.5 h-3.5" />
+                                                Opportunity Parameters
+                                            </h4>
+                                            <span className="text-[10px] text-muted-foreground font-medium">Fields with * required</span>
+                                        </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="font-bold">Status Column</Label>
-                                <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-none">
-                                        {COLUMNS.map(col => (
-                                            <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-company" className="font-bold">Company *</Label>
+                                                <Input id="application-company" value={company} onChange={e => setCompany(e.target.value)} placeholder="e.g. Google, Stripe" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-role" className="font-bold">Role *</Label>
+                                                <Input id="application-role" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Software Engineer" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                        </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="application-url" className="font-bold">Job Link URL</Label>
-                                <Input id="application-url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://company.com/careers/..." className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="font-bold">Status Column</Label>
+                                                <Select value={status} onValueChange={setStatus}>
+                                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-none">
+                                                        {COLUMNS.map(col => (
+                                                            <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-priority" className="font-bold">Priority</Label>
+                                                <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
+                                                    <SelectTrigger id="application-priority" className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-none">
+                                                        <SelectItem value="low">Low Priority</SelectItem>
+                                                        <SelectItem value="medium">Medium Priority</SelectItem>
+                                                        <SelectItem value="high">🔥 High Priority</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
 
-                            {/* Linked Resume */}
-                            <div className="space-y-1.5 border-t border-[#102b2b]/10 pt-3">
-                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                    <FileText className="w-3.5 h-3.5" />
-                                    Link Candidate Resume
-                                </Label>
-                                <Select value={resumeId} onValueChange={setResumeId}>
-                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                        <SelectValue placeholder="Select a resume" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-none">
-                                        <SelectItem value="none">None (No specific resume linked)</SelectItem>
-                                        {resumes.map(r => (
-                                            <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-salary" className="font-bold">Salary Range / Target</Label>
+                                                <Input id="application-salary" value={salaryRange} onChange={e => setSalaryRange(e.target.value)} placeholder="e.g. $120k - $150k" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-location" className="font-bold">Location</Label>
+                                                <Input id="application-location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Remote, San Francisco" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                        </div>
 
-                            {/* Linked Cover Letter */}
-                            <div className="space-y-1.5 border-t border-[#102b2b]/10 pt-3">
-                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                    <FileText className="w-3.5 h-3.5" />
-                                    Link AI Cover Letter
-                                </Label>
-                                <Select value={coverLetterId} onValueChange={setCoverLetterId}>
-                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                        <SelectValue placeholder="Select a document" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-none">
-                                        <SelectItem value="none">None (No document linked)</SelectItem>
-                                        {coverLetters.map(cl => (
-                                            <SelectItem key={cl.id} value={cl.id}>{cl.title}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-interview" className="font-bold">Next Interview Date</Label>
+                                                <Input id="application-interview" type="date" value={interviewDate} onChange={e => setInterviewDate(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="application-url" className="font-bold">Job Link URL</Label>
+                                                <Input id="application-url" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://company.com/careers/..." className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                        </div>
+                                    </div>
 
-                            {/* Linked Canvas LMS Coursework */}
-                            {canvasCourses.length > 0 && (
-                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
-                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                        <BookOpen className="w-3.5 h-3.5" />
-                                        Attach Synced Canvas Coursework
-                                    </Label>
-                                    <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
-                                        {canvasCourses.map(course => (
-                                            <label key={course.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
-                                                <input 
-                                                    type="checkbox"
-                                                    checked={selectedCanvasCourses.includes(course.course_code || course.name)}
-                                                    onChange={() => handleToggleCanvasCourse(course.course_code || course.name, false)}
-                                                    className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
-                                                />
-                                                <span className="truncate font-medium" title={course.name}>
-                                                    {course.course_code}: {course.name}
-                                                </span>
-                                            </label>
-                                        ))}
+                                    {/* Notes Card */}
+                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-2.5">
+                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2">
+                                            <Label htmlFor="application-notes" className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274]">
+                                                Initial Notes & Referral Context
+                                            </Label>
+                                            <span className="text-[10px] text-muted-foreground">Contacts, job source, requirements</span>
+                                        </div>
+                                        <Textarea
+                                            id="application-notes"
+                                            value={notes}
+                                            onChange={e => setNotes(e.target.value)}
+                                            placeholder="Add interview notes, recruiter contacts, or referral details..."
+                                            className="rounded-none border-[#102b2b]/15 bg-white min-h-[120px] font-sans text-xs leading-relaxed"
+                                        />
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Linked Scholarships/Grants */}
-                            {shortlist.length > 0 && (
-                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
-                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                        <GraduationCap className="w-3.5 h-3.5" />
-                                        Link Shortlisted Aid Opportunities
-                                    </Label>
-                                    <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
-                                        {shortlist.map(opp => (
-                                            <label key={opp.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
-                                                <input 
-                                                    type="checkbox"
-                                                    checked={selectedOpps.includes(opp.id)}
-                                                    onChange={() => handleToggleOpp(opp.id, false)}
-                                                    className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
-                                                />
-                                                <span className="truncate" title={opp.title}>{opp.title}</span>
-                                            </label>
-                                        ))}
+                                {/* Right Column: 5 cols - Connected Career Materials */}
+                                <div className="lg:col-span-5 space-y-6">
+                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-4">
+                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2.5">
+                                            <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274] flex items-center gap-2">
+                                                <FileText className="w-3.5 h-3.5" />
+                                                Link Career Documents
+                                            </h4>
+                                            <span className="text-[10px] text-muted-foreground font-medium">Attach to card</span>
+                                        </div>
+
+                                        {/* Linked Resume */}
+                                        <div className="space-y-1.5">
+                                            <Label className="font-bold text-xs text-[#102b2b] flex items-center gap-1.5">
+                                                Candidate Resume
+                                            </Label>
+                                            <Select value={resumeId} onValueChange={setResumeId}>
+                                                <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                    <SelectValue placeholder="Select a resume" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-none">
+                                                    <SelectItem value="none">None (No specific resume linked)</SelectItem>
+                                                    {resumes.map(r => (
+                                                        <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Linked Cover Letter */}
+                                        <div className="space-y-1.5">
+                                            <Label className="font-bold text-xs text-[#102b2b] flex items-center gap-1.5">
+                                                AI Cover Letter
+                                            </Label>
+                                            <Select value={coverLetterId} onValueChange={setCoverLetterId}>
+                                                <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                    <SelectValue placeholder="Select a document" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-none">
+                                                    <SelectItem value="none">None (No document linked)</SelectItem>
+                                                    {coverLetters.map(cl => (
+                                                        <SelectItem key={cl.id} value={cl.id}>{cl.title}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="application-notes" className="font-bold">Notes</Label>
-                                <Textarea id="application-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Add interview notes, recruiter contacts, or referral details..." className="rounded-none border-[#102b2b]/15 bg-white min-h-[70px]" />
+                                    {/* Linked Canvas LMS Coursework */}
+                                    {canvasCourses.length > 0 && (
+                                        <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-3">
+                                            <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2">
+                                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                                    <BookOpen className="w-3.5 h-3.5" />
+                                                    Attach Synced Canvas Coursework
+                                                </Label>
+                                                <Badge variant="outline" className="rounded-none border-[#0d8274]/30 text-[#0d8274] text-[10px] font-bold">
+                                                    {selectedCanvasCourses.length} selected
+                                                </Badge>
+                                            </div>
+                                            <div className="p-2.5 bg-[#fbfdf9] border border-[#102b2b]/15 space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar">
+                                                {canvasCourses.map(course => (
+                                                    <label key={course.id} className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/50 p-1.5 transition-colors">
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={selectedCanvasCourses.includes(course.course_code || course.name)}
+                                                            onChange={() => handleToggleCanvasCourse(course.course_code || course.name, false)}
+                                                            className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
+                                                        />
+                                                        <span className="truncate font-medium text-xs" title={course.name}>
+                                                            <span className="font-bold text-[#0d8274]">{course.course_code}</span>: {course.name}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Linked Scholarships/Grants */}
+                                    {shortlist.length > 0 && (
+                                        <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-3">
+                                            <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2">
+                                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                                    <GraduationCap className="w-3.5 h-3.5" />
+                                                    Link Shortlisted Aid Opportunities
+                                                </Label>
+                                                <Badge variant="outline" className="rounded-none border-[#0d8274]/30 text-[#0d8274] text-[10px] font-bold">
+                                                    {selectedOpps.length} selected
+                                                </Badge>
+                                            </div>
+                                            <div className="p-2.5 bg-[#fbfdf9] border border-[#102b2b]/15 space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar">
+                                                {shortlist.map(opp => (
+                                                    <label key={opp.id} className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/50 p-1.5 transition-colors">
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={selectedOpps.includes(opp.id)}
+                                                            onChange={() => handleToggleOpp(opp.id, false)}
+                                                            className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
+                                                        />
+                                                        <span className="truncate text-xs font-medium" title={opp.title}>{opp.title}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <Button onClick={handleAddJob} className="w-full h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold">Track Application</Button>
+                        </div>
+
+                        {/* Fixed Footer Actions */}
+                        <div className="flex items-center justify-between px-6 md:px-8 py-4 border-t border-[#102b2b]/15 bg-white shrink-0">
+                            <span className="text-xs text-muted-foreground font-medium">
+                                Link relevant resumes & coursework for full dossier synchronization.
+                            </span>
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsDialogOpen(false)}
+                                    className="h-11 rounded-none border-[#102b2b]/20 text-[#102b2b] hover:bg-muted font-bold px-6"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleAddJob}
+                                    className="h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-8"
+                                >
+                                    Track Application
+                                </Button>
+                            </div>
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -718,176 +811,287 @@ export function KanbanBoard() {
 
             {/* Card Edit/Details Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto rounded-none border-[#102b2b]/15 bg-[#f8f4ec]">
-                    <DialogHeader>
-                        <DialogTitle className="font-heading font-black text-xl uppercase text-[#102b2b]">Edit Card Details</DialogTitle>
-                        <DialogDescription className="text-xs text-[#52716a]">Review status, attached documents, and scholarship linkages.</DialogDescription>
+                <DialogContent className="w-[96vw] max-w-5xl sm:max-w-5xl h-[90vh] max-h-[880px] flex flex-col p-0 overflow-hidden rounded-none border-[#102b2b]/20 bg-[#f8f4ec] shadow-2xl">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Edit Application Details</DialogTitle>
+                        <DialogDescription>Review and modify tracked job status, documents, and coursework.</DialogDescription>
                     </DialogHeader>
+
+                    {/* Top Command Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] shrink-0">
+                        <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8f36b]">Job Tracker Dossier</span>
+                                {selectedApp?.priority === "high" && (
+                                    <Badge className="rounded-none bg-red-500/20 text-red-300 border-red-500/30 text-[10px] uppercase font-black">🔥 High Priority</Badge>
+                                )}
+                            </div>
+                            <h2 className="text-xl font-black uppercase tracking-tight text-white mt-0.5">
+                                {editRole ? `${editRole} — ${editCompany}` : "Edit Application Details"}
+                            </h2>
+                            <p className="text-xs text-[#a6c0b8]">
+                                Manage pipeline status, linked career documents, synced coursework, and interview notes.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3 pr-6">
+                            <Badge variant="outline" className="rounded-none border-[#d8f36b]/40 text-[#d8f36b] bg-[#d8f36b]/10 text-xs font-bold uppercase tracking-wider px-3 py-1">
+                                {COLUMNS.find(c => c.id === editStatus)?.label || editStatus}
+                            </Badge>
+                        </div>
+                    </div>
+
                     {selectedApp && (
-                        <div className="grid gap-4 py-3 text-xs text-[#102b2b]">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="edit-company" className="font-bold">Company *</Label>
-                                    <Input id="edit-company" value={editCompany} onChange={e => setEditCompany(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="edit-role" className="font-bold">Role *</Label>
-                                    <Input id="edit-role" value={editRole} onChange={e => setEditRole(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                            </div>
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs text-[#102b2b]">
+                                {/* Left Column: 7 cols - Core Application & Opportunity Details */}
+                                <div className="lg:col-span-7 space-y-6">
+                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-4">
+                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2.5">
+                                            <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274] flex items-center gap-2">
+                                                <Briefcase className="w-3.5 h-3.5" />
+                                                Opportunity Parameters
+                                            </h4>
+                                            <span className="text-[10px] text-muted-foreground font-medium">Core application data</span>
+                                        </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="edit-priority" className="font-bold">Priority</Label>
-                                    <Select value={editPriority} onValueChange={(v: any) => setEditPriority(v)}>
-                                        <SelectTrigger id="edit-priority" className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-none">
-                                            <SelectItem value="low">Low Priority</SelectItem>
-                                            <SelectItem value="medium">Medium Priority</SelectItem>
-                                            <SelectItem value="high">🔥 High Priority</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="edit-interview" className="font-bold">Next Interview Date</Label>
-                                    <Input id="edit-interview" type="date" value={editInterviewDate} onChange={e => setEditInterviewDate(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="edit-company" className="font-bold">Company *</Label>
+                                                <Input id="edit-company" value={editCompany} onChange={e => setEditCompany(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="edit-role" className="font-bold">Role *</Label>
+                                                <Input id="edit-role" value={editRole} onChange={e => setEditRole(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                        </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="edit-salary" className="font-bold">Salary Range</Label>
-                                    <Input id="edit-salary" value={editSalaryRange} onChange={e => setEditSalaryRange(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="edit-location" className="font-bold">Location</Label>
-                                    <Input id="edit-location" value={editLocation} onChange={e => setEditLocation(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                                </div>
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="font-bold">Status Column</Label>
+                                                <Select value={editStatus} onValueChange={(v: any) => setEditStatus(v)}>
+                                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-none">
+                                                        {COLUMNS.map(col => (
+                                                            <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="edit-priority" className="font-bold">Priority</Label>
+                                                <Select value={editPriority} onValueChange={(v: any) => setEditPriority(v)}>
+                                                    <SelectTrigger id="edit-priority" className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-none">
+                                                        <SelectItem value="low">Low Priority</SelectItem>
+                                                        <SelectItem value="medium">Medium Priority</SelectItem>
+                                                        <SelectItem value="high">🔥 High Priority</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
 
-                            <div className="space-y-1.5">
-                                <Label className="font-bold">Status</Label>
-                                <Select value={editStatus} onValueChange={(v: any) => setEditStatus(v)}>
-                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-none">
-                                        {COLUMNS.map(col => (
-                                            <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="edit-salary" className="font-bold">Salary Range / Target</Label>
+                                                <Input id="edit-salary" value={editSalaryRange} onChange={e => setEditSalaryRange(e.target.value)} placeholder="e.g. $120k - $150k" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="edit-location" className="font-bold">Location</Label>
+                                                <Input id="edit-location" value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="e.g. Remote, San Francisco" className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                        </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="edit-url" className="font-bold">Job Link URL</Label>
-                                <Input id="edit-url" value={editUrl} onChange={e => setEditUrl(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
-                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label htmlFor="edit-interview" className="font-bold">Next Interview Date</Label>
+                                                <Input id="edit-interview" type="date" value={editInterviewDate} onChange={e => setEditInterviewDate(e.target.value)} className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between">
+                                                    <Label htmlFor="edit-url" className="font-bold">Job Link URL</Label>
+                                                    {editUrl && (
+                                                        <a href={editUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#0d8274] hover:underline flex items-center gap-1 font-semibold">
+                                                            Visit Link <ExternalLink className="w-2.5 h-2.5" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                                <Input id="edit-url" value={editUrl} onChange={e => setEditUrl(e.target.value)} placeholder="https://..." className="rounded-none h-10 border-[#102b2b]/15 bg-white" />
+                                            </div>
+                                        </div>
+                                    </div>
 
-                            {/* Linked Resume in Edit */}
-                            <div className="space-y-1.5 border-t border-[#102b2b]/10 pt-3">
-                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                    <FileText className="w-3.5 h-3.5" />
-                                    Link Candidate Resume
-                                </Label>
-                                <Select value={editResumeId} onValueChange={setEditResumeId}>
-                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                        <SelectValue placeholder="Select a resume" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-none">
-                                        <SelectItem value="none">None (No specific resume linked)</SelectItem>
-                                        {resumes.map(r => (
-                                            <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Linked Cover Letter in Edit */}
-                            <div className="space-y-1.5 border-t border-[#102b2b]/10 pt-3">
-                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                    <FileText className="w-3.5 h-3.5" />
-                                    Link AI Cover Letter
-                                </Label>
-                                <Select value={editCoverLetterId} onValueChange={setEditCoverLetterId}>
-                                    <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
-                                        <SelectValue placeholder="Select a document" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-none">
-                                        <SelectItem value="none">None (No document linked)</SelectItem>
-                                        {coverLetters.map(cl => (
-                                            <SelectItem key={cl.id} value={cl.id}>{cl.title}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Linked Canvas Courses in Edit */}
-                            {canvasCourses.length > 0 && (
-                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
-                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                        <BookOpen className="w-3.5 h-3.5" />
-                                        Attach Synced Canvas Coursework
-                                    </Label>
-                                    <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
-                                        {canvasCourses.map(course => (
-                                            <label key={course.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
-                                                <input 
-                                                    type="checkbox"
-                                                    checked={editSelectedCanvasCourses.includes(course.course_code || course.name)}
-                                                    onChange={() => handleToggleCanvasCourse(course.course_code || course.name, true)}
-                                                    className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
-                                                />
-                                                <span className="truncate font-medium" title={course.name}>
-                                                    {course.course_code}: {course.name}
-                                                </span>
-                                            </label>
-                                        ))}
+                                    {/* Notes Card */}
+                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-2.5">
+                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2">
+                                            <Label htmlFor="edit-notes" className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274]">
+                                                Application Notes & Interview Diary
+                                            </Label>
+                                            <span className="text-[10px] text-muted-foreground">Contacts, questions, feedback</span>
+                                        </div>
+                                        <Textarea
+                                            id="edit-notes"
+                                            value={editNotes}
+                                            onChange={e => setEditNotes(e.target.value)}
+                                            placeholder="Add recruiter contacts, referral info, interview takeaways, or follow-up notes..."
+                                            className="rounded-none border-[#102b2b]/15 bg-white min-h-[120px] font-sans text-xs leading-relaxed"
+                                        />
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Linked Scholarships/Grants in Edit */}
-                            {shortlist.length > 0 && (
-                                <div className="space-y-2 border-t border-[#102b2b]/10 pt-3">
-                                    <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
-                                        <GraduationCap className="w-3.5 h-3.5" />
-                                        Link Shortlisted Aid Opportunities
-                                    </Label>
-                                    <div className="p-2.5 bg-white border border-[#102b2b]/15 space-y-1.5 max-h-[120px] overflow-y-auto">
-                                        {shortlist.map(opp => (
-                                            <label key={opp.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1">
-                                                <input 
-                                                    type="checkbox"
-                                                    checked={editSelectedOpps.includes(opp.id)}
-                                                    onChange={() => handleToggleOpp(opp.id, true)}
-                                                    className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
-                                                />
-                                                <span className="truncate" title={opp.title}>{opp.title}</span>
-                                            </label>
-                                        ))}
+                                {/* Right Column: 5 cols - Connected Career Materials & Synergies */}
+                                <div className="lg:col-span-5 space-y-6">
+                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-4">
+                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2.5">
+                                            <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274] flex items-center gap-2">
+                                                <FileText className="w-3.5 h-3.5" />
+                                                Linked Career Documents
+                                            </h4>
+                                            <span className="text-[10px] text-muted-foreground font-medium">Tailored packet</span>
+                                        </div>
+
+                                        {/* Linked Resume in Edit */}
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="font-bold text-xs text-[#102b2b] flex items-center gap-1.5">
+                                                    Link Candidate Resume
+                                                </Label>
+                                                {editResumeId && editResumeId !== "none" && (
+                                                    <Link href={`/dashboard/resume/${editResumeId}`} target="_blank" className="text-[10px] text-[#0d8274] hover:underline flex items-center gap-1 font-semibold">
+                                                        View Resume <ExternalLink className="w-2.5 h-2.5" />
+                                                    </Link>
+                                                )}
+                                            </div>
+                                            <Select value={editResumeId} onValueChange={setEditResumeId}>
+                                                <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                    <SelectValue placeholder="Select a resume" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-none">
+                                                    <SelectItem value="none">None (No specific resume linked)</SelectItem>
+                                                    {resumes.map(r => (
+                                                        <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Linked Cover Letter in Edit */}
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="font-bold text-xs text-[#102b2b] flex items-center gap-1.5">
+                                                    Link AI Cover Letter
+                                                </Label>
+                                                {editCoverLetterId && editCoverLetterId !== "none" && (
+                                                    <Link href={`/dashboard/cover-letters`} target="_blank" className="text-[10px] text-[#0d8274] hover:underline flex items-center gap-1 font-semibold">
+                                                        View Letter <ExternalLink className="w-2.5 h-2.5" />
+                                                    </Link>
+                                                )}
+                                            </div>
+                                            <Select value={editCoverLetterId} onValueChange={setEditCoverLetterId}>
+                                                <SelectTrigger className="rounded-none h-10 border-[#102b2b]/15 bg-white">
+                                                    <SelectValue placeholder="Select a document" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-none">
+                                                    <SelectItem value="none">None (No document linked)</SelectItem>
+                                                    {coverLetters.map(cl => (
+                                                        <SelectItem key={cl.id} value={cl.id}>{cl.title}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
+
+                                    {/* Linked Canvas Courses in Edit */}
+                                    {canvasCourses.length > 0 && (
+                                        <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-3">
+                                            <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2">
+                                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                                    <BookOpen className="w-3.5 h-3.5" />
+                                                    Attach Synced Canvas Coursework
+                                                </Label>
+                                                <Badge variant="outline" className="rounded-none border-[#0d8274]/30 text-[#0d8274] text-[10px] font-bold">
+                                                    {editSelectedCanvasCourses.length} selected
+                                                </Badge>
+                                            </div>
+                                            <div className="p-2.5 bg-[#fbfdf9] border border-[#102b2b]/15 space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar">
+                                                {canvasCourses.map(course => (
+                                                    <label key={course.id} className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/50 p-1.5 transition-colors">
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={editSelectedCanvasCourses.includes(course.course_code || course.name)}
+                                                            onChange={() => handleToggleCanvasCourse(course.course_code || course.name, true)}
+                                                            className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
+                                                        />
+                                                        <span className="truncate font-medium text-xs" title={course.name}>
+                                                            <span className="font-bold text-[#0d8274]">{course.course_code}</span>: {course.name}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Linked Scholarships/Grants in Edit */}
+                                    {shortlist.length > 0 && (
+                                        <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-3">
+                                            <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2">
+                                                <Label className="font-bold text-xs text-[#0d8274] flex items-center gap-1.5">
+                                                    <GraduationCap className="w-3.5 h-3.5" />
+                                                    Link Shortlisted Aid Opportunities
+                                                </Label>
+                                                <Badge variant="outline" className="rounded-none border-[#0d8274]/30 text-[#0d8274] text-[10px] font-bold">
+                                                    {editSelectedOpps.length} selected
+                                                </Badge>
+                                            </div>
+                                            <div className="p-2.5 bg-[#fbfdf9] border border-[#102b2b]/15 space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar">
+                                                {shortlist.map(opp => (
+                                                    <label key={opp.id} className="flex items-center gap-2.5 cursor-pointer hover:bg-muted/50 p-1.5 transition-colors">
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={editSelectedOpps.includes(opp.id)}
+                                                            onChange={() => handleToggleOpp(opp.id, true)}
+                                                            className="rounded-none border-[#102b2b]/30 accent-[#0d8274]"
+                                                        />
+                                                        <span className="truncate text-xs font-medium" title={opp.title}>{opp.title}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="edit-notes" className="font-bold">Notes</Label>
-                                <Textarea id="edit-notes" value={editNotes} onChange={e => setEditNotes(e.target.value)} className="rounded-none border-[#102b2b]/15 bg-white min-h-[70px]" />
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <Button onClick={handleDeleteJob} variant="outline" className="flex-1 h-11 rounded-none border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold gap-2">
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete Card
-                                </Button>
-                                <Button onClick={handleUpdateJob} className="flex-1 h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold">
-                                    Save Changes
-                                </Button>
                             </div>
                         </div>
                     )}
+
+                    {/* Fixed Footer Actions */}
+                    <div className="flex items-center justify-between px-6 md:px-8 py-4 border-t border-[#102b2b]/15 bg-white shrink-0">
+                        <Button
+                            onClick={handleDeleteJob}
+                            variant="outline"
+                            className="h-11 rounded-none border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold gap-2 px-5"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete Card
+                        </Button>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsEditOpen(false)}
+                                className="h-11 rounded-none border-[#102b2b]/20 text-[#102b2b] hover:bg-muted font-bold px-6"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleUpdateJob}
+                                className="h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-8"
+                            >
+                                Save Changes
+                            </Button>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
