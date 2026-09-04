@@ -34,11 +34,20 @@ export default async function SalaryPage({ searchParams }: SalaryPageProps) {
     .single();
 
   // 2. Fetch User Resumes
-  const { data: resumes } = await supabase
+  const { data: userResumes } = await supabase
     .from("resumes")
-    .select("id, title, target_role")
+    .select("id, title, updated_at, visual_config")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
+
+  const resumes = (userResumes || []).map((r) => {
+    const vConfig = (r.visual_config as Record<string, any>) || {};
+    return {
+      id: r.id,
+      title: r.title,
+      target_role: vConfig.target_role || profile?.target_role || "Software Engineer",
+    };
+  });
 
   // 3. Fetch User Applications
   const { data: applications } = await supabase

@@ -112,9 +112,11 @@ export async function POST(req: Request) {
         title: newTitle,
         template: sourceResume.template || sourceResume.template_id || "modern",
         template_id: sourceResume.template_id || sourceResume.template || "modern",
-        visual_config: sourceResume.visual_config || {},
-        target_role: jobTitle,
-        target_company: company,
+        visual_config: {
+          ...(sourceResume.visual_config || {}),
+          target_role: jobTitle,
+          target_company: company,
+        },
       })
       .select("id")
       .single();

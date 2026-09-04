@@ -182,10 +182,12 @@ STRICT REQUIREMENTS:
         is_primary: false,
         is_public: false,
         section_order: sourceResume.section_order,
-        visual_config: sourceResume.visual_config,
+        visual_config: {
+          ...(sourceResume.visual_config || {}),
+          target_role: jobTitle,
+          target_company: company,
+        },
         language: sourceResume.language || "en",
-        target_role: jobTitle,
-        target_company: company,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

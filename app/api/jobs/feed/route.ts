@@ -17,32 +17,42 @@ export async function GET(req: Request) {
     const location = searchParams.get("location") || "Remote";
 
     // 1. Fetch user's resumes to populate resume switcher
-    const { data: userResumes } = await supabase
+    const { data: userResumes, error: resumeError } = await supabase
       .from("resumes")
-      .select("id, title, target_role, updated_at")
+      .select("id, title, updated_at, visual_config")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
 
-    const resumesList = userResumes || [];
-    const activeResume = requestedResumeId
-      ? resumesList.find(r => r.id === requestedResumeId) || resumesList[0]
-      : resumesList[0];
+    if (resumeError) {
+      console.error("[Jobs Feed] Error fetching resumes:", resumeError);
+    }
 
     // 2. Determine target role query if not explicitly passed
     if (!query) {
-      if (activeResume?.target_role) {
-        query = activeResume.target_role;
-      } else {
-        // Check profile target role
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("target_role")
-          .eq("id", user.id)
-          .single();
+      // Check profile target role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("target_role")
+        .eq("id", user.id)
+        .single();
 
-        query = profile?.target_role || "Software Engineer";
-      }
+      query = profile?.target_role || "Software Engineer";
     }
+
+    const defaultRole = query || "Software Engineer";
+    const resumesList = (userResumes || []).map((r) => {
+      const vConfig = (r.visual_config as Record<string, any>) || {};
+      return {
+        id: r.id,
+        title: r.title,
+        updated_at: r.updated_at,
+        target_role: vConfig.target_role || defaultRole,
+      };
+    });
+
+    const activeResume = requestedResumeId
+      ? resumesList.find((r) => r.id === requestedResumeId) || resumesList[0]
+      : resumesList[0];
 
     const searchQuery = query || "Software Engineer";
 
