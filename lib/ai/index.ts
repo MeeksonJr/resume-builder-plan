@@ -2376,3 +2376,99 @@ Evaluate:
     };
   }
 }
+
+// Generate a comprehensive career trajectory report
+export async function generateCareerTrajectoryReport(careerData: {
+  kpi: any;
+  pipeline: any;
+  resumes: any[];
+  interviews: any[];
+  atsAnalyses: any[];
+  skillsGaps: any[];
+  salaryInsights: any[];
+  voiceTelemetry: any;
+}): Promise<{
+  executiveSummary: string;
+  strengthsIdentified: string[];
+  growthAreas: string[];
+  actionPlan30: string[];
+  actionPlan60: string[];
+  actionPlan90: string[];
+  marketPositionAssessment: string;
+  careerMomentum: string;
+}> {
+  try {
+    const result = await withFallback(async (model) => {
+      return generateObject({
+        model,
+        schema: z.object({
+          executiveSummary: z.string().describe("A 2-3 sentence high-level assessment of the user's career trajectory and current market position"),
+          strengthsIdentified: z.array(z.string()).describe("4-6 specific strengths based on the data, such as strong ATS scores, consistent interview performance, active application pipeline"),
+          growthAreas: z.array(z.string()).describe("3-5 areas for improvement based on gaps in data, such as low conversion rates, missing skills, or underperforming resumes"),
+          actionPlan30: z.array(z.string()).describe("3-4 specific actions for the next 30 days"),
+          actionPlan60: z.array(z.string()).describe("3-4 specific actions for days 30-60"),
+          actionPlan90: z.array(z.string()).describe("3-4 specific actions for days 60-90"),
+          marketPositionAssessment: z.string().describe("Assessment of the user's competitive position in their target market based on salary data, skills match, and application outcomes"),
+          careerMomentum: z.string().describe("One word or short phrase: 'Accelerating', 'Steady', 'Building Foundation', 'Needs Attention', etc."),
+        }),
+        prompt: `You are a senior career strategist. Analyze this comprehensive career data and generate a strategic career trajectory report.
+
+DATA SUMMARY:
+- Total Resumes: ${careerData.resumes?.length || 0}
+- Resume Views: ${careerData.kpi?.totalViews || 0}
+- Resume Downloads: ${careerData.kpi?.totalDownloads || 0}
+- Applications Submitted: ${careerData.pipeline?.total || 0}
+- Application Pipeline: Applied(${careerData.pipeline?.applied || 0}), Interviewing(${careerData.pipeline?.interviewing || 0}), Offered(${careerData.pipeline?.offered || 0}), Rejected(${careerData.pipeline?.rejected || 0})
+- Conversion Rate (offers/total): ${careerData.kpi?.conversionRate || 0}%
+- Total Interview Sessions: ${careerData.kpi?.totalInterviews || 0}
+- Completed Interviews: ${careerData.kpi?.completedInterviews || 0}
+- Average Interview Score: ${careerData.kpi?.avgInterviewScore || 0}%
+- Best ATS Score: ${careerData.kpi?.bestAtsScore || 0}%
+- Career Readiness Score: ${careerData.kpi?.careerReadinessScore || 0}%
+- Voice Telemetry: Avg WPM ${careerData.voiceTelemetry?.avgWpm || 0}, Total Fillers ${careerData.voiceTelemetry?.totalFillers || 0}
+
+RESUME TITLES: ${(careerData.resumes || []).map((r: any) => r.title).join(", ")}
+TARGET ROLES: ${[...new Set((careerData.resumes || []).map((r: any) => r.target_role).filter(Boolean))].join(", ") || "Not specified"}
+
+ATS ANALYSES: ${(careerData.atsAnalyses || []).map((a: any) => `${a.target_role}: ${a.score}%`).join(", ") || "None"}
+SKILLS GAP SCORES: ${(careerData.skillsGaps || []).map((s: any) => `${s.target_role}: ${s.match_score}%`).join(", ") || "None"}
+SALARY BENCHMARKS: ${(careerData.salaryInsights || []).map((s: any) => `${s.target_role} in ${s.location}: $${s.median}`).join(", ") || "None"}
+
+Generate a comprehensive, personalized career trajectory report. Be specific and data-driven. Reference actual numbers from the data. If data is sparse, acknowledge it and frame recommendations around building the foundation.`,
+      });
+    });
+
+    return result.object;
+  } catch (error: any) {
+    console.warn("[AI] Career trajectory report failed:", error.message);
+    return {
+      executiveSummary: "Your career profile is developing. Continue building your application pipeline and refining your resumes to strengthen your market position.",
+      strengthsIdentified: [
+        "Active engagement with career development tools",
+        "Building a portfolio of targeted resumes",
+      ],
+      growthAreas: [
+        "Expand your application pipeline to increase offer opportunities",
+        "Complete more mock interview sessions to improve confidence",
+        "Run ATS scans on all active resumes to ensure keyword optimization",
+      ],
+      actionPlan30: [
+        "Submit 5+ targeted applications this month",
+        "Complete 2 full mock interview sessions",
+        "Run ATS compatibility scans on your top 2 resumes",
+      ],
+      actionPlan60: [
+        "Follow up on all active applications",
+        "Address top 3 missing skills identified in gap analyses",
+        "Refine resumes based on ATS feedback",
+      ],
+      actionPlan90: [
+        "Evaluate application conversion rates and adjust targeting strategy",
+        "Benchmark salary expectations against market data",
+        "Build a portfolio showcasing your strongest projects",
+      ],
+      marketPositionAssessment: "Continue gathering data through applications and interviews to establish a clearer picture of your competitive position.",
+      careerMomentum: "Building Foundation",
+    };
+  }
+}

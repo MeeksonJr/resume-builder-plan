@@ -19,6 +19,7 @@ import {
     Plus,
     Search,
     Coins,
+    BarChart3,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -95,6 +96,7 @@ const getNavItems = (isAdmin: boolean) => {
             icon: Sparkles,
             items: [
                 { title: "Career Coach", href: "/dashboard/career-coach", icon: Sparkles },
+                { title: "Career Analytics", href: "/dashboard/analytics", icon: BarChart3 },
                 { title: "Resume Optimizer", href: "/dashboard/optimize", icon: TrendingUp },
                 { title: "Interview Prep", href: "/dashboard/interview-prep", icon: Brain },
             ],

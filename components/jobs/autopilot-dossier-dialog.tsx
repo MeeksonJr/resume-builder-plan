@@ -260,7 +260,7 @@ export function AutopilotDossierDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[96vw] max-w-5xl h-[88vh] flex flex-col p-0 overflow-hidden bg-[#f7faf5] border-[#102b2b]/20 shadow-2xl rounded-sm">
+      <DialogContent className="w-[98vw] max-w-7xl sm:max-w-7xl h-[92vh] flex flex-col p-0 overflow-hidden bg-[#f7faf5] border-[#102b2b]/20 shadow-2xl rounded-sm">
         {/* TOP COMMAND HEADER */}
         <div className="px-6 py-4 bg-[#102b2b] text-[#f8f4ec] border-b border-[#102b2b]/30 shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -304,57 +304,61 @@ export function AutopilotDossierDialog({
           </div>
 
           {/* SLIDE NAVIGATION TABS */}
-          <div className="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-white/10">
+          <div className="grid grid-cols-4 gap-3 mt-4 pt-3 border-t border-white/10">
             <button
               onClick={() => setActiveSlide(1)}
               className={cn(
-                "flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer",
+                "flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer",
                 activeSlide === 1
                   ? "bg-[#d8f36b] text-[#102b2b] shadow-xs"
                   : "bg-white/10 text-[#c5d7d1] hover:bg-white/20 hover:text-white"
               )}
             >
               <Rocket className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">1. Overview</span>
+              <span className="hidden sm:inline">1. Overview</span>
+              <span className="sm:hidden">1</span>
             </button>
 
             <button
               onClick={() => setActiveSlide(2)}
               className={cn(
-                "flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer",
+                "flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer",
                 activeSlide === 2
                   ? "bg-[#d8f36b] text-[#102b2b] shadow-xs"
                   : "bg-white/10 text-[#c5d7d1] hover:bg-white/20 hover:text-white"
               )}
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">2. Resume Preview</span>
+              <span className="hidden sm:inline">2. Resume Preview</span>
+              <span className="sm:hidden">2</span>
             </button>
 
             <button
               onClick={() => setActiveSlide(3)}
               className={cn(
-                "flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer",
+                "flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer",
                 activeSlide === 3
                   ? "bg-[#d8f36b] text-[#102b2b] shadow-xs"
                   : "bg-white/10 text-[#c5d7d1] hover:bg-white/20 hover:text-white"
               )}
             >
               <Mail className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">3. Cover Letter</span>
+              <span className="hidden sm:inline">3. Cover Letter</span>
+              <span className="sm:hidden">3</span>
             </button>
 
             <button
               onClick={() => setActiveSlide(4)}
               className={cn(
-                "flex items-center justify-center gap-1.5 py-1.5 px-2 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer relative",
+                "flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-xs transition-all cursor-pointer relative",
                 activeSlide === 4
                   ? "bg-[#d8f36b] text-[#102b2b] shadow-xs"
                   : "bg-white/10 text-[#c5d7d1] hover:bg-white/20 hover:text-white"
               )}
             >
               <Mic className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">4. Interview Prep</span>
+              <span className="hidden sm:inline">4. Interview Prep</span>
+              <span className="sm:hidden">4</span>
               {isInterviewComplete && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Completed" />
               )}
@@ -366,7 +370,7 @@ export function AutopilotDossierDialog({
         </div>
 
         {/* MAIN SLIDE CONTENT AREA (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10">
           {/* SLIDE 1: EXECUTIVE OVERVIEW */}
           {activeSlide === 1 && (
             <div className="space-y-6">

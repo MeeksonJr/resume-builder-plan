@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Eye, TrendingUp, Calendar, Download, BarChart3, Sparkles, BrainCircuit, ArrowUpRight } from "lucide-react";
 import { formatDistanceToNow, format, startOfDay, eachDayOfInterval, subDays } from "date-fns";
@@ -102,6 +103,30 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
 
     return (
         <div className="space-y-8 px-4 md:px-0">
+            {/* Career Intelligence Banner */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 border border-primary/20 backdrop-blur-sm shadow-sm">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <h3 className="font-heading font-black text-lg text-foreground">
+                            Enterprise Career Intelligence
+                        </h3>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px] font-bold uppercase tracking-wider">
+                            New
+                        </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        Unlock deep market intelligence, ATS funnel analytics, skill gap benchmarks, and AI executive briefing.
+                    </p>
+                </div>
+                <Button asChild className="rounded-xl font-bold shrink-0 group">
+                    <Link href="/dashboard/analytics">
+                        <span>View Full Career Analytics</span>
+                        <ArrowUpRight className="h-4 w-4 ml-1.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </Link>
+                </Button>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-4">
                 <Card className="bg-white dark:bg-slate-950 border transition-all hover:shadow-md duration-300">
 
