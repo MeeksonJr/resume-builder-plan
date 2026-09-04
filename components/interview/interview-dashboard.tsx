@@ -64,23 +64,33 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
 
     const { voices, speak, isSpeaking } = useSpeechSynthesis();
 
+    // Auto-select a high quality default voice once voices are loaded
+    useEffect(() => {
+        if (voices.length > 0 && !form.interviewerVoice) {
+            const defaultVoice = voices.find(v => v.name.includes('Google US English') || v.lang.startsWith('en')) || voices[0];
+            if (defaultVoice) {
+                setForm(prev => ({ ...prev, interviewerVoice: defaultVoice.name }));
+            }
+        }
+    }, [voices, form.interviewerVoice]);
+
     const handleCreateSession = async () => {
         if (!form.targetRole) {
             toast.error("Please enter a target role");
             return;
         }
 
-        if (form.sessionMode === "voice" && !form.interviewerVoice) {
-            toast.error("Please select an interviewer voice");
-            return;
-        }
+        const effectiveVoice = form.interviewerVoice || voices.find(v => v.lang.startsWith('en'))?.name || voices[0]?.name || "Default Voice";
 
         setIsCreating(true);
         try {
             const response = await fetch("/api/interview/sessions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
+                body: JSON.stringify({
+                    ...form,
+                    interviewerVoice: effectiveVoice,
+                }),
             });
 
             if (!response.ok) throw new Error("Failed to create session");
