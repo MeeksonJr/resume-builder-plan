@@ -31,6 +31,39 @@ export async function GET(
             return new NextResponse("Resume not found", { status: 404 });
         }
 
+        // If full relational format is requested for live preview
+        if (format === "full") {
+            const [
+                { data: personalInfo },
+                { data: workExperiences },
+                { data: education },
+                { data: skills },
+                { data: projects },
+                { data: certifications },
+                { data: languages },
+            ] = await Promise.all([
+                supabase.from("personal_info").select("*").eq("resume_id", id).maybeSingle(),
+                supabase.from("work_experiences").select("*").eq("resume_id", id).order("sort_order"),
+                supabase.from("education").select("*").eq("resume_id", id).order("sort_order"),
+                supabase.from("skills").select("*").eq("resume_id", id).order("sort_order"),
+                supabase.from("projects").select("*").eq("resume_id", id).order("sort_order"),
+                supabase.from("certifications").select("*").eq("resume_id", id).order("sort_order"),
+                supabase.from("languages").select("*").eq("resume_id", id).order("sort_order"),
+            ]);
+
+            return NextResponse.json({
+                resume,
+                profile: personalInfo,
+                personalInfo,
+                workExperiences: workExperiences || [],
+                education: education || [],
+                skills: skills || [],
+                projects: projects || [],
+                certifications: certifications || [],
+                languages: languages || [],
+            });
+        }
+
         // If JSON Resume format is requested
         if (format === "json") {
             // Fetch all resume data

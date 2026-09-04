@@ -29,7 +29,8 @@ import {
   Copy,
   Download,
   Mail,
-  Rocket
+  Rocket,
+  Mic
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -47,6 +48,10 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ScrapedJob } from "@/lib/scrapers/jobs-scraper";
+import {
+  AutopilotDossierDialog,
+  AutopilotPacketData,
+} from "@/components/jobs/autopilot-dossier-dialog";
 
 export default function DashboardJobsPage() {
   const router = useRouter();
@@ -79,16 +84,31 @@ export default function DashboardJobsPage() {
   const [tailoringInProgress, setTailoringInProgress] = useState(false);
   const [coverLetterTone, setCoverLetterTone] = useState<"professional" | "confident" | "enthusiastic">("professional");
   const [copiedCoverLetter, setCopiedCoverLetter] = useState(false);
-  const [tailorSuccessData, setTailorSuccessData] = useState<{
-    newResumeId: string;
-    newResumeTitle: string;
-    coverLetterId?: string | null;
-    coverLetterTitle?: string;
-    coverLetterContent?: string;
-    applicationId?: string;
-    tailoredSummary: string;
-    appliedChanges: string[];
-  } | null>(null);
+  // Autopilot Dossier States
+  const [autopilotPackets, setAutopilotPackets] = useState<AutopilotPacketData[]>([]);
+  const [loadingPackets, setLoadingPackets] = useState(false);
+  const [activeDossierPacket, setActiveDossierPacket] = useState<AutopilotPacketData | null>(null);
+  const [isDossierOpen, setIsDossierOpen] = useState(false);
+
+  const fetchAutopilotPackets = async () => {
+    try {
+      setLoadingPackets(true);
+      const res = await fetch("/api/jobs/autopilot/packets");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.packets) {
+        setAutopilotPackets(data.packets);
+      }
+    } catch (err) {
+      console.warn("[AutopilotPackets Fetch Error]", err);
+    } finally {
+      setLoadingPackets(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAutopilotPackets();
+  }, []);
 
   // Load Saved jobs from localStorage
   useEffect(() => {
@@ -212,7 +232,6 @@ export default function DashboardJobsPage() {
       setActiveResumeTitle(resumes[0].title);
     }
     setTailorModalJob(job);
-    setTailorSuccessData(null);
   };
 
   // Execute 1-Click Application Autopilot (Resume + Cover Letter + Job Tracker)
@@ -271,16 +290,30 @@ export default function DashboardJobsPage() {
       }
 
       setTrackedJobIds((prev) => [...prev, tailorModalJob.id]);
-      setTailorSuccessData({
+
+      const dossierPacket: AutopilotPacketData = {
+        id: data.applicationId,
+        applicationId: data.applicationId,
+        company: tailorModalJob.company,
+        role: tailorModalJob.role,
+        location: tailorModalJob.location,
+        salaryRange: tailorModalJob.salary_range,
+        matchScore: tailorModalJob.match_score || 85,
+        url: tailorModalJob.url,
         newResumeId: data.newResumeId,
         newResumeTitle: data.newResumeTitle,
         coverLetterId: data.coverLetterId,
         coverLetterTitle: data.coverLetterTitle,
         coverLetterContent: data.coverLetterContent,
-        applicationId: data.applicationId,
         tailoredSummary: data.tailoredSummary,
         appliedChanges: data.appliedChanges || [],
-      });
+        isSaved: true,
+      };
+
+      setTailorModalJob(null);
+      setActiveDossierPacket(dossierPacket);
+      setIsDossierOpen(true);
+      fetchAutopilotPackets();
       toast.success(`Application packet ready for ${tailorModalJob.company}!`);
     } catch (err: any) {
       console.error("[AUTOPILOT_ERROR]", err);
@@ -288,47 +321,6 @@ export default function DashboardJobsPage() {
     } finally {
       setTailoringInProgress(false);
     }
-  };
-
-  const handleCopyCoverLetter = async () => {
-    if (!tailorSuccessData?.coverLetterContent) return;
-    try {
-      await navigator.clipboard.writeText(tailorSuccessData.coverLetterContent);
-      setCopiedCoverLetter(true);
-      toast.success("Cover letter copied to clipboard!");
-      setTimeout(() => setCopiedCoverLetter(false), 2500);
-    } catch {
-      toast.error("Failed to copy cover letter.");
-    }
-  };
-
-  const handleDownloadPacket = () => {
-    if (!tailorSuccessData || !tailorModalJob) return;
-    const packetContent = [
-      "==================================================================",
-      `RESUMEFORGE APPLICATION PACKET`,
-      `COMPANY: ${tailorModalJob.company}`,
-      `POSITION: ${tailorModalJob.role}`,
-      `DATE: ${new Date().toLocaleDateString()}`,
-      "==================================================================\n",
-      "--- SECTION 1: TARGETED COVER LETTER ---\n",
-      tailorSuccessData.coverLetterContent || "(No cover letter generated)",
-      "\n\n==================================================================",
-      "--- SECTION 2: TAILORED RESUME SUMMARY & HIGHLIGHTS ---\n",
-      tailorSuccessData.tailoredSummary,
-      "\nApplied Optimizations:",
-      ...tailorSuccessData.appliedChanges.map((c) => `* ${c}`),
-      "\n==================================================================",
-    ].join("\n");
-
-    const blob = new Blob([packetContent], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Application_Packet_${tailorModalJob.company.replace(/\s+/g, "_")}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Application packet downloaded!");
   };
 
   // Filter & Sort Logic
@@ -563,6 +555,10 @@ export default function DashboardJobsPage() {
               <TabsTrigger value="tracked" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
                 In Tracker ({trackedJobIds.length})
               </TabsTrigger>
+              <TabsTrigger value="autopilot" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] gap-1.5 font-bold">
+                <Rocket className="w-3.5 h-3.5" />
+                Autopilot Results ({autopilotPackets.length})
+              </TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -678,6 +674,114 @@ export default function DashboardJobsPage() {
           <Loader2 className="w-10 h-10 text-[#0d8274] animate-spin" />
           <p className="text-sm font-semibold text-[#102b2b]/70">Scanning live opportunities and calculating ATS compatibility...</p>
         </div>
+      ) : selectedTab === "autopilot" ? (
+        /* Dedicated Autopilot Results Grid */
+        autopilotPackets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center rounded-md bg-[#f7faf5] border-2 border-dashed border-[#b8c8b9]">
+            <div className="w-12 h-12 rounded-full bg-[#d8f36b] text-[#102b2b] flex items-center justify-center mb-4 border border-[#102b2b]/15 shadow-sm">
+              <Rocket className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-black text-[#102b2b]">No Autopilot Application Dossiers Yet</h3>
+            <p className="text-xs text-[#102b2b]/70 max-w-md mt-1 mb-6">
+              Launch 1-Click Autopilot on any job listing in the feed to automatically clone and tailor your resume, draft an aligned cover letter, track the role, and generate custom interview prep.
+            </p>
+            <Button
+              onClick={() => setSelectedTab("all")}
+              className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer"
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              Explore Matching Roles →
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {autopilotPackets.map((pkt) => {
+              const isCompleted = !!pkt.interviewSession?.completedAt;
+              const isInProgress = !!pkt.interviewSession && !pkt.interviewSession.completedAt && (pkt.interviewSession.answeredCount || 0) > 0;
+
+              return (
+                <Card
+                  key={pkt.id || pkt.applicationId}
+                  className="bg-[#f7faf5] hover:bg-white border-[#b8c8b9] hover:border-[#0d8274] rounded-md transition-all duration-200 shadow-sm flex flex-col justify-between overflow-hidden group"
+                >
+                  <CardHeader className="p-5 pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-sm bg-[#102b2b] text-[#d8f36b] font-black text-xs flex items-center justify-center uppercase shrink-0 shadow-2xs">
+                          {pkt.company.substring(0, 2)}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-xs font-black text-[#102b2b] truncate block">
+                            {pkt.company}
+                          </span>
+                          <span className="text-[11px] text-[#52716a] flex items-center gap-1">
+                            <MapPin className="w-2.5 h-2.5" />
+                            {pkt.location || "Remote"}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-xs bg-[#d8f36b] text-[#102b2b]">
+                        {pkt.matchScore || 85}% Fit
+                      </span>
+                    </div>
+
+                    <h3 className="font-extrabold text-sm text-[#102b2b] mt-3 line-clamp-1">
+                      {pkt.role}
+                    </h3>
+
+                    {/* Deliverables Strip */}
+                    <div className="mt-3 pt-3 border-t border-[#b8c8b9]/60 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#52716a] flex items-center gap-1">
+                          <FileText className="w-3 h-3 text-[#0d8274]" /> Resume:
+                        </span>
+                        <span className="font-bold text-[#102b2b] truncate max-w-[170px]">
+                          {pkt.newResumeTitle}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#52716a] flex items-center gap-1">
+                          <Mail className="w-3 h-3 text-[#0d8274]" /> Cover Letter:
+                        </span>
+                        <span className="font-bold text-[#102b2b]">Aligned & Generated</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#52716a] flex items-center gap-1">
+                          <Mic className="w-3 h-3 text-[#0d8274]" /> Interview Prep:
+                        </span>
+                        {isCompleted ? (
+                          <span className="font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-xs border border-emerald-200">
+                            Completed ({pkt.interviewSession?.averageScore || 85}%)
+                          </span>
+                        ) : isInProgress ? (
+                          <span className="font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-xs border border-amber-200">
+                            In Progress ({pkt.interviewSession?.answeredCount}/{pkt.interviewSession?.questionCount})
+                          </span>
+                        ) : (
+                          <span className="font-bold text-[#0d8274]">Ready to Practice</span>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardFooter className="p-4 pt-2 border-t border-[#b8c8b9]/60 bg-white/60 flex items-center justify-between gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setActiveDossierPacket(pkt);
+                        setIsDossierOpen(true);
+                      }}
+                      className="w-full h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-2xs"
+                    >
+                      <Rocket className="w-3.5 h-3.5" />
+                      Open Application Dossier →
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        )
       ) : filteredJobs.length === 0 ? (
         /* Empty State */
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-md bg-[#f7faf5] border-2 border-dashed border-[#b8c8b9]">
@@ -937,7 +1041,7 @@ export default function DashboardJobsPage() {
       )}
 
       {/* Bottom Pagination Bar */}
-      {totalPages > 1 && pageSize !== "all" && (
+      {selectedTab !== "autopilot" && totalPages > 1 && pageSize !== "all" && (
         <div className="p-4 rounded-md bg-white border border-[#b8c8b9] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xs">
           <div className="text-xs font-semibold text-[#102b2b]/70 text-center sm:text-left">
             Showing <span className="font-bold text-[#102b2b]">{startIndex + 1}–{endIndex}</span> of <span className="font-bold text-[#102b2b]">{totalFiltered}</span> matched openings
@@ -1020,18 +1124,17 @@ export default function DashboardJobsPage() {
         </div>
       )}
 
-      {/* Application Packet Autopilot Confirmation & Progress Modal */}
+      {/* Application Packet Autopilot Confirmation Modal */}
       <Dialog 
         open={!!tailorModalJob} 
         onOpenChange={(open) => {
           if (!open && !tailoringInProgress) {
             setTailorModalJob(null);
-            setTailorSuccessData(null);
           }
         }}
       >
-        <DialogContent className="max-w-2xl bg-[#f7faf5] border-[#b8c8b9] text-[#102b2b] p-6 rounded-md shadow-xl max-h-[90vh] overflow-y-auto">
-          {tailorModalJob && !tailorSuccessData && (
+        <DialogContent className="max-w-xl bg-[#f7faf5] border-[#b8c8b9] text-[#102b2b] p-6 rounded-md shadow-xl">
+          {tailorModalJob && (
             <div className="space-y-4">
               <DialogHeader>
                 <div className="flex items-center gap-2 mb-1">
@@ -1043,7 +1146,7 @@ export default function DashboardJobsPage() {
                   </DialogTitle>
                 </div>
                 <DialogDescription className="text-xs text-[#102b2b]/70">
-                  ResumeForge will clone and ATS-optimize your resume, draft an aligned cover letter, and track this role in your Kanban board.
+                  ResumeForge will clone and ATS-optimize your resume, draft an aligned cover letter, track this role in your Kanban board, and create custom interview prep.
                 </DialogDescription>
               </DialogHeader>
 
@@ -1121,21 +1224,25 @@ export default function DashboardJobsPage() {
 
               {/* 3-in-1 Autopilot Deliverables List */}
               <div className="space-y-2 p-3.5 rounded-md bg-[#e9eee8] border border-[#b8c8b9] text-xs">
-                <p className="font-bold text-[#102b2b]">Application Packet Deliverables:</p>
+                <p className="font-bold text-[#102b2b]">Application Dossier Deliverables:</p>
                 <ul className="space-y-1.5 text-[#102b2b]/85">
                   <li className="flex items-center gap-2">
                     <span className="text-base">📄</span>
                     <span>
-                      <strong className="text-[#102b2b]">Tailored Resume:</strong> Cloned from &quot;{resumes.find(r => r.id === (selectedResumeId || resumes[0]?.id))?.title || activeResumeTitle || "Your Resume"}&quot; to &quot;{resumes.find(r => r.id === (selectedResumeId || resumes[0]?.id))?.title || activeResumeTitle || "Resume"} — {tailorModalJob.company}&quot; with STAR bullet keywords.
+                      <strong className="text-[#102b2b]">Tailored Resume:</strong> Cloned & isolated with STAR bullet keywords.
                     </span>
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-base">✉️</span>
-                    <span><strong className="text-[#102b2b]">Custom AI Cover Letter:</strong> Structured business letter aligned with {tailorModalJob.company}&apos;s requirements.</span>
+                    <span><strong className="text-[#102b2b]">AI Cover Letter:</strong> Structured business letter aligned with {tailorModalJob.company}.</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-base">🎙️</span>
+                    <span><strong className="text-[#102b2b]">AI Interview Room:</strong> Tailored technical & behavioral questions.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-base">📊</span>
-                    <span><strong className="text-[#102b2b]">Job Tracker Sync:</strong> Automatically logged to your Kanban board under &quot;Applied&quot;.</span>
+                    <span><strong className="text-[#102b2b]">Job Tracker Sync:</strong> Logged to your Kanban board under &quot;Applied&quot;.</span>
                   </li>
                 </ul>
               </div>
@@ -1161,7 +1268,7 @@ export default function DashboardJobsPage() {
                   {tailoringInProgress ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Synthesizing Application Packet...
+                      Synthesizing Dossier...
                     </>
                   ) : (
                     <>
@@ -1173,151 +1280,16 @@ export default function DashboardJobsPage() {
               </DialogFooter>
             </div>
           )}
-
-          {/* Success State */}
-          {tailorSuccessData && (
-            <div className="space-y-4">
-              <div className="text-center py-2 space-y-1.5">
-                <div className="w-12 h-12 rounded-full bg-[#d8f36b] text-[#102b2b] flex items-center justify-center mx-auto mb-2 border border-[#102b2b]/15 shadow-sm">
-                  <CheckCircle2 className="w-7 h-7" />
-                </div>
-                <h3 className="text-lg font-black text-[#102b2b]">Application Packet Ready!</h3>
-                <p className="text-xs text-[#102b2b]/70 max-w-md mx-auto">
-                  Synthesized tailored resume, matching cover letter, and Kanban tracking card for <span className="font-bold text-[#102b2b]">{tailorModalJob?.company}</span>.
-                </p>
-              </div>
-
-              {/* 3 Asset Tiles */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Resume Tile */}
-                <div className="p-3.5 rounded-md bg-white border border-[#b8c8b9] space-y-2 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#0d8274]">
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>Tailored Resume</span>
-                    </div>
-                    <p className="text-xs font-bold text-[#102b2b] mt-1 line-clamp-1">
-                      {tailorSuccessData.newResumeTitle}
-                    </p>
-                    <p className="text-[11px] text-[#102b2b]/70 mt-1 line-clamp-2 italic">
-                      &quot;{tailorSuccessData.tailoredSummary}&quot;
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => router.push(`/dashboard/resume/${tailorSuccessData.newResumeId}`)}
-                    className="w-full h-7 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] text-[11px] font-bold rounded-sm gap-1 mt-2"
-                  >
-                    Edit Resume →
-                  </Button>
-                </div>
-
-                {/* Cover Letter Tile */}
-                <div className="p-3.5 rounded-md bg-white border border-[#b8c8b9] space-y-2 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#0d8274]">
-                        <Mail className="w-3.5 h-3.5" />
-                        <span>AI Cover Letter</span>
-                      </div>
-                      <button
-                        onClick={handleCopyCoverLetter}
-                        className="text-[10px] font-bold text-[#102b2b] hover:text-[#0d8274] flex items-center gap-1 cursor-pointer"
-                        title="Copy text to clipboard"
-                      >
-                        {copiedCoverLetter ? <CheckCircle2 className="w-3 h-3 text-[#0d8274]" /> : <Copy className="w-3 h-3" />}
-                        <span>{copiedCoverLetter ? "Copied!" : "Copy"}</span>
-                      </button>
-                    </div>
-                    <p className="text-xs font-bold text-[#102b2b] mt-1 line-clamp-1">
-                      {tailorSuccessData.coverLetterTitle || `${tailorModalJob?.role} Cover Letter`}
-                    </p>
-                    <p className="text-[11px] text-[#102b2b]/70 mt-1 line-clamp-2">
-                      {tailorSuccessData.coverLetterContent || "Generated business letter matching company mission."}
-                    </p>
-                  </div>
-                  {tailorSuccessData.coverLetterId ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => router.push(`/dashboard/cover-letters/${tailorSuccessData.coverLetterId}`)}
-                      className="w-full h-7 border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-[11px] font-bold rounded-sm gap-1 mt-2"
-                    >
-                      Open Cover Letter →
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCopyCoverLetter}
-                      className="w-full h-7 border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-[11px] font-bold rounded-sm gap-1 mt-2"
-                    >
-                      Copy Letter Text
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Cover Letter Full Preview (Collapsible) */}
-              {tailorSuccessData.coverLetterContent && (
-                <div className="p-3.5 rounded-md bg-white border border-[#b8c8b9] space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-bold text-[#0d8274] block">Full Cover Letter Text</span>
-                    <button
-                      onClick={handleCopyCoverLetter}
-                      className="text-[10px] font-bold text-[#0d8274] hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      {copiedCoverLetter ? "✓ Copied" : "Copy to Clipboard"}
-                    </button>
-                  </div>
-                  <div className="max-h-36 overflow-y-auto p-2 rounded-xs bg-[#f7faf5] border border-[#b8c8b9]/60 font-sans text-[11px] text-[#102b2b]/85 whitespace-pre-line leading-relaxed">
-                    {tailorSuccessData.coverLetterContent}
-                  </div>
-                </div>
-              )}
-
-              {/* Improvements summary */}
-              <div className="p-3 rounded-md bg-[#e9eee8] border border-[#b8c8b9] text-xs space-y-1">
-                <span className="font-bold text-[#102b2b] block">Applied Adjustments:</span>
-                {tailorSuccessData.appliedChanges.map((change, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 text-[#102b2b]/80">
-                    <CheckCircle2 className="w-3 h-3 text-[#0d8274] shrink-0" />
-                    <span>{change}</span>
-                  </div>
-                ))}
-              </div>
-
-              <DialogFooter className="pt-2 gap-2 flex flex-col sm:flex-row">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadPacket}
-                  className="rounded-sm border-[#b8c8b9] text-xs font-bold gap-1.5 flex-1"
-                >
-                  <Download className="w-3.5 h-3.5 text-[#0d8274]" />
-                  Download Packet (.txt)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push("/dashboard/tracker")}
-                  className="rounded-sm border-[#b8c8b9] text-xs font-bold flex-1"
-                >
-                  <Briefcase className="w-3.5 h-3.5 mr-1.5 text-[#0d8274]" />
-                  View in Job Tracker
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => router.push(`/dashboard/resume/${tailorSuccessData.newResumeId}`)}
-                  className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] text-xs font-bold rounded-sm flex-1 gap-1.5 shadow-sm"
-                >
-                  Edit Resume →
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
+
+      {/* Spacious 4-Slide Autopilot Dossier Command Center */}
+      <AutopilotDossierDialog
+        open={isDossierOpen}
+        onOpenChange={setIsDossierOpen}
+        packet={activeDossierPacket}
+        onRefreshPackets={fetchAutopilotPackets}
+      />
     </div>
   );
 }
