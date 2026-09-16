@@ -1,12 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import {
-    ModernTemplate,
-    MinimalTemplate,
-    CorporateTemplate,
-    CreativeTemplate,
-} from "@/components/portfolio/templates";
+import { PublicShareHub } from "@/components/portfolio/public-share-hub";
 
 interface PortfolioPageProps {
     params: Promise<{
@@ -160,31 +155,22 @@ export default async function PublicPortfolioPage({ params }: PortfolioPageProps
         featuredProjects = (projects || []).slice(0, 6);
     }
 
-    // 5. Select template based on portfolio setting
+    // 5. Render interactive Public Share Hub
     const template = portfolio.template || "modern";
     const layoutStyle = portfolio.theme_settings?.style || "professional";
 
-    const templateProps = {
-        portfolio,
-        resumes: featuredResumes.length > 0 ? featuredResumes : enrichedResumes,
-        projects: featuredProjects,
-        profile: profile || { email: portfolio.user_id },
-        testimonials: testimonials || [],
-        canvasCourses: canvasCourses || [],
-        accentColor: portfolio.accent_color || "#3b82f6",
-        layoutStyle, // Passing the layout style
-    };
-
-    // 6. Render the selected template
-    switch (template) {
-        case "minimal":
-            return <MinimalTemplate {...templateProps} />;
-        case "corporate":
-            return <CorporateTemplate {...templateProps} />;
-        case "creative":
-            return <CreativeTemplate {...templateProps} />;
-        case "modern":
-        default:
-            return <ModernTemplate {...templateProps} />;
-    }
+    return (
+        <PublicShareHub
+            portfolio={portfolio}
+            resumes={featuredResumes.length > 0 ? featuredResumes : enrichedResumes}
+            projects={featuredProjects}
+            profile={profile || { email: portfolio.user_id }}
+            testimonials={testimonials || []}
+            canvasCourses={canvasCourses || []}
+            slug={slug}
+            initialTemplate={template}
+            initialAccentColor={portfolio.accent_color || "#3b82f6"}
+            initialLayoutStyle={layoutStyle}
+        />
+    );
 }
