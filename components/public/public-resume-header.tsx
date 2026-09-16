@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { MentorFeedbackDrawer } from "@/components/public/mentor-feedback-drawer";
 
 interface PublicResumeHeaderProps {
     resume: any;
@@ -163,6 +164,9 @@ export function PublicResumeHeader({
                         <Printer className="h-3.5 w-3.5" />
                         <span>Print</span>
                     </Button>
+
+                    {/* Mentor Feedback & Peer Review (Phase 43) */}
+                    <MentorFeedbackDrawer resumeId={resume.id} candidateName={candidateName} />
 
                     {/* Share / Copy Link Button */}
                     <Button
