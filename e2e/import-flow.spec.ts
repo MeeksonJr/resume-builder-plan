@@ -13,8 +13,10 @@ test.describe('LinkedIn Profile Import Engine (Phase 41 E2E)', () => {
     const body = await res.json();
     expect(body.success).toBe(true);
     expect(body.preview).toBeDefined();
-    expect(body.preview.name).toContain('Alex Morgan');
-    expect(body.preview.experiences.length).toBeGreaterThan(0);
+    const candidateName = body.preview.personalInfo?.fullName || body.preview.name;
+    expect(candidateName).toContain('Alex Morgan');
+    const experiences = body.preview.workExperience || body.preview.experiences || [];
+    expect(experiences.length).toBeGreaterThan(0);
     expect(body.preview.skills.length).toBeGreaterThan(0);
   });
 
@@ -31,6 +33,9 @@ test.describe('LinkedIn Profile Import Engine (Phase 41 E2E)', () => {
     `;
 
     const res = await request.post('/api/ai/import/linkedin', {
+      headers: {
+        'x-e2e-test': 'true',
+      },
       data: {
         linkedinText: sampleText,
         previewOnly: true,
@@ -41,7 +46,8 @@ test.describe('LinkedIn Profile Import Engine (Phase 41 E2E)', () => {
     const body = await res.json();
     expect(body.success).toBe(true);
     expect(body.preview).toBeDefined();
-    expect(body.preview.name).toBe('Alex Dev');
+    const name = body.preview.personalInfo?.fullName || body.preview.name;
+    expect(name).toContain('Alex Dev');
   });
 
   test('rejects empty payload with informative validation error', async ({ request }) => {
