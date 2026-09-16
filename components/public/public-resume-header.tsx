@@ -19,6 +19,15 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MentorFeedbackDrawer } from "@/components/public/mentor-feedback-drawer";
+import { LANGUAGE_OPTIONS } from "@/lib/i18n/resume-translations";
+import { Globe } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface PublicResumeHeaderProps {
     resume: any;
@@ -30,6 +39,8 @@ interface PublicResumeHeaderProps {
     onZoomOut: () => void;
     onSetFit: () => void;
     onSet100: () => void;
+    language?: string;
+    onLanguageChange?: (lang: string) => void;
 }
 
 export function PublicResumeHeader({
@@ -42,6 +53,8 @@ export function PublicResumeHeader({
     onZoomOut,
     onSetFit,
     onSet100,
+    language,
+    onLanguageChange,
 }: PublicResumeHeaderProps) {
     const [copied, setCopied] = useState(false);
 
@@ -152,6 +165,25 @@ export function PublicResumeHeader({
                             <span>100%</span>
                         </Button>
                     </div>
+
+                    {/* Language / Locale Selector (Phase 46) */}
+                    {onLanguageChange && (
+                        <div className="hidden sm:flex items-center">
+                            <Select value={language || "en"} onValueChange={onLanguageChange}>
+                                <SelectTrigger className="h-8 w-[115px] text-xs font-bold border-neutral-300 rounded-none bg-white gap-1 px-2">
+                                    <Globe className="w-3.5 h-3.5 text-[#0d8274] shrink-0" />
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-none">
+                                    {LANGUAGE_OPTIONS.map(lang => (
+                                        <SelectItem key={lang.code} value={lang.code} className="text-xs">
+                                            {lang.nativeName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
 
                     {/* Print Button */}
                     <Button

@@ -2,6 +2,7 @@ import React from "react";
 import { useResumeStore } from "@/lib/stores/resume-store";
 import { Mail, Phone, MapPin, Linkedin, Link as LinkIcon, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getResumeLabel } from "@/lib/i18n/resume-translations";
 
 interface TemplateProps {
     data?: {
@@ -47,7 +48,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-3 border-b pb-1"
                             style={{ color: accent, borderColor: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Experience
+                            {getResumeLabel("experience", language)}
                         </h2>
                         <div className="space-y-4">
                             {workExperiences.map((exp) => (
@@ -55,7 +56,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                                     <div className={cn("flex justify-between items-baseline mb-1", isRtl && "flex-row-reverse")}>
                                         <h3 className="font-bold" style={{ fontSize: "var(--resume-font-base)" }}>{exp.position}</h3>
                                         <span className="text-gray-600 font-medium whitespace-nowrap" style={{ fontSize: "var(--resume-font-sm)" }}>
-                                            {exp.start_date} - {exp.is_current ? "Present" : exp.end_date}
+                                            {exp.start_date} - {exp.is_current ? getResumeLabel("present", language) : exp.end_date}
                                         </span>
                                     </div>
                                     <div className={cn("flex justify-between items-baseline mb-2", isRtl && "flex-row-reverse")}>
@@ -79,7 +80,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-3 border-b pb-1"
                             style={{ color: accent, borderColor: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Education
+                            {getResumeLabel("education", language)}
                         </h2>
                         <div className="space-y-4">
                             {education.map((edu) => (
@@ -118,7 +119,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-3 border-b pb-1"
                             style={{ color: accent, borderColor: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Projects
+                            {getResumeLabel("projects", language)}
                         </h2>
                         <div className="space-y-4">
                             {projects.map((proj) => (
@@ -153,7 +154,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-3 border-b pb-1"
                             style={{ color: accent, borderColor: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Skills
+                            {getResumeLabel("skills", language)}
                         </h2>
                         <div className="flex flex-wrap gap-x-6 gap-y-2" style={{ fontSize: "var(--resume-font-sm)" }}>
                             {Object.entries(
@@ -179,7 +180,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-3 border-b pb-1"
                             style={{ color: accent, borderColor: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Certifications
+                            {getResumeLabel("certifications", language)}
                         </h2>
                         <div className="space-y-2" style={{ fontSize: "var(--resume-font-sm)" }}>
                             {certifications.map((cert) => (
@@ -201,7 +202,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-3 border-b pb-1"
                             style={{ color: accent, borderColor: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Languages
+                            {getResumeLabel("languages", language)}
                         </h2>
                         <div className="flex flex-wrap gap-2" style={{ fontSize: "var(--resume-font-sm)" }}>
                             {languages.map((lang) => {
@@ -292,7 +293,7 @@ export const ModernTemplate = ({ data, isRtl, language }: TemplateProps) => {
                             className="font-bold uppercase tracking-wider mb-2"
                             style={{ color: accent, fontSize: "var(--resume-font-sm)" }}
                         >
-                            Professional Summary
+                            {getResumeLabel("summary", language)}
                         </h2>
                         <div
                             className="text-justify prose-sm prose-p:my-0"

@@ -5,6 +5,7 @@ import { ResumePreview } from "@/components/editor/resume-preview";
 import { PublicResumeHeader } from "./public-resume-header";
 import { MentorFeedbackDrawer } from "./mentor-feedback-drawer";
 import { PublicDownloadButton } from "@/components/dashboard/public-download-button";
+import { isRtlLanguage } from "@/lib/i18n/resume-translations";
 import { Button } from "@/components/ui/button";
 
 const RESUME_BASE_WIDTH = 800;
@@ -25,6 +26,15 @@ export function PublicResumeClient({
     const [isFitMode, setIsFitMode] = useState<boolean>(true);
     const [customScale, setCustomScale] = useState<number>(1);
     const [supportsZoom, setSupportsZoom] = useState<boolean>(true);
+    const [language, setLanguage] = useState<string>(data?.resume?.language || "en");
+    const [isRtl, setIsRtl] = useState<boolean>(
+        data?.resume?.is_rtl ?? isRtlLanguage(data?.resume?.language)
+    );
+
+    const handleLanguageChange = (newLang: string) => {
+        setLanguage(newLang);
+        setIsRtl(isRtlLanguage(newLang));
+    };
 
     useEffect(() => {
         if (typeof document !== "undefined") {
@@ -64,6 +74,15 @@ export function PublicResumeClient({
 
     const activeScale = isFitMode ? fitScale : customScale;
 
+    const localizedData = {
+        ...data,
+        resume: {
+            ...data?.resume,
+            language,
+            is_rtl: isRtl,
+        },
+    };
+
     const handleZoomIn = () => {
         setIsFitMode(false);
         setCustomScale((prev) => Math.min(1.4, parseFloat((prev + 0.1).toFixed(2))));
@@ -78,7 +97,7 @@ export function PublicResumeClient({
         <div className="min-h-screen bg-slate-100/70 dark:bg-slate-950 flex flex-col">
             {/* Elevated Public Header */}
             <PublicResumeHeader
-                resume={data.resume}
+                resume={localizedData.resume}
                 candidateName={candidateName}
                 resumeCode={resumeCode}
                 activeScale={activeScale}
@@ -90,6 +109,8 @@ export function PublicResumeClient({
                     setIsFitMode(false);
                     setCustomScale(1);
                 }}
+                language={language}
+                onLanguageChange={handleLanguageChange}
             />
 
             {/* Document Viewport */}
@@ -113,7 +134,7 @@ export function PublicResumeClient({
                     }
                     className="bg-white shadow-xl print:shadow-none border border-neutral-200 print:border-none shrink-0 mb-8 transition-[zoom] duration-150"
                 >
-                    <ResumePreview data={data} readOnly={true} />
+                    <ResumePreview data={localizedData} readOnly={true} isRtl={isRtl} language={language} />
                 </div>
 
                 {/* Footer Brand Credit */}
