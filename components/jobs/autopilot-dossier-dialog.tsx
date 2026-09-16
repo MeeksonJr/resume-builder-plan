@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ResumePreview } from "@/components/editor/resume-preview";
+import { AutoApplyPayloadDialog } from "@/components/jobs/auto-apply-payload-dialog";
 import {
   Rocket,
   FileText,
@@ -536,8 +537,13 @@ export function AutopilotDossierDialog({
                     </div>
                   </div>
 
-                  {/* Packet Download Bar */}
-                  <div className="pt-2 flex items-center gap-2">
+                  {/* Packet Download & Auto-Apply Bar */}
+                  <div className="pt-2 flex flex-wrap items-center gap-2">
+                    <AutoApplyPayloadDialog
+                      resumeData={resumeFullData?.data || { profile: { title: packet.role, company: packet.company } }}
+                      jobRole={packet.role}
+                      companyName={packet.company}
+                    />
                     <Button
                       variant="outline"
                       size="sm"
@@ -545,7 +551,7 @@ export function AutopilotDossierDialog({
                       className="flex-1 h-9 rounded-sm border-[#b8c8b9] bg-white text-xs font-bold gap-1.5 hover:bg-[#e9eee8]"
                     >
                       <Download className="w-3.5 h-3.5 text-[#0d8274]" />
-                      Download Application Packet (.txt)
+                      Download Packet (.txt)
                     </Button>
                     <Button
                       size="sm"
