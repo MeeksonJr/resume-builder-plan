@@ -5,6 +5,7 @@ import {
   computePipelineMetrics,
   aggregateVoiceTelemetry,
   summarizeEngagement,
+  computeABTestAnalytics,
 } from "@/lib/analytics/career-intelligence";
 
 export async function GET() {
@@ -47,7 +48,7 @@ export async function GET() {
       // 3. Application pipeline
       supabase
         .from("applications")
-        .select("id, company, role, status, applied_at, updated_at")
+        .select("id, company, role, status, applied_at, updated_at, resume_id")
         .eq("user_id", user.id)
         .order("applied_at", { ascending: false }),
 
@@ -128,6 +129,9 @@ export async function GET() {
       totalViews,
     });
 
+    // A/B Resume Testing Analytics (Phase 42)
+    const abTesting = computeABTestAnalytics(applications, resumes);
+
     return NextResponse.json({
       // KPI metrics
       kpi: {
@@ -160,6 +164,9 @@ export async function GET() {
         totalFillers,
         sessionCount,
       },
+
+      // A/B Experimentation Analytics (Phase 42)
+      abTesting,
 
       // Cached AI report
       latestReport: latestSnapshot?.data || null,

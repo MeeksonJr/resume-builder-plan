@@ -4,6 +4,7 @@ import {
   computePipelineMetrics,
   aggregateVoiceTelemetry,
   summarizeEngagement,
+  computeABTestAnalytics,
 } from "./career-intelligence";
 
 describe("Career Intelligence Analytics Engine", () => {
@@ -135,4 +136,56 @@ describe("Career Intelligence Analytics Engine", () => {
       expect(result.totalViewEvents).toBe(2);
     });
   });
+
+  describe("computeABTestAnalytics (Phase 42)", () => {
+    const resumes = [
+      { id: "res-a", title: "Full Stack Lead (ATS Optimized)" },
+      { id: "res-b", title: "General Software Engineer" },
+    ];
+
+    it("returns insufficient data state when no applications are tagged with a resume", () => {
+      const result = computeABTestAnalytics(
+        [{ id: "app-1", status: "applied" }],
+        resumes
+      );
+      expect(result.hasExperimentData).toBe(false);
+      expect(result.variants.length).toBe(0);
+      expect(result.winnerVariant).toBe("insufficient_data");
+    });
+
+    it("evaluates single variant cleanly when only one resume is tracked", () => {
+      const apps = [
+        { id: "app-1", status: "applied", resume_id: "res-a" },
+        { id: "app-2", status: "interviewing", resume_id: "res-a" },
+      ];
+      const result = computeABTestAnalytics(apps, resumes);
+      expect(result.hasExperimentData).toBe(true);
+      expect(result.variantA?.resumeId).toBe("res-a");
+      expect(result.variantA?.interviewRate).toBe(50);
+      expect(result.variantB).toBeNull();
+    });
+
+    it("identifies winning variant with relative lift and confidence scoring", () => {
+      const apps = [
+        // Variant A: 10 applications, 5 interviews (50% interview rate)
+        ...Array(5).fill({ id: "a-int", status: "interviewing", resume_id: "res-a" }),
+        ...Array(5).fill({ id: "a-app", status: "applied", resume_id: "res-a" }),
+        // Variant B: 10 applications, 2 interviews (20% interview rate)
+        ...Array(2).fill({ id: "b-int", status: "interviewing", resume_id: "res-b" }),
+        ...Array(8).fill({ id: "b-app", status: "applied", resume_id: "res-b" }),
+      ];
+
+      const result = computeABTestAnalytics(apps, resumes);
+      expect(result.hasExperimentData).toBe(true);
+      expect(result.winnerVariant).toBe("A");
+      expect(result.winnerTitle).toBe("Full Stack Lead (ATS Optimized)");
+      expect(result.variantA?.interviewRate).toBe(50);
+      expect(result.variantB?.interviewRate).toBe(20);
+      // Lift: (50 - 20) / 20 = 150%
+      expect(result.relativeLift).toBe(150);
+      expect(result.statisticalConfidence).toBe("high");
+      expect(result.recommendation).toContain("Prioritize using Variant A");
+    });
+  });
 });
+

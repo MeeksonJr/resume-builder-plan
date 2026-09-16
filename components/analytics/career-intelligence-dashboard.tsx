@@ -40,6 +40,7 @@ import {
   Cell,
 } from "recharts";
 import { format, subDays, startOfDay, eachDayOfInterval } from "date-fns";
+import { AbTestingScorecard } from "@/components/analytics/ab-testing-scorecard";
 
 interface CareerIntelligenceDashboardProps {
   isPro: boolean;
@@ -556,7 +557,10 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
         </div>
       </div>
 
-      {/* ===== SECTION 6: AI CAREER TRAJECTORY REPORT ===== */}
+      {/* ===== SECTION 6: A/B RESUME SPLIT-TESTING & EXPERIMENTATION (Phase 42) ===== */}
+      <AbTestingScorecard abTesting={data?.abTesting} />
+
+      {/* ===== SECTION 7: AI CAREER TRAJECTORY REPORT ===== */}
       <div className="border border-[#102b2b]/15 bg-white shadow-[14px_16px_0_rgba(16,43,43,.12)] overflow-hidden">
         {/* Report Header */}
         <div className="bg-[#102b2b] text-[#f8f4ec] px-6 py-5 sm:px-8 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
