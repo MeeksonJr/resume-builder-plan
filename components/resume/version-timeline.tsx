@@ -13,10 +13,12 @@ import {
     CheckCircle2,
     AlertCircle,
     History,
-    Loader2
+    Loader2,
+    GitCompare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { VersionDiffDialog } from "./version-diff-dialog";
 
 interface Version {
     id: string;
@@ -24,6 +26,7 @@ interface Version {
     title: string;
     change_summary: string;
     created_at: string;
+    snapshot_data?: any;
     version_metrics: {
         applications_sent: number;
         interviews_received: number;
@@ -39,6 +42,15 @@ interface VersionTimelineProps {
 export function VersionTimeline({ resumeId, versions }: VersionTimelineProps) {
     const router = useRouter();
     const [isRestoring, setIsRestoring] = useState<string | null>(null);
+    const [diffOpen, setDiffOpen] = useState(false);
+    const [diffVersionA, setDiffVersionA] = useState<any>(null);
+    const [diffVersionB, setDiffVersionB] = useState<any>(null);
+
+    const handleOpenDiff = (vA: any, vB: any) => {
+        setDiffVersionA(vA);
+        setDiffVersionB(vB);
+        setDiffOpen(true);
+    };
 
     const handleRestore = async (versionId: string, versionNumber: number) => {
         if (!confirm(`Are you sure you want to restore to Version ${versionNumber}? Your current resume will be backed up first.`)) {
@@ -109,25 +121,49 @@ export function VersionTimeline({ resumeId, versions }: VersionTimelineProps) {
                                         {formatDistanceToNow(new Date(version.created_at), { addSuffix: true })}
                                     </CardDescription>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleRestore(version.id, version.version_number)}
-                                    disabled={isLatest || isRestoring !== null}
-                                    className="gap-2"
-                                >
-                                    {isRestoring === version.id ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            Restoring...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <RotateCcw className="h-4 w-4" />
-                                            Restore
-                                        </>
+                                <div className="flex items-center gap-2">
+                                    {!isLatest && versions[0] && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => handleOpenDiff(version, versions[0])}
+                                            className="gap-1.5 text-xs font-bold"
+                                        >
+                                            <GitCompare className="h-3.5 w-3.5" />
+                                            Compare with Current
+                                        </Button>
                                     )}
-                                </Button>
+                                    {isLatest && versions.length > 1 && (
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => handleOpenDiff(versions[1], versions[0])}
+                                            className="gap-1.5 text-xs font-bold"
+                                        >
+                                            <GitCompare className="h-3.5 w-3.5" />
+                                            Compare with Previous
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRestore(version.id, version.version_number)}
+                                        disabled={isLatest || isRestoring !== null}
+                                        className="gap-2"
+                                    >
+                                        {isRestoring === version.id ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                Restoring...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <RotateCcw className="h-4 w-4" />
+                                                Restore
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -181,6 +217,14 @@ export function VersionTimeline({ resumeId, versions }: VersionTimelineProps) {
                     </Card>
                 );
             })}
+
+            <VersionDiffDialog
+                open={diffOpen}
+                onOpenChange={setDiffOpen}
+                versionA={diffVersionA}
+                versionB={diffVersionB}
+                onRestore={handleRestore}
+            />
         </div>
     );
 }

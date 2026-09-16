@@ -155,7 +155,19 @@ export function ImportContent({ resumes }: ImportContentProps) {
                                 </div>
                                 <CardContent className="p-10 space-y-8">
                                     <div className="space-y-4">
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Profile Data Corpus</Label>
+                                        <div className="flex items-center justify-between">
+                                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Profile Data Corpus</Label>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-xs text-blue-400 hover:text-blue-300 gap-1.5 h-7"
+                                                onClick={() => setLinkedinData(`Alex Rivera\nSenior Full-Stack Cloud Architect | Distributed Systems & AI Platforms\nGreater Seattle Area | alex.rivera@example.com | linkedin.com/in/alexrivera-cloud\n\nSummary:\nHigh-impact software engineering leader with 8+ years architecting fault-tolerant cloud services, high-throughput microservices, and AI workflow pipelines. Specializes in TypeScript, Next.js, Go, Kubernetes, and PostgreSQL.\n\nExperience:\nStaff Software Engineer | Veloce Cloud Systems | 2022 - Present | Seattle, WA\n- Architected distributed data ingestion engine processing 1.2M events/sec with sub-50ms p99 latency.\n- Spearheaded team migration to Kubernetes and automated CI/CD canary deployments across 4 regions.\n- Mentored 12 junior and mid-level engineers across backend and infrastructure guilds.\n\nSenior Software Engineer | DataForge Analytics | 2019 - 2022 | San Francisco, CA\n- Built real-time analytics streaming pipelines using Apache Kafka, PostgreSQL, and Node.js.\n- Reduced cloud infrastructure compute expenditure by 34% through proactive autoscaling policies.\n\nEducation:\nUniversity of Washington | B.S. in Computer Science | 2015 - 2019\n\nSkills:\nLanguages: TypeScript, Go, Python, SQL, JavaScript\nCloud & Infrastructure: AWS, Kubernetes, Docker, Terraform, CI/CD\nDatabases & Storage: PostgreSQL, Redis, DynamoDB`)}
+                                            >
+                                                <Sparkles className="h-3.5 w-3.5" />
+                                                Load Sample Profile
+                                            </Button>
+                                        </div>
                                         <Textarea
                                             placeholder="Paste your LinkedIn profile text or PDF export content here..."
                                             className="min-h-[300px] bg-slate-900/30 border-primary/10 rounded-2xl p-6 font-medium text-muted-foreground/80 focus:ring-primary/20 placeholder:text-muted-foreground/20 resize-none transition-all leading-relaxed"
