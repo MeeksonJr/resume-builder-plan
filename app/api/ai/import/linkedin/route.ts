@@ -1,144 +1,196 @@
 import { createClient } from "@/lib/supabase/server";
 import { parseLinkedInData, ResumeData } from "@/lib/ai/index";
+import { scrapeLinkedInProfile, scrapedToResumeData, validateLinkedInUrl } from "@/lib/scrapers/linkedin-scraper";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-    try {
-        const supabase = await createClient();
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-        if (!user) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
-
-        const { linkedinText } = await req.json();
-
-        if (!linkedinText || typeof linkedinText !== "string" || linkedinText.trim().length === 0) {
-            return NextResponse.json({ error: "LinkedIn profile text is required" }, { status: 400 });
-        }
-
-        // Parse LinkedIn data using AI
-        const resumeData = await parseLinkedInData(linkedinText);
-
-        // Create a new resume with the parsed data
-        const { data: newResume, error: resumeError } = await supabase
-            .from("resumes")
-            .insert({
-                user_id: user.id,
-                title: `LinkedIn Import - ${resumeData.personalInfo.fullName || "Untitled"}`,
-                // template_id: "modern", // Assuming 'modern' is a valid ID or let it default if nullable
-                // If template_id is text, use 'modern'. If UUID, we need a valid one.
-                // Safest to omit if nullable, or query a default template.
-                // Let's assume for now we can omit it or it has a default. 
-                // Checks show column is template_id.
-            })
-            .select()
-            .single();
-
-        if (resumeError) throw resumeError;
-
-        // Insert personal info
-        if (resumeData.personalInfo) {
-            await supabase.from("personal_info").insert({
-                resume_id: newResume.id,
-                full_name: resumeData.personalInfo.fullName,
-                email: resumeData.personalInfo.email,
-                phone: resumeData.personalInfo.phone,
-                location: resumeData.personalInfo.location,
-                linkedin: resumeData.personalInfo.linkedin,
-                website: resumeData.personalInfo.website,
-                github: resumeData.personalInfo.github,
-                summary: resumeData.personalInfo.summary,
-            });
-        }
-
-        // Insert work experiences
-        if (resumeData.workExperience && resumeData.workExperience.length > 0) {
-            const workExps = resumeData.workExperience.map((exp, idx) => ({
-                resume_id: newResume.id,
-                company: exp.company,
-                position: exp.position,
-                location: exp.location,
-                start_date: exp.startDate,
-                end_date: exp.endDate,
-                is_current: exp.current || false,
-                description: exp.description,
-                sort_order: idx,
-            }));
-            await supabase.from("work_experiences").insert(workExps);
-        }
-
-        // Insert education
-        if (resumeData.education && resumeData.education.length > 0) {
-            const eduEntries = resumeData.education.map((edu, idx) => ({
-                resume_id: newResume.id,
-                institution: edu.institution,
-                degree: edu.degree,
-                field_of_study: edu.field,
-                location: edu.location,
-                start_date: edu.startDate,
-                end_date: edu.endDate,
-                sort_order: idx,
-            }));
-            await supabase.from("education").insert(eduEntries);
-        }
-
-        // Insert skills
-        if (resumeData.skills && resumeData.skills.length > 0) {
-            const skillEntries = resumeData.skills.map((skill, idx) => ({
-                resume_id: newResume.id,
-                name: skill.category || "Skills",
-                skills: skill.items,
-                sort_order: idx,
-            }));
-            await supabase.from("skills").insert(skillEntries);
-        }
-
-        // Insert projects
-        if (resumeData.projects && resumeData.projects.length > 0) {
-            const projectEntries = resumeData.projects.map((project, idx) => ({
-                resume_id: newResume.id,
-                name: project.name,
-                description: project.description,
-                technologies: project.technologies,
-                url: project.url,
-                sort_order: idx,
-            }));
-            await supabase.from("projects").insert(projectEntries);
-        }
-
-        // Insert certifications
-        if (resumeData.certifications && resumeData.certifications.length > 0) {
-            const certEntries = resumeData.certifications.map((cert, idx) => ({
-                resume_id: newResume.id,
-                name: cert.name,
-                issuer: cert.issuer,
-                date: cert.date,
-                url: cert.url,
-                sort_order: idx,
-            }));
-            await supabase.from("certifications").insert(certEntries);
-        }
-
-        // Insert languages
-        if (resumeData.languages && resumeData.languages.length > 0) {
-            const langEntries = resumeData.languages.map((lang, idx) => ({
-                resume_id: newResume.id,
-                language: lang.language,
-                proficiency: lang.proficiency,
-                sort_order: idx,
-            }));
-            await supabase.from("languages").insert(langEntries);
-        }
-
-        return NextResponse.json({
-            resumeId: newResume.id,
-            message: "LinkedIn profile successfully imported!"
-        });
-    } catch (error: any) {
-        console.error("[LINKEDIN_IMPORT_ERROR]", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
+
+    const body = await req.json();
+    const { profileUrl, linkedinText, previewOnly = false } = body;
+
+    let resumeData: ResumeData;
+    let extractionSource = "text_paste";
+    let confidenceScore = 85;
+
+    // 1. URL-based extraction
+    if (profileUrl && typeof profileUrl === "string" && profileUrl.trim().length > 0) {
+      const validation = validateLinkedInUrl(profileUrl);
+      if (!validation.isValid) {
+        return NextResponse.json(
+          { error: "Invalid LinkedIn URL or handle. Please provide a URL like linkedin.com/in/username" },
+          { status: 400 }
+        );
+      }
+
+      const scraped = await scrapeLinkedInProfile(profileUrl);
+      resumeData = scrapedToResumeData(scraped);
+      extractionSource = scraped.source;
+      confidenceScore = scraped.confidenceScore;
+    }
+    // 2. Direct text paste extraction
+    else if (linkedinText && typeof linkedinText === "string" && linkedinText.trim().length > 0) {
+      resumeData = await parseLinkedInData(linkedinText);
+      extractionSource = "llm_text_parser";
+      confidenceScore = 90;
+    } else {
+      return NextResponse.json(
+        { error: "Please provide either a LinkedIn profile URL or copy-pasted profile text." },
+        { status: 400 }
+      );
+    }
+
+    // If client requested a preview verification before writing to database
+    if (previewOnly) {
+      return NextResponse.json({
+        preview: true,
+        source: extractionSource,
+        confidenceScore,
+        resumeData,
+      });
+    }
+
+    // 3. Create new resume in Supabase
+    const candidateName = resumeData.personalInfo.fullName || "Untitled";
+    const { data: newResume, error: resumeError } = await supabase
+      .from("resumes")
+      .insert({
+        user_id: user.id,
+        title: `LinkedIn Import - ${candidateName}`,
+      })
+      .select()
+      .single();
+
+    if (resumeError) throw resumeError;
+
+    // Insert personal info
+    if (resumeData.personalInfo) {
+      await supabase.from("personal_info").insert({
+        resume_id: newResume.id,
+        full_name: resumeData.personalInfo.fullName,
+        email: resumeData.personalInfo.email,
+        phone: resumeData.personalInfo.phone,
+        location: resumeData.personalInfo.location,
+        linkedin: resumeData.personalInfo.linkedin,
+        website: resumeData.personalInfo.website,
+        github: resumeData.personalInfo.github,
+        summary: resumeData.personalInfo.summary,
+      });
+    }
+
+    // Insert work experiences
+    if (resumeData.workExperience && resumeData.workExperience.length > 0) {
+      const workExps = resumeData.workExperience.map((exp, idx) => ({
+        resume_id: newResume.id,
+        company: exp.company,
+        position: exp.position,
+        location: exp.location,
+        start_date: exp.startDate,
+        end_date: exp.endDate,
+        is_current: exp.current || false,
+        description: exp.description,
+        sort_order: idx,
+      }));
+      await supabase.from("work_experiences").insert(workExps);
+    }
+
+    // Insert education
+    if (resumeData.education && resumeData.education.length > 0) {
+      const eduEntries = resumeData.education.map((edu, idx) => ({
+        resume_id: newResume.id,
+        institution: edu.institution,
+        degree: edu.degree,
+        field_of_study: edu.field,
+        location: edu.location,
+        start_date: edu.startDate,
+        end_date: edu.endDate,
+        sort_order: idx,
+      }));
+      await supabase.from("education").insert(eduEntries);
+    }
+
+    // Insert skills
+    if (resumeData.skills && resumeData.skills.length > 0) {
+      const skillEntries = resumeData.skills.map((skill, idx) => ({
+        resume_id: newResume.id,
+        name: skill.category || "Skills",
+        skills: skill.items,
+        sort_order: idx,
+      }));
+      await supabase.from("skills").insert(skillEntries);
+    }
+
+    // Insert projects
+    if (resumeData.projects && resumeData.projects.length > 0) {
+      const projectEntries = resumeData.projects.map((project, idx) => ({
+        resume_id: newResume.id,
+        name: project.name,
+        description: project.description,
+        technologies: project.technologies,
+        url: project.url,
+        sort_order: idx,
+      }));
+      await supabase.from("projects").insert(projectEntries);
+    }
+
+    // Insert certifications
+    if (resumeData.certifications && resumeData.certifications.length > 0) {
+      const certEntries = resumeData.certifications.map((cert, idx) => ({
+        resume_id: newResume.id,
+        name: cert.name,
+        issuer: cert.issuer,
+        date: cert.date,
+        url: cert.url,
+        sort_order: idx,
+      }));
+      await supabase.from("certifications").insert(certEntries);
+    }
+
+    // Insert languages
+    if (resumeData.languages && resumeData.languages.length > 0) {
+      const langEntries = resumeData.languages.map((lang, idx) => ({
+        resume_id: newResume.id,
+        language: lang.language,
+        proficiency: lang.proficiency,
+        sort_order: idx,
+      }));
+      await supabase.from("languages").insert(langEntries);
+    }
+
+    // Automatically create initial version baseline for A/B testing
+    try {
+      await supabase.from("resume_versions").insert({
+        resume_id: newResume.id,
+        version_number: 1,
+        name: "v1.0 (LinkedIn Import)",
+        change_summary: `Initial import from LinkedIn (${extractionSource})`,
+        snapshot_data: {
+          personal_info: resumeData.personalInfo,
+          work_experiences: resumeData.workExperience,
+          education: resumeData.education,
+          skills: resumeData.skills,
+        },
+      });
+    } catch (verErr) {
+      console.warn("[LINKEDIN_IMPORT] Optional baseline version recording skipped:", verErr);
+    }
+
+    return NextResponse.json({
+      resumeId: newResume.id,
+      source: extractionSource,
+      confidenceScore,
+      message: "LinkedIn profile successfully imported!",
+    });
+  } catch (error: any) {
+    console.error("[LINKEDIN_IMPORT_ERROR]", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  }
 }
