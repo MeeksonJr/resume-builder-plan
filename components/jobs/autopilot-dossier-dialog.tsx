@@ -260,9 +260,9 @@ export function AutopilotDossierDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[98vw] max-w-7xl sm:max-w-7xl h-[92vh] flex flex-col p-0 overflow-hidden bg-[#f7faf5] border-[#102b2b]/20 shadow-2xl rounded-sm">
+      <DialogContent className="w-[98vw] max-w-7xl sm:max-w-7xl h-[96vh] sm:h-[92vh] flex flex-col p-0 overflow-hidden bg-[#f7faf5] border-[#102b2b]/20 shadow-2xl rounded-sm">
         {/* TOP COMMAND HEADER */}
-        <div className="px-6 py-4 bg-[#102b2b] text-[#f8f4ec] border-b border-[#102b2b]/30 shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 bg-[#102b2b] text-[#f8f4ec] border-b border-[#102b2b]/30 shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Left: Role & Company Branding */}
             <div className="flex items-center gap-3">
@@ -370,7 +370,7 @@ export function AutopilotDossierDialog({
         </div>
 
         {/* MAIN SLIDE CONTENT AREA (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-10">
           {/* SLIDE 1: EXECUTIVE OVERVIEW */}
           {activeSlide === 1 && (
             <div className="space-y-6">
@@ -983,7 +983,7 @@ export function AutopilotDossierDialog({
         </div>
 
         {/* BOTTOM STEPPER FOOTER */}
-        <div className="px-6 py-3.5 bg-white border-t border-[#b8c8b9] flex items-center justify-between gap-3 shrink-0">
+        <div className="px-4 sm:px-6 py-2.5 sm:py-3.5 bg-white border-t border-[#b8c8b9] flex items-center justify-between gap-3 shrink-0">
           <Button
             size="sm"
             variant="outline"

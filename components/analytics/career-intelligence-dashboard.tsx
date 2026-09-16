@@ -220,7 +220,7 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
       </div>
 
       {/* ===== SECTION 2: APPLICATION PIPELINE FUNNEL ===== */}
-      <div className="border border-[#102b2b]/15 bg-white p-6 sm:p-8 shadow-[8px_10px_0_rgba(16,43,43,.08)]">
+      <div className="border border-[#102b2b]/15 bg-white p-4 sm:p-8 shadow-[8px_10px_0_rgba(16,43,43,.08)]">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-black tracking-tight text-[#102b2b]">
@@ -239,7 +239,7 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
         {data.pipeline?.total > 0 ? (
           <div className="space-y-4">
             {/* Funnel Bars */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {funnelData.map((stage) => {
                 const pct = data.pipeline.total > 0
                   ? Math.round((stage.count / data.pipeline.total) * 100)

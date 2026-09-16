@@ -47,7 +47,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { formatCanvasCourseDisplay } from "@/lib/utils";
+import { formatCanvasCourseDisplay, cn } from "@/lib/utils";
 
 interface Application {
     id: string;
@@ -82,6 +82,7 @@ export function KanbanBoard() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [mobileFilter, setMobileFilter] = useState<string>("all");
 
     // Linked Resources State
     const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
@@ -647,21 +648,21 @@ export function KanbanBoard() {
                         </div>
 
                         {/* Fixed Footer Actions */}
-                        <div className="flex items-center justify-between px-6 md:px-8 py-4 border-t border-[#102b2b]/15 bg-white shrink-0">
-                            <span className="text-xs text-muted-foreground font-medium truncate">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-4 sm:px-8 py-3.5 border-t border-[#102b2b]/15 bg-white shrink-0 gap-3">
+                            <span className="text-xs text-muted-foreground font-medium truncate hidden sm:inline-block">
                                 Link relevant resumes & coursework for full dossier synchronization.
                             </span>
-                            <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center justify-end gap-3 shrink-0">
                                 <Button
                                     variant="outline"
                                     onClick={() => setIsDialogOpen(false)}
-                                    className="h-11 rounded-none border-[#102b2b]/20 text-[#102b2b] hover:bg-muted font-bold px-6"
+                                    className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none border-[#102b2b]/20 text-[#102b2b] hover:bg-muted font-bold px-4 sm:px-6"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     onClick={handleAddJob}
-                                    className="h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-8"
+                                    className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-6 sm:px-8"
                                 >
                                     Track Application
                                 </Button>
@@ -671,20 +672,68 @@ export function KanbanBoard() {
                 </Dialog>
             </div>
 
+            {/* Mobile Column Segment Switcher (visible on md:hidden) */}
+            <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar shrink-0">
+                <button
+                    type="button"
+                    onClick={() => setMobileFilter("all")}
+                    className={cn(
+                        "px-3 py-1.5 text-xs font-bold whitespace-nowrap border transition-colors cursor-pointer",
+                        mobileFilter === "all"
+                            ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-xs"
+                            : "bg-white text-[#102b2b] border-[#102b2b]/15 hover:bg-[#102b2b]/5"
+                    )}
+                >
+                    All ({applications.length})
+                </button>
+                {COLUMNS.map(col => {
+                    const count = applications.filter(a => a.status === col.id).length;
+                    return (
+                        <button
+                            key={col.id}
+                            type="button"
+                            onClick={() => setMobileFilter(col.id)}
+                            className={cn(
+                                "px-3 py-1.5 text-xs font-bold whitespace-nowrap border transition-colors flex items-center gap-1.5 cursor-pointer",
+                                mobileFilter === col.id
+                                    ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-xs"
+                                    : "bg-white text-[#102b2b] border-[#102b2b]/15 hover:bg-[#102b2b]/5"
+                            )}
+                        >
+                            <span>{col.label}</span>
+                            <span className={cn(
+                                "text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold",
+                                mobileFilter === col.id ? "bg-[#d8f36b] text-[#102b2b]" : "bg-[#102b2b]/10 text-[#102b2b]"
+                            )}>
+                                {count}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+
             {/* Kanban Columns */}
             <div className="flex-1 overflow-x-auto pb-2">
-                <div className="grid h-full min-w-[1024px] grid-cols-4 gap-4 text-[#102b2b]">
-                    {COLUMNS.map(col => (
-                        <div key={col.id} className="flex min-w-[250px] flex-col border border-[#102b2b]/15 bg-white/35 p-3">
-                            <div className={`mb-3 flex items-center justify-between border-b border-[#102b2b]/10 px-2 pb-3 text-sm font-bold ${col.color}`}>
-                                <span>{col.label}</span>
-                                <Badge variant="secondary" className="rounded-none border border-[#102b2b]/15 bg-transparent text-[#102b2b]">{applications.filter(a => a.status === col.id).length}</Badge>
-                            </div>
-                            <ScrollArea className="flex-1">
-                                <div className="space-y-3 pr-2 pb-4">
-                                    {applications.filter(a => a.status === col.id).length === 0 && (
-                                        <p className="border border-dashed border-[#102b2b]/15 px-3 py-8 text-center text-xs text-[#102b2b]/55">No applications here</p>
-                                    )}
+                <div className="grid h-full w-full md:min-w-[1024px] grid-cols-1 md:grid-cols-4 gap-4 text-[#102b2b]">
+                    {COLUMNS.map(col => {
+                        const isHiddenOnMobile = mobileFilter !== "all" && mobileFilter !== col.id;
+                        return (
+                            <div 
+                                key={col.id} 
+                                className={cn(
+                                    "min-w-0 md:min-w-[250px] flex-col border border-[#102b2b]/15 bg-white/35 p-3",
+                                    isHiddenOnMobile ? "hidden md:flex" : "flex"
+                                )}
+                            >
+                                <div className={`mb-3 flex items-center justify-between border-b border-[#102b2b]/10 px-2 pb-3 text-sm font-bold ${col.color}`}>
+                                    <span>{col.label}</span>
+                                    <Badge variant="secondary" className="rounded-none border border-[#102b2b]/15 bg-transparent text-[#102b2b]">{applications.filter(a => a.status === col.id).length}</Badge>
+                                </div>
+                                <ScrollArea className="flex-1">
+                                    <div className="space-y-3 pr-2 pb-4">
+                                        {applications.filter(a => a.status === col.id).length === 0 && (
+                                            <p className="border border-dashed border-[#102b2b]/15 px-3 py-8 text-center text-xs text-[#102b2b]/55">No applications here</p>
+                                        )}
                                     {applications.filter(a => a.status === col.id).map(app => (
                                         <Card 
                                             key={app.id} 
@@ -833,9 +882,10 @@ export function KanbanBoard() {
                                         </Card>
                                     ))}
                                 </div>
-                             </ScrollArea>
+                            </ScrollArea>
                         </div>
-                    ))}
+                    );
+                })}
                 </div>
             </div>
 
@@ -1122,11 +1172,11 @@ export function KanbanBoard() {
                     )}
 
                     {/* Fixed Footer Actions */}
-                    <div className="flex items-center justify-between px-6 md:px-8 py-4 border-t border-[#102b2b]/15 bg-white shrink-0">
+                    <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between px-4 sm:px-8 py-3.5 border-t border-[#102b2b]/15 bg-white shrink-0 gap-3">
                         <Button
                             onClick={handleDeleteJob}
                             variant="outline"
-                            className="h-11 rounded-none border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold gap-2 px-5"
+                            className="h-10 sm:h-11 rounded-none border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold gap-2 px-5"
                         >
                             <Trash2 className="w-4 h-4" />
                             Delete Card
@@ -1135,13 +1185,13 @@ export function KanbanBoard() {
                             <Button
                                 variant="outline"
                                 onClick={() => setIsEditOpen(false)}
-                                className="h-11 rounded-none border-[#102b2b]/20 text-[#102b2b] hover:bg-muted font-bold px-6"
+                                className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none border-[#102b2b]/20 text-[#102b2b] hover:bg-muted font-bold px-4 sm:px-6"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 onClick={handleUpdateJob}
-                                className="h-11 rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-8"
+                                className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-6 sm:px-8"
                             >
                                 Save Changes
                             </Button>

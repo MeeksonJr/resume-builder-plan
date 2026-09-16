@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ResumePreview } from "@/components/editor/resume-preview";
 import { PublicResumeHeader } from "./public-resume-header";
+import { MentorFeedbackDrawer } from "./mentor-feedback-drawer";
+import { PublicDownloadButton } from "@/components/dashboard/public-download-button";
 import { Button } from "@/components/ui/button";
 
 const RESUME_BASE_WIDTH = 800;
@@ -129,6 +131,22 @@ export function PublicResumeClient({
                     </Button>
                 </footer>
             </main>
+
+            {/* Mobile Sticky Quick-Action Dock (visible only on sm:hidden) */}
+            <div className="sm:hidden fixed bottom-3 inset-x-3 z-40 bg-[#102b2b]/95 backdrop-blur-md text-white px-3 py-2 border border-white/15 shadow-2xl flex items-center justify-between gap-2 print:hidden">
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="truncate text-xs font-bold text-[#d8f36b]">{candidateName}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <MentorFeedbackDrawer resumeId={data.resume.id} candidateName={candidateName} />
+                    <PublicDownloadButton
+                        user={data.resume.user}
+                        resumeId={data.resume.id}
+                        title={data.resume.title}
+                        resumeCode={resumeCode}
+                    />
+                </div>
+            </div>
         </div>
     );
 }
