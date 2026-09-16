@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MentorFeedbackDrawer } from "@/components/public/mentor-feedback-drawer";
+import { ResumeQrDialog } from "@/components/public/resume-qr-dialog";
 import { LANGUAGE_OPTIONS } from "@/lib/i18n/resume-translations";
 import { Globe } from "lucide-react";
 import {
@@ -199,6 +200,9 @@ export function PublicResumeHeader({
 
                     {/* Mentor Feedback & Peer Review (Phase 43) */}
                     <MentorFeedbackDrawer resumeId={resume.id} candidateName={candidateName} />
+
+                    {/* Smart QR & Recruiter vCard 3.0 Export (Phase 47) */}
+                    <ResumeQrDialog candidateName={candidateName} resume={resume} resumeCode={resumeCode} />
 
                     {/* Share / Copy Link Button */}
                     <Button

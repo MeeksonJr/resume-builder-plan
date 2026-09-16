@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ResumePreview } from "@/components/editor/resume-preview";
 import { PublicResumeHeader } from "./public-resume-header";
 import { MentorFeedbackDrawer } from "./mentor-feedback-drawer";
+import { ResumeQrDialog } from "./resume-qr-dialog";
 import { PublicDownloadButton } from "@/components/dashboard/public-download-button";
 import { isRtlLanguage } from "@/lib/i18n/resume-translations";
 import { Button } from "@/components/ui/button";
@@ -158,7 +159,8 @@ export function PublicResumeClient({
                 <div className="flex items-center gap-1.5 min-w-0">
                     <span className="truncate text-xs font-bold text-[#d8f36b]">{candidateName}</span>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <ResumeQrDialog candidateName={candidateName} resume={data.resume} resumeCode={resumeCode} />
                     <MentorFeedbackDrawer resumeId={data.resume.id} candidateName={candidateName} />
                     <PublicDownloadButton
                         user={data.resume.user}
