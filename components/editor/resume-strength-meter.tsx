@@ -27,8 +27,10 @@ import {
   Loader2,
   ChevronRight,
   Info,
+  Flame,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AtsKeywordHeatmap } from "@/components/editor/ats-keyword-heatmap";
 
 interface ResumeStrengthMeterProps {
   onNavigateTab?: (tab: string) => void;
@@ -51,6 +53,7 @@ export function ResumeStrengthMeter({
     else setInternalOpen(open);
   };
   const [activeFilter, setActiveFilter] = useState<"all" | "missing" | "passed">("all");
+  const [auditMode, setAuditMode] = useState<"checklist" | "keywords">("checklist");
   const [jobDescription, setJobDescription] = useState("");
   const [isScanningATS, setIsScanningATS] = useState(false);
   const [atsResult, setAtsResult] = useState<{
@@ -260,8 +263,40 @@ export function ResumeStrengthMeter({
             </p>
           </div>
 
-          {/* Category Breakdown Bar Chart */}
-          <div className="space-y-3 bg-white/70 p-4 border border-[#102b2b]/10 rounded-none">
+          {/* Audit Mode Switcher */}
+          <div className="grid grid-cols-2 gap-1 bg-white p-1 border border-[#102b2b]/15 rounded-none shadow-xs">
+            <button
+              type="button"
+              onClick={() => setAuditMode("checklist")}
+              className={`py-2 text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                auditMode === "checklist"
+                  ? "bg-[#102b2b] text-white shadow-xs"
+                  : "text-[#52716a] hover:text-[#102b2b]"
+              }`}
+            >
+              <FileCheck className="w-3.5 h-3.5" />
+              Audit Checklist
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuditMode("keywords")}
+              className={`py-2 text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                auditMode === "keywords"
+                  ? "bg-[#102b2b] text-white shadow-xs"
+                  : "text-[#52716a] hover:text-[#102b2b]"
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-500" />
+              Keyword Heatmap
+            </button>
+          </div>
+
+          {auditMode === "keywords" ? (
+            <AtsKeywordHeatmap initialJobDescription={jobDescription} />
+          ) : (
+            <>
+              {/* Category Breakdown Bar Chart */}
+              <div className="space-y-3 bg-white/70 p-4 border border-[#102b2b]/10 rounded-none">
             <h4 className="text-xs font-black uppercase tracking-wider text-[#102b2b] flex items-center gap-2">
               <TrendingUp className="h-3.5 w-3.5 text-[#0d8274]" />
               Category Score Breakdown
@@ -496,7 +531,9 @@ export function ResumeStrengthMeter({
               </div>
             )}
           </div>
-        </div>
+        </>
+      )}
+    </div>
       </SheetContent>
     </Sheet>
   );
