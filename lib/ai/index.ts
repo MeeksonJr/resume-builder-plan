@@ -90,7 +90,7 @@ export const resumeDataSchema = z.object({
 export type ResumeData = z.infer<typeof resumeDataSchema>;
 
 // AI model fallback chain
-async function withFallback<T>(
+export async function withFallback<T>(
   operation: (model: ReturnType<typeof groq | typeof google | typeof openai>) => Promise<T>
 ): Promise<T> {
   // Check if any keys are available and non-empty

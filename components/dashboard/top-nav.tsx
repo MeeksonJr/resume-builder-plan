@@ -43,6 +43,7 @@ export function TopNav({ isPro }: TopNavProps) {
                     <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Search workspace"
                         className="md:hidden h-10 w-10 text-muted-foreground"
                         onClick={() => {
                             const event = new KeyboardEvent('keydown', {
@@ -61,6 +62,7 @@ export function TopNav({ isPro }: TopNavProps) {
                     <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Notifications"
                         className="h-10 w-10 text-muted-foreground relative"
                     >
                         <Bell className="h-5 w-5" />
