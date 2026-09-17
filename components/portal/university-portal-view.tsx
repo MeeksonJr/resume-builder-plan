@@ -30,6 +30,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AlumniMentorshipMeshTab } from "@/components/portal/alumni-mentorship-mesh-tab";
 
 interface UniversityPortalViewProps {
   tenant: UniversityTenant;
@@ -189,6 +190,9 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
           <TabsList className="bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
             <TabsTrigger value="roster" className="text-xs font-bold">
               Student Roster ({filteredStudents.length})
+            </TabsTrigger>
+            <TabsTrigger value="alumni" className="text-xs font-bold">
+              Alumni Mentorship Mesh
             </TabsTrigger>
             <TabsTrigger value="talent" className="text-xs font-bold">
               Recruiter Talent Showcase
@@ -413,6 +417,11 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
               </div>
             </div>
           </Card>
+        </TabsContent>
+
+        {/* Tab: Alumni Mentorship & Referral Mesh */}
+        <TabsContent value="alumni" className="space-y-4">
+          <AlumniMentorshipMeshTab universityName={tenant.name} />
         </TabsContent>
       </Tabs>
     </div>
