@@ -32,6 +32,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { OfferLetterSimulator } from "@/components/dashboard/compensation/offer-letter-simulator";
 
 interface SalaryIntelligenceHubProps {
   profile?: any;
@@ -48,7 +49,7 @@ export function SalaryIntelligenceHub({
   initialRole = "",
   initialCompany = "",
 }: SalaryIntelligenceHubProps) {
-  const [activeTab, setActiveTab] = useState<"benchmark" | "evaluator">("benchmark");
+  const [activeTab, setActiveTab] = useState<"benchmark" | "evaluator" | "equity">("benchmark");
 
   // Tab 1: Market Explorer States
   const [searchRole, setSearchRole] = useState(initialRole || profile?.target_role || "Senior Software Engineer");
@@ -250,6 +251,13 @@ export function SalaryIntelligenceHub({
                 >
                   <Award className="w-3.5 h-3.5 mr-1.5" />
                   Offer Evaluator
+                </TabsTrigger>
+                <TabsTrigger
+                  value="equity"
+                  className="data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] rounded-none text-xs font-bold text-white px-3.5 py-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#d8f36b]" />
+                  4-Yr Equity & Offer Modeler
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -690,6 +698,14 @@ export function SalaryIntelligenceHub({
             </div>
           )}
         </div>
+      )}
+
+      {/* Tab 3: Phase 57 Equity & Offer Letter Simulator */}
+      {activeTab === "equity" && (
+        <OfferLetterSimulator
+          initialCompany={offerCompany || "Anthropic"}
+          initialRole={offerRole || searchRole || "Staff Software Engineer"}
+        />
       )}
 
       {/* Sync to Tracker Dialog */}
