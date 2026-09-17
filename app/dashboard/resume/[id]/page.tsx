@@ -19,33 +19,35 @@ export default async function ResumePage({ params }: ResumePageProps) {
     notFound();
   }
 
-  // Fetch resume
-  const { data: resume, error: resumeError } = await supabase
+  // Fetch resume (first check if current user is owner)
+  let { data: resume, error: resumeError } = await supabase
     .from("resumes")
     .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (resumeError) {
-    console.error("[ResumePage] Error fetching resume:", resumeError);
-  }
-
+  // If not owner, check if resume exists for shared collaboration / peer review
   if (!resume) {
-    console.error("[ResumePage] Resume not found for user:", user.id, "Resume ID:", id);
-    // Double check if resume exists at all for debugging
-    const { data: anyResume } = await supabase.from("resumes").select("user_id").eq("id", id).single();
-    if (anyResume) {
-      console.error("[ResumePage] Resume exists but belongs to:", anyResume.user_id);
+    const { data: sharedResume } = await supabase
+      .from("resumes")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (sharedResume) {
+      resume = sharedResume;
+    } else {
+      console.error("[ResumePage] Resume not found:", id);
+      notFound();
     }
-    notFound();
   }
 
-  // Fetch profile
+  // Fetch profile of the resume owner so collaborator sees candidate's contact info
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", resume.user_id)
     .maybeSingle();
 
   // Fetch personal_info

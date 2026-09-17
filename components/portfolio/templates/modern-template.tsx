@@ -59,6 +59,20 @@ interface ModernTemplateProps {
     layoutStyle?: string
 }
 
+function FormattedContent({ content, className = "text-sm text-foreground/80 leading-relaxed" }: { content?: string; className?: string }) {
+    if (!content) return null;
+    const hasHtml = /<[a-z][\s\S]*>/i.test(content);
+    if (hasHtml) {
+        return (
+            <div 
+                className={cn(className, "prose dark:prose-invert max-w-none text-inherit [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1")}
+                dangerouslySetInnerHTML={{ __html: content }}
+            />
+        );
+    }
+    return <p className={className}>{content}</p>;
+}
+
 export function ModernTemplate({
     portfolio,
     resumes,
@@ -345,9 +359,10 @@ export function ModernTemplate({
                                                             <Zap className="h-5 w-5 text-primary" />
                                                         </div>
                                                     </div>
-                                                    <p className="text-muted-foreground leading-relaxed text-base">
-                                                        {project.description}
-                                                    </p>
+                                                    <FormattedContent 
+                                                        content={project.description} 
+                                                        className="text-muted-foreground leading-relaxed text-base" 
+                                                    />
                                                 </div>
 
                                                 {project.technologies && project.technologies.length > 0 && (
@@ -413,9 +428,10 @@ export function ModernTemplate({
                                                         </p>
                                                     </div>
                                                     {exp.description && (
-                                                        <p className="text-base text-muted-foreground leading-relaxed">
-                                                            {exp.description}
-                                                        </p>
+                                                        <FormattedContent 
+                                                            content={exp.description} 
+                                                            className="text-base text-muted-foreground leading-relaxed" 
+                                                        />
                                                     )}
                                                 </div>
                                             </div>
@@ -644,32 +660,39 @@ export function ModernTemplate({
                 )}
             </div>
 
-            {/* Full Resume Preview Modal */}
+            {/* Full Resume Preview Modal - Wide, high-density layout */}
             <Dialog open={!!selectedResume} onOpenChange={(open) => !open && setSelectedResume(null)}>
-                <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden p-0">
+                <DialogContent className="w-[96vw] max-w-5xl sm:max-w-4xl md:max-w-5xl lg:max-w-6xl max-h-[92vh] overflow-hidden p-0 rounded-2xl flex flex-col shadow-2xl border-border/80">
                     {selectedResume && (
-                        <div className="flex flex-col h-full">
+                        <div className="flex flex-col h-full overflow-hidden">
                             {/* Modal Header */}
-                            <DialogHeader className="px-8 pt-8 pb-6 border-b bg-gradient-to-br from-primary/5 to-transparent">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="space-y-2">
-                                        <DialogTitle className="text-3xl font-heading font-black">
+                            <DialogHeader className="px-6 sm:px-8 pt-6 sm:pt-8 pb-5 border-b bg-gradient-to-r from-primary/10 via-background to-primary/5 shrink-0">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="space-y-1">
+                                        <DialogTitle className="text-2xl sm:text-3xl font-heading font-black">
                                             {selectedResume.title || "Resume"}
                                         </DialogTitle>
-                                        <DialogDescription className="text-base">
+                                        <DialogDescription className="text-sm sm:text-base">
                                             Last updated {new Date(selectedResume.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                         </DialogDescription>
                                     </div>
-                                    <Button className="gap-2 rounded-xl font-bold h-11 px-6 bg-gradient-to-r from-primary to-primary/80">
+                                    <Button 
+                                        onClick={() => {
+                                            if (selectedResume) {
+                                                window.open(`/r/${selectedResume.slug || selectedResume.id}`, '_blank');
+                                            }
+                                        }}
+                                        className="gap-2 rounded-xl font-bold h-10 sm:h-11 px-5 sm:px-6 bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg transition-all"
+                                    >
                                         <Download className="h-4 w-4" />
-                                        Download PDF
+                                        View / Download Printable PDF
                                     </Button>
                                 </div>
                             </DialogHeader>
 
                             {/* Resume Content - Document Style */}
-                            <div className="flex-1 overflow-y-auto px-8 py-6">
-                                <div className="max-w-4xl mx-auto space-y-8 bg-white dark:bg-slate-950 shadow-2xl rounded-xl p-12 border">
+                            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 bg-muted/20">
+                                <div className="w-full max-w-4xl mx-auto space-y-8 bg-white dark:bg-slate-950 shadow-xl rounded-2xl p-6 sm:p-12 border border-border/60">
                                     {/* Header */}
                                     <div className="text-center space-y-4 pb-6 border-b-2 border-primary/20">
                                         <h1 className="text-4xl font-heading font-black">
@@ -723,9 +746,10 @@ export function ModernTemplate({
                                                 <Target className="h-6 w-6" />
                                                 Professional Summary
                                             </h2>
-                                            <p className="text-base text-foreground/90 leading-relaxed">
-                                                {selectedResume.professional_summary}
-                                            </p>
+                                            <FormattedContent 
+                                                content={selectedResume.professional_summary} 
+                                                className="text-base text-foreground/90 leading-relaxed" 
+                                            />
                                         </div>
                                     )}
 
@@ -762,9 +786,10 @@ export function ModernTemplate({
                                                             {exp.start_date} - {exp.end_date || "Present"}
                                                         </p>
                                                         {exp.description && (
-                                                            <p className="text-sm text-foreground/80 leading-relaxed pt-2">
-                                                                {exp.description}
-                                                            </p>
+                                                            <FormattedContent 
+                                                                content={exp.description} 
+                                                                className="text-sm text-foreground/80 leading-relaxed pt-2" 
+                                                            />
                                                         )}
                                                     </div>
                                                 ))}
@@ -805,9 +830,10 @@ export function ModernTemplate({
                                                     <div key={proj.id} className="space-y-2">
                                                         <h3 className="text-lg font-bold">{proj.name}</h3>
                                                         {proj.description && (
-                                                            <p className="text-sm text-foreground/80 leading-relaxed">
-                                                                {proj.description}
-                                                            </p>
+                                                            <FormattedContent 
+                                                                content={proj.description} 
+                                                                className="text-sm text-foreground/80 leading-relaxed pt-1" 
+                                                            />
                                                         )}
                                                         {proj.technologies && proj.technologies.length > 0 && (
                                                             <div className="flex flex-wrap gap-1.5 pt-1">

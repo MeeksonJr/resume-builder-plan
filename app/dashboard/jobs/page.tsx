@@ -30,7 +30,8 @@ import {
   Download,
   Mail,
   Rocket,
-  Mic
+  Mic,
+  Bot
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -52,6 +53,7 @@ import {
   AutopilotDossierDialog,
   AutopilotPacketData,
 } from "@/components/jobs/autopilot-dossier-dialog";
+import { AutoApplyPayloadDialog } from "@/components/jobs/auto-apply-payload-dialog";
 
 export default function DashboardJobsPage() {
   const router = useRouter();
@@ -453,18 +455,36 @@ export default function DashboardJobsPage() {
               <span className="text-[10px] text-[#d8f36b] font-bold">Active Scorer</span>
             </div>
 
-            <Select value={selectedResumeId} onValueChange={handleResumeSwitch}>
-              <SelectTrigger className="h-9 bg-[#f7faf5] border-none text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#d8f36b]">
-                <SelectValue placeholder="Select a resume" />
-              </SelectTrigger>
-              <SelectContent className="border-[#b8c8b9]">
-                {resumes.map(r => (
-                  <SelectItem key={r.id} value={r.id} className="text-xs font-medium">
-                    {r.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select value={selectedResumeId} onValueChange={handleResumeSwitch}>
+                <SelectTrigger className="h-9 bg-[#f7faf5] border-none text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#d8f36b] flex-1">
+                  <SelectValue placeholder="Select a resume" />
+                </SelectTrigger>
+                <SelectContent className="border-[#b8c8b9]">
+                  {resumes.map(r => (
+                    <SelectItem key={r.id} value={r.id} className="text-xs font-medium">
+                      {r.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <AutoApplyPayloadDialog
+                resumeData={{ profile: { title: activeResumeTitle || "Professional" }, id: selectedResumeId }}
+                jobRole={searchRole || "Software Engineer"}
+                companyName="Target ATS"
+                triggerButton={
+                  <Button
+                    size="sm"
+                    className="h-9 bg-[#d8f36b] hover:bg-[#c9e855] text-[#102b2b] text-xs font-bold gap-1.5 px-3 rounded-sm shadow-sm shrink-0"
+                    title="Launch ATS Form-Fill Payload & Auto-Apply Dispatcher"
+                  >
+                    <Bot className="w-3.5 h-3.5 text-[#102b2b]" />
+                    <span className="hidden sm:inline">Auto-Apply</span>
+                  </Button>
+                }
+              />
+            </div>
           </div>
         </div>
 

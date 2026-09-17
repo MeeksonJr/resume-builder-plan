@@ -65,6 +65,7 @@ const PORTAL_NAMES: Record<JobPortalType, string> = {
   greenhouse: "Greenhouse ATS",
   lever: "Lever Applications",
   workday: "Workday Portal",
+  ashby: "Ashby ATS",
   generic: "Standard Job Portal",
 };
 

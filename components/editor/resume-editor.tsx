@@ -59,7 +59,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2, Upload, Copy } from "lucide-react";
+import { FileJson, FileText, FileCode, Printer, ChevronDown, Loader2, Upload, Copy, Mic, Video, Bot } from "lucide-react";
+import { VoiceDictationModal } from "@/components/editor/voice-dictation-modal";
+import { VideoElevatorPitchModal } from "@/components/public/video-elevator-pitch-modal";
 import { exportToJSON } from "@/lib/export/json-export";
 import { exportToTxt, generateResumePlainText } from "@/lib/export/txt-export";
 import { JsonImportDialog } from "@/components/import/json-import-dialog";
@@ -619,6 +621,27 @@ export function ResumeEditor({
     }
   };
 
+  const handleVoiceBulletInsert = (bullet: string) => {
+    const store = useResumeStore.getState();
+    if (store.workExperiences.length > 0) {
+      const updated = [...store.workExperiences];
+      const firstExp = { ...updated[0] };
+      const highlights = [...(firstExp.highlights || [])];
+      highlights.push(bullet);
+      firstExp.highlights = highlights;
+      updated[0] = firstExp;
+      setWorkExperiences(updated);
+      toast.success(`Voice bullet added to ${firstExp.company || "Experience"}!`);
+    } else {
+      const currentSummary = store.profile?.summary || "";
+      setProfile({
+        ...(store.profile || {}),
+        summary: currentSummary ? `${currentSummary}\n• ${bullet}` : `• ${bullet}`,
+      } as any);
+      toast.success("Voice bullet added to Professional Summary!");
+    }
+  };
+
   return (
     <div className="-my-4 -mx-1 sm:-mx-2 md:-mx-4 lg:-mx-5 flex h-[calc(100vh-6.5rem)] flex-col overflow-hidden border border-[#102b2b]/15 bg-white shadow-md rounded-none">
       {/* Editor Header */}
@@ -703,6 +726,13 @@ export function ResumeEditor({
             <SectionReorder />
           </div>
 
+          {/* Direct Voice Dictate Button (Phase 52) */}
+          <VoiceDictationModal
+            onInsertBullet={handleVoiceBulletInsert}
+            buttonLabel="Voice Dictate"
+            triggerClassName="h-10 gap-1.5 border-[#d8f36b]/30 bg-[#d8f36b]/10 text-[#d8f36b] hover:bg-[#d8f36b]/20 hover:text-white rounded-none hidden xl:flex text-xs font-bold"
+          />
+
           {/* AI Toolkit */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -712,14 +742,27 @@ export function ResumeEditor({
                 <ChevronDown className="h-3 w-3 opacity-70" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
-              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">AI Writing Suite</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-64 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">AI Writing & Multimodal</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-[#102b2b]/10" />
               
               <DropdownMenuItem onClick={() => setShowAI(!showAI)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
                 <Sparkles className="h-4 w-4 text-indigo-600" />
                 <span>AI Writing Assistant</span>
               </DropdownMenuItem>
+
+              <VoiceDictationModal
+                onInsertBullet={handleVoiceBulletInsert}
+                buttonLabel="Voice-Driven Bullet Dictation"
+                triggerClassName="w-full justify-start h-9 px-2 gap-2.5 font-semibold text-left text-neutral-800 hover:bg-[#102b2b]/5 rounded-none border-0 shadow-none bg-transparent"
+              />
+
+              <VideoElevatorPitchModal
+                candidateName={profile?.full_name || resume.title || "Candidate"}
+                roleTitle={profile?.location || "Professional"}
+                summaryText={profile?.summary || ""}
+                triggerClassName="w-full justify-start h-9 px-2 gap-2.5 font-semibold text-left text-neutral-800 hover:bg-[#102b2b]/5 rounded-none border-0 shadow-none bg-transparent"
+              />
 
               <Dialog open={showCoverLetter} onOpenChange={setShowCoverLetter}>
                 <DialogTrigger asChild>

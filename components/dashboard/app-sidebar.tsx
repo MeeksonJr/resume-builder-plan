@@ -20,6 +20,8 @@ import {
     Search,
     Coins,
     BarChart3,
+    GraduationCap,
+    Bot,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -85,6 +87,7 @@ const getNavItems = (isAdmin: boolean) => {
             icon: Briefcase,
             items: [
                 { title: "Matched Jobs", href: "/dashboard/jobs" },
+                { title: "Auto-Apply & Dispatcher", href: "/dashboard/jobs", icon: Bot },
                 { title: "Job Tracker", href: "/dashboard/tracker" },
                 { title: "Cover Letters", href: "/dashboard/cover-letters" },
                 { title: "Salary & Negotiation", href: "/dashboard/salary" },
@@ -108,6 +111,7 @@ const getNavItems = (isAdmin: boolean) => {
             items: [
                 { title: "My Portfolio", href: "/dashboard/portfolio" },
                 { title: "Discovery", href: "/dashboard/portfolios" },
+                { title: "University Portals", href: "/dashboard/portal/stanford", icon: GraduationCap },
             ],
         },
         {

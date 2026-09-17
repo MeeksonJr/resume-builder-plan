@@ -3,7 +3,7 @@
  * Generates structured ATS dispatch payloads and browser automation steps for LinkedIn, Indeed, Greenhouse, and Lever.
  */
 
-export type JobPortalType = "linkedin" | "indeed" | "greenhouse" | "lever" | "workday" | "generic";
+export type JobPortalType = "linkedin" | "indeed" | "greenhouse" | "lever" | "workday" | "ashby" | "generic";
 
 export interface CandidateProfile {
   fullName: string;
@@ -49,6 +49,7 @@ export function detectJobPortal(url?: string): JobPortalType {
   if (lower.includes("greenhouse.io")) return "greenhouse";
   if (lower.includes("lever.co")) return "lever";
   if (lower.includes("myworkdayjobs.com") || lower.includes("workday")) return "workday";
+  if (lower.includes("ashbyhq.com") || lower.includes("ashby")) return "ashby";
 
   return "generic";
 }
