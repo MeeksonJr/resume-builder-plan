@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MentorFeedbackDrawer } from "@/components/public/mentor-feedback-drawer";
 import { ResumeQrDialog } from "@/components/public/resume-qr-dialog";
+import { VideoElevatorPitchModal } from "@/components/public/video-elevator-pitch-modal";
 import { LANGUAGE_OPTIONS } from "@/lib/i18n/resume-translations";
 import { Globe } from "lucide-react";
 import {
@@ -203,6 +204,13 @@ export function PublicResumeHeader({
 
                     {/* Smart QR & Recruiter vCard 3.0 Export (Phase 47) */}
                     <ResumeQrDialog candidateName={candidateName} resume={resume} resumeCode={resumeCode} />
+
+                    {/* 60-Second Video Elevator Pitch & Cover Letter (Phase 53) */}
+                    <VideoElevatorPitchModal
+                        candidateName={candidateName}
+                        roleTitle={resume?.title || "Professional"}
+                        summaryText={resume?.summary || ""}
+                    />
 
                     {/* Share / Copy Link Button */}
                     <Button
