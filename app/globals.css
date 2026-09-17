@@ -68,10 +68,34 @@
     --ring: 224.3 76.3% 48%;
   }
 
+  .theme-slate {
+    --primary: 215 25% 27%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 215 25% 27%;
+  }
+
+  .dark.theme-slate,
+  .dark .theme-slate,
+  html.dark.theme-slate,
+  html.dark .theme-slate {
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 224.3 76.3% 48%;
+  }
+
   .theme-teal {
     --primary: 173 80% 40%;
     --primary-foreground: 0 0% 100%;
     --ring: 173 80% 40%;
+  }
+
+  .dark.theme-teal,
+  .dark .theme-teal,
+  html.dark.theme-teal,
+  html.dark .theme-teal {
+    --primary: 173 80% 45%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 173 80% 45%;
   }
 
   .theme-rose {
@@ -80,11 +104,40 @@
     --ring: 343 89% 60%;
   }
 
+  .dark.theme-rose,
+  .dark .theme-rose,
+  html.dark.theme-rose,
+  html.dark .theme-rose {
+    --primary: 343 89% 65%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 343 89% 65%;
+  }
+
   .theme-violet {
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
     --ring: 262 83% 58%;
   }
+
+  .dark.theme-violet,
+  .dark .theme-violet,
+  html.dark.theme-violet,
+  html.dark .theme-violet {
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 262 83% 65%;
+  }
+}
+
+/* Density Preferences */
+html[data-density="compact"] {
+  --spacing-scale: 0.85;
+}
+html[data-density="compact"] .density-compact-p {
+  padding: 0.5rem !important;
+}
+html[data-density="compact"] .density-compact-space {
+  gap: 0.5rem !important;
 }
 
 @layer base {
@@ -93,7 +146,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-color: #f8f4ec;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;

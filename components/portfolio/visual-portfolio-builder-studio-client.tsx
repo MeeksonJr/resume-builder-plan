@@ -33,7 +33,13 @@ import {
   Share2,
   Copy,
   Sliders,
-  Maximize2
+  Maximize2,
+  PanelLeft,
+  PanelLeftClose,
+  PanelRight,
+  PanelRightClose,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -173,6 +179,16 @@ export function VisualPortfolioBuilderStudioClient({
   const [activeLeftTab, setActiveLeftTab] = useState<"blocks" | "resume" | "media">("blocks");
   const [showShareModal, setShowShareModal] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isLeftOpen, setIsLeftOpen] = useState(true);
+  const [isRightOpen, setIsRightOpen] = useState(true);
+  const [zoomScale, setZoomScale] = useState<"100%" | "fit" | "85%">("100%");
+  const [isActiveLayout, setIsActiveLayout] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("resumeforge_portfolio_active_layout");
+      if (saved) return saved === "canvas";
+    }
+    return portfolio?.active_layout === "canvas" || portfolio?.theme_settings?.active_layout === "canvas" || true;
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTarget, setUploadTarget] = useState<"avatar" | "cover" | "block_image">("avatar");
 
@@ -218,6 +234,33 @@ export function VisualPortfolioBuilderStudioClient({
     toast.success(`Added ${title} to canvas`);
   };
 
+  const handleToggleActiveLayout = async () => {
+    const nextVal = !isActiveLayout;
+    setIsActiveLayout(nextVal);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("resumeforge_portfolio_active_layout", nextVal ? "canvas" : "template");
+    }
+    try {
+      const supabase = createClient();
+      if (portfolio?.id) {
+        await supabase
+          .from("portfolios")
+          .update({
+            active_layout: nextVal ? "canvas" : "template",
+            theme_settings: {
+              ...(portfolio?.theme_settings || {}),
+              active_layout: nextVal ? "canvas" : "template",
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", portfolio.id);
+      }
+      toast.success(nextVal ? "Canvas Layout set as ACTIVE for public portfolio preview!" : "Standard Template set as active.");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleSaveCanvas = async () => {
     setIsSaving(true);
     try {
@@ -227,12 +270,20 @@ export function VisualPortfolioBuilderStudioClient({
           .from("portfolios")
           .update({
             custom_blocks: blocks,
+            active_layout: isActiveLayout ? "canvas" : "template",
+            theme_settings: {
+              ...(portfolio?.theme_settings || {}),
+              active_layout: isActiveLayout ? "canvas" : "template",
+            },
             updated_at: new Date().toISOString()
           })
           .eq("id", portfolio.id);
         if (error) throw error;
       }
-      toast.success("Portfolio canvas saved & published!");
+      if (typeof window !== "undefined") {
+        localStorage.setItem("resumeforge_portfolio_active_layout", isActiveLayout ? "canvas" : "template");
+      }
+      toast.success("Portfolio canvas saved & updated live!");
     } catch (err: any) {
       console.error("Save canvas error:", err);
       toast.error(err.message || "Failed to save portfolio canvas");
@@ -335,7 +386,7 @@ export function VisualPortfolioBuilderStudioClient({
     : `/p/${portfolio?.slug || "me"}`;
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#090e17] text-white overflow-hidden select-none">
+    <div className="flex flex-col h-screen w-full max-w-full bg-[#090e17] text-white overflow-hidden select-none">
       {/* Hidden file input for drag/drop and picker uploads */}
       <input
         type="file"
@@ -346,128 +397,171 @@ export function VisualPortfolioBuilderStudioClient({
       />
 
       {/* Top Header Bar */}
-      <header className="h-16 px-6 border-b border-white/10 bg-[#0d1524] flex items-center justify-between shrink-0 z-30">
-        <div className="flex items-center gap-4">
+      <header className="h-16 px-4 lg:px-6 border-b border-white/10 bg-[#0d1524] flex items-center justify-between shrink-0 z-30 gap-3">
+        <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 gap-2 font-medium">
             <Link href="/dashboard/portfolio">
               <ArrowLeft className="h-4 w-4" />
-              Exit Studio
+              <span className="hidden sm:inline">Exit Studio</span>
             </Link>
           </Button>
-          <div className="h-4 w-[1px] bg-white/10" />
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Sparkles className="h-4 w-4" />
+
+          {/* Left Sidebar Toggle Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsLeftOpen(!isLeftOpen)}
+            className={`h-8 px-2.5 text-xs font-semibold gap-1.5 border transition-all ${
+              isLeftOpen
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                : "border-white/15 bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
+            }`}
+            title={isLeftOpen ? "Collapse Blocks Sidebar" : "Expand Blocks Sidebar"}
+          >
+            {isLeftOpen ? <PanelLeftClose className="h-3.5 w-3.5" /> : <PanelLeft className="h-3.5 w-3.5" />}
+            <span className="hidden md:inline">{isLeftOpen ? "Hide Blocks" : "Show Blocks"}</span>
+          </Button>
+
+          <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
+          <div className="hidden lg:flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <Sparkles className="h-3.5 w-3.5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+              <h1 className="text-xs font-bold tracking-tight text-white flex items-center gap-2">
                 Visual Canvas Studio
-                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] font-mono">
-                  ACTIVE
-                </Badge>
+                {isActiveLayout ? (
+                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] font-mono">
+                    LIVE ACTIVE
+                  </Badge>
+                ) : (
+                  <Badge className="bg-white/10 text-white/50 border-white/15 text-[9px] font-mono">
+                    DRAFT
+                  </Badge>
+                )}
               </h1>
-              <p className="text-[11px] text-white/50">Canva & Scratch-style drag & customize editor</p>
             </div>
           </div>
         </div>
 
-        {/* Center: Device Viewport Switcher */}
+        {/* Center: Device Viewport Switcher & Fit controls */}
         <div className="flex items-center bg-black/40 border border-white/10 rounded-xl p-1 gap-1">
           <Button
             size="sm"
             variant="ghost"
             onClick={() => setDeviceMode("desktop")}
-            className={`h-8 px-3 rounded-lg text-xs font-semibold gap-1.5 transition-all ${
+            className={`h-7 px-2.5 rounded-lg text-xs font-semibold gap-1.5 transition-all ${
               deviceMode === "desktop"
                 ? "bg-white/15 text-white shadow-sm"
                 : "text-white/50 hover:text-white hover:bg-white/5"
             }`}
           >
             <Monitor className="h-3.5 w-3.5" />
-            Desktop
+            <span className="hidden sm:inline">Desktop</span>
           </Button>
           <Button
             size="sm"
             variant="ghost"
             onClick={() => setDeviceMode("tablet")}
-            className={`h-8 px-3 rounded-lg text-xs font-semibold gap-1.5 transition-all ${
+            className={`h-7 px-2.5 rounded-lg text-xs font-semibold gap-1.5 transition-all ${
               deviceMode === "tablet"
                 ? "bg-white/15 text-white shadow-sm"
                 : "text-white/50 hover:text-white hover:bg-white/5"
             }`}
           >
             <Tablet className="h-3.5 w-3.5" />
-            Tablet
+            <span className="hidden sm:inline">Tablet</span>
           </Button>
           <Button
             size="sm"
             variant="ghost"
             onClick={() => setDeviceMode("mobile")}
-            className={`h-8 px-3 rounded-lg text-xs font-semibold gap-1.5 transition-all ${
+            className={`h-7 px-2.5 rounded-lg text-xs font-semibold gap-1.5 transition-all ${
               deviceMode === "mobile"
                 ? "bg-white/15 text-white shadow-sm"
                 : "text-white/50 hover:text-white hover:bg-white/5"
             }`}
           >
             <Smartphone className="h-3.5 w-3.5" />
-            Mobile
+            <span className="hidden sm:inline">Mobile</span>
+          </Button>
+
+          <div className="h-3.5 w-[1px] bg-white/10 mx-0.5" />
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setZoomScale(prev => prev === "100%" ? "fit" : prev === "fit" ? "85%" : "100%")}
+            className="h-7 px-2 rounded-lg text-xs font-semibold gap-1 text-white/70 hover:text-white hover:bg-white/10"
+            title="Zoom scale / Fit screen"
+          >
+            <Maximize2 className="h-3 w-3 text-emerald-400" />
+            <span className="text-[10px] font-mono">{zoomScale}</span>
           </Button>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
+          {/* Right Inspector Toggle */}
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={() => triggerFileUpload("cover")}
-            disabled={isUploadingImage}
-            className="border-white/15 bg-white/5 hover:bg-white/10 text-white gap-2 font-medium text-xs h-9"
+            onClick={() => setIsRightOpen(!isRightOpen)}
+            className={`h-8 px-2.5 text-xs font-semibold gap-1.5 border transition-all ${
+              isRightOpen
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                : "border-white/15 bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
+            }`}
+            title={isRightOpen ? "Collapse Inspector Sidebar" : "Expand Inspector Sidebar"}
           >
-            <UploadCloud className="h-3.5 w-3.5 text-sky-400" />
-            {isUploadingImage ? "Uploading..." : "Upload Image"}
+            {isRightOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRight className="h-3.5 w-3.5" />}
+            <span className="hidden md:inline">{isRightOpen ? "Hide Inspector" : "Inspector"}</span>
+          </Button>
+
+          {/* Active Layout Switch */}
+          <Button
+            size="sm"
+            onClick={handleToggleActiveLayout}
+            className={`h-8 px-2.5 text-xs font-bold gap-1.5 transition-all border ${
+              isActiveLayout
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
+                : "bg-white/5 text-white/60 border-white/15 hover:bg-white/10"
+            }`}
+            title="Toggle whether this canvas layout or built-in templates are displayed on your public /p/ URL"
+          >
+            <Check className={`h-3.5 w-3.5 ${isActiveLayout ? "text-emerald-400" : "opacity-40"}`} />
+            <span className="hidden sm:inline">{isActiveLayout ? "Active on /p/" : "Make Active"}</span>
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             asChild
-            className="border-white/15 bg-white/5 hover:bg-white/10 text-white gap-2 font-medium text-xs h-9"
+            className="border-white/15 bg-white/5 hover:bg-white/10 text-white gap-1.5 font-medium text-xs h-8 px-2.5 hidden sm:flex"
           >
             <a href={`/p/${portfolio?.slug || "preview"}`} target="_blank" rel="noreferrer">
               <Eye className="h-3.5 w-3.5 text-emerald-400" />
-              Preview Live
+              <span>Preview</span>
             </a>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => {
-              navigator.clipboard.writeText(publicPortfolioUrl);
-              toast.success("Public link copied to clipboard!");
-            }}
-            variant="outline"
-            className="border-white/15 bg-white/5 hover:bg-white/10 text-white gap-2 font-medium text-xs h-9"
-          >
-            <Share2 className="h-3.5 w-3.5 text-amber-400" />
-            Share Link
           </Button>
 
           <Button
             size="sm"
             onClick={handleSaveCanvas}
             disabled={isSaving}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-2 text-xs h-9 shadow-lg shadow-emerald-950/40"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1.5 text-xs h-8 px-3 shadow-lg shadow-emerald-950/40"
           >
             <Save className="h-3.5 w-3.5" />
-            {isSaving ? "Publishing..." : "Publish Changes"}
+            <span>{isSaving ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </header>
 
       {/* Main Studio Body: 3-column Canvas workspace */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden w-full max-w-full relative">
         {/* Left Column: Blocks Palette & Importer */}
-        <aside className="w-80 border-r border-white/10 bg-[#0c121e] flex flex-col shrink-0">
+        {isLeftOpen && (
+          <aside className="w-72 xl:w-80 border-r border-white/10 bg-[#0c121e] flex flex-col shrink-0 z-20">
           <div className="p-3 border-b border-white/10 flex items-center gap-1.5 bg-black/20">
             <button
               onClick={() => setActiveLeftTab("blocks")}
@@ -701,18 +795,33 @@ export function VisualPortfolioBuilderStudioClient({
             )}
           </div>
         </aside>
+      )}
 
-        {/* Center Canvas Viewport */}
-        <main className="flex-1 bg-[#070b12] flex items-center justify-center p-6 overflow-y-auto relative">
-          <div
-            className={`transition-all duration-300 rounded-2xl border border-white/15 shadow-2xl bg-[#0d1422] flex flex-col overflow-hidden my-auto ${
-              deviceMode === "desktop"
-                ? "w-full max-w-4xl min-h-[600px]"
-                : deviceMode === "tablet"
-                ? "w-[768px] min-h-[600px]"
-                : "w-[375px] min-h-[600px]"
-            }`}
-          >
+      {!isLeftOpen && (
+        <button
+          onClick={() => setIsLeftOpen(true)}
+          className="absolute left-3 top-4 z-30 p-2 rounded-xl bg-[#0d1524] border border-white/20 text-emerald-400 hover:bg-white/15 shadow-xl transition-all"
+          title="Open Blocks Sidebar"
+        >
+          <PanelLeft className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Center Canvas Viewport */}
+      <main className="flex-1 min-w-0 bg-[#070b12] flex items-center justify-center p-4 lg:p-6 overflow-y-auto overflow-x-hidden relative">
+        <div
+          className={`transition-all duration-300 rounded-2xl border border-white/15 shadow-2xl bg-[#0d1422] flex flex-col overflow-hidden my-auto ${
+            deviceMode === "desktop"
+              ? zoomScale === "fit"
+                ? "w-full max-w-2xl min-h-[550px] scale-95 origin-top"
+                : zoomScale === "85%"
+                ? "w-full max-w-3xl min-h-[550px] scale-90 origin-top"
+                : "w-full max-w-3xl xl:max-w-4xl min-h-[600px]"
+              : deviceMode === "tablet"
+              ? "w-[768px] max-w-full min-h-[600px]"
+              : "w-[375px] max-w-full min-h-[600px]"
+          }`}
+        >
             {/* Canvas Inner Document */}
             <div className="p-8 space-y-8 divide-y divide-white/10">
               {blocks.map((block) => {
@@ -874,137 +983,149 @@ export function VisualPortfolioBuilderStudioClient({
         </main>
 
         {/* Right Column: Block Property Inspector */}
-        <aside className="w-80 border-l border-white/10 bg-[#0c121e] p-5 flex flex-col shrink-0 overflow-y-auto space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/80 flex items-center gap-2">
-              <Sliders className="h-3.5 w-3.5 text-emerald-400" />
-              Inspector
-            </span>
-            <Badge variant="outline" className="text-[10px] font-mono border-white/20 text-white/60">
-              {selectedBlock?.type}
-            </Badge>
-          </div>
+        {isRightOpen && (
+          <aside className="w-72 xl:w-80 border-l border-white/10 bg-[#0c121e] p-5 flex flex-col shrink-0 overflow-y-auto space-y-5 z-20">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <span className="text-xs font-bold uppercase tracking-wider text-white/80 flex items-center gap-2">
+                <Sliders className="h-3.5 w-3.5 text-emerald-400" />
+                Inspector
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono border-white/20 text-white/60">
+                {selectedBlock?.type}
+              </Badge>
+            </div>
 
-          {selectedBlock ? (
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-white/60 uppercase">Section Title</label>
-                <Input
-                  value={selectedBlock.title}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, title: val } : b));
-                  }}
-                  className="bg-black/30 border-white/15 text-white text-xs h-9"
-                />
-              </div>
+            {selectedBlock ? (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-white/60 uppercase">Section Title</label>
+                  <Input
+                    value={selectedBlock.title}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, title: val } : b));
+                    }}
+                    className="bg-black/30 border-white/15 text-white text-xs h-9"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-white/60 uppercase">Subtitle</label>
-                <Input
-                  value={selectedBlock.subtitle || ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, subtitle: val } : b));
-                  }}
-                  placeholder="Optional section description..."
-                  className="bg-black/30 border-white/15 text-white text-xs h-9"
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-white/60 uppercase">Subtitle</label>
+                  <Input
+                    value={selectedBlock.subtitle || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, subtitle: val } : b));
+                    }}
+                    placeholder="Optional section description..."
+                    className="bg-black/30 border-white/15 text-white text-xs h-9"
+                  />
+                </div>
 
-              {selectedBlock.type === "hero" && (
-                <>
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-white/60 uppercase">Tagline</label>
-                    <Input
-                      value={selectedBlock.content?.tagline || ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? {
-                          ...b,
-                          content: { ...b.content, tagline: val }
-                        } : b));
-                      }}
-                      className="bg-black/30 border-white/15 text-white text-xs h-9"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-white/60 uppercase">Bio / Summary</label>
-                    <Textarea
-                      rows={3}
-                      value={selectedBlock.content?.bio || ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? {
-                          ...b,
-                          content: { ...b.content, bio: val }
-                        } : b));
-                      }}
-                      className="bg-black/30 border-white/15 text-white text-xs"
-                    />
-                  </div>
-                  <div className="p-3 rounded-xl border border-white/10 bg-white/[0.02] space-y-2">
-                    <span className="text-[11px] font-bold text-white/80">Cover & Avatar Upload</span>
-                    <div className="flex gap-2">
+                {selectedBlock.type === "hero" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-white/60 uppercase">Tagline</label>
+                      <Input
+                        value={selectedBlock.content?.tagline || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? {
+                            ...b,
+                            content: { ...b.content, tagline: val }
+                          } : b));
+                        }}
+                        className="bg-black/30 border-white/15 text-white text-xs h-9"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-white/60 uppercase">Bio / Summary</label>
+                      <Textarea
+                        rows={3}
+                        value={selectedBlock.content?.bio || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? {
+                            ...b,
+                            content: { ...b.content, bio: val }
+                          } : b));
+                        }}
+                        className="bg-black/30 border-white/15 text-white text-xs"
+                      />
+                    </div>
+                    <div className="p-3 rounded-xl border border-white/10 bg-white/[0.02] space-y-2">
+                      <span className="text-[11px] font-bold text-white/80">Cover & Avatar Upload</span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => triggerFileUpload("avatar")}
+                          className="flex-1 text-xs h-8 bg-emerald-600 hover:bg-emerald-500 text-white"
+                        >
+                          Avatar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => triggerFileUpload("cover")}
+                          className="flex-1 text-xs h-8 border-white/15 text-white hover:bg-white/10"
+                        >
+                          Cover
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-white/60 uppercase">Visual Theme Style</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["clean", "glass", "gradient", "mesh"] as const).map((style) => (
                       <Button
-                        size="sm"
-                        onClick={() => triggerFileUpload("avatar")}
-                        className="flex-1 text-xs h-8 bg-emerald-600 hover:bg-emerald-500 text-white"
-                      >
-                        Avatar
-                      </Button>
-                      <Button
+                        key={style}
                         size="sm"
                         variant="outline"
-                        onClick={() => triggerFileUpload("cover")}
-                        className="flex-1 text-xs h-8 border-white/15 text-white hover:bg-white/10"
+                        onClick={() => {
+                          setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, backgroundStyle: style } : b));
+                        }}
+                        className={`text-xs h-8 capitalize ${
+                          selectedBlock.backgroundStyle === style
+                            ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
+                            : "border-white/10 bg-white/[0.02] text-white/70 hover:bg-white/5"
+                        }`}
                       >
-                        Cover
+                        {style}
                       </Button>
-                    </div>
+                    ))}
                   </div>
-                </>
-              )}
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-white/60 uppercase">Visual Theme Style</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["clean", "glass", "gradient", "mesh"] as const).map((style) => (
-                    <Button
-                      key={style}
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, backgroundStyle: style } : b));
-                      }}
-                      className={`text-xs h-8 capitalize ${
-                        selectedBlock.backgroundStyle === style
-                          ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
-                          : "border-white/10 bg-white/[0.02] text-white/70 hover:bg-white/5"
-                      }`}
-                    >
-                      {style}
-                    </Button>
-                  ))}
+                <div className="pt-4 border-t border-white/10">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteBlock(selectedBlock.id)}
+                    className="w-full text-xs h-8 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Remove Block
+                  </Button>
                 </div>
               </div>
+            ) : (
+              <p className="text-xs text-white/40">Select a block on the canvas to configure properties.</p>
+            )}
+          </aside>
+        )}
 
-              <div className="pt-4 border-t border-white/10">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteBlock(selectedBlock.id)}
-                  className="w-full text-xs h-8 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30"
-                >
-                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                  Remove Block
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-xs text-white/40">Select a block on the canvas to configure properties.</p>
-          )}
-        </aside>
+        {!isRightOpen && (
+          <button
+            onClick={() => setIsRightOpen(true)}
+            className="absolute right-3 top-4 z-30 p-2 rounded-xl bg-[#0d1524] border border-white/20 text-emerald-400 hover:bg-white/15 shadow-xl transition-all"
+            title="Open Block Inspector"
+          >
+            <PanelRight className="h-4 w-4" />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -719,55 +719,49 @@ export function ResumeEditor({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Design & Layout tools */}
-          <div className="flex items-center gap-1 border-r border-white/10 pr-3">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* Design & Layout cluster */}
+          <div className="flex items-center gap-1 border-r border-white/10 pr-2">
             <VisualCustomizer />
             <SectionReorder />
           </div>
 
-          {/* Direct Voice Dictate Button (Phase 52) */}
-          <VoiceDictationModal
-            onInsertBullet={handleVoiceBulletInsert}
-            buttonLabel="Voice Dictate"
-            triggerClassName="h-10 gap-1.5 border-[#d8f36b]/30 bg-[#d8f36b]/10 text-[#d8f36b] hover:bg-[#d8f36b]/20 hover:text-white rounded-none hidden xl:flex text-xs font-bold"
+          {/* 60-Second Video Pitch - Prominent Direct Access (Phase 61) */}
+          <VideoElevatorPitchModal
+            candidateName={profile?.full_name || resume.title || "Candidate"}
+            roleTitle={profile?.location || "Professional"}
+            summaryText={profile?.summary || ""}
+            triggerClassName="h-9 px-2.5 sm:px-3 gap-1.5 border-[#d8f36b]/40 bg-[#d8f36b]/10 text-[#d8f36b] hover:bg-[#d8f36b]/20 hover:text-white font-bold text-xs rounded-none"
           />
 
-          {/* AI Toolkit */}
+          {/* AI Suite Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10 gap-2 border-[#d8f36b]/30 bg-[#d8f36b]/10 text-[#d8f36b] hover:bg-[#d8f36b]/20 hover:text-white rounded-none">
-                <Sparkles className="h-4 w-4" />
-                <span className="hidden lg:inline">AI Suite</span>
-                <ChevronDown className="h-3 w-3 opacity-70" />
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none text-xs">
+                <Sparkles className="h-3.5 w-3.5 text-[#d8f36b]" />
+                <span className="hidden xl:inline">AI Suite</span>
+                <ChevronDown className="h-3 w-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
-              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">AI Writing & Multimodal</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
+            <DropdownMenuContent align="end" className="w-64 bg-popover border-border text-popover-foreground shadow-xl">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">AI Writing & Multimodal</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border" />
               
-              <DropdownMenuItem onClick={() => setShowAI(!showAI)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <Sparkles className="h-4 w-4 text-indigo-600" />
+              <DropdownMenuItem onClick={() => setShowAI(!showAI)} className="gap-2.5 cursor-pointer font-semibold hover:bg-muted">
+                <Sparkles className="h-4 w-4 text-primary" />
                 <span>AI Writing Assistant</span>
               </DropdownMenuItem>
 
               <VoiceDictationModal
                 onInsertBullet={handleVoiceBulletInsert}
                 buttonLabel="Voice-Driven Bullet Dictation"
-                triggerClassName="w-full justify-start h-9 px-2 gap-2.5 font-semibold text-left text-neutral-800 hover:bg-[#102b2b]/5 rounded-none border-0 shadow-none bg-transparent"
-              />
-
-              <VideoElevatorPitchModal
-                candidateName={profile?.full_name || resume.title || "Candidate"}
-                roleTitle={profile?.location || "Professional"}
-                summaryText={profile?.summary || ""}
-                triggerClassName="w-full justify-start h-9 px-2 gap-2.5 font-semibold text-left text-neutral-800 hover:bg-[#102b2b]/5 rounded-none border-0 shadow-none bg-transparent"
+                triggerClassName="w-full justify-start h-9 px-2 gap-2.5 font-semibold text-left text-foreground hover:bg-muted rounded-none border-0 shadow-none bg-transparent"
               />
 
               <Dialog open={showCoverLetter} onOpenChange={setShowCoverLetter}>
                 <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                    <FileText className="h-4 w-4 text-indigo-600" />
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-muted">
+                    <FileText className="h-4 w-4 text-primary" />
                     <span>AI Cover Letter</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
@@ -776,18 +770,18 @@ export function ResumeEditor({
                 </DialogContent>
               </Dialog>
 
-              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
-              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">ATS Optimization</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">ATS Optimization</DropdownMenuLabel>
 
               {tailoringResult ? (
-                <DropdownMenuItem onClick={() => setIsOptimizationPanelOpen(true)} className="gap-2.5 cursor-pointer font-semibold text-emerald-700 hover:bg-emerald-50">
-                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                <DropdownMenuItem onClick={() => setIsOptimizationPanelOpen(true)} className="gap-2.5 cursor-pointer font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10">
+                  <Sparkles className="h-4 w-4 text-emerald-500" />
                   <span>View Match ({tailoringResult.score}%)</span>
                 </DropdownMenuItem>
               ) : (
                 <JobInputDialog onResumeTailor={handleTailor} isLoading={isTailoring}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                    <Target className="h-4 w-4 text-indigo-600" />
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2.5 cursor-pointer font-semibold hover:bg-muted">
+                    <Target className="h-4 w-4 text-primary" />
                     <span>Target Job Scan</span>
                   </DropdownMenuItem>
                 </JobInputDialog>
@@ -798,21 +792,21 @@ export function ResumeEditor({
           {/* Versions Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none">
-                <History className="h-4 w-4 text-[#a6c0b8]" />
-                <span className="hidden md:inline">Checkpoints</span>
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none text-xs">
+                <History className="h-3.5 w-3.5 text-[#a6c0b8]" />
+                <span className="hidden xl:inline">Checkpoints</span>
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-[#f8f4ec] border-[#102b2b]/15 text-[#102b2b]">
-              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-[#52716a]">Version Control</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-[#102b2b]/10" />
-              <DropdownMenuItem onClick={() => setShowVersionDialog(true)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <GitCommit className="h-4 w-4 text-[#0d8274]" />
+            <DropdownMenuContent align="end" className="w-56 bg-popover border-border text-popover-foreground shadow-xl">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Version Control</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem onClick={() => setShowVersionDialog(true)} className="gap-2.5 cursor-pointer font-semibold hover:bg-muted">
+                <GitCommit className="h-4 w-4 text-primary" />
                 <span>Create Checkpoint</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowHistory(true)} className="gap-2.5 cursor-pointer font-semibold hover:bg-[#102b2b]/5">
-                <Clock className="h-4 w-4 text-[#0d8274]" />
+              <DropdownMenuItem onClick={() => setShowHistory(true)} className="gap-2.5 cursor-pointer font-semibold hover:bg-muted">
+                <Clock className="h-4 w-4 text-primary" />
                 <span>Restore Snapshot</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -844,18 +838,18 @@ export function ResumeEditor({
           <Button
             variant="outline"
             size="sm"
-            className="hidden h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none md:flex"
+            className="hidden h-9 gap-1.5 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none md:flex text-xs"
             onClick={() => setShowPreview(!showPreview)}
           >
             {showPreview ? (
               <>
-                <EyeOff className="h-4 w-4 text-[#a6c0b8]" />
-                <span className="hidden lg:inline">Hide Preview</span>
+                <EyeOff className="h-3.5 w-3.5 text-[#a6c0b8]" />
+                <span className="hidden xl:inline">Hide Preview</span>
               </>
             ) : (
               <>
-                <Eye className="h-4 w-4 text-[#a6c0b8]" />
-                <span className="hidden lg:inline">Show Preview</span>
+                <Eye className="h-3.5 w-3.5 text-[#a6c0b8]" />
+                <span className="hidden xl:inline">Show Preview</span>
               </>
             )}
           </Button>
@@ -866,15 +860,17 @@ export function ResumeEditor({
             size="sm"
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            className="h-10 gap-2 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none"
+            className={`h-9 gap-1.5 border-white/20 bg-transparent text-[#f8f4ec] hover:bg-white/10 hover:text-white rounded-none text-xs font-bold ${
+              hasChanges ? "border-amber-400/50 bg-amber-400/10 text-amber-300" : ""
+            }`}
           >
-            <Save className="h-4 w-4 text-[#a6c0b8]" />
+            <Save className="h-3.5 w-3.5 text-[#a6c0b8]" />
             <span className="hidden sm:inline">Save</span>
           </Button>
 
           {/* Template Select Dropdown */}
           <select
-            className="hidden sm:inline-flex h-10 rounded-none border border-white/20 bg-transparent text-[#f8f4ec] px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d8f36b] disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-[#102b2b] [&>option]:text-[#f8f4ec]"
+            className="hidden xl:inline-flex h-9 rounded-none border border-white/20 bg-transparent text-[#f8f4ec] px-2.5 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d8f36b] disabled:cursor-not-allowed disabled:opacity-50 [&>option]:bg-[#102b2b] [&>option]:text-[#f8f4ec]"
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
           >
@@ -1096,25 +1092,27 @@ function EditorForm({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="mb-6 flex h-auto flex-wrap justify-start gap-1 bg-[#e9eee8] border border-[#102b2b]/10 p-1.5 rounded-none w-full">
-        <TabsTrigger 
-          value="personal" 
-          className="group rounded-none text-xs font-bold text-[#52716a] hover:text-[#102b2b] hover:bg-white/50 transition-all px-4 py-2.5 flex items-center min-h-[40px] border-none data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] data-[state=active]:shadow-sm"
-        >
-          {getTabIcon("personal")}
-          Personal
-        </TabsTrigger>
-        {sectionOrder.map((sectionId) => (
+      <div className="mb-6 w-full overflow-x-auto no-scrollbar scroll-smooth">
+        <TabsList className="flex h-11 w-max min-w-full items-center justify-start gap-1.5 bg-[#e9eee8] border border-[#102b2b]/10 p-1 rounded-none">
           <TabsTrigger 
-            key={sectionId} 
-            value={sectionId} 
-            className="group rounded-none text-xs font-bold text-[#52716a] hover:text-[#102b2b] hover:bg-white/50 transition-all px-4 py-2.5 flex items-center min-h-[40px] border-none data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] data-[state=active]:shadow-sm capitalize"
+            value="personal" 
+            className="group rounded-none text-xs font-bold text-[#52716a] hover:text-[#102b2b] hover:bg-white/50 transition-all px-3.5 py-1.5 flex items-center min-h-[34px] shrink-0 border-none data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] data-[state=active]:shadow-sm"
           >
-            {getTabIcon(sectionId)}
-            {sectionId}
+            {getTabIcon("personal")}
+            Personal
           </TabsTrigger>
-        ))}
-      </TabsList>
+          {sectionOrder.map((sectionId) => (
+            <TabsTrigger 
+              key={sectionId} 
+              value={sectionId} 
+              className="group rounded-none text-xs font-bold text-[#52716a] hover:text-[#102b2b] hover:bg-white/50 transition-all px-3.5 py-1.5 flex items-center min-h-[34px] shrink-0 border-none data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] data-[state=active]:shadow-sm capitalize"
+            >
+              {getTabIcon(sectionId)}
+              {sectionId}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
 
       <TabsContent value="personal" className="mt-0">
         <PersonalInfoForm />

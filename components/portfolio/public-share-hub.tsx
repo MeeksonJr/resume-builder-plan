@@ -9,6 +9,7 @@ import {
     CorporateTemplate,
     CreativeTemplate,
 } from "@/components/portfolio/templates";
+import { CanvasPortfolioRenderer } from "@/components/portfolio/canvas-portfolio-renderer";
 import {
     VANITY_PALETTES,
     VANITY_TEMPLATES,
@@ -92,6 +93,19 @@ export function PublicShareHub({
     const [accentColor, setAccentColor] = React.useState<string>(initialAccentColor);
     const [typography, setTypography] = React.useState<TypographyStyle>("sans");
     const [layoutStyle, setLayoutStyle] = React.useState<string>(initialLayoutStyle);
+    const [layoutEngine, setLayoutEngine] = React.useState<"canvas" | "template">(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("resumeforge_portfolio_active_layout");
+            if (saved === "canvas" || saved === "template") return saved;
+        }
+        if (portfolio?.active_layout === "canvas" || portfolio?.theme_settings?.active_layout === "canvas") {
+            return "canvas";
+        }
+        if (portfolio?.custom_blocks && Array.isArray(portfolio.custom_blocks) && portfolio.custom_blocks.length > 0) {
+            return "canvas";
+        }
+        return "template";
+    });
 
     // Share Modal & UI State
     const [shareOpen, setShareOpen] = React.useState(false);
@@ -127,6 +141,7 @@ export function PublicShareHub({
         setAccentColor(initialAccentColor);
         setLayoutStyle(initialLayoutStyle);
         setTypography("sans");
+        setLayoutEngine(portfolio?.active_layout === "canvas" ? "canvas" : "template");
         toast.info("Reset to candidate's original styling");
     };
 
@@ -150,6 +165,17 @@ export function PublicShareHub({
 
     // Render active template
     const renderActiveTemplate = () => {
+        if (layoutEngine === "canvas" && portfolio?.custom_blocks && portfolio.custom_blocks.length > 0) {
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-20 sm:py-28">
+                    <CanvasPortfolioRenderer
+                        blocks={portfolio.custom_blocks}
+                        profile={profile}
+                        portfolio={portfolio}
+                    />
+                </div>
+            );
+        }
         switch (template) {
             case "minimal":
                 return <MinimalTemplate {...templateProps} />;
@@ -244,6 +270,41 @@ export function PublicShareHub({
                                             <RotateCcw className="h-3 w-3" />
                                         </Button>
                                     </div>
+
+                                    {/* 0. Layout Engine Switcher (Canvas Studio vs Templates) */}
+                                    {portfolio?.custom_blocks && portfolio.custom_blocks.length > 0 && (
+                                        <div className="space-y-1.5 pb-2 border-b border-border/50">
+                                            <label className="text-[11px] font-semibold text-foreground uppercase tracking-wider block">
+                                                Layout Engine
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-1.5">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLayoutEngine("canvas")}
+                                                    className={cn(
+                                                        "text-center py-1.5 px-2 rounded-xl border text-xs font-bold transition-all",
+                                                        layoutEngine === "canvas"
+                                                            ? "border-primary bg-primary/10 text-primary shadow-xs"
+                                                            : "border-border/60 hover:bg-muted/50 text-foreground"
+                                                    )}
+                                                >
+                                                    Canvas Studio
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLayoutEngine("template")}
+                                                    className={cn(
+                                                        "text-center py-1.5 px-2 rounded-xl border text-xs font-bold transition-all",
+                                                        layoutEngine === "template"
+                                                            ? "border-primary bg-primary/10 text-primary shadow-xs"
+                                                            : "border-border/60 hover:bg-muted/50 text-foreground"
+                                                    )}
+                                                >
+                                                    Archetypes
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* 1. Template Layouts */}
                                     <div className="space-y-2">

@@ -43,6 +43,7 @@ import { useReactToPrint } from "react-to-print";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { formatCoverLetterText } from "@/lib/utils/cover-letter-formatter";
 import { motion, AnimatePresence } from "framer-motion";
 
 const RichTextEditor = dynamic(
@@ -117,11 +118,17 @@ const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profi
                     )}
                 </div>
 
-                {/* Letter Body */}
+                {/* Letter Body with Formatted Paragraphs */}
                 <div
                     className="prose prose-sm max-w-none text-gray-800 leading-relaxed space-y-4"
-                    style={{ fontSize: '11pt', lineHeight: '1.7' }}
-                    dangerouslySetInnerHTML={{ __html: content }}
+                    style={{ fontSize: '11pt', lineHeight: '1.75' }}
+                    dangerouslySetInnerHTML={{
+                        __html: formatCoverLetterText(
+                            content,
+                            profile?.full_name || "Applicant",
+                            coverLetter?.company_name || "Hiring Team"
+                        ).html,
+                    }}
                 />
             </div>
         );
@@ -156,7 +163,15 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                 .single();
 
             if (data) {
-                setCoverLetter(data);
+                let normalizedContent = data.content || "";
+                if (normalizedContent && !normalizedContent.includes("<p>") && !normalizedContent.includes("<br>")) {
+                    normalizedContent = formatCoverLetterText(
+                        normalizedContent,
+                        "Applicant",
+                        data.company_name || "Hiring Team"
+                    ).html;
+                }
+                setCoverLetter({ ...data, content: normalizedContent });
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
                     const { data: profileData } = await supabase

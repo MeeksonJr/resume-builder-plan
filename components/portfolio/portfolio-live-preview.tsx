@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Monitor, Eye } from "lucide-react";
+import { Monitor, Eye, Sparkles } from "lucide-react";
 import {
   ModernTemplate,
   MinimalTemplate,
   CorporateTemplate,
   CreativeTemplate,
 } from "@/components/portfolio/templates";
+import { CanvasPortfolioRenderer } from "./canvas-portfolio-renderer";
 
 interface PortfolioLivePreviewProps {
   portfolio: any;
@@ -15,6 +16,7 @@ interface PortfolioLivePreviewProps {
   projects: any[];
   profile: any;
   testimonials: any[];
+  activeLayoutOverride?: "canvas" | "template";
 }
 
 export function PortfolioLivePreview({
@@ -23,7 +25,21 @@ export function PortfolioLivePreview({
   projects,
   profile,
   testimonials,
+  activeLayoutOverride,
 }: PortfolioLivePreviewProps) {
+  const isCanvasMode = useMemo(() => {
+    if (activeLayoutOverride) return activeLayoutOverride === "canvas";
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("resumeforge_portfolio_active_layout");
+      if (saved) return saved === "canvas";
+    }
+    return (
+      portfolio?.active_layout === "canvas" ||
+      portfolio?.theme_settings?.active_layout === "canvas" ||
+      (portfolio?.custom_blocks && Array.isArray(portfolio.custom_blocks) && portfolio.custom_blocks.length > 0)
+    );
+  }, [activeLayoutOverride, portfolio]);
+
   const templateProps = useMemo(
     () => ({
       portfolio,
@@ -69,10 +85,21 @@ export function PortfolioLivePreview({
           </span>
         </div>
         <div className="flex items-center gap-1 rounded-sm bg-[#d8f36b]/20 px-2 py-1">
-          <Monitor className="h-3 w-3 text-[#d8f36b]" />
-          <span className="text-[9px] font-black uppercase tracking-widest text-[#d8f36b]">
-            Live
-          </span>
+          {isCanvasMode ? (
+            <>
+              <Sparkles className="h-3 w-3 text-[#d8f36b]" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#d8f36b]">
+                Canvas Active
+              </span>
+            </>
+          ) : (
+            <>
+              <Monitor className="h-3 w-3 text-[#d8f36b]" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#d8f36b]">
+                Template Active
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -87,7 +114,17 @@ export function PortfolioLivePreview({
             transformOrigin: "top left",
           }}
         >
-          <TemplateComponent {...templateProps} />
+          {isCanvasMode && portfolio?.custom_blocks && portfolio.custom_blocks.length > 0 ? (
+            <div className="max-w-5xl mx-auto p-10 bg-[#0d1422] text-white min-h-screen">
+              <CanvasPortfolioRenderer
+                blocks={portfolio.custom_blocks}
+                profile={profile}
+                portfolio={portfolio}
+              />
+            </div>
+          ) : (
+            <TemplateComponent {...templateProps} />
+          )}
         </div>
         {/* Overlay to prevent interaction with the preview */}
         <div className="absolute inset-0 z-10 cursor-not-allowed" />

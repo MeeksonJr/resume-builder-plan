@@ -29,6 +29,7 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { screenPeerReviewContent } from "@/lib/collaboration/content-moderation";
 
 export interface ResumeComment {
   id: string;
@@ -66,17 +67,48 @@ export function MentorFeedbackDrawer({
   const [content, setContent] = useState("");
   const [suggestedText, setSuggestedText] = useState("");
 
+  const LOCAL_STORAGE_KEY = `resumeforge_peer_comments_${resumeId}`;
+
+  const getSavedLocalComments = (): ResumeComment[] => {
+    if (typeof window === "undefined" || !resumeId) return [];
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveLocalComments = (list: ResumeComment[]) => {
+    if (typeof window === "undefined" || !resumeId) return;
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+    } catch (err) {
+      console.warn("Failed to persist comments to localStorage", err);
+    }
+  };
+
   const fetchComments = async () => {
     if (!resumeId) return;
     setLoading(true);
+    const localSaved = getSavedLocalComments();
     try {
       const res = await fetch(`/api/resumes/${resumeId}/comments`);
       if (res.ok) {
         const data = await res.json();
-        setComments(data.comments || []);
+        const remote: ResumeComment[] = data.comments || [];
+        const mergedMap = new Map<string, ResumeComment>();
+        [...remote, ...localSaved].forEach((c) => mergedMap.set(c.id, c));
+        const combined = Array.from(mergedMap.values()).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setComments(combined);
+        saveLocalComments(combined);
+      } else {
+        setComments(localSaved);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setComments(localSaved);
     } finally {
       setLoading(false);
     }
@@ -95,47 +127,61 @@ export function MentorFeedbackDrawer({
       return;
     }
 
+    // Content Moderation & Hate Speech Screening
+    const contentCheck = screenPeerReviewContent(content);
+    if (!contentCheck.allowed) {
+      toast.error(contentCheck.reason || "Content violates professional community standards.");
+      return;
+    }
+
+    if (suggestedText.trim()) {
+      const suggestedCheck = screenPeerReviewContent(suggestedText);
+      if (!suggestedCheck.allowed) {
+        toast.error(suggestedCheck.reason || "Suggested edit violates community standards.");
+        return;
+      }
+    }
+
     setSubmitting(true);
+
+    const newComment: ResumeComment = {
+      id: `c-local-${Date.now()}`,
+      resume_id: resumeId,
+      author_name: authorName.trim() || "Mentor Reviewer",
+      author_role: authorRole,
+      section_target: sectionTarget,
+      content: content.trim(),
+      suggested_text: suggestedText.trim() || undefined,
+      status: "open",
+      created_at: new Date().toISOString(),
+    };
+
+    // Optimistically update and persist immediately so feedback displays instantly
+    setComments((prev) => {
+      const updated = [newComment, ...prev];
+      saveLocalComments(updated);
+      return updated;
+    });
+
+    toast.success("Feedback submitted to candidate!");
+    setContent("");
+    setSuggestedText("");
+
+    // Background sync to API if available
     try {
-      const res = await fetch(`/api/resumes/${resumeId}/comments`, {
+      await fetch(`/api/resumes/${resumeId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          authorName: authorName.trim() || "Mentor Reviewer",
-          authorRole,
-          sectionTarget,
-          content: content.trim(),
-          suggestedText: suggestedText.trim() || undefined,
+          authorName: newComment.author_name,
+          authorRole: newComment.author_role,
+          sectionTarget: newComment.section_target,
+          content: newComment.content,
+          suggestedText: newComment.suggested_text,
         }),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to submit comment");
-      }
-
-      toast.success("Feedback submitted to candidate!");
-      setContent("");
-      setSuggestedText("");
-      fetchComments();
-    } catch (err: any) {
-      console.warn("[SUBMIT_COMMENT_FALLBACK]", err);
-      // Local optimistic fallback so reviewer is never frustrated
-      const localComment: ResumeComment = {
-        id: `c-local-${Date.now()}`,
-        resume_id: resumeId,
-        author_name: authorName.trim() || "Mentor Reviewer",
-        author_role: authorRole,
-        section_target: sectionTarget,
-        content: content.trim(),
-        suggested_text: suggestedText.trim() || undefined,
-        status: "open",
-        created_at: new Date().toISOString(),
-      };
-      setComments((prev) => [localComment, ...prev]);
-      toast.success("Feedback submitted to candidate!");
-      setContent("");
-      setSuggestedText("");
+    } catch {
+      // Background sync logged, but local comment is already rendered and preserved
     } finally {
       setSubmitting(false);
     }

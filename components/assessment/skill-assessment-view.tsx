@@ -43,12 +43,35 @@ export function SkillAssessmentView() {
   const [challenges] = useState<SandboxedChallenge[]>(SANDBOXED_CHALLENGES);
   const [selectedChallenge, setSelectedChallenge] = useState<SandboxedChallenge>(SANDBOXED_CHALLENGES[0]);
   const [userCode, setUserCode] = useState<string>(selectedChallenge.starterCode);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<SandboxedExecutionResult | null>(null);
   const [activeTab, setActiveTab] = useState<"editor" | "badges">("editor");
   const [issuedBadges, setIssuedBadges] = useState<CryptographicSkillBadge[]>([]);
   const [selectedBadgeForModal, setSelectedBadgeForModal] = useState<CryptographicSkillBadge | null>(null);
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+
+  const categories = [
+    "All",
+    "Software Engineering",
+    "Distributed Systems",
+    "Data & Business Intelligence",
+    "Product Management & Strategy",
+    "Financial Modeling & Accounting",
+    "Healthcare & Clinical Nursing",
+    "Digital Marketing & Growth",
+  ];
+
+  const filteredChallenges = challenges.filter((c) => {
+    const matchesCategory = selectedCategory === "All" || c.category === selectedCategory;
+    const matchesSearch =
+      !searchQuery.trim() ||
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.careerField.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const handleSelectChallenge = (c: SandboxedChallenge) => {
     setSelectedChallenge(c);
@@ -134,50 +157,85 @@ export function SkillAssessmentView() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Challenge Selector (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-              Active Challenge Suite
-            </span>
-            <div className="space-y-2.5">
-              {challenges.map((c) => {
-                const isSelected = selectedChallenge.id === c.id;
-                const isCompleted = issuedBadges.some((b) => b.challengeId === c.id);
-
-                return (
-                  <div
-                    key={c.id}
-                    onClick={() => handleSelectChallenge(c)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2 ${
-                      isSelected
-                        ? "bg-emerald-500/10 border-emerald-500/40 text-foreground shadow-sm ring-1 ring-emerald-500/20"
-                        : "bg-card border-border/80 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                Explore Skills & Disciplines ({filteredChallenges.length})
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by skill, title, or field..."
+                className="w-full h-8 px-3 text-xs rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+              <div className="flex flex-wrap gap-1 pt-1">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors ${
+                      selectedCategory === cat
+                        ? "bg-emerald-600 text-white font-bold shadow-xs"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="text-[10px] font-mono">
-                        {c.category}
-                      </Badge>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            c.difficulty === "Medium"
-                              ? "bg-blue-500/15 text-blue-600"
-                              : c.difficulty === "Hard"
-                              ? "bg-amber-500/15 text-amber-600"
-                              : "bg-purple-500/15 text-purple-600"
-                          }`}
-                        >
-                          {c.difficulty}
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2.5 max-h-[600px] overflow-y-auto pr-1">
+              {filteredChallenges.length === 0 ? (
+                <div className="p-6 text-center text-xs text-muted-foreground border rounded-xl border-dashed">
+                  No skill challenges matching "{searchQuery}" in {selectedCategory}.
+                </div>
+              ) : (
+                filteredChallenges.map((c) => {
+                  const isSelected = selectedChallenge.id === c.id;
+                  const isCompleted = issuedBadges.some((b) => b.challengeId === c.id);
+
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => handleSelectChallenge(c)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2 ${
+                        isSelected
+                          ? "bg-emerald-500/10 border-emerald-500/40 text-foreground shadow-sm ring-1 ring-emerald-500/20"
+                          : "bg-card border-border/80 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-[10px] font-mono">
+                          {c.category}
+                        </Badge>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              c.difficulty === "Medium"
+                                ? "bg-blue-500/15 text-blue-600"
+                                : c.difficulty === "Hard"
+                                ? "bg-amber-500/15 text-amber-600"
+                                : "bg-purple-500/15 text-purple-600"
+                            }`}
+                          >
+                            {c.difficulty}
+                          </span>
+                          {isCompleted && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground leading-snug">{c.title}</h4>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block mt-0.5">
+                          {c.careerField}
                         </span>
-                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{c.description}</p>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground leading-snug">{c.title}</h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{c.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -405,7 +463,7 @@ export function SkillAssessmentView() {
               </div>
             </div>
 
-            <DialogFooter className="pt-2 flex gap-2">
+            <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -414,15 +472,29 @@ export function SkillAssessmentView() {
               >
                 Close
               </Button>
+              <a
+                href={selectedBadgeForModal.explorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button
+                  size="sm"
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> View Certificate
+                </Button>
+              </a>
               <Button
                 size="sm"
+                variant="secondary"
                 onClick={() => {
                   navigator.clipboard.writeText(selectedBadgeForModal.explorerUrl);
-                  toast.success("Verifiable badge URL copied!");
+                  toast.success("Verifiable badge URL copied to clipboard!");
                 }}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl"
+                className="flex-1 text-xs font-semibold rounded-xl"
               >
-                Share Credential
+                <Copy className="w-3.5 h-3.5 mr-1" /> Copy Link
               </Button>
             </DialogFooter>
           </DialogContent>

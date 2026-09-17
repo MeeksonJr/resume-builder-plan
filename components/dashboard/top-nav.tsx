@@ -13,7 +13,7 @@ interface TopNavProps {
 
 export function TopNav({ isPro }: TopNavProps) {
     return (
-        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b border-[#102b2b]/10 bg-[#f8f4ec]/85 px-4 backdrop-blur-xl transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-xl transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
                 <SidebarTrigger className="-ml-1" />
             </div>
@@ -22,7 +22,7 @@ export function TopNav({ isPro }: TopNavProps) {
                 <div className="flex flex-1 items-center gap-4">
                     <Button
                         variant="outline"
-                        className="hidden h-10 w-full max-w-[400px] justify-start gap-3 rounded-none border-[#102b2b]/10 bg-[#e9eee8] px-4 text-sm font-medium text-[#52716a] transition-all hover:border-[#0d8274]/40 hover:text-[#102b2b] md:flex"
+                        className="hidden h-10 w-full max-w-[400px] justify-start gap-3 rounded-none border border-border bg-muted/40 px-4 text-sm font-medium text-muted-foreground transition-all hover:border-primary/40 hover:text-foreground md:flex"
                         onClick={() => {
                             // Trigger command menu
                             const event = new KeyboardEvent('keydown', {
@@ -35,7 +35,7 @@ export function TopNav({ isPro }: TopNavProps) {
                     >
                         <Search className="h-4 w-4" />
                             <span>Search your workspace...</span>
-                            <Kbd className="pointer-events-none ml-auto select-none bg-white/60 px-1.5 py-0.5 text-[10px] font-black tracking-widest">
+                            <Kbd className="pointer-events-none ml-auto select-none bg-background/80 border border-border px-1.5 py-0.5 text-[10px] font-black tracking-widest text-muted-foreground">
                             CTRL K
                         </Kbd>
                     </Button>

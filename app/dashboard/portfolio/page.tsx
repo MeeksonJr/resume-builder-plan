@@ -94,7 +94,39 @@ export default function PortfolioManagementPage() {
     const [copiedLink, setCopiedLink] = useState(false);
     const [isGenerating, setIsGenerating] = useState<string | null>(null);
     const [profile, setProfile] = useState<any>(null);
+    const [activeLayoutMode, setActiveLayoutMode] = useState<"canvas" | "template">(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("resumeforge_portfolio_active_layout");
+            if (saved === "canvas" || saved === "template") return saved;
+        }
+        return "canvas";
+    });
     const supabase = createClient();
+
+    const handleSwitchActiveLayout = async (mode: "canvas" | "template") => {
+        setActiveLayoutMode(mode);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("resumeforge_portfolio_active_layout", mode);
+        }
+        try {
+            if (portfolio?.id) {
+                await supabase
+                    .from("portfolios")
+                    .update({
+                        active_layout: mode,
+                        theme_settings: {
+                            ...(portfolio?.theme_settings || {}),
+                            active_layout: mode,
+                        },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq("id", portfolio.id);
+            }
+            toast.success(`Active preview layout set to ${mode === "canvas" ? "Visual Canvas Studio" : "Built-in Templates"}!`);
+        } catch (err: any) {
+            console.error("Layout toggle error:", err);
+        }
+    };
 
     const handleAiGenerate = useCallback(async (field: string) => {
         setIsGenerating(field);
@@ -1460,14 +1492,38 @@ export default function PortfolioManagementPage() {
             {/* Right: Live Preview Panel */}
             {showPreview && (
                 <div className="hidden lg:flex lg:flex-col lg:flex-1 sticky top-0 h-screen border-l border-[#102b2b]/15 bg-[#0f1f1f] p-4">
-                    <div className="mb-3 flex items-center justify-between">
+                    <div className="mb-3 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <div className="h-2 w-2 animate-pulse rounded-full bg-[#d8f36b]" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Preview</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Active Preview:</span>
                         </div>
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-white/20">
-                            {portfolio?.template || "modern"} template
-                        </span>
+                        {/* Interactive Layout Switcher */}
+                        <div className="flex items-center bg-white/10 p-0.5 rounded-lg border border-white/10">
+                            <button
+                                type="button"
+                                onClick={() => handleSwitchActiveLayout("canvas")}
+                                className={cn(
+                                    "px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider transition-all",
+                                    activeLayoutMode === "canvas"
+                                        ? "bg-[#d8f36b] text-[#102b2b] shadow-sm"
+                                        : "text-white/60 hover:text-white"
+                                )}
+                            >
+                                Canvas Blocks
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSwitchActiveLayout("template")}
+                                className={cn(
+                                    "px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-wider transition-all",
+                                    activeLayoutMode === "template"
+                                        ? "bg-[#d8f36b] text-[#102b2b] shadow-sm"
+                                        : "text-white/60 hover:text-white"
+                                )}
+                            >
+                                Template ({portfolio?.template || "modern"})
+                            </button>
+                        </div>
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <PortfolioLivePreview
@@ -1476,6 +1532,7 @@ export default function PortfolioManagementPage() {
                             projects={projects}
                             profile={profile}
                             testimonials={testimonials}
+                            activeLayoutOverride={activeLayoutMode}
                         />
                     </div>
                 </div>

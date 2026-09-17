@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,26 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle, User, Mail, Lock, Sparkles, GraduationCap, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+
+function ReferralBadge() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref");
+
+  useEffect(() => {
+    if (refCode && typeof window !== "undefined") {
+      localStorage.setItem("resumeforge_referral_code", refCode);
+    }
+  }, [refCode]);
+
+  if (!refCode) return null;
+
+  return (
+    <div className="mb-4 flex items-center gap-2 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700/60 p-2.5 text-xs font-semibold rounded">
+      <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+      <span>Referral applied! +50 bonus ATS optimization credits unlocked upon sign-up.</span>
+    </div>
+  );
+}
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -94,6 +114,9 @@ export default function SignUpPage() {
 
       <form onSubmit={handleSignUp}>
         <CardContent className="space-y-4 px-6 sm:px-8">
+          <Suspense fallback={null}>
+            <ReferralBadge />
+          </Suspense>
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}

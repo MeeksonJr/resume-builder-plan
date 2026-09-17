@@ -18,6 +18,7 @@ export function AppearanceSettings() {
     const { theme, setTheme, systemTheme } = useTheme()
     const [mounted, setMounted] = React.useState(false)
     const [selectedTheme, setSelectedTheme] = React.useState("slate")
+    const [density, setDensity] = React.useState<"balanced" | "compact">("balanced")
 
     React.useEffect(() => {
         setMounted(true)
@@ -25,10 +26,20 @@ export function AppearanceSettings() {
         const savedTheme = localStorage.getItem("color-theme") || "slate"
         setSelectedTheme(savedTheme)
 
-        // Apply theme on mount
+        const savedDensity = (localStorage.getItem("ui-density") as "balanced" | "compact") || "balanced"
+        setDensity(savedDensity)
+
+        // Apply theme and density on mount
         const root = document.documentElement
         themes.forEach(t => root.classList.remove(`theme-${t.id}`))
         root.classList.add(`theme-${savedTheme}`)
+        root.setAttribute("data-density", savedDensity)
+
+        const activeThemeObj = themes.find(t => t.id === savedTheme)
+        if (activeThemeObj) {
+            root.style.setProperty("--primary", activeThemeObj.primary)
+            root.style.setProperty("--ring", activeThemeObj.primary)
+        }
     }, [])
 
     const handleThemeChange = (themeId: string) => {
@@ -41,8 +52,23 @@ export function AppearanceSettings() {
         // Add new theme class
         root.classList.add(`theme-${themeId}`)
 
+        // Set CSS variables directly
+        const targetTheme = themes.find(t => t.id === themeId)
+        if (targetTheme) {
+            root.style.setProperty("--primary", targetTheme.primary)
+            root.style.setProperty("--ring", targetTheme.primary)
+        }
+
         // Save to localStorage
         localStorage.setItem("color-theme", themeId)
+        toast.success(`Accent color updated to ${targetTheme?.name || themeId}`)
+    }
+
+    const handleDensityChange = (newDensity: "balanced" | "compact") => {
+        setDensity(newDensity)
+        document.documentElement.setAttribute("data-density", newDensity)
+        localStorage.setItem("ui-density", newDensity)
+        toast.success(`Density set to ${newDensity === "balanced" ? "Balanced (Default)" : "Compact (Pro View)"}`)
     }
 
     const currentTheme = theme === "system" ? systemTheme : theme
@@ -159,13 +185,17 @@ export function AppearanceSettings() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <Card
-                        className="cursor-pointer border-2 p-4 border-primary bg-primary/5 transition-all"
-                        onClick={() => toast.success("Density set to Balanced (Default)")}
+                        className={`cursor-pointer border-2 p-4 transition-all ${
+                            density === "balanced"
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => handleDensityChange("balanced")}
                     >
                         <div className="space-y-1">
                             <div className="flex items-center justify-between">
                                 <span className="font-bold text-sm">Balanced</span>
-                                <Check className="h-4 w-4 text-primary" />
+                                {density === "balanced" && <Check className="h-4 w-4 text-primary" />}
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 Optimal padding and spacing for high-resolution displays.
@@ -174,12 +204,17 @@ export function AppearanceSettings() {
                     </Card>
 
                     <Card
-                        className="cursor-pointer border-2 p-4 border-border hover:border-primary/50 transition-all"
-                        onClick={() => toast.success("Density set to Compact (Pro View)")}
+                        className={`cursor-pointer border-2 p-4 transition-all ${
+                            density === "compact"
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => handleDensityChange("compact")}
                     >
                         <div className="space-y-1">
                             <div className="flex items-center justify-between">
                                 <span className="font-bold text-sm">Compact</span>
+                                {density === "compact" && <Check className="h-4 w-4 text-primary" />}
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 High-density layout displaying more resume sections simultaneously.

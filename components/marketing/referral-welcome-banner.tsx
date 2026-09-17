@@ -44,7 +44,7 @@ export function ReferralWelcomeBanner() {
 
         <div className="flex items-center gap-3 shrink-0">
           <Link
-            href={`/auth/signup?ref=${encodeURIComponent(referralCode)}`}
+            href={`/auth/sign-up?ref=${encodeURIComponent(referralCode)}`}
             className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white text-emerald-800 font-bold text-xs shadow hover:bg-white/90 transition-all hover:scale-105"
           >
             Claim Free Account <ArrowRight className="w-3 h-3" />

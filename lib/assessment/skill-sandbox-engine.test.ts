@@ -66,4 +66,20 @@ describe("Skill Verification Coding Challenge Sandbox (Phase 69)", () => {
     const tamperedVerification = verifyCryptographicSkillBadge(tamperedBadge);
     expect(tamperedVerification.valid).toBe(false);
   });
+
+  it("executes multi-disciplinary challenges across Data and Product Management", async () => {
+    // Data & BI LTV challenge
+    const dataChallenge = SANDBOXED_CHALLENGES.find((c) => c.id === "cohort-retention-ltv")!;
+    expect(dataChallenge).toBeDefined();
+    const dataRes = await executeSandboxedChallenge(dataChallenge, dataChallenge.starterCode, "Data Lead");
+    expect(dataRes.passed).toBe(true);
+    expect(dataRes.score).toBe(100);
+
+    // Product Management RICE challenge
+    const prodChallenge = SANDBOXED_CHALLENGES.find((c) => c.id === "rice-score-prioritization")!;
+    expect(prodChallenge).toBeDefined();
+    const prodRes = await executeSandboxedChallenge(prodChallenge, prodChallenge.starterCode, "Product Lead");
+    expect(prodRes.passed).toBe(true);
+    expect(prodRes.score).toBe(100);
+  });
 });
