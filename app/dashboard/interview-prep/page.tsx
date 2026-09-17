@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { InterviewDashboard } from "@/components/interview/interview-dashboard";
+import { LiveMockInterviewRoom } from "@/components/interview/live-mock-interview-room";
 
 export default async function InterviewPrepPage() {
     const supabase = await createClient();
@@ -44,6 +45,8 @@ export default async function InterviewPrepPage() {
                     Rehearse the moments that matter, then use direct feedback to sharpen your next answer.
                 </p>
             </div>
+
+            <LiveMockInterviewRoom />
 
             <InterviewDashboard
                 resumes={resumes || []}
