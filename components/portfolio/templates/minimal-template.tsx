@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { motion } from "framer-motion"
-import { hexToHsl } from "@/lib/utils"
+import { hexToHsl, cn } from "@/lib/utils"
 import {
     Github,
     Linkedin,
@@ -52,11 +52,15 @@ export function MinimalTemplate({
     const displayName = portfolio?.full_name || profile?.full_name || "Professional"
     const bio = portfolio?.bio || "Building amazing digital experiences."
 
+    const isCompact = layoutStyle === "compact";
+    const isSpacious = layoutStyle === "creative" || layoutStyle === "spacious";
+    const containerPadding = isCompact ? "py-8 px-4" : isSpacious ? "py-24 px-8" : "py-16 px-6";
+
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950" style={{
             ['--primary' as any]: hexToHsl(accentColor),
         }}>
-            <div className="container max-w-4xl mx-auto px-6 py-16">
+            <div className={cn("container max-w-4xl mx-auto", containerPadding)}>
                 {/* Header */}
                 <header
                     className="space-y-8 pb-12 border-b-4"

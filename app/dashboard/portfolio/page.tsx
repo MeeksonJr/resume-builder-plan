@@ -70,6 +70,7 @@ import {
     BarChart3
 } from "lucide-react";
 import { PortfolioLivePreview } from "@/components/portfolio/portfolio-live-preview";
+import { VisualPortfolioBuilder } from "@/components/portfolio/visual-portfolio-builder";
 
 
 export default function PortfolioManagementPage() {
@@ -403,11 +404,23 @@ export default function PortfolioManagementPage() {
                         <Trophy className="h-4 w-4" />
                         Proof
                     </TabsTrigger>
-                    <TabsTrigger value="insights" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#d8f36b] hover:bg-[#102b2b]/5 shadow-sm">
-                        <BarChart3 className="h-4 w-4" />
-                        Insights
+                    <TabsTrigger value="visual_builder" className="h-10 shrink-0 gap-2 rounded-full border border-violet-500/30 bg-violet-600/10 px-4 text-xs sm:text-sm font-bold text-violet-400 transition-all data-[state=active]:border-transparent data-[state=active]:bg-violet-600 data-[state=active]:text-white hover:bg-violet-600/20 shadow-sm">
+                        <Sparkles className="h-4 w-4" />
+                        Visual Canvas Editor (Canva / Scratch)
                     </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="visual_builder" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
+                    <VisualPortfolioBuilder
+                        portfolio={portfolio}
+                        resumes={resumes}
+                        projects={projects}
+                        profile={profile}
+                        onSave={(blocks) => {
+                            setPortfolio({ ...portfolio, custom_blocks: blocks });
+                        }}
+                    />
+                </TabsContent>
 
                 <TabsContent value="share" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
                     <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f2] shadow-none">

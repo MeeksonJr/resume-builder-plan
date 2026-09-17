@@ -333,12 +333,24 @@ export function PublicShareHub({
                                             <div className="flex gap-1">
                                                 <button
                                                     type="button"
+                                                    onClick={() => setLayoutStyle("compact")}
+                                                    className={cn(
+                                                        "px-2 py-0.5 rounded text-[10px] font-semibold transition-all",
+                                                        layoutStyle === "compact"
+                                                            ? "bg-primary text-primary-foreground shadow-xs"
+                                                            : "bg-muted text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                >
+                                                    Compact
+                                                </button>
+                                                <button
+                                                    type="button"
                                                     onClick={() => setLayoutStyle("professional")}
                                                     className={cn(
-                                                        "px-2 py-0.5 rounded text-[10px] font-semibold",
+                                                        "px-2 py-0.5 rounded text-[10px] font-semibold transition-all",
                                                         layoutStyle === "professional"
-                                                            ? "bg-primary text-primary-foreground"
-                                                            : "bg-muted text-muted-foreground"
+                                                            ? "bg-primary text-primary-foreground shadow-xs"
+                                                            : "bg-muted text-muted-foreground hover:text-foreground"
                                                     )}
                                                 >
                                                     Balanced
@@ -347,10 +359,10 @@ export function PublicShareHub({
                                                     type="button"
                                                     onClick={() => setLayoutStyle("creative")}
                                                     className={cn(
-                                                        "px-2 py-0.5 rounded text-[10px] font-semibold",
-                                                        layoutStyle === "creative"
-                                                            ? "bg-primary text-primary-foreground"
-                                                            : "bg-muted text-muted-foreground"
+                                                        "px-2 py-0.5 rounded text-[10px] font-semibold transition-all",
+                                                        layoutStyle === "creative" || layoutStyle === "spacious"
+                                                            ? "bg-primary text-primary-foreground shadow-xs"
+                                                            : "bg-muted text-muted-foreground hover:text-foreground"
                                                     )}
                                                 >
                                                     Spacious

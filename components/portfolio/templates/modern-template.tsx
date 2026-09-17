@@ -89,6 +89,13 @@ export function ModernTemplate({
     const bio = portfolio?.bio || "Building amazing digital experiences."
     const skills = portfolio?.skills || []
 
+    const isCompact = layoutStyle === "compact";
+    const isSpacious = layoutStyle === "creative" || layoutStyle === "spacious";
+
+    const sectionSpacing = isCompact ? "space-y-10" : isSpacious ? "space-y-28" : "space-y-20";
+    const containerPadding = isCompact ? "py-10 px-4" : isSpacious ? "py-28 px-8" : "py-20 px-6";
+    const heroPadding = isCompact ? "py-12 md:py-16" : isSpacious ? "py-32 md:py-44" : "py-24 md:py-32";
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background relative" style={{
             ['--primary' as any]: accentColor.startsWith('#') ? accentColor : `hsl(var(--${accentColor}))`,
@@ -113,7 +120,7 @@ export function ModernTemplate({
                 <div className="absolute inset-0 opacity-10" style={{ background: `linear-gradient(135deg, ${accentColor}, transparent)` }} />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
 
-                <div className="container relative max-w-6xl mx-auto px-6 py-24 md:py-32">
+                <div className={cn("container relative max-w-6xl mx-auto px-6", heroPadding)}>
                     <div className="space-y-8">
                         {/* Status Badges Row */}
                         <div className="flex flex-wrap items-center gap-3">
@@ -238,11 +245,12 @@ export function ModernTemplate({
             </section>
 
             <div className={cn(
-                "container max-w-6xl mx-auto px-6 py-20",
+                "container max-w-6xl mx-auto",
+                containerPadding,
                 layoutStyle === 'creative' && "grid lg:grid-cols-[1fr,300px] gap-12"
             )}>
-                <div className="space-y-20">
-                    <div className="relative z-10 space-y-20">
+                <div className={sectionSpacing}>
+                    <div className={cn("relative z-10", sectionSpacing)}>
                         {/* Skills Section */}
                         {skills.length > 0 && (
                             <section>

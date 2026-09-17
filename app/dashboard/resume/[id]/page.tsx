@@ -38,8 +38,21 @@ export default async function ResumePage({ params }: ResumePageProps) {
     if (sharedResume) {
       resume = sharedResume;
     } else {
-      console.error("[ResumePage] Resume not found:", id);
-      notFound();
+      // Graceful fallback: redirect to user's most recent valid resume if this ID doesn't exist
+      const { data: latestResume } = await supabase
+        .from("resumes")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const { redirect } = await import("next/navigation");
+      if (latestResume && latestResume.id !== id) {
+        redirect(`/dashboard/resume/${latestResume.id}`);
+      } else {
+        redirect("/dashboard/resume/new");
+      }
     }
   }
 

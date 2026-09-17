@@ -1153,151 +1153,211 @@ export default function DashboardJobsPage() {
           }
         }}
       >
-        <DialogContent className="max-w-xl bg-[#f7faf5] border-[#b8c8b9] text-[#102b2b] p-6 rounded-md shadow-xl">
+        <DialogContent className="w-[95vw] max-w-4xl lg:max-w-5xl bg-[#f7faf5] border-[#b8c8b9] text-[#102b2b] p-6 sm:p-8 rounded-xl shadow-2xl overflow-y-auto max-h-[92vh]">
           {tailorModalJob && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <DialogHeader>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="p-1.5 rounded-sm bg-[#102b2b] text-[#d8f36b]">
-                    <Rocket className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 mb-1">
+                  <span className="p-2 rounded-lg bg-[#102b2b] text-[#d8f36b] shadow-sm">
+                    <Rocket className="w-5 h-5" />
                   </span>
-                  <DialogTitle className="text-lg font-bold text-[#102b2b]">
-                    1-Click Application Packet Autopilot
-                  </DialogTitle>
+                  <div>
+                    <DialogTitle className="text-xl sm:text-2xl font-bold text-[#102b2b]">
+                      1-Click Application Packet Autopilot
+                    </DialogTitle>
+                    <DialogDescription className="text-xs sm:text-sm text-[#102b2b]/70 mt-0.5">
+                      ResumeForge will clone and ATS-optimize your resume, draft a company-tailored cover letter, track this role in Kanban, and generate mock interview prep.
+                    </DialogDescription>
+                  </div>
                 </div>
-                <DialogDescription className="text-xs text-[#102b2b]/70">
-                  ResumeForge will clone and ATS-optimize your resume, draft an aligned cover letter, track this role in your Kanban board, and create custom interview prep.
-                </DialogDescription>
               </DialogHeader>
 
-              {/* Job Preview Box */}
-              <div className="p-4 rounded-md bg-white border border-[#b8c8b9] space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#0d8274] uppercase">{tailorModalJob.company}</span>
-                  <span className="text-xs font-extrabold px-2 py-0.5 rounded-sm bg-[#d8f36b] text-[#102b2b]">
-                    {tailorModalJob.match_score || 80}% ATS Fit
-                  </span>
-                </div>
-                <h4 className="text-base font-extrabold text-[#102b2b]">{tailorModalJob.role}</h4>
-                <p className="text-xs text-[#102b2b]/70 line-clamp-2">{tailorModalJob.description}</p>
-              </div>
+              {/* 2-Column Responsive Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                {/* Left Column: Job Intelligence Dossier */}
+                <div className="md:col-span-6 space-y-4">
+                  <div className="p-4 sm:p-5 rounded-lg bg-white border border-[#b8c8b9] shadow-sm space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-[#0d8274] uppercase tracking-wider">
+                        {tailorModalJob.company}
+                      </span>
+                      <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-[#d8f36b] text-[#102b2b] shadow-xs">
+                        {tailorModalJob.match_score || 80}% ATS Fit
+                      </span>
+                    </div>
 
-              {/* Source Resume Selection */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-[#102b2b] uppercase tracking-wider block">
-                    Source Resume to Clone & Tailor:
-                  </label>
-                  {resumes.length === 0 && (
-                    <span className="text-[10px] text-amber-700 font-bold">Resume required</span>
-                  )}
-                </div>
-                {resumes.length > 0 ? (
-                  <Select
-                    value={selectedResumeId || resumes[0]?.id || ""}
-                    onValueChange={(val) => {
-                      setSelectedResumeId(val);
-                      const r = resumes.find(item => item.id === val);
-                      if (r) setActiveResumeTitle(r.title);
-                    }}
-                  >
-                    <SelectTrigger className="h-9 rounded-sm bg-white border-[#b8c8b9] text-xs font-semibold text-[#102b2b]">
-                      <SelectValue placeholder="Select Source Resume" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-sm border-[#b8c8b9]">
-                      {resumes.map((r) => (
-                        <SelectItem key={r.id} value={r.id} className="text-xs font-medium">
-                          {r.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-sm text-xs text-amber-900 flex items-center justify-between">
-                    <span>No resumes found in your account yet.</span>
-                    <Link
-                      href="/dashboard/resumes/new"
-                      className="underline font-bold text-amber-950 hover:text-black ml-2"
-                    >
-                      Create Resume &rarr;
-                    </Link>
+                    <div>
+                      <h4 className="text-lg font-extrabold text-[#102b2b] leading-tight">
+                        {tailorModalJob.role}
+                      </h4>
+                      <p className="text-xs text-[#102b2b]/60 mt-0.5">
+                        {tailorModalJob.location || "Remote"} • {(tailorModalJob as any).salary || "Competitive Market Rate"}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#b8c8b9]/50">
+                      <p className="text-xs text-[#102b2b]/80 leading-relaxed max-h-36 overflow-y-auto pr-1">
+                        {tailorModalJob.description}
+                      </p>
+                    </div>
                   </div>
-                )}
-              </div>
 
-              {/* Tone Selection */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#102b2b] uppercase tracking-wider block">
-                  Cover Letter Tone:
-                </label>
-                <Select value={coverLetterTone} onValueChange={(val: any) => setCoverLetterTone(val)}>
-                  <SelectTrigger className="h-8 rounded-sm bg-white border-[#b8c8b9] text-xs font-semibold text-[#102b2b]">
-                    <SelectValue placeholder="Tone" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-sm border-[#b8c8b9]">
-                    <SelectItem value="professional" className="text-xs font-medium">Professional (Balanced & Results-Focused)</SelectItem>
-                    <SelectItem value="confident" className="text-xs font-medium">Confident (High Impact & Bold Metrics)</SelectItem>
-                    <SelectItem value="enthusiastic" className="text-xs font-medium">Enthusiastic (Energetic & Mission-Focused)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Deliverables List */}
+                  <div className="p-4 rounded-lg bg-[#e9eee8] border border-[#b8c8b9] text-xs space-y-2.5">
+                    <p className="font-bold text-[#102b2b] text-xs tracking-tight uppercase">
+                      Application Dossier Deliverables:
+                    </p>
+                    <ul className="space-y-2 text-[#102b2b]/85 text-xs">
+                      <li className="flex items-start gap-2.5">
+                        <span className="p-1 rounded bg-white shadow-2xs text-sm mt-0.5">📄</span>
+                        <div>
+                          <strong className="text-[#102b2b] block">Tailored Resume Variant:</strong>
+                          <span className="text-[11px] text-[#102b2b]/70">Cloned & isolated with {tailorModalJob.company} STAR bullet keywords.</span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="p-1 rounded bg-white shadow-2xs text-sm mt-0.5">✉️</span>
+                        <div>
+                          <strong className="text-[#102b2b] block">AI Cover Letter:</strong>
+                          <span className="text-[11px] text-[#102b2b]/70">Custom executive business letter aligned with job requirements.</span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="p-1 rounded bg-white shadow-2xs text-sm mt-0.5">🎙️</span>
+                        <div>
+                          <strong className="text-[#102b2b] block">AI Mock Interview Room:</strong>
+                          <span className="text-[11px] text-[#102b2b]/70">Role-specific behavioral & technical questions pre-loaded.</span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="p-1 rounded bg-white shadow-2xs text-sm mt-0.5">📊</span>
+                        <div>
+                          <strong className="text-[#102b2b] block">Job Tracker Sync:</strong>
+                          <span className="text-[11px] text-[#102b2b]/70">Logged to your Kanban tracker board under &quot;Applied&quot;.</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
 
-              {/* 3-in-1 Autopilot Deliverables List */}
-              <div className="space-y-2 p-3.5 rounded-md bg-[#e9eee8] border border-[#b8c8b9] text-xs">
-                <p className="font-bold text-[#102b2b]">Application Dossier Deliverables:</p>
-                <ul className="space-y-1.5 text-[#102b2b]/85">
-                  <li className="flex items-center gap-2">
-                    <span className="text-base">📄</span>
-                    <span>
-                      <strong className="text-[#102b2b]">Tailored Resume:</strong> Cloned & isolated with STAR bullet keywords.
+                {/* Right Column: Customization Controls */}
+                <div className="md:col-span-6 space-y-5 bg-white p-5 rounded-lg border border-[#b8c8b9] shadow-sm">
+                  <h5 className="font-bold text-xs uppercase tracking-wider text-[#102b2b]">
+                    Autopilot Configuration
+                  </h5>
+
+                  {/* Source Resume Selection */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-[#102b2b] uppercase tracking-wider block">
+                        Source Resume to Clone & Tailor:
+                      </label>
+                      {resumes.length === 0 && (
+                        <span className="text-[10px] text-amber-700 font-bold">Resume required</span>
+                      )}
+                    </div>
+                    {resumes.length > 0 ? (
+                      <Select
+                        value={selectedResumeId || resumes[0]?.id || ""}
+                        onValueChange={(val) => {
+                          setSelectedResumeId(val);
+                          const r = resumes.find(item => item.id === val);
+                          if (r) setActiveResumeTitle(r.title);
+                        }}
+                      >
+                        <SelectTrigger className="h-10 rounded-md bg-[#f7faf5] border-[#b8c8b9] text-xs font-semibold text-[#102b2b]">
+                          <SelectValue placeholder="Select Source Resume" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-md border-[#b8c8b9]">
+                          {resumes.map((r) => (
+                            <SelectItem key={r.id} value={r.id} className="text-xs font-medium">
+                              {r.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-900 flex items-center justify-between">
+                        <span>No resumes found in your account yet.</span>
+                        <Link
+                          href="/dashboard/resume/new"
+                          className="underline font-bold text-amber-950 hover:text-black ml-2"
+                        >
+                          Create Resume &rarr;
+                        </Link>
+                      </div>
+                    )}
+                    <p className="text-[10px] text-[#102b2b]/60">
+                      Your existing resume will remain unchanged; a dedicated tailored copy is created.
+                    </p>
+                  </div>
+
+                  {/* Tone Selection */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-[#102b2b] uppercase tracking-wider block">
+                      Cover Letter Tone:
+                    </label>
+                    <Select value={coverLetterTone} onValueChange={(val: any) => setCoverLetterTone(val)}>
+                      <SelectTrigger className="h-10 rounded-md bg-[#f7faf5] border-[#b8c8b9] text-xs font-semibold text-[#102b2b]">
+                        <SelectValue placeholder="Tone" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-md border-[#b8c8b9]">
+                        <SelectItem value="professional" className="text-xs font-medium">
+                          Professional (Balanced & Results-Focused)
+                        </SelectItem>
+                        <SelectItem value="confident" className="text-xs font-medium">
+                          Confident (High Impact & Bold Metrics)
+                        </SelectItem>
+                        <SelectItem value="enthusiastic" className="text-xs font-medium">
+                          Enthusiastic (Energetic & Mission-Focused)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Auto Dispatch Note */}
+                  <div className="p-3 rounded-md bg-[#d8f36b]/20 border border-[#d8f36b] text-[11px] text-[#102b2b] space-y-1">
+                    <span className="font-bold flex items-center gap-1.5">
+                      ⚡ Instant Autopilot Pipeline
                     </span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-base">✉️</span>
-                    <span><strong className="text-[#102b2b]">AI Cover Letter:</strong> Structured business letter aligned with {tailorModalJob.company}.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-base">🎙️</span>
-                    <span><strong className="text-[#102b2b]">AI Interview Room:</strong> Tailored technical & behavioral questions.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-base">📊</span>
-                    <span><strong className="text-[#102b2b]">Job Tracker Sync:</strong> Logged to your Kanban board under &quot;Applied&quot;.</span>
-                  </li>
-                </ul>
-              </div>
+                    <p className="text-[11px] text-[#102b2b]/80">
+                      Execution runs in parallel: ATS keyword synthesis, cover letter formatting, and automatic Kanban board synchronization.
+                    </p>
+                  </div>
 
-              <DialogFooter className="pt-2 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTailorModalJob(null)}
-                  disabled={tailoringInProgress}
-                  className="rounded-sm border-[#b8c8b9] text-xs font-bold"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleExecuteTailor}
-                  disabled={tailoringInProgress}
-                  className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-2"
-                >
-                  {tailoringInProgress ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Synthesizing Dossier...
-                    </>
-                  ) : (
-                    <>
-                      <Rocket className="w-3.5 h-3.5" />
-                      Launch 1-Click Autopilot
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
+                  <div className="pt-2 flex items-center justify-end gap-2.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTailorModalJob(null)}
+                      disabled={tailoringInProgress}
+                      className="rounded-md border-[#b8c8b9] text-xs font-bold h-9 px-4"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleExecuteTailor}
+                      disabled={tailoringInProgress || resumes.length === 0}
+                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-md h-9 px-5 gap-2 shadow-md"
+                    >
+                      {tailoringInProgress ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Synthesizing Dossier...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className="w-4 h-4" />
+                          <span>Launch 1-Click Autopilot</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
