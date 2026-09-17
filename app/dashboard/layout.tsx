@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { CommandMenu } from "@/components/dashboard/command-menu";
+import { OfflineIndicatorBanner } from "@/components/pwa/offline-indicator-banner";
 
 export default async function DashboardLayout({
   children,
@@ -40,6 +41,7 @@ export default async function DashboardLayout({
       <SidebarInset className="bg-background/50">
         <TopNav isPro={isPro} />
         <CommandMenu />
+        <OfflineIndicatorBanner />
         <main className="flex-1 overflow-y-auto">
           <div className="w-full px-4 py-8 md:px-8 lg:px-10">
             {children}
