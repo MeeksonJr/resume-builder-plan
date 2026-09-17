@@ -23,6 +23,7 @@ import {
     GraduationCap,
     Bot,
     Code2,
+    ShieldCheck,
 } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -88,6 +89,7 @@ const getNavItems = (isAdmin: boolean) => {
             icon: Briefcase,
             items: [
                 { title: "Matched Jobs", href: "/dashboard/jobs" },
+                { title: "Reverse Job Board", href: "/dashboard/marketplace", icon: ShieldCheck },
                 { title: "Autonomous Swarm", href: "/dashboard/swarm", icon: Bot },
                 { title: "Auto-Apply & Dispatcher", href: "/dashboard/jobs", icon: Bot },
                 { title: "Job Tracker", href: "/dashboard/tracker" },
