@@ -48,6 +48,8 @@ import { CertificationsForm } from "@/components/editor/sections/certifications-
 import { LanguagesForm } from "@/components/editor/sections/languages-form";
 import { ResumePreview } from "@/components/editor/resume-preview";
 import { ResumePreviewPanel } from "@/components/editor/resume-preview-panel";
+import { LiveCollabToolbar } from "@/components/editor/live-collab-toolbar";
+import { type PeerCursor, MOCK_COACH_PEERS } from "@/lib/collaboration/realtime-cursors";
 import { ShareDialog } from "@/components/editor/share-dialog";
 import {
   DropdownMenu,
@@ -244,6 +246,56 @@ export function ResumeEditor({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(resume.title || "Untitled Resume");
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Phase 51: Realtime Live Cursors & Pair Editing State
+  const [collabPeers, setCollabPeers] = useState<PeerCursor[]>([]);
+  const [simulateCoach, setSimulateCoach] = useState(false);
+
+  useEffect(() => {
+    if (!simulateCoach) {
+      setCollabPeers([]);
+      return;
+    }
+
+    const targets = [
+      { x: 38, y: 16, section: "summary" },
+      { x: 52, y: 32, section: "experience" },
+      { x: 68, y: 46, section: "experience" },
+      { x: 44, y: 64, section: "skills" },
+      { x: 58, y: 78, section: "education" },
+    ];
+    let step = 0;
+    const basePeer = MOCK_COACH_PEERS[0];
+
+    // Seed immediately
+    setCollabPeers([
+      {
+        ...basePeer,
+        xPercent: targets[0].x,
+        yPercent: targets[0].y,
+        activeSection: targets[0].section,
+        lastActive: Date.now(),
+        lastActiveAt: Date.now(),
+      },
+    ]);
+
+    const interval = setInterval(() => {
+      step = (step + 1) % targets.length;
+      const target = targets[step];
+      setCollabPeers([
+        {
+          ...basePeer,
+          xPercent: target.x + (Math.sin(step) * 2),
+          yPercent: target.y + (Math.cos(step) * 2),
+          activeSection: target.section,
+          lastActive: Date.now(),
+          lastActiveAt: Date.now(),
+        },
+      ]);
+    }, 2400);
+
+    return () => clearInterval(interval);
+  }, [simulateCoach]);
 
   useEffect(() => {
     if (storeTitle) {
@@ -737,6 +789,14 @@ export function ResumeEditor({
           {/* Share Link */}
           <ShareDialog />
 
+          {/* Live Realtime Collab & Pair Review */}
+          <LiveCollabToolbar
+            resumeId={resume.id}
+            activePeers={collabPeers}
+            isSimulating={simulateCoach}
+            onToggleSimulation={() => setSimulateCoach((prev) => !prev)}
+          />
+
           {/* Preview Toggle */}
           <Button
             variant="outline"
@@ -880,7 +940,7 @@ export function ResumeEditor({
                 </div>
               </TabsContent>
               <TabsContent value="preview" className="flex-1 overflow-hidden h-full m-0 p-0">
-                <ResumePreviewPanel />
+                <ResumePreviewPanel cursors={collabPeers} />
               </TabsContent>
             </Tabs>
           </div>
@@ -903,7 +963,7 @@ export function ResumeEditor({
                 <>
                   <ResizableHandle withHandle />
                   <ResizablePanel defaultSize={50} minSize={30} id="preview-panel">
-                    <ResumePreviewPanel />
+                    <ResumePreviewPanel cursors={collabPeers} />
                   </ResizablePanel>
                 </>
               )}

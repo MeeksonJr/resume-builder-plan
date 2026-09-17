@@ -830,19 +830,20 @@ export async function parseLinkedInData(linkedinText: string): Promise<ResumeDat
       const inferredName = lines[0] || "Candidate";
       const inferredTitle = lines[1] || "Professional";
       return {
-        name: inferredName,
-        email: "candidate@example.com",
-        phone: "+1 (555) 000-0000",
-        location: "San Francisco, CA",
-        summary: `Experienced ${inferredTitle} with a demonstrated history of delivering software solutions.`,
-        headline: inferredTitle,
-        experiences: [
+        personalInfo: {
+          fullName: inferredName,
+          email: "candidate@example.com",
+          phone: "+1 (555) 000-0000",
+          location: "San Francisco, CA",
+          summary: `Experienced ${inferredTitle} with a demonstrated history of delivering software solutions.`,
+        },
+        workExperience: [
           {
-            title: inferredTitle,
+            position: inferredTitle,
             company: "CloudScale",
-            start_date: "2021-01",
-            end_date: "",
-            is_current: true,
+            startDate: "2021-01",
+            endDate: "",
+            current: true,
             description: "Led core infrastructure initiatives and microservice deployments.",
             highlights: ["Scaled distributed systems and reduced latency by 30%."],
           },
@@ -851,14 +852,14 @@ export async function parseLinkedInData(linkedinText: string): Promise<ResumeDat
           {
             degree: "B.S. Computer Science",
             institution: "Stanford University",
-            start_date: "2016",
-            end_date: "2020",
+            startDate: "2016",
+            endDate: "2020",
           },
         ],
-        skills: ["TypeScript", "React", "Go", "Kubernetes", "AWS"],
+        skills: [{ items: ["TypeScript", "React", "Go", "Kubernetes", "AWS"], category: "Technical Skills" }],
         projects: [],
         certifications: [],
-        languages: ["English"],
+        languages: [{ language: "English", proficiency: "Native" }],
       };
     }
     throw error;

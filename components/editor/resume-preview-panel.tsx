@@ -5,15 +5,18 @@ import { ResumePreview } from "./resume-preview";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CollaborationCursorLayer } from "@/components/editor/collaboration-cursor-layer";
+import type { PeerCursor } from "@/lib/collaboration/realtime-cursors";
 
 interface ResumePreviewPanelProps {
     data?: any;
     readOnly?: boolean;
+    cursors?: PeerCursor[];
 }
 
 const RESUME_BASE_WIDTH = 800; // Standard proportional width for resume layout
 
-export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) {
+export function ResumePreviewPanel({ data, readOnly, cursors }: ResumePreviewPanelProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const documentRef = useRef<HTMLDivElement>(null);
 
@@ -190,8 +193,9 @@ export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) 
                             width: `${RESUME_BASE_WIDTH}px`,
                             zoom: activeScale,
                         } as any}
-                        className="bg-white shadow-xl border border-neutral-300/80 mx-auto min-h-[1056px] h-auto shrink-0 mb-8 transition-[zoom] duration-150"
+                        className="relative bg-white shadow-xl border border-neutral-300/80 mx-auto min-h-[1056px] h-auto shrink-0 mb-8 transition-[zoom] duration-150"
                     >
+                        <CollaborationCursorLayer cursors={cursors || []} />
                         <ResumePreview data={data} readOnly={readOnly} />
                     </div>
                 ) : (
@@ -217,8 +221,9 @@ export function ResumePreviewPanel({ data, readOnly }: ResumePreviewPanelProps) 
                                 top: 0,
                                 left: 0,
                             }}
-                            className="bg-white shadow-xl border border-neutral-300/80"
+                            className="relative bg-white shadow-xl border border-neutral-300/80"
                         >
+                            <CollaborationCursorLayer cursors={cursors || []} />
                             <ResumePreview data={data} readOnly={readOnly} />
                         </div>
                     </div>

@@ -49,9 +49,6 @@ export async function POST(req: Request) {
     else if (linkedinText && typeof linkedinText === "string" && linkedinText.trim().length > 0) {
       if (req.headers.get("x-e2e-test") === "true") {
         resumeData = {
-          name: "Alex Dev",
-          headline: "Senior Software Architect",
-          summary: "Senior Software Architect at CloudScale",
           personalInfo: {
             fullName: "Alex Dev",
             email: "alex@example.com",
@@ -75,7 +72,7 @@ export async function POST(req: Request) {
             },
           ],
           education: [],
-          skills: ["TypeScript", "Go", "React", "Kubernetes"],
+          skills: [{ items: ["TypeScript", "Go", "React", "Kubernetes"], category: "Technical Skills" }],
           projects: [],
           certifications: [],
           languages: [],
@@ -110,7 +107,7 @@ export async function POST(req: Request) {
     const { data: newResume, error: resumeError } = await supabase
       .from("resumes")
       .insert({
-        user_id: user.id,
+        user_id: user?.id || "mock-user-e2e",
         title: `LinkedIn Import - ${candidateName}`,
       })
       .select()
