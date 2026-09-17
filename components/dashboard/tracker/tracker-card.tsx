@@ -1,6 +1,7 @@
 "use client";
 
 import { InterviewPrepDialog } from "@/components/dashboard/tracker/interview-prep-dialog";
+import { AutoApplyDispatcherDialog } from "@/components/dashboard/tracker/auto-apply-dispatcher-dialog";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -123,11 +124,16 @@ export function TrackerCard({ application, onUpdateStatus }: TrackerCardProps) {
                 )}
             </CardContent>
 
-            <CardFooter className="p-3 bg-slate-900/20 group-hover:bg-primary/5 transition-colors">
+            <CardFooter className="p-2.5 bg-slate-900/20 group-hover:bg-primary/5 transition-colors flex items-center gap-2">
+                <AutoApplyDispatcherDialog
+                    application={application}
+                    onUpdateStatus={onUpdateStatus}
+                    triggerClassName="flex-1 h-9 rounded-xl"
+                />
                 <InterviewPrepDialog application={application}>
-                    <Button variant="ghost" size="sm" className="w-full text-[10px] font-black uppercase tracking-[0.2em] h-10 gap-2 opacity-60 group-hover:opacity-100 transition-all text-muted-foreground hover:text-primary">
-                        Coach Assistant
-                        <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    <Button variant="ghost" size="sm" className="flex-1 text-[10px] font-black uppercase tracking-wider h-9 gap-1 text-muted-foreground hover:text-primary rounded-xl">
+                        Coach
+                        <ChevronRight className="h-3 w-3" />
                     </Button>
                 </InterviewPrepDialog>
             </CardFooter>
