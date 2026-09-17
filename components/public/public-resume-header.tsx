@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { MentorFeedbackDrawer } from "@/components/public/mentor-feedback-drawer";
 import { ResumeQrDialog } from "@/components/public/resume-qr-dialog";
 import { VideoElevatorPitchModal } from "@/components/public/video-elevator-pitch-modal";
+import { VerifiableCredentialsBadge } from "@/components/resume/verifiable-credentials-badge";
 import { LANGUAGE_OPTIONS } from "@/lib/i18n/resume-translations";
 import { Globe } from "lucide-react";
 import {
@@ -211,6 +212,9 @@ export function PublicResumeHeader({
                         roleTitle={resume?.title || "Professional"}
                         summaryText={resume?.summary || ""}
                     />
+
+                    {/* Web3 W3C Verifiable Credentials Badge (Phase 56) */}
+                    <VerifiableCredentialsBadge compact />
 
                     {/* Share / Copy Link Button */}
                     <Button

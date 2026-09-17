@@ -43,6 +43,7 @@ import {
     Loader2,
 } from "lucide-react"
 import Link from "next/link"
+import { VerifiableCredentialsBadge } from "@/components/resume/verifiable-credentials-badge"
 import { cn, hexToHsl } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
@@ -114,15 +115,18 @@ export function ModernTemplate({
 
                 <div className="container relative max-w-6xl mx-auto px-6 py-24 md:py-32">
                     <div className="space-y-8">
-                        {/* Status Badge */}
-                        {portfolio?.open_to_work && (
-                            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 backdrop-blur-sm shadow-lg">
-                                <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
-                                <span className="text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                    Available for New Opportunities
-                                </span>
-                            </div>
-                        )}
+                        {/* Status Badges Row */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            {portfolio?.open_to_work && (
+                                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 backdrop-blur-sm shadow-lg">
+                                    <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
+                                    <span className="text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                                        Available for New Opportunities
+                                    </span>
+                                </div>
+                            )}
+                            <VerifiableCredentialsBadge />
+                        </div>
 
                         {/* Name and Title */}
                         <div className="space-y-6">
