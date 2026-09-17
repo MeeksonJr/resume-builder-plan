@@ -26,13 +26,15 @@ import {
   MapPin,
   Clock,
   Filter,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RecruiterSourcingAgentView } from "@/components/dashboard/marketplace/recruiter-sourcing-agent-view";
 
 export function TalentMarketplaceView() {
   const [candidates, setCandidates] = useState<CandidateMarketplaceProfile[]>(SAMPLE_MARKETPLACE_CANDIDATES);
   const [introRequests, setIntroRequests] = useState<RecruiterIntroRequest[]>([]);
-  const [activeTab, setActiveTab] = useState<"browse" | "my_profile" | "inbox">("browse");
+  const [activeTab, setActiveTab] = useState<"browse" | "my_profile" | "inbox" | "sourcing_agent">("browse");
 
   // User's own marketplace profile state
   const [myAvailability, setMyAvailability] = useState<AvailabilityStatus>("actively_looking");
@@ -125,6 +127,17 @@ export function TalentMarketplaceView() {
                 {introRequests.filter((r) => r.status === "pending_review").length}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab("sourcing_agent")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === "sourcing_agent"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5 text-emerald-600" />
+            Recruiter Sourcing Agent
           </button>
         </div>
       </div>
@@ -445,6 +458,11 @@ export function TalentMarketplaceView() {
             </div>
           )}
         </div>
+      )}
+
+      {/* TAB 4: AUTONOMOUS RECRUITER SOURCING AGENT */}
+      {activeTab === "sourcing_agent" && (
+        <RecruiterSourcingAgentView />
       )}
 
       {/* MODAL: Request Confidential Intro */}

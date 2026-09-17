@@ -31,6 +31,7 @@ import {
   formatPitchDuration,
   calculatePitchMetrics,
 } from "@/lib/video/video-pitch";
+import { AITeleprompterRecorder } from "@/components/video/ai-teleprompter-recorder";
 import { toast } from "sonner";
 
 interface VideoElevatorPitchModalProps {
@@ -49,15 +50,13 @@ export function VideoElevatorPitchModal({
   triggerClassName = "",
 }: VideoElevatorPitchModalProps) {
   const [open, setOpen] = useState(false);
+  const [currentPitchData, setCurrentPitchData] = useState<VideoPitchData>(pitchData);
   const [activeTab, setActiveTab] = useState<"watch" | "transcript" | "scorecard" | "record">("watch");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordCountdown, setRecordCountdown] = useState(60);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const recordTimerRef = useRef<any>(null);
 
   // Sync video time
   const handleTimeUpdate = () => {
@@ -84,39 +83,6 @@ export function VideoElevatorPitchModal({
     setIsPlaying(true);
   };
 
-  // Recording simulation
-  const startRecording = () => {
-    setIsRecording(true);
-    setRecordCountdown(60);
-    toast.info("Recording started. Teleprompter active!");
-
-    recordTimerRef.current = setInterval(() => {
-      setRecordCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(recordTimerRef.current);
-          setIsRecording(false);
-          toast.success("60-second pitch captured & analyzed by AI!");
-          setActiveTab("scorecard");
-          return 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const stopRecording = () => {
-    if (recordTimerRef.current) clearInterval(recordTimerRef.current);
-    setIsRecording(false);
-    toast.success("Pitch saved and transcribed with AI!");
-    setActiveTab("scorecard");
-  };
-
-  useEffect(() => {
-    return () => {
-      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
-    };
-  }, []);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -129,12 +95,12 @@ export function VideoElevatorPitchModal({
           <Video className="h-3.5 w-3.5 text-[#0d8274] animate-pulse" />
           <span>60s Pitch</span>
           <span className="hidden md:inline-block px-1 py-0.2 rounded bg-[#0d8274] text-white text-[9px] font-mono">
-            {formatPitchDuration(pitchData.durationSeconds)}
+            {formatPitchDuration(currentPitchData.durationSeconds)}
           </span>
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-2xl bg-[#fdfcf9] border-[#102b2b]/15 text-[#102b2b] p-0 overflow-hidden">
+      <DialogContent className="max-w-3xl bg-[#fdfcf9] border-[#102b2b]/15 text-[#102b2b] p-0 overflow-hidden">
         <DialogHeader className="p-4 pb-2 border-b border-[#102b2b]/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -180,7 +146,7 @@ export function VideoElevatorPitchModal({
             <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black shadow-lg">
               <video
                 ref={videoRef}
-                src={pitchData.videoUrl}
+                src={currentPitchData.videoUrl}
                 className="h-full w-full object-cover"
                 onTimeUpdate={handleTimeUpdate}
                 onEnded={() => setIsPlaying(false)}
@@ -191,7 +157,7 @@ export function VideoElevatorPitchModal({
               {/* Subtitles Overlay */}
               <div className="absolute bottom-12 inset-x-4 text-center pointer-events-none">
                 <span className="bg-black/80 text-white text-xs px-3 py-1.5 rounded-md backdrop-blur-xs font-medium">
-                  {pitchData.transcript.slice(0, 110)}...
+                  {currentPitchData.transcript.slice(0, 110)}...
                 </span>
               </div>
 
@@ -213,7 +179,7 @@ export function VideoElevatorPitchModal({
                     <RotateCcw className="h-3.5 w-3.5" />
                   </button>
                   <span className="font-mono text-[11px] opacity-80">
-                    {formatPitchDuration(currentTime)} / {formatPitchDuration(pitchData.durationSeconds)}
+                    {formatPitchDuration(currentTime)} / {formatPitchDuration(currentPitchData.durationSeconds)}
                   </span>
                 </div>
 
@@ -261,11 +227,11 @@ export function VideoElevatorPitchModal({
               </span>
             </div>
             <div className="p-3.5 rounded-lg border border-[#102b2b]/15 bg-white text-xs leading-relaxed text-[#102b2b]">
-              "{pitchData.transcript}"
+              "{currentPitchData.transcript}"
             </div>
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
               <span className="text-[10px] font-bold uppercase text-[#52716a]">Mentioned Highlights:</span>
-              {pitchData.scorecard.keyThemes.map((kw) => (
+              {currentPitchData.scorecard.keyThemes.map((kw) => (
                 <span
                   key={kw}
                   className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#0d8274]/10 text-[#0d8274] border border-[#0d8274]/20 rounded"
@@ -287,7 +253,7 @@ export function VideoElevatorPitchModal({
                   <span className="text-xs font-bold uppercase">Clarity</span>
                 </div>
                 <div className="text-2xl font-black text-[#102b2b]">
-                  {pitchData.scorecard.clarityScore}
+                  {currentPitchData.scorecard.clarityScore}
                   <span className="text-xs text-[#52716a]">/100</span>
                 </div>
                 <span className="text-[10px] text-emerald-700 font-bold">Top 5% Presenter</span>
@@ -299,7 +265,7 @@ export function VideoElevatorPitchModal({
                   <span className="text-xs font-bold uppercase">Pacing</span>
                 </div>
                 <div className="text-2xl font-black text-[#102b2b]">
-                  {pitchData.scorecard.pacingWpm}
+                  {currentPitchData.scorecard.pacingWpm}
                   <span className="text-xs text-[#52716a]"> wpm</span>
                 </div>
                 <span className="text-[10px] text-[#52716a]">Target: 130–160 wpm</span>
@@ -311,7 +277,7 @@ export function VideoElevatorPitchModal({
                   <span className="text-xs font-bold uppercase">Energy</span>
                 </div>
                 <div className="text-xl font-black text-[#102b2b] mt-1">
-                  {pitchData.scorecard.energyLevel}
+                  {currentPitchData.scorecard.energyLevel}
                 </div>
                 <span className="text-[10px] text-[#0d8274] font-bold">Charismatic Delivery</span>
               </div>
@@ -322,69 +288,38 @@ export function VideoElevatorPitchModal({
                 <Sparkles className="h-3.5 w-3.5" /> AI Coach Feedback
               </span>
               <p className="text-[#52716a] text-[11px] leading-relaxed">
-                Clear articulation, zero filler words, and strong quantifiable achievements (35% latency reduction, $180k cost reduction). Pacing is optimal for senior executive screening.
+                Clear articulation, zero filler words, and strong quantifiable achievements. Pacing is optimal for senior executive screening.
               </p>
             </div>
           </div>
         )}
 
-        {/* Tab 4: Record New */}
+        {/* Tab 4: Record New with Phase 70 AI Teleprompter HUD */}
         {activeTab === "record" && (
-          <div className="p-4 space-y-3">
-            <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 flex flex-col items-center justify-center text-white">
-              {isRecording ? (
-                <>
-                  <div className="absolute top-3 left-3 flex items-center gap-2 bg-rose-600 px-2.5 py-1 rounded-full text-xs font-bold animate-pulse">
-                    <div className="h-2 w-2 rounded-full bg-white" />
-                    REC 0:{recordCountdown < 10 ? `0${recordCountdown}` : recordCountdown}
-                  </div>
-
-                  {/* Teleprompter Display */}
-                  <div className="max-w-md p-4 text-center bg-black/70 backdrop-blur-xs rounded-xl border border-white/10 m-4">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#d8f36b] block mb-1">
-                      Teleprompter Prompt
-                    </span>
-                    <p className="text-xs leading-relaxed text-neutral-200">
-                      {summaryText ||
-                        "Hi, I'm a passionate engineer with a background in building scalable systems. In my previous role, I achieved..."}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center p-6 space-y-2">
-                  <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center mx-auto text-[#d8f36b]">
-                    <Mic className="h-6 w-6" />
-                  </div>
-                  <h4 className="text-sm font-bold">Ready to record your 60-second pitch</h4>
-                  <p className="text-xs text-neutral-400 max-w-xs mx-auto">
-                    Look directly at the camera, state your strongest achievement, and speak naturally.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-[#52716a]">
-                {isRecording ? "Speak clearly into your microphone" : "Max duration: 60 seconds"}
-              </span>
-              {isRecording ? (
-                <Button
-                  size="sm"
-                  onClick={stopRecording}
-                  className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs"
-                >
-                  Stop Recording
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={startRecording}
-                  className="bg-[#0d8274] hover:bg-[#0a665b] text-white font-bold text-xs"
-                >
-                  Start 60s Recording
-                </Button>
-              )}
-            </div>
+          <div className="p-4">
+            <AITeleprompterRecorder
+              initialScript={summaryText || currentPitchData.transcript}
+              candidateName={candidateName}
+              onRecordingComplete={(recorded) => {
+                const newScorecard = calculatePitchMetrics(
+                  recorded.transcript,
+                  recorded.durationSeconds || 58
+                );
+                // Factor in eye-contact score
+                newScorecard.clarityScore = Math.round(
+                  (newScorecard.clarityScore + recorded.eyeContactScore) / 2
+                );
+                newScorecard.pacingWpm = recorded.averageWpm || newScorecard.pacingWpm;
+                setCurrentPitchData({
+                  ...currentPitchData,
+                  durationSeconds: recorded.durationSeconds || 58,
+                  transcript: recorded.transcript,
+                  scorecard: newScorecard,
+                  recordedAt: new Date().toISOString(),
+                });
+                setActiveTab("scorecard");
+              }}
+            />
           </div>
         )}
       </DialogContent>

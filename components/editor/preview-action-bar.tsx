@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Edit3, ShieldCheck, Share2 } from "lucide-react";
+import { ArrowLeft, Printer, Edit3, ShieldCheck, Share2, Globe2 } from "lucide-react";
 import { toast } from "sonner";
+import { MultilingualLocalizationDialog } from "@/components/resume/multilingual-localization-dialog";
 
 interface PreviewActionBarProps {
   resumeId?: string;
@@ -13,6 +14,7 @@ interface PreviewActionBarProps {
 }
 
 export function PreviewActionBar({ resumeId, title, updatedAtText }: PreviewActionBarProps) {
+  const [localizeOpen, setLocalizeOpen] = useState(false);
   const handlePrint = () => {
     if (typeof window !== "undefined") {
       window.print();
@@ -70,12 +72,27 @@ export function PreviewActionBar({ resumeId, title, updatedAtText }: PreviewActi
 
         <Button
           size="sm"
+          variant="outline"
+          onClick={() => setLocalizeOpen(true)}
+          className="text-xs border-emerald-500/30 text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20"
+        >
+          <Globe2 className="w-3.5 h-3.5 mr-1.5" /> Localize (Lebenslauf/JIS)
+        </Button>
+
+        <Button
+          size="sm"
           onClick={handlePrint}
           className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-600/20"
         >
           <Printer className="w-3.5 h-3.5 mr-1.5" /> Print / Save PDF
         </Button>
       </div>
+
+      <MultilingualLocalizationDialog
+        open={localizeOpen}
+        onOpenChange={setLocalizeOpen}
+        resume={{ id: resumeId, title }}
+      />
     </header>
   );
 }

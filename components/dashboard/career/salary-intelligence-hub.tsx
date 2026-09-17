@@ -33,6 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { OfferLetterSimulator } from "@/components/dashboard/compensation/offer-letter-simulator";
+import { EquityBenchmarkingSimulator } from "@/components/dashboard/compensation/equity-benchmarking-simulator";
+import { BarChart3 } from "lucide-react";
 
 interface SalaryIntelligenceHubProps {
   profile?: any;
@@ -49,7 +51,7 @@ export function SalaryIntelligenceHub({
   initialRole = "",
   initialCompany = "",
 }: SalaryIntelligenceHubProps) {
-  const [activeTab, setActiveTab] = useState<"benchmark" | "evaluator" | "equity">("benchmark");
+  const [activeTab, setActiveTab] = useState<"benchmark" | "evaluator" | "equity" | "rsu_curves">("benchmark");
 
   // Tab 1: Market Explorer States
   const [searchRole, setSearchRole] = useState(initialRole || profile?.target_role || "Senior Software Engineer");
@@ -258,6 +260,13 @@ export function SalaryIntelligenceHub({
                 >
                   <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#d8f36b]" />
                   4-Yr Equity & Offer Modeler
+                </TabsTrigger>
+                <TabsTrigger
+                  value="rsu_curves"
+                  className="data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] rounded-none text-xs font-bold text-white px-3.5 py-1.5 cursor-pointer"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                  RSU Vesting Curves & Levers
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -700,11 +709,18 @@ export function SalaryIntelligenceHub({
         </div>
       )}
 
-      {/* Tab 3: Phase 57 Equity & Offer Letter Simulator */}
+      {/* Tab 3: Equity & Offer Letter Simulator */}
       {activeTab === "equity" && (
         <OfferLetterSimulator
           initialCompany={offerCompany || "Anthropic"}
           initialRole={offerRole || searchRole || "Staff Software Engineer"}
+        />
+      )}
+
+      {/* Tab 4: Levels.fyi-Style RSU Vesting Curves & Levers */}
+      {activeTab === "rsu_curves" && (
+        <EquityBenchmarkingSimulator
+          initialRole={searchRole || "Software Engineer"}
         />
       )}
 

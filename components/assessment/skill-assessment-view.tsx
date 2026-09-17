@@ -1,349 +1,432 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Code2, 
-  Play, 
-  CheckCircle2, 
-  XCircle, 
-  Award, 
-  Sparkles, 
-  Clock, 
-  Layers, 
-  ChevronRight,
-  ExternalLink,
-  ShieldCheck,
-  RotateCcw
-} from "lucide-react";
-import { 
-  ASSESSMENT_CHALLENGES, 
-  evaluateAssessmentSubmission, 
-  AssessmentChallenge, 
-  AssessmentResult, 
-  SkillBadge 
-} from "@/lib/assessment/skill-sandbox";
+import {
+  SANDBOXED_CHALLENGES,
+  SandboxedChallenge,
+  SandboxedExecutionResult,
+  CryptographicSkillBadge,
+  executeSandboxedChallenge,
+  verifyCryptographicSkillBadge,
+} from "@/lib/assessment/skill-sandbox-engine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import {
+  Code2,
+  Play,
+  CheckCircle2,
+  XCircle,
+  Award,
+  Sparkles,
+  Clock,
+  Layers,
+  ExternalLink,
+  ShieldCheck,
+  RotateCcw,
+  Terminal,
+  Check,
+  Cpu,
+  Copy,
+} from "lucide-react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export function SkillAssessmentView() {
-  const [selectedChallenge, setSelectedChallenge] = useState<AssessmentChallenge>(ASSESSMENT_CHALLENGES[0]);
-  const [userCode, setUserCode] = useState(selectedChallenge.starterCode);
+  const [challenges] = useState<SandboxedChallenge[]>(SANDBOXED_CHALLENGES);
+  const [selectedChallenge, setSelectedChallenge] = useState<SandboxedChallenge>(SANDBOXED_CHALLENGES[0]);
+  const [userCode, setUserCode] = useState<string>(selectedChallenge.starterCode);
   const [isRunning, setIsRunning] = useState(false);
-  const [result, setResult] = useState<AssessmentResult | null>(null);
-  const [showBadgeModal, setShowBadgeModal] = useState(false);
-  const [unlockedBadges, setUnlockedBadges] = useState<SkillBadge[]>([]);
+  const [result, setResult] = useState<SandboxedExecutionResult | null>(null);
+  const [activeTab, setActiveTab] = useState<"editor" | "badges">("editor");
+  const [issuedBadges, setIssuedBadges] = useState<CryptographicSkillBadge[]>([]);
+  const [selectedBadgeForModal, setSelectedBadgeForModal] = useState<CryptographicSkillBadge | null>(null);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
 
-  const handleSelectChallenge = (c: AssessmentChallenge) => {
+  const handleSelectChallenge = (c: SandboxedChallenge) => {
     setSelectedChallenge(c);
     setUserCode(c.starterCode);
     setResult(null);
   };
 
-  const handleRunEvaluation = () => {
+  const handleRunExecution = async () => {
     setIsRunning(true);
     setResult(null);
 
-    setTimeout(() => {
-      const evaluation = evaluateAssessmentSubmission(selectedChallenge.id, userCode);
-      setResult(evaluation);
-      setIsRunning(false);
+    try {
+      const executionResult = await executeSandboxedChallenge(selectedChallenge, userCode, "Verified Developer");
+      setResult(executionResult);
 
-      if (evaluation.badge) {
-        setUnlockedBadges(prev => [...prev.filter(b => b.skillName !== evaluation.badge!.skillName), evaluation.badge!]);
-        setShowBadgeModal(true);
+      if (executionResult.badge) {
+        setIssuedBadges((prev) => [
+          executionResult.badge!,
+          ...prev.filter((b) => b.challengeId !== selectedChallenge.id),
+        ]);
+        setSelectedBadgeForModal(executionResult.badge);
+        setIsBadgeModalOpen(true);
+        toast.success(`Passed 100%! Cryptographic skill badge issued!`);
+      } else {
+        toast.error(`Tests incomplete (${executionResult.passedTests}/${executionResult.totalTests} passed)`);
       }
-    }, 600);
+    } catch (err: any) {
+      toast.error(`Execution error: ${err.message}`);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  const handleResetCode = () => {
+  const handleReset = () => {
     setUserCode(selectedChallenge.starterCode);
     setResult(null);
+    toast.info("Reset challenge to initial starter code");
   };
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-violet-950/40 via-indigo-950/30 to-background border border-violet-500/20 backdrop-blur-sm">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30 font-medium">
-              <Sparkles className="w-3.5 h-3.5 mr-1" />
-              Interactive Technical Sandbox
-            </Badge>
-            {unlockedBadges.length > 0 && (
-              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-                <Award className="w-3.5 h-3.5 mr-1" />
-                {unlockedBadges.length} Badge(s) Earned
-              </Badge>
-            )}
+      {/* Top Banner */}
+      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md">
+            <Cpu className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-            Candidate Skill Assessment Sandbox
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Complete real-world technical and algorithmic case challenges in-browser. Verified submissions automatically mint verifiable cryptographic badges anchored to your public profile and resume.
-          </p>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-foreground">Skill Verification Coding Sandbox</h1>
+              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-mono">
+                EIP-712 VERIFIABLE
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Execute live algorithms and distributed systems challenges directly in your browser. Passing code generates cryptographically signed badges for your public portfolio.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button 
-            onClick={handleRunEvaluation} 
-            disabled={isRunning}
-            className="bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/20"
+          <Button
+            size="sm"
+            variant={activeTab === "editor" ? "default" : "outline"}
+            onClick={() => setActiveTab("editor")}
+            className="text-xs h-9 rounded-xl font-semibold"
           >
-            <Play className={`w-4 h-4 mr-2 ${isRunning ? "animate-spin" : ""}`} />
-            {isRunning ? "Evaluating..." : "Run Test Suite"}
+            <Code2 className="w-3.5 h-3.5 mr-1.5" /> Challenges
+          </Button>
+          <Button
+            size="sm"
+            variant={activeTab === "badges" ? "default" : "outline"}
+            onClick={() => setActiveTab("badges")}
+            className="text-xs h-9 rounded-xl font-semibold"
+          >
+            <Award className="w-3.5 h-3.5 mr-1.5 text-amber-500" />
+            Verified Badges ({issuedBadges.length})
           </Button>
         </div>
       </div>
 
-      {/* Challenge Selector Tabs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {ASSESSMENT_CHALLENGES.map((ch) => {
-          const isSelected = selectedChallenge.id === ch.id;
-          const isEarned = unlockedBadges.some(b => b.skillName === ch.title);
+      {activeTab === "editor" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Challenge Selector (4 cols) */}
+          <div className="lg:col-span-4 space-y-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+              Active Challenge Suite
+            </span>
+            <div className="space-y-2.5">
+              {challenges.map((c) => {
+                const isSelected = selectedChallenge.id === c.id;
+                const isCompleted = issuedBadges.some((b) => b.challengeId === c.id);
 
-          return (
-            <button
-              key={ch.id}
-              onClick={() => handleSelectChallenge(ch)}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                isSelected 
-                  ? "bg-violet-950/30 border-violet-500/50 ring-1 ring-violet-500/30 shadow-md"
-                  : "bg-card/50 hover:bg-card border-border/60"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {ch.category}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono">
-                    {ch.difficulty}
-                  </Badge>
-                  {isEarned && (
-                    <span className="text-emerald-400" title="Badge Unlocked">
-                      <CheckCircle2 className="w-4 h-4" />
-                    </span>
-                  )}
-                </div>
-              </div>
-              <h2 className="font-semibold text-sm text-white line-clamp-1">{ch.title}</h2>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" /> {ch.timeLimitMinutes} mins
-                </span>
-                <span className="flex items-center gap-1">
-                  <Layers className="w-3.5 h-3.5" /> {ch.testCases.length} assertions
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Main Sandbox Split Pane */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Pane: Challenge Specs & Test Cases */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-xl border border-border/60 bg-card/60 space-y-4">
-            <div>
-              <h2 className="text-lg font-bold text-white">{selectedChallenge.title}</h2>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                {selectedChallenge.description}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Requirements
-              </h3>
-              <ul className="space-y-1.5">
-                {selectedChallenge.instructions.map((ins, i) => (
-                  <li key={i} className="text-xs text-neutral-300 flex items-start gap-2">
-                    <span className="text-violet-400 mt-0.5">•</span>
-                    <span>{ins}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Test Assertions ({selectedChallenge.testCases.length})
-              </h3>
-              <div className="space-y-2">
-                {selectedChallenge.testCases.map((tc, i) => {
-                  const testOutput = result?.testOutputs.find(to => to.name === tc.name);
-                  return (
-                    <div key={i} className="p-2.5 rounded-lg border border-border/40 bg-black/30 text-xs">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white">{tc.name}</span>
-                        {testOutput ? (
-                          testOutput.passed ? (
-                            <span className="text-emerald-400 flex items-center gap-1 text-[11px]">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Passed
-                            </span>
-                          ) : (
-                            <span className="text-red-400 flex items-center gap-1 text-[11px]">
-                              <XCircle className="w-3.5 h-3.5" /> Failed
-                            </span>
-                          )
-                        ) : (
-                          <span className="text-muted-foreground text-[11px]">Pending</span>
-                        )}
+                return (
+                  <div
+                    key={c.id}
+                    onClick={() => handleSelectChallenge(c)}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2 ${
+                      isSelected
+                        ? "bg-emerald-500/10 border-emerald-500/40 text-foreground shadow-sm ring-1 ring-emerald-500/20"
+                        : "bg-card border-border/80 text-muted-foreground hover:bg-muted/20 hover:text-foreground"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-[10px] font-mono">
+                        {c.category}
+                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            c.difficulty === "Medium"
+                              ? "bg-blue-500/15 text-blue-600"
+                              : c.difficulty === "Hard"
+                              ? "bg-amber-500/15 text-amber-600"
+                              : "bg-purple-500/15 text-purple-600"
+                          }`}
+                        >
+                          {c.difficulty}
+                        </span>
+                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                       </div>
-                      <div className="font-mono text-[11px] text-muted-foreground">
-                        Expects: {tc.expected}
-                      </div>
-                      {testOutput?.error && (
-                        <p className="text-[11px] text-red-400 font-mono mt-1">
-                          {testOutput.error}
-                        </p>
-                      )}
                     </div>
-                  );
-                })}
-              </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground leading-snug">{c.title}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{c.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
 
-        {/* Right Pane: Code Editor & Execution Console */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="rounded-xl border border-border/60 bg-black/80 overflow-hidden shadow-2xl flex flex-col h-[520px]">
-            {/* Editor Toolbar */}
-            <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-900 border-b border-border/40 text-xs">
-              <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-violet-400" />
-                <span className="font-mono text-neutral-300">solution.ts</span>
+          {/* Right Editor & Test Runner (8 cols) */}
+          <div className="lg:col-span-8 space-y-4">
+            <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
+              {/* Header Bar */}
+              <div className="px-5 py-3.5 border-b border-border/80 bg-muted/30 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Code2 className="w-4 h-4 text-emerald-600" />
+                  <span className="text-xs font-bold text-foreground font-mono">solution.ts</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleReset}
+                    className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 mr-1" /> Reset
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleRunExecution}
+                    disabled={isRunning}
+                    className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl gap-1.5 shadow-sm"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    {isRunning ? "Executing In Sandbox..." : "Run Tests & Verify"}
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={handleResetCode}
-                  className="h-7 text-xs text-neutral-400 hover:text-white"
-                >
-                  <RotateCcw className="w-3 h-3 mr-1" /> Reset
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleRunEvaluation}
-                  disabled={isRunning}
-                  className="h-7 text-xs bg-violet-600 hover:bg-violet-500 text-white font-medium"
-                >
-                  <Play className={`w-3 h-3 mr-1 ${isRunning ? "animate-spin" : ""}`} />
-                  {isRunning ? "Running..." : "Run Tests"}
-                </Button>
-              </div>
-            </div>
 
-            {/* Code Textarea / IDE */}
-            <div className="flex-1 p-4 font-mono text-xs text-emerald-400/90 leading-relaxed overflow-y-auto">
+              {/* Code Area */}
               <textarea
                 value={userCode}
                 onChange={(e) => setUserCode(e.target.value)}
-                className="w-full h-full bg-transparent resize-none outline-none font-mono text-xs text-neutral-200 focus:ring-0 leading-relaxed selection:bg-violet-500/30"
-                placeholder="// Type your solution here..."
+                rows={16}
                 spellCheck={false}
+                className="w-full p-5 bg-[#090e17] text-emerald-400 font-mono text-xs leading-relaxed border-0 focus:outline-none focus:ring-0 resize-y"
               />
-            </div>
 
-            {/* Results Drawer */}
-            {result && (
-              <div className={`p-3.5 border-t text-xs backdrop-blur-md flex items-center justify-between ${
-                result.passed 
-                  ? "bg-emerald-950/60 border-emerald-500/40 text-emerald-200" 
-                  : "bg-red-950/60 border-red-500/40 text-red-200"
-              }`}>
-                <div className="flex items-center gap-2.5">
-                  {result.passed ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-red-400" />
-                  )}
-                  <div>
-                    <span className="font-semibold text-white">
-                      {result.passed ? "All Tests Passed!" : "Test Suite Incomplete"}
-                    </span>
-                    <span className="ml-2 opacity-80">
-                      ({result.passedCount}/{result.totalCount} passed • Score: {result.score}% • {result.executionTimeMs}ms)
-                    </span>
+              {/* Sandbox Test Execution Results */}
+              {result && (
+                <div className="border-t border-border/80 p-5 bg-muted/10 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        Sandbox Test Output
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-mono">
+                      <span className="text-muted-foreground">{result.runtimeMs}ms</span>
+                      <Badge
+                        className={`text-xs font-bold ${
+                          result.passed ? "bg-emerald-600 text-white" : "bg-amber-600 text-white"
+                        }`}
+                      >
+                        {result.passedTests} / {result.totalTests} Passed ({result.score}%)
+                      </Badge>
+                    </div>
                   </div>
-                </div>
 
-                {result.badge && (
-                  <Button 
-                    size="sm" 
-                    onClick={() => setShowBadgeModal(true)}
-                    className="h-7 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
-                  >
-                    <Award className="w-3.5 h-3.5 mr-1" /> View Badge
-                  </Button>
-                )}
-              </div>
-            )}
+                  <div className="space-y-2">
+                    {result.testDetails.map((t) => (
+                      <div
+                        key={t.id}
+                        className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
+                          t.passed
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                            : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {t.passed ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                          )}
+                          <span>{t.description}</span>
+                        </div>
+                        <span className="font-mono text-[10px] uppercase font-bold">
+                          {t.passed ? "PASSED" : t.error || "FAILED"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {result.badge && (
+                    <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Award className="w-5 h-5 text-amber-500" />
+                        <div>
+                          <p className="text-xs font-bold text-foreground">Cryptographic Skill Badge Earned!</p>
+                          <p className="text-[11px] text-muted-foreground font-mono">
+                            Signature: {result.badge.signatureHash.slice(0, 18)}...
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedBadgeForModal(result.badge!);
+                          setIsBadgeModalOpen(true);
+                        }}
+                        className="text-xs h-8 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl"
+                      >
+                        View Verifiable Badge
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Badges Showcase Tab */
+        <div className="space-y-4">
+          {issuedBadges.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-border rounded-2xl p-8 space-y-3">
+              <Award className="w-12 h-12 text-muted-foreground mx-auto" />
+              <h3 className="text-base font-bold text-foreground">No Verified Badges Yet</h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Complete any of the active coding challenges with a 100% test score to generate cryptographically signed, verifiable skill badges for your portfolio.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => setActiveTab("editor")}
+                className="text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl"
+              >
+                Start Challenge
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {issuedBadges.map((badge) => (
+                <Card
+                  key={badge.badgeId}
+                  className="rounded-2xl border-emerald-500/30 bg-card p-5 space-y-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">{badge.challengeTitle}</h4>
+                        <p className="text-[11px] text-muted-foreground">{badge.difficulty} Level</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-emerald-600 text-white border-none text-[10px] font-mono">
+                      100% PASS
+                    </Badge>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-muted/20 text-[11px] font-mono space-y-1">
+                    <p className="text-muted-foreground text-[10px] uppercase">Cryptographic Signature</p>
+                    <p className="text-foreground truncate">{badge.signatureHash}</p>
+                    <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 pt-1">
+                      <ShieldCheck className="w-3 h-3" /> Non-tamperable verification
+                    </p>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(badge.explorerUrl);
+                      toast.success("Verification link copied to clipboard!");
+                    }}
+                    className="w-full text-xs h-8 rounded-xl font-semibold gap-1.5"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    Copy Credential Link
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Verifiable Badge Modal */}
-      {showBadgeModal && result?.badge && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="relative w-full max-w-lg p-6 rounded-2xl bg-neutral-900 border border-violet-500/40 shadow-2xl text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-violet-600 to-indigo-400 p-0.5 shadow-lg shadow-violet-500/30 flex items-center justify-center">
-              <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center">
-                <Award className="w-8 h-8 text-violet-400 animate-bounce" />
+      {selectedBadgeForModal && (
+        <Dialog open={isBadgeModalOpen} onOpenChange={setIsBadgeModalOpen}>
+          <DialogContent className="max-w-md rounded-2xl border-border bg-card p-6 shadow-2xl space-y-5">
+            <DialogHeader className="text-center">
+              <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-inner mb-2">
+                <Award className="w-8 h-8" />
+              </div>
+              <DialogTitle className="text-lg font-black text-foreground">
+                Cryptographically Verified Skill Badge
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Issued for deterministic in-browser unit test execution.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 p-4 rounded-xl border border-border/80 bg-muted/20 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Challenge</span>
+                <span className="font-bold text-foreground">{selectedBadgeForModal.challengeTitle}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Difficulty</span>
+                <span className="font-semibold text-foreground">{selectedBadgeForModal.difficulty}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Test Score</span>
+                <span className="font-bold text-emerald-600">{selectedBadgeForModal.score}% Perfect</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Execution Latency</span>
+                <span className="font-mono text-foreground">{selectedBadgeForModal.executionTimeMs}ms</span>
+              </div>
+              <div className="pt-2 border-t border-border/60 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  HMAC-SHA256 Signature
+                </span>
+                <p className="font-mono text-[10px] break-all bg-card p-2 rounded-lg border border-border text-foreground">
+                  {selectedBadgeForModal.signatureHash}
+                </p>
               </div>
             </div>
 
-            <div>
-              <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30 mb-2">
-                {result.badge.tier}
-              </Badge>
-              <h2 className="text-xl font-bold text-white">
-                Skill Verified: {result.badge.skillName}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Completed with {result.badge.score}% score • Verifiable on-chain
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 text-left font-mono text-xs space-y-1.5">
-              <div className="flex justify-between text-muted-foreground text-[10px]">
-                <span>CRYPTOGRAPHIC PROOF HASH</span>
-                <span className="text-emerald-400">VERIFIED</span>
-              </div>
-              <p className="text-neutral-300 text-[11px] truncate select-all">
-                {result.badge.verificationHash}
-              </p>
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
-                <span>Anchored to Polygon Public Ledger</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 pt-2">
-              <Button 
+            <DialogFooter className="pt-2 flex gap-2">
+              <Button
                 variant="outline"
-                onClick={() => setShowBadgeModal(false)}
-                className="text-xs"
+                size="sm"
+                onClick={() => setIsBadgeModalOpen(false)}
+                className="flex-1 rounded-xl text-xs"
               >
                 Close
               </Button>
               <Button
+                size="sm"
                 onClick={() => {
-                  alert("Badge pinned to your profile & active resume!");
-                  setShowBadgeModal(false);
+                  navigator.clipboard.writeText(selectedBadgeForModal.explorerUrl);
+                  toast.success("Verifiable badge URL copied!");
                 }}
-                className="bg-violet-600 hover:bg-violet-500 text-white text-xs"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl"
               >
-                Attach to Resume & Portfolio
+                Share Credential
               </Button>
-            </div>
-          </div>
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
