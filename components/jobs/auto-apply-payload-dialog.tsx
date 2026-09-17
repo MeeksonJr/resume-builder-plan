@@ -336,9 +336,9 @@ export function AutoApplyPayloadDialog({
               </span>
               <div>
                 <DialogTitle className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                  ATS Form-Fill Payload & Auto-Dispatcher
+                  ATS Form-Fill Payload &amp; Auto-Dispatcher
                   <Badge className="bg-[#d8f36b] text-[#102b2b] font-bold text-[10px] hover:bg-[#d8f36b]/90">
-                    Phase 49 & 54
+                    Auto-Fill Ready
                   </Badge>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-neutral-300 mt-0.5">
@@ -607,7 +607,7 @@ export function AutoApplyPayloadDialog({
                   <div className="flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                     <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                      Live Multi-Step Dispatch Engine (Phase 54)
+                      Live Multi-Step Dispatch Engine
                     </span>
                   </div>
                   <Button

@@ -106,8 +106,8 @@ export function ReferralSequenceModal({
               <DialogTitle className="text-xl font-bold text-white">
                 Cold Email & Executive Referral Sequence Builder
               </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm text-neutral-400">
-                Phase 61: Personalized 3-stage outbound campaign targeting hiring managers, recruiters, and alumni.
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                Personalized 3-stage outbound campaign targeting hiring managers, recruiters, and alumni.
               </DialogDescription>
             </div>
           </div>

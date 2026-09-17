@@ -38,7 +38,7 @@ export function AbTestingScorecard({ abTesting }: AbTestingScorecardProps) {
                   A/B Resume Split-Testing
                 </h2>
                 <Badge variant="outline" className="text-[10px] font-bold border-[#0d8274]/30 text-[#0d8274]">
-                  Phase 42
+                  Experiment Engine
                 </Badge>
               </div>
               <p className="text-xs text-[#52716a] mt-0.5">
@@ -80,7 +80,7 @@ export function AbTestingScorecard({ abTesting }: AbTestingScorecardProps) {
                 A/B Resume Split-Testing &amp; Attribution
               </h2>
               <Badge variant="outline" className="text-[10px] font-bold border-[#0d8274]/30 text-[#0d8274] bg-[#0d8274]/5">
-                Phase 42
+                Statistical Model
               </Badge>
             </div>
             <p className="text-xs text-[#52716a] mt-0.5">

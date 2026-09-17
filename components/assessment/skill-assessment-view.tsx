@@ -68,7 +68,7 @@ export function SkillAssessmentView() {
           <div className="flex items-center gap-2 mb-2">
             <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30 font-medium">
               <Sparkles className="w-3.5 h-3.5 mr-1" />
-              Phase 59: Interactive Technical Sandbox
+              Interactive Technical Sandbox
             </Badge>
             {unlockedBadges.length > 0 && (
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">

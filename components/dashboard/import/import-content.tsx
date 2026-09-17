@@ -212,7 +212,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-black uppercase tracking-tight">LinkedIn Synthesizer</h2>
                         <Badge variant="outline" className="text-[10px] font-bold border-blue-500/30 text-blue-400 bg-blue-500/5">
-                          Phase 41
+                          Verified Parser
                         </Badge>
                       </div>
                       <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">
@@ -315,7 +315,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
                       <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-3">
                         <ShieldCheck className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
                         <div className="text-xs text-blue-400/90 leading-relaxed">
-                          <p className="font-semibold text-blue-300">Phase 41 Real-Time Extraction Engine</p>
+                          <p className="font-semibold text-blue-300">Real-Time Extraction Engine</p>
                           <p className="text-muted-foreground/80 mt-0.5">
                             Our engine queries real-time scrapers, parses public meta attributes, and structures work histories, verified skills, and academic credentials into your resume.
                           </p>

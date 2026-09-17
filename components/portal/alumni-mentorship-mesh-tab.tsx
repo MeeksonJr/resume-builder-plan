@@ -81,7 +81,7 @@ export function AlumniMentorshipMeshTab({
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold mb-2">
             <GraduationCap className="w-3.5 h-3.5" />
-            Phase 65: Enterprise Alumni Mentorship & Career Sponsorship Mesh
+            Alumni Mentorship &amp; Career Sponsorship Mesh
           </div>
           <h2 className="text-xl font-bold text-foreground">
             {universityName} Alumni Referral Mesh

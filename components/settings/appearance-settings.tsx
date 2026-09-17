@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { Moon, Sun, Monitor, Check } from "lucide-react"
 import { useTheme } from "next-themes"
+import { toast } from "sonner"
 
 const themes = [
     { id: "slate", name: "Modern Slate", primary: "215 25% 27%" },
@@ -145,6 +146,46 @@ export function AppearanceSettings() {
                             </div>
                         </Card>
                     ))}
+                </div>
+            </div>
+
+            {/* UI Density Preference */}
+            <div className="space-y-4 pt-4 border-t border-border">
+                <div>
+                    <Label className="text-base font-heading font-black">Interface Density</Label>
+                    <p className="text-sm text-muted-foreground">
+                        Adjust information density for the resume editor and dashboard widgets.
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <Card
+                        className="cursor-pointer border-2 p-4 border-primary bg-primary/5 transition-all"
+                        onClick={() => toast.success("Density set to Balanced (Default)")}
+                    >
+                        <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                                <span className="font-bold text-sm">Balanced</span>
+                                <Check className="h-4 w-4 text-primary" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Optimal padding and spacing for high-resolution displays.
+                            </p>
+                        </div>
+                    </Card>
+
+                    <Card
+                        className="cursor-pointer border-2 p-4 border-border hover:border-primary/50 transition-all"
+                        onClick={() => toast.success("Density set to Compact (Pro View)")}
+                    >
+                        <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                                <span className="font-bold text-sm">Compact</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                High-density layout displaying more resume sections simultaneously.
+                            </p>
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>

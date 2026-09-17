@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -411,15 +412,74 @@ export default function PortfolioManagementPage() {
                 </TabsList>
 
                 <TabsContent value="visual_builder" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <VisualPortfolioBuilder
-                        portfolio={portfolio}
-                        resumes={resumes}
-                        projects={projects}
-                        profile={profile}
-                        onSave={(blocks) => {
-                            setPortfolio({ ...portfolio, custom_blocks: blocks });
-                        }}
-                    />
+                    <Card className="overflow-hidden rounded-2xl border-[#102b2b]/15 bg-[#f5f7f2] dark:bg-card shadow-sm">
+                        <CardHeader className="border-b border-[#102b2b]/10 bg-white/50 dark:bg-card/50 p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                                        <div className="p-2.5 rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
+                                            <Sparkles className="h-5 w-5" />
+                                        </div>
+                                        Visual Canvas Studio (Canva / Scratch)
+                                    </CardTitle>
+                                    <CardDescription className="font-medium mt-1">
+                                        Design your interactive developer portfolio with drag-and-drop block customizers, image uploads, and live responsive preview.
+                                    </CardDescription>
+                                </div>
+                                <Button asChild className="bg-violet-600 hover:bg-violet-500 text-white font-bold gap-2 shrink-0 shadow-md">
+                                    <Link href="/dashboard/portfolio/studio">
+                                        <ExternalLink className="h-4 w-4" />
+                                        Launch Fullscreen Studio
+                                    </Link>
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="p-4 rounded-xl border border-[#102b2b]/10 bg-white dark:bg-muted/20 space-y-2">
+                                    <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                                        01
+                                    </div>
+                                    <h4 className="font-bold text-sm">Drag & Drop Blocks</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                        Reorder sections, toggle visibility, and import verified skills & experience directly from your resumes.
+                                    </p>
+                                </div>
+                                <div className="p-4 rounded-xl border border-[#102b2b]/10 bg-white dark:bg-muted/20 space-y-2">
+                                    <div className="h-8 w-8 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center font-bold text-sm">
+                                        02
+                                    </div>
+                                    <h4 className="font-bold text-sm">Image Asset Upload</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                        Upload profile avatars, hero cover banners, and project showcase screenshots directly into your canvas blocks.
+                                    </p>
+                                </div>
+                                <div className="p-4 rounded-xl border border-[#102b2b]/10 bg-white dark:bg-muted/20 space-y-2">
+                                    <div className="h-8 w-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-sm">
+                                        03
+                                    </div>
+                                    <h4 className="font-bold text-sm">Live Multi-Device Testing</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                        Test your responsive layout across Desktop, Tablet, and Mobile viewports before publishing to the live web.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="p-5 rounded-xl border border-violet-500/20 bg-violet-500/5 flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold text-foreground">Dedicated Fullscreen Canvas Workspace</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Opens in a distraction-free studio with left block palette, center live canvas, and right block inspector.
+                                    </p>
+                                </div>
+                                <Button asChild variant="outline" size="sm" className="border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 font-bold">
+                                    <Link href="/dashboard/portfolio/studio">
+                                        Open Studio &rarr;
+                                    </Link>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
 
                 <TabsContent value="share" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">

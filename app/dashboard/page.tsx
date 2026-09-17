@@ -140,17 +140,31 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <Link href="/dashboard/interview-prep" className="group border border-[#102b2b]/15 bg-[#f8f4ec] p-5 transition-colors hover:border-[#0d8274]/50 hover:bg-white"><div className="flex items-center justify-between"><span className="flex h-10 w-10 items-center justify-center bg-[#dbe8df]"><Sparkles className="h-5 w-5 text-[#0d8274]" /></span><ArrowUpRight className="h-4 w-4 text-[#0d8274] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div><h2 className="mt-6 font-semibold">Prepare for the room</h2><p className="mt-1 text-sm leading-relaxed text-[#52716a]">Practice answers and turn feedback into a stronger interview plan.</p></Link>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3 border-t border-[#102b2b]/15 pt-8">
-        {/* Main Document Workspace */}
-        <div className="lg:col-span-2 space-y-8">
+      {/* Onboarding Checklist as unified banner */}
+      <div className="border-t border-[#102b2b]/15 pt-8">
+        <OnboardingChecklist
+          resumeCount={resumes?.length || 0}
+          atsScore={highestAtsScore}
+          savedAtsCount={savedAts?.length || 0}
+          applicationsCount={applications?.length || 0}
+          interviewsCount={interviews?.length || 0}
+          salaryInsightsCount={savedSalary?.length || 0}
+          hasPortfolio={(portfolios && portfolios.length > 0) || !!profile?.full_name}
+          isPro={isPro}
+        />
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-12 border-t border-[#102b2b]/15 pt-8">
+        {/* Left Column (7 Cols): Primary Resumes & Document Library */}
+        <div className="lg:col-span-7 space-y-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-[-.04em]">
                 <FileText className="h-5 w-5 text-[#0d8274]" />
-                <span>Career & Application Documents</span>
+                <span>Resumes & Portfolios</span>
               </h2>
               <p className="text-xs text-[#52716a] sm:text-sm">
-                Manage the documents and decisions that support your next move.
+                Manage and version your verified application materials.
               </p>
             </div>
 
@@ -168,46 +182,31 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           </div>
 
-          <OnboardingChecklist
-            resumeCount={resumes?.length || 0}
-            atsScore={highestAtsScore}
-            savedAtsCount={savedAts?.length || 0}
-            applicationsCount={applications?.length || 0}
-            interviewsCount={interviews?.length || 0}
-            salaryInsightsCount={savedSalary?.length || 0}
-            hasPortfolio={(portfolios && portfolios.length > 0) || !!profile?.full_name}
-            isPro={isPro}
-          />
-
           {resumes && resumes.length > 0 ? (
-            <>
-              <section className="relative">
-                <AnalyticsView resumes={resumes} events={events || []} />
-              </section>
-
-              <section className="relative pt-2">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#0d8274]/20 to-transparent" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0d8274]/60 whitespace-nowrap">Your Resumes & Portfolios</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#0d8274]/20 to-transparent" />
-                </div>
-                <ResumeList resumes={resumes} />
-              </section>
-            </>
+            <section className="relative">
+              <ResumeList resumes={resumes} />
+            </section>
           ) : (
             <EmptyState />
           )}
         </div>
 
-        {/* Sidebar Workspace */}
-        <div className="space-y-8">
+        {/* Right Column (5 Cols): Live Analytics, Jobs, and Academic Coursework */}
+        <div className="lg:col-span-5 space-y-8">
+          {resumes && resumes.length > 0 && (
+            <section className="relative">
+              <AnalyticsView resumes={resumes} events={events || []} />
+            </section>
+          )}
+
+          <JobRecommendationsWidget />
+
           <CanvasCourseWidget
             hasConfig={hasCanvasConfig}
             courses={canvasCourses || []}
             assignments={canvasAssignments || []}
             grades={canvasGrades || []}
           />
-          <JobRecommendationsWidget />
         </div>
       </div>
     </div>

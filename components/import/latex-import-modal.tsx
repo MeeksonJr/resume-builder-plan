@@ -98,8 +98,8 @@ export function LatexImportModal({ open, onOpenChange }: LatexImportModalProps) 
               <DialogTitle className="text-xl font-bold text-white">
                 Multi-Format LaTeX / Overleaf Resume Importer & Exporter
               </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm text-neutral-400">
-                Phase 62: Bi-directional LaTeX parsing preserving complex multi-column layouts, math symbols, and moderncv formatting.
+              <DialogDescription className="text-xs text-neutral-400">
+                Bi-directional LaTeX parsing preserving complex multi-column layouts, math symbols, and moderncv formatting.
               </DialogDescription>
             </div>
           </div>

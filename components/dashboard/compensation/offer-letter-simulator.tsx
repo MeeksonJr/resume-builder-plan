@@ -114,7 +114,7 @@ export function OfferLetterSimulator({
           <div className="space-y-1 max-w-2xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d8f36b]/20 text-[#d8f36b] text-xs font-bold border border-[#d8f36b]/30">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Phase 57 • AI Offer Letter & Equity Vesting Simulator</span>
+              <span>AI Offer Letter &amp; Equity Vesting Simulator</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight text-white">
               Compensation & 4-Year Equity Modeler

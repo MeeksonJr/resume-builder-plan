@@ -77,15 +77,13 @@ export default async function SettingsPage() {
                 <ApiSettings />
             </SettingsTab>
 
-            {/* 
             <SettingsTab
                 value="appearance"
-                title="Appearance"
-                description="Customize how ResumeForge looks for you."
+                title="Appearance & Personalization"
+                description="Customize how ResumeForge looks, choose themes, and adjust UI density."
             >
                 <AppearanceSettings />
-            </SettingsTab> 
-            */}
+            </SettingsTab>
 
             <SettingsTab
                 value="security"

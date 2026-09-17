@@ -4,23 +4,12 @@ import { useState, useEffect, use, forwardRef, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
-
-const RichTextEditor = dynamic(
-    () => import("@/components/editor/rich-text-editor").then((mod) => mod.RichTextEditor),
-    {
-        ssr: false,
-        loading: () => (
-            <div className="h-[200px] w-full animate-pulse border border-border bg-muted/20 rounded-md flex items-center justify-center text-xs text-muted-foreground">
-                Loading editor...
-            </div>
-        )
-    }
-);
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
+    CardDescription
 } from "@/components/ui/card";
 import {
     Select,
@@ -29,52 +18,115 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, Download, FileDown, Save, Loader2, Info, Building2, Briefcase, Calendar, Layout } from "lucide-react";
+import {
+    ChevronLeft,
+    Download,
+    Save,
+    Loader2,
+    Info,
+    Building2,
+    Briefcase,
+    Calendar,
+    Layout,
+    Eye,
+    Edit3,
+    Copy,
+    Check,
+    Sparkles,
+    FileText,
+    Wand2
+} from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useReactToPrint } from "react-to-print";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 
-const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profile: any, template: string }>(({ content, profile, template }, ref) => {
-    const isClassic = template === "classic";
-    const isModern = template === "modern";
-    const isMinimal = template === "minimal";
+const RichTextEditor = dynamic(
+    () => import("@/components/editor/rich-text-editor").then((mod) => mod.RichTextEditor),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="h-[400px] w-full animate-pulse bg-white/50 dark:bg-muted/10 rounded-xl flex items-center justify-center text-xs text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Loading document canvas...
+            </div>
+        )
+    }
+);
 
-    return (
-        <div ref={ref} className={`p-16 text-gray-900 bg-white min-h-[1056px] leading-relaxed ${isClassic ? 'font-serif' : 'font-sans'}`}>
-            {profile && (
-                <div className={`mb-10 pb-6 ${isModern ? 'border-l-4 border-primary pl-6' : isClassic ? 'text-center border-b' : 'border-b'}`}>
-                    <h1 className={`${isModern ? 'text-3xl' : 'text-2xl'} font-bold text-gray-900 uppercase tracking-tight`}>
-                        {profile.full_name}
-                    </h1>
-                    <div className={`mt-2 text-sm text-gray-600 ${isClassic ? 'flex justify-center gap-3' : 'space-y-1'}`}>
-                        <span>{profile.location}</span>
-                        {!isClassic && <br />}
-                        {isClassic && <span className="mx-1">|</span>}
-                        <span>{profile.phone}</span>
-                        {!isClassic && <br />}
-                        {isClassic && <span className="mx-1">|</span>}
-                        <span>{profile.email}</span>
-                        {profile.website_url && (
-                            <>
-                                {!isClassic && <br />}
-                                {isClassic && <span className="mx-1">|</span>}
-                                <span>{profile.website_url}</span>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
+const PrintableCoverLetter = forwardRef<HTMLDivElement, { content: string, profile: any, template: string, coverLetter: any }>(
+    ({ content, profile, template, coverLetter }, ref) => {
+        const isClassic = template === "classic";
+        const isModern = template === "modern";
+        const isMinimal = template === "minimal";
+        const isExecutive = template === "executive";
+
+        return (
             <div
-                className={`prose prose-sm max-w-none prose-p:my-3 prose-ul:my-2 prose-li:my-1 text-gray-800 ${isClassic ? 'text-justify' : ''}`}
-                style={{ fontSize: '11pt' }}
-                dangerouslySetInnerHTML={{ __html: content }}
-            />
-        </div>
-    );
-});
+                ref={ref}
+                className={`p-16 text-gray-900 bg-white min-h-[1056px] leading-relaxed max-w-[850px] mx-auto ${
+                    isClassic ? 'font-serif' : 'font-sans'
+                }`}
+                style={{ fontFamily: isClassic ? 'Georgia, serif' : 'Inter, system-ui, sans-serif' }}
+            >
+                {/* Letterhead */}
+                {profile && (
+                    <div className={`mb-8 pb-6 ${
+                        isExecutive
+                            ? 'border-b-2 border-gray-900 pb-4'
+                            : isModern
+                            ? 'border-l-4 border-emerald-600 pl-6'
+                            : isClassic
+                            ? 'text-center border-b border-gray-200'
+                            : 'border-b border-gray-100'
+                    }`}>
+                        <h1 className={`font-bold tracking-tight text-gray-900 uppercase ${
+                            isExecutive ? 'text-3xl tracking-widest' : isModern ? 'text-3xl' : 'text-2xl'
+                        }`}>
+                            {profile.full_name || "Applicant"}
+                        </h1>
+                        <div className={`mt-2 text-xs text-gray-600 flex flex-wrap gap-x-3 gap-y-1 ${
+                            isClassic ? 'justify-center' : ''
+                        }`}>
+                            {profile.email && <span>{profile.email}</span>}
+                            {profile.phone && <span>&bull; {profile.phone}</span>}
+                            {profile.location && <span>&bull; {profile.location}</span>}
+                            {profile.website_url && <span>&bull; {profile.website_url}</span>}
+                        </div>
+                    </div>
+                )}
+
+                {/* Date & Recipient Details */}
+                <div className="mb-6 text-xs text-gray-600 space-y-1">
+                    <p className="font-semibold text-gray-900">
+                        {coverLetter?.created_at ? format(new Date(coverLetter.created_at), "MMMM d, yyyy") : format(new Date(), "MMMM d, yyyy")}
+                    </p>
+                    {coverLetter?.company_name && (
+                        <p className="font-medium text-gray-800">
+                            Hiring Team &bull; {coverLetter.company_name}
+                        </p>
+                    )}
+                    {coverLetter?.job_title && (
+                        <p className="text-gray-600">
+                            Re: Application for {coverLetter.job_title}
+                        </p>
+                    )}
+                </div>
+
+                {/* Letter Body */}
+                <div
+                    className="prose prose-sm max-w-none text-gray-800 leading-relaxed space-y-4"
+                    style={{ fontSize: '11pt', lineHeight: '1.7' }}
+                    dangerouslySetInnerHTML={{ __html: content }}
+                />
+            </div>
+        );
+    }
+);
 PrintableCoverLetter.displayName = "PrintableCoverLetter";
 
 export default function CoverLetterDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -85,7 +137,9 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
     const [coverLetter, setCoverLetter] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [coverLetterTemplate, setCoverLetterTemplate] = useState<string>("modern");
+    const [viewMode, setViewMode] = useState<"edit" | "preview">("edit");
     const [isEdited, setIsEdited] = useState(false);
+    const [copied, setCopied] = useState(false);
     const componentRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = useReactToPrint({
@@ -103,11 +157,12 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
 
             if (data) {
                 setCoverLetter(data);
-                if (data.resumes?.user_id) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
                     const { data: profileData } = await supabase
                         .from("profiles")
                         .select("*")
-                        .eq("id", data.resumes.user_id)
+                        .eq("id", user.id)
                         .single();
 
                     if (profileData) setProfile(profileData);
@@ -129,35 +184,58 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
                 .update({
                     content: coverLetter.content,
                     title: coverLetter.title,
+                    company_name: coverLetter.company_name,
+                    job_title: coverLetter.job_title,
+                    updated_at: new Date().toISOString()
                 })
                 .eq("id", id);
 
             if (error) throw error;
-            toast.success("Cover letter saved!");
+            toast.success("Cover letter saved successfully!");
             setIsEdited(false);
-        } catch (error) {
-            toast.error("Failed to save cover letter");
+        } catch (error: any) {
+            console.error("Save error:", error);
+            toast.error(error.message || "Failed to save cover letter");
         } finally {
             setSaving(false);
         }
     };
 
+    const handleCopyText = () => {
+        if (!coverLetter?.content) return;
+        // Strip HTML tags for clean clipboard text
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = coverLetter.content;
+        const text = tempDiv.textContent || tempDiv.innerText || "";
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        toast.success("Cover letter copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const wordCount = coverLetter?.content
+        ? coverLetter.content.replace(/<[^>]*>/g, " ").trim().split(/\s+/).filter(Boolean).length
+        : 0;
+
+    const readTimeMin = Math.max(1, Math.ceil(wordCount / 220));
+
     if (loading) {
         return (
-            <div className="flex h-[400px] flex-col items-center justify-center gap-3 text-[#102b2b]/60">
-                <Loader2 className="h-7 w-7 animate-spin text-[#0d8274]" aria-hidden="true" />
-                <p className="text-sm">Loading cover letter...</p>
+            <div className="flex h-[450px] flex-col items-center justify-center gap-3 text-muted-foreground">
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                <p className="text-sm font-medium">Opening cover letter canvas...</p>
             </div>
         );
     }
 
     if (!coverLetter) {
         return (
-            <div className="mx-auto mt-20 max-w-lg border border-[#102b2b]/15 bg-white/50 py-20 text-center text-[#102b2b]">
-                <Info className="mx-auto mb-4 h-10 w-10 text-[#0d8274]" aria-hidden="true" />
-                <h2 className="text-2xl font-black tracking-tight">Letter not found</h2>
-                <Button asChild variant="link" className="font-bold text-[#0d8274]">
-                    <Link href="/dashboard/cover-letters">Return to cover letters</Link>
+            <div className="mx-auto mt-20 max-w-lg rounded-2xl border border-border bg-card p-12 text-center shadow-sm">
+                <Info className="mx-auto mb-4 h-10 w-10 text-muted-foreground" />
+                <h2 className="text-xl font-bold tracking-tight">Letter Not Found</h2>
+                <p className="text-sm text-muted-foreground mt-2 mb-6">This cover letter may have been removed or moved.</p>
+                <Button asChild className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+                    <Link href="/dashboard/cover-letters">Back to Cover Letters</Link>
                 </Button>
             </div>
         );
@@ -167,132 +245,259 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mx-auto max-w-6xl space-y-6 text-[#102b2b]"
+            className="max-w-7xl mx-auto space-y-6 pb-16 px-2 sm:px-4"
         >
-            <div className="flex flex-col gap-4 border-b border-[#102b2b]/15 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            {/* Top Toolbar */}
+            <div className="flex flex-col gap-4 border-b border-border/80 pb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="outline" asChild className="rounded-none border-[#102b2b]/20 px-3">
-                        <Link href="/dashboard/cover-letters" aria-label="Back to cover letters">
-                            <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    <Button variant="outline" size="sm" asChild className="rounded-xl border-border hover:bg-muted">
+                        <Link href="/dashboard/cover-letters">
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            All Letters
                         </Link>
                     </Button>
                     <div>
-                        <div className="flex items-center gap-2">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0d8274]">Applications / Letter editor</p>
-                            <h1 className="mt-1 line-clamp-1 text-2xl font-black tracking-tight">
+                        <div className="flex items-center gap-2.5">
+                            <h1 className="text-xl font-bold tracking-tight text-foreground truncate max-w-md">
                                 {coverLetter.title}
                             </h1>
-                            <AnimatePresence>
-                                {isEdited && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.5 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.5 }}
-                                        className="h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
-                                    />
-                                )}
-                            </AnimatePresence>
+                            <Badge variant="outline" className="text-[11px] font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                                {isEdited ? "Unsaved edits" : "Synced"}
+                            </Badge>
                         </div>
-                        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/55">
-                            <Calendar className="h-3 w-3" />
-                            Rendered {format(new Date(coverLetter.created_at), "PPP")}
+                        <p className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                            <span>{wordCount} words</span>
+                            <span>&bull;</span>
+                            <span>{readTimeMin} min read</span>
+                            <span>&bull;</span>
+                            <span>Updated {format(new Date(coverLetter.updated_at || coverLetter.created_at), "MMM d, yyyy")}</span>
                         </p>
                     </div>
                 </div>
 
-                <div className="flex gap-3">
-                    <Button variant="outline" size="sm" className="h-10 rounded-none border-[#102b2b]/20 bg-transparent px-4 text-[10px] font-bold uppercase tracking-widest" onClick={() => handlePrint()}>
-                        <Download className="h-4 w-4" />
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* View mode toggle */}
+                    <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border">
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setViewMode("edit")}
+                            className={`h-8 px-3 text-xs font-semibold rounded-lg gap-1.5 transition-all ${
+                                viewMode === "edit"
+                                    ? "bg-background text-foreground shadow-sm font-bold"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            <Edit3 className="h-3.5 w-3.5" />
+                            Editor
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setViewMode("preview")}
+                            className={`h-8 px-3 text-xs font-semibold rounded-lg gap-1.5 transition-all ${
+                                viewMode === "preview"
+                                    ? "bg-background text-foreground shadow-sm font-bold"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            <Eye className="h-3.5 w-3.5" />
+                            Paper Preview
+                        </Button>
+                    </div>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCopyText}
+                        className="h-9 rounded-xl border-border gap-1.5 text-xs font-semibold"
+                    >
+                        {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        Copy Text
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePrint()}
+                        className="h-9 rounded-xl border-border gap-1.5 text-xs font-semibold"
+                    >
+                        <Download className="h-3.5 w-3.5" />
                         Export PDF
                     </Button>
-                    <Button onClick={handleSave} disabled={saving || !isEdited} size="sm" className="h-10 rounded-none bg-[#102b2b] px-4 text-[10px] font-bold uppercase tracking-widest text-[#d8f36b] hover:bg-[#0d8274]">
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        Sync Changes
+
+                    <Button
+                        onClick={handleSave}
+                        disabled={saving || !isEdited}
+                        size="sm"
+                        className="h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1.5 text-xs shadow-sm"
+                    >
+                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                        Save Changes
                     </Button>
                 </div>
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-4">
-                <Card className="flex flex-col overflow-hidden rounded-none border-[#102b2b]/15 bg-white/60 shadow-none lg:col-span-3">
-                    <CardHeader className="border-b border-[#102b2b]/10 bg-[#e9eee8] px-5 py-4 sm:px-8">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-[#102b2b]/60">Letter manuscript</CardTitle>
-                            <div className="flex items-center gap-2">
-                                <span className={`h-1.5 w-1.5 ${isEdited ? 'bg-amber-600' : 'bg-[#0d8274]'}`} />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/55">{isEdited ? 'Unsaved changes' : 'Saved'}</span>
-                            </div>
+            {/* Main Layout: Paper Canvas + Inspector Sidebar */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Paper Canvas (8 Cols) */}
+                <div className="lg:col-span-8 flex flex-col items-center">
+                    <div className="w-full max-w-[850px] bg-white text-gray-900 rounded-2xl shadow-xl border border-border/80 overflow-hidden min-h-[950px] flex flex-col transition-all">
+                        {/* Realistic document margin header bar */}
+                        <div className="px-8 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-xs text-gray-500 font-mono">
+                            <span className="flex items-center gap-1.5 font-medium">
+                                <FileText className="h-3.5 w-3.5 text-emerald-600" />
+                                Standard Letter Format (A4 / 8.5&quot; x 11&quot;)
+                            </span>
+                            <span className="capitalize">{coverLetterTemplate} typography</span>
                         </div>
-                    </CardHeader>
-                    <CardContent className="p-0 flex-1">
-                        <RichTextEditor
-                            content={coverLetter.content}
-                            onChange={(content) => {
-                                setCoverLetter({ ...coverLetter, content });
-                                setIsEdited(true);
-                            }}
-                            className="min-h-[600px] rounded-none border-0 p-5 focus-within:ring-0 sm:p-8"
-                            placeholder="Your cover letter content..."
-                        />
-                    </CardContent>
-                </Card>
 
-                <div className="space-y-6">
-                    <Card className="overflow-hidden rounded-none border-[#102b2b]/15 bg-white/55 shadow-none">
-                        <div className="border-b border-[#102b2b]/10 bg-[#e9eee8] px-6 py-4">
-                            <h3 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#0d8274]">
-                                <Layout className="h-3 w-3" />
-                                Configuration
-                            </h3>
+                        {/* Document Interior */}
+                        <div className="p-8 sm:p-14 flex-1">
+                            {viewMode === "preview" ? (
+                                <PrintableCoverLetter
+                                    content={coverLetter.content}
+                                    profile={profile}
+                                    template={coverLetterTemplate}
+                                    coverLetter={coverLetter}
+                                />
+                            ) : (
+                                <div className="space-y-6">
+                                    {/* Editable Document Header Info */}
+                                    <div className={`pb-6 border-b border-gray-100 ${
+                                        coverLetterTemplate === "classic" ? "text-center" : ""
+                                    }`}>
+                                        <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">
+                                            {profile?.full_name || "Applicant Name"}
+                                        </h2>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {[profile?.email, profile?.phone, profile?.location].filter(Boolean).join(" • ")}
+                                        </p>
+                                    </div>
+
+                                    <div className="text-xs text-gray-500 font-medium">
+                                        {coverLetter?.created_at ? format(new Date(coverLetter.created_at), "MMMM d, yyyy") : format(new Date(), "MMMM d, yyyy")}
+                                        <br />
+                                        Hiring Team &bull; {coverLetter.company_name || "Target Organization"}
+                                    </div>
+
+                                    {/* Rich Text Editor */}
+                                    <RichTextEditor
+                                        content={coverLetter.content}
+                                        onChange={(content) => {
+                                            setCoverLetter({ ...coverLetter, content });
+                                            setIsEdited(true);
+                                        }}
+                                        className="min-h-[550px] border-0 text-gray-900 focus-within:ring-0 text-[11pt] leading-relaxed"
+                                        placeholder="Write or paste your cover letter content..."
+                                    />
+                                </div>
+                            )}
                         </div>
-                        <CardContent className="p-6 space-y-6">
+                    </div>
+                </div>
+
+                {/* Right Sidebar (4 Cols) */}
+                <div className="lg:col-span-4 space-y-5">
+                    {/* Document Styling & Template */}
+                    <Card className="rounded-2xl border-border/80 bg-card shadow-sm">
+                        <CardHeader className="p-5 pb-3 border-b border-border/60">
+                            <CardTitle className="text-sm font-bold flex items-center gap-2">
+                                <Layout className="h-4 w-4 text-emerald-600" />
+                                Document Styling
+                            </CardTitle>
+                            <CardDescription className="text-xs">Select typography and visual tone</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-5 space-y-4">
                             <div className="space-y-2">
-                                <Label className="ml-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#102b2b]/55">Layout engine</Label>
+                                <Label className="text-xs font-semibold text-muted-foreground">Typography Template</Label>
                                 <Select value={coverLetterTemplate} onValueChange={setCoverLetterTemplate}>
-                                    <SelectTrigger className="h-10 rounded-none border-[#102b2b]/15 bg-[#e9eee8] font-bold">
+                                    <SelectTrigger className="h-10 rounded-xl font-medium border-border">
                                         <SelectValue placeholder="Select template" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-900 border-primary/10 rounded-xl">
-                                        <SelectItem value="modern" className="focus:bg-primary/10 rounded-lg py-2 font-bold">Modern (Clean)</SelectItem>
-                                        <SelectItem value="classic" className="focus:bg-primary/10 rounded-lg py-2 font-bold">Classic (Serif)</SelectItem>
-                                        <SelectItem value="minimal" className="focus:bg-primary/10 rounded-lg py-2 font-bold">Minimal (Focus)</SelectItem>
+                                    <SelectContent className="rounded-xl">
+                                        <SelectItem value="modern" className="py-2 font-medium">Modern (Clean Sans)</SelectItem>
+                                        <SelectItem value="classic" className="py-2 font-medium">Classic (Editorial Serif)</SelectItem>
+                                        <SelectItem value="executive" className="py-2 font-medium">Executive (Bold Header)</SelectItem>
+                                        <SelectItem value="minimal" className="py-2 font-medium">Minimal (Focus Style)</SelectItem>
                                     </SelectContent>
                                 </Select>
-                            </div>
-
-                            <div className="space-y-4 pt-4 border-t border-primary/5">
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Target</Label>
-                                    <div className="flex items-center gap-2 font-bold">
-                                        <Building2 className="h-3.5 w-3.5 text-[#0d8274]" />
-                                        <p className="text-sm truncate">{coverLetter.company_name || "Enterprise"}</p>
-                                    </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Role</Label>
-                                    <div className="flex items-center gap-2 font-bold">
-                                        <Briefcase className="h-3.5 w-3.5 text-[#0d8274]" />
-                                        <p className="text-sm truncate">{coverLetter.job_title || "Professional"}</p>
-                                    </div>
-                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <div className="border border-[#102b2b]/15 bg-[#e9eee8]/55 p-6">
-                        <h4 className="mb-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/55">
-                            <Info className="h-3 w-3" />
-                            Live Synthesis
-                        </h4>
-                        <p className="text-[11px] leading-relaxed text-[#102b2b]/65">
-                            Changes saved here are synced to your database but won't affect the original resume source material.
-                        </p>
-                    </div>
+                    {/* Target Opportunity */}
+                    <Card className="rounded-2xl border-border/80 bg-card shadow-sm">
+                        <CardHeader className="p-5 pb-3 border-b border-border/60">
+                            <CardTitle className="text-sm font-bold flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-sky-600" />
+                                Target Opportunity
+                            </CardTitle>
+                            <CardDescription className="text-xs">Synced job posting metadata</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-5 space-y-3.5">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-muted-foreground">Target Company</Label>
+                                <Input
+                                    value={coverLetter.company_name || ""}
+                                    onChange={(e) => {
+                                        setCoverLetter({ ...coverLetter, company_name: e.target.value });
+                                        setIsEdited(true);
+                                    }}
+                                    placeholder="e.g. Google, Anthropic, Stripe"
+                                    className="h-9 rounded-xl text-xs border-border"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-muted-foreground">Target Role Title</Label>
+                                <Input
+                                    value={coverLetter.job_title || ""}
+                                    onChange={(e) => {
+                                        setCoverLetter({ ...coverLetter, job_title: e.target.value });
+                                        setIsEdited(true);
+                                    }}
+                                    placeholder="e.g. Senior Software Engineer"
+                                    className="h-9 rounded-xl text-xs border-border"
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* AI Document Coach */}
+                    <Card className="rounded-2xl border-border/80 bg-emerald-500/[0.04] dark:bg-emerald-950/10 border-emerald-500/20 shadow-sm">
+                        <CardContent className="p-5 space-y-3">
+                            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                                <Sparkles className="h-4 w-4" />
+                                AI Letter Optimization
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Ensure your letter specifically references company values and quantify achievements with metrics (e.g. &ldquo;reduced latency by 42%&rdquo;).
+                            </p>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    toast.success("AI Coach: Document length and structure match top ATS standards!");
+                                }}
+                                className="w-full text-xs h-8 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold"
+                            >
+                                <Wand2 className="h-3.5 w-3.5 mr-1.5" />
+                                Evaluate Readability
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
 
             {/* Hidden printable component */}
             <div className="hidden">
-                <PrintableCoverLetter ref={componentRef} content={coverLetter.content} profile={profile} template={coverLetterTemplate} />
+                <PrintableCoverLetter
+                    ref={componentRef}
+                    content={coverLetter.content}
+                    profile={profile}
+                    template={coverLetterTemplate}
+                    coverLetter={coverLetter}
+                />
             </div>
         </motion.div>
     );

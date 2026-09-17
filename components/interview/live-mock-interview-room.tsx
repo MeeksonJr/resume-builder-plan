@@ -101,7 +101,7 @@ export function LiveMockInterviewRoom() {
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold mb-1">
             <Sparkles className="w-3.5 h-3.5" />
-            Gemini Multimodal Live Audio Sandbox (Phase 63)
+            Gemini Multimodal Live Audio Sandbox
           </div>
           <h2 className="text-xl font-bold text-foreground">AI Behavioral Mock Interview Room</h2>
           <p className="text-sm text-muted-foreground">

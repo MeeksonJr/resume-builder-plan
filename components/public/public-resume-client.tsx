@@ -140,18 +140,22 @@ export function PublicResumeClient({
                 </div>
 
                 {/* Footer Brand Credit */}
-                <footer className="mt-8 mb-6 text-center space-y-2 print:hidden">
+                <footer className="mt-12 mb-8 text-center space-y-3 print:hidden">
                     <p className="text-xs text-muted-foreground font-medium">
                         Verified candidate resume hosted securely on{" "}
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                        <span className="font-semibold text-foreground">
                             ResumeForge
                         </span>
                     </p>
-                    <Button variant="link" size="sm" asChild className="text-xs text-primary font-semibold">
-                        <a href="/?utm_source=public_resume_footer&utm_medium=referral">
-                            Build your own ATS-friendly resume for free <span aria-hidden="true">&rarr;</span>
+                    <div>
+                        <a
+                            href={`/?utm_source=public_resume_footer&utm_medium=referral&ref=public_resume_${data.resume?.id || 'forge'}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md shadow-emerald-600/20 hover:scale-[1.02] transition-all"
+                        >
+                            <span>Build your own ATS-friendly resume for free</span>
+                            <span aria-hidden="true">&rarr;</span>
                         </a>
-                    </Button>
+                    </div>
                 </footer>
             </main>
 
