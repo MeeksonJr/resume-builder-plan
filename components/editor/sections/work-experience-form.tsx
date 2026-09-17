@@ -10,6 +10,7 @@ const RichTextEditor = dynamic(() => import("../rich-text-editor").then(mod => m
     ssr: false,
     loading: () => <div className="h-[150px] w-full animate-pulse rounded-md bg-muted/50" />
 });
+import { VoiceDictationModal } from "@/components/editor/voice-dictation-modal";
 import {
     Card,
     CardContent,
@@ -252,22 +253,34 @@ export function WorkExperienceForm() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-between flex-wrap gap-2">
                                                 <Label>Description & Achievements</Label>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleImproveDescription(exp.id, exp.description || "")}
-                                                    disabled={improvingId === exp.id || !exp.description}
-                                                    className="h-8 gap-1.5 rounded-none border-[#102b2b]/20 bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] hover:text-white text-xs font-bold"
-                                                >
-                                                    {improvingId === exp.id ? (
-                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                    ) : (
-                                                        <Sparkles className="h-3.5 w-3.5" />
-                                                    )}
-                                                    ✨ Polish with STAR (AI)
-                                                </Button>
+                                                <div className="flex items-center gap-1.5">
+                                                    <VoiceDictationModal
+                                                        buttonLabel="Dictate"
+                                                        onInsertBullet={(bullet) => {
+                                                            const current = exp.description || "";
+                                                            const bulletHtml = `<p>• ${bullet}</p>`;
+                                                            updateWorkExperience(exp.id, {
+                                                                description: current ? `${current}${bulletHtml}` : bulletHtml,
+                                                            });
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleImproveDescription(exp.id, exp.description || "")}
+                                                        disabled={improvingId === exp.id || !exp.description}
+                                                        className="h-8 gap-1.5 rounded-none border-[#102b2b]/20 bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] hover:text-white text-xs font-bold"
+                                                    >
+                                                        {improvingId === exp.id ? (
+                                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                        ) : (
+                                                            <Sparkles className="h-3.5 w-3.5" />
+                                                        )}
+                                                        ✨ Polish with STAR
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <RichTextEditor
                                                 content={exp.description || ""}
