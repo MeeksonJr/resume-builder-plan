@@ -88,6 +88,7 @@ const getNavItems = (isAdmin: boolean) => {
             icon: Briefcase,
             items: [
                 { title: "Matched Jobs", href: "/dashboard/jobs" },
+                { title: "Autonomous Swarm", href: "/dashboard/swarm", icon: Bot },
                 { title: "Auto-Apply & Dispatcher", href: "/dashboard/jobs", icon: Bot },
                 { title: "Job Tracker", href: "/dashboard/tracker" },
                 { title: "Cover Letters", href: "/dashboard/cover-letters" },
