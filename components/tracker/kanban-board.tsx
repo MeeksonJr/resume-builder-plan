@@ -17,10 +17,12 @@ import {
     BookOpen,
     Sparkles,
     CheckCircle2,
-    Mail
+    Mail,
+    Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { DeepTailorModal } from "@/components/jobs/deep-tailor-modal";
 import {
     Card,
     CardContent,
@@ -66,6 +68,10 @@ interface Application {
     cover_letter_id: string | null;
     linked_opportunities: string[] | null;
     linked_canvas_courses?: string[] | null;
+    job_description?: string | null;
+    tailored_resume_id?: string | null;
+    dedicated_portfolio_enabled?: boolean | null;
+    dedicated_portfolio_data?: any | null;
 }
 
 const COLUMNS = [
@@ -83,6 +89,11 @@ export function KanbanBoard() {
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [mobileFilter, setMobileFilter] = useState<string>("all");
+
+    // Deep Tailoring & Microsite State
+    const [isTailorModalOpen, setIsTailorModalOpen] = useState(false);
+    const [tailorTargetApp, setTailorTargetApp] = useState<Application | null>(null);
+    const [userSlug, setUserSlug] = useState<string>("me");
 
     // Linked Resources State
     const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
@@ -165,6 +176,26 @@ export function KanbanBoard() {
                 .in("id", oppIds);
             if (fo) setShortlist(fo);
         }
+
+        // 5. Fetch profile slug for dedicated portfolios
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", user.id)
+            .maybeSingle();
+        if (profile?.username) {
+            setUserSlug(profile.username);
+        }
+    };
+
+    const handleOpenTailorForApp = (app: Application) => {
+        setTailorTargetApp(app);
+        setIsTailorModalOpen(true);
+    };
+
+    const handleOpenNewJobTailorModal = () => {
+        setTailorTargetApp(null);
+        setIsTailorModalOpen(true);
     };
 
     const fetchApplications = async () => {
@@ -384,13 +415,22 @@ export function KanbanBoard() {
                     <h1 className="mt-2 text-3xl font-black tracking-tight text-[#102b2b]">Keep every opportunity moving.</h1>
                     <p className="mt-2 text-sm text-[#102b2b]/65">{applications.length} tracked {applications.length === 1 ? "application" : "applications"}</p>
                 </div>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="h-10 gap-2 rounded-none bg-[#102b2b] px-4 text-[#d8f36b] hover:bg-[#0d8274]">
-                            <Plus className="h-4 w-4" />
-                            Add Job
-                        </Button>
-                    </DialogTrigger>
+                <div className="flex items-center gap-2">
+                    <Button
+                        onClick={handleOpenNewJobTailorModal}
+                        className="h-10 gap-2 rounded-none bg-[#0d8274] px-4 text-[#d8f36b] hover:bg-[#102b2b] border border-[#d8f36b]/30 font-bold transition-colors cursor-pointer shadow-xs"
+                        title="AI Tailored Resume, Cover Letter & Dedicated Portfolio"
+                    >
+                        <Sparkles className="h-4 w-4 text-[#d8f36b]" />
+                        Deep AI Tailor
+                    </Button>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="h-10 gap-2 rounded-none bg-[#102b2b] px-4 text-[#d8f36b] hover:bg-[#0d8274] cursor-pointer">
+                                <Plus className="h-4 w-4" />
+                                Add Job
+                            </Button>
+                        </DialogTrigger>
                     <DialogContent className="w-[96vw] max-w-5xl sm:max-w-5xl h-[90vh] max-h-[880px] flex flex-col p-0 gap-0 overflow-hidden rounded-none border-[#102b2b]/20 bg-[#f8f4ec] shadow-2xl">
                         <DialogHeader className="sr-only">
                             <DialogTitle>Track New Application</DialogTitle>
@@ -670,6 +710,7 @@ export function KanbanBoard() {
                         </div>
                     </DialogContent>
                 </Dialog>
+                </div>
             </div>
 
             {/* Mobile Column Segment Switcher (visible on md:hidden) */}
@@ -776,10 +817,41 @@ export function KanbanBoard() {
                                                 )}
 
                                                 {/* Attached Artifact Badges */}
-                                                {(app.resume_id || app.cover_letter_id || (app.linked_opportunities && app.linked_opportunities.length > 0) || (app.linked_canvas_courses && app.linked_canvas_courses.length > 0)) && (
+                                                {(app.resume_id || app.cover_letter_id || app.tailored_resume_id || app.dedicated_portfolio_enabled || (app.linked_opportunities && app.linked_opportunities.length > 0) || (app.linked_canvas_courses && app.linked_canvas_courses.length > 0)) && (
                                                     <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-[#102b2b]/5">
+                                                        {/* Deep Tailored Resume (Special Priority) */}
+                                                        {app.tailored_resume_id && (
+                                                            <Link 
+                                                                href={`/builder/${app.tailored_resume_id}`}
+                                                                onClick={(e: any) => e.stopPropagation()}
+                                                                title="Open Tailored Resume in Builder"
+                                                            >
+                                                                <Badge className="rounded-none bg-[#0d8274] text-[#d8f36b] hover:bg-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-bold border border-[#0d8274]">
+                                                                    <Sparkles className="w-2.5 h-2.5 text-[#d8f36b]" />
+                                                                    <span className="max-w-[110px] truncate">Tailored Resume</span>
+                                                                    <ExternalLink className="w-2 h-2 ml-0.5 opacity-80" />
+                                                                </Badge>
+                                                            </Link>
+                                                        )}
+
+                                                        {/* Dedicated Portfolio Microsite */}
+                                                        {app.dedicated_portfolio_enabled && (
+                                                            <Link 
+                                                                href={`/p/${userSlug || 'me'}/job/${app.id}`}
+                                                                target="_blank"
+                                                                onClick={(e: any) => e.stopPropagation()}
+                                                                title="View Live Dedicated Job Portfolio Page"
+                                                            >
+                                                                <Badge className="rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c6e655] border border-[#102b2b]/20 text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-black">
+                                                                    <Globe className="w-2.5 h-2.5 text-[#0d8274]" />
+                                                                    <span>Targeted Page</span>
+                                                                    <ExternalLink className="w-2 h-2 ml-0.5 opacity-80" />
+                                                                </Badge>
+                                                            </Link>
+                                                        )}
+
                                                         {/* Linked Resume */}
-                                                        {app.resume_id && (
+                                                        {app.resume_id && !app.tailored_resume_id && (
                                                             <Link 
                                                                 href={`/dashboard/resume/${app.resume_id}`}
                                                                 onClick={(e: any) => e.stopPropagation()}
@@ -833,6 +905,22 @@ export function KanbanBoard() {
                                                         ))}
                                                     </div>
                                                 )}
+
+                                                {/* Quick AI Tailor Suite Action Button */}
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenTailorForApp(app);
+                                                    }}
+                                                    className="w-full h-7 rounded-none border-[#0d8274]/30 bg-[#0d8274]/5 hover:bg-[#0d8274] text-[#0d8274] hover:text-[#d8f36b] text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-none"
+                                                    title="Generate 100% Tailored Resume, Cover Letter & Dedicated Portfolio Page"
+                                                >
+                                                    <Sparkles className="w-3 h-3" />
+                                                    <span>AI Tailor Suite</span>
+                                                </Button>
 
                                                 <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-muted-foreground pt-1.5">
                                                     <div className="flex items-center gap-1.5">
@@ -1024,6 +1112,72 @@ export function KanbanBoard() {
 
                                 {/* Right Column: 5 cols - Connected Career Materials & Synergies */}
                                 <div className="lg:col-span-5 space-y-6 min-w-0">
+                                    {/* Deep AI Tailored Suite Banner */}
+                                    <div className="border-2 border-[#0d8274] bg-[#fbfdf9] p-5 shadow-xs space-y-3.5 min-w-0">
+                                        <div className="flex items-center justify-between border-b border-[#0d8274]/20 pb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Sparkles className="w-4 h-4 text-[#0d8274]" />
+                                                <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274]">
+                                                    Deep AI Tailored Suite
+                                                </h4>
+                                            </div>
+                                            <Badge className="rounded-none bg-[#0d8274] text-[#d8f36b] text-[9px] font-black uppercase">
+                                                Zero Omissions
+                                            </Badge>
+                                        </div>
+
+                                        <p className="text-[11px] text-[#102b2b]/70 leading-relaxed">
+                                            Auto-generate a dedicated resume from scratch, company-targeted cover letter, and a personalized job portfolio page using verified Canvas coursework and full career history.
+                                        </p>
+
+                                        {/* Status badges for active deliverables */}
+                                        <div className="space-y-2 pt-1">
+                                            {selectedApp.tailored_resume_id && (
+                                                <div className="flex items-center justify-between p-2 bg-white border border-[#0d8274]/30 text-xs">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <FileText className="w-3.5 h-3.5 text-[#0d8274] shrink-0" />
+                                                        <span className="font-bold text-[#102b2b] truncate">Dedicated Resume</span>
+                                                    </div>
+                                                    <Link 
+                                                        href={`/builder/${selectedApp.tailored_resume_id}`}
+                                                        target="_blank"
+                                                        className="text-[10px] font-bold text-[#0d8274] hover:underline flex items-center gap-1 shrink-0"
+                                                    >
+                                                        Edit in Builder <ExternalLink className="w-2.5 h-2.5" />
+                                                    </Link>
+                                                </div>
+                                            )}
+
+                                            {selectedApp.dedicated_portfolio_enabled && (
+                                                <div className="flex items-center justify-between p-2 bg-[#d8f36b]/20 border border-[#0d8274]/30 text-xs">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <Globe className="w-3.5 h-3.5 text-[#0d8274] shrink-0" />
+                                                        <span className="font-bold text-[#102b2b] truncate">Dedicated Page</span>
+                                                    </div>
+                                                    <Link 
+                                                        href={`/p/${userSlug || 'me'}/job/${selectedApp.id}`}
+                                                        target="_blank"
+                                                        className="text-[10px] font-bold text-[#0d8274] hover:underline flex items-center gap-1 shrink-0"
+                                                    >
+                                                        Open Microsite <ExternalLink className="w-2.5 h-2.5" />
+                                                    </Link>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditOpen(false);
+                                                handleOpenTailorForApp(selectedApp);
+                                            }}
+                                            className="w-full h-9 rounded-none bg-[#0d8274] text-[#d8f36b] hover:bg-[#102b2b] text-xs font-bold gap-2 cursor-pointer shadow-xs transition-colors"
+                                        >
+                                            <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" />
+                                            {selectedApp.tailored_resume_id ? "Re-tailor Job Package & Portfolio" : "Deep AI Tailor Resume & Portfolio"}
+                                        </Button>
+                                    </div>
+
                                     <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-4 min-w-0">
                                         <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2.5">
                                             <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274] flex items-center gap-2">
@@ -1199,6 +1353,22 @@ export function KanbanBoard() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Deep AI Tailor Modal */}
+            <DeepTailorModal
+                open={isTailorModalOpen}
+                onOpenChange={setIsTailorModalOpen}
+                initialRole={tailorTargetApp?.role || ""}
+                initialCompany={tailorTargetApp?.company || ""}
+                initialDescription={tailorTargetApp?.job_description || tailorTargetApp?.notes || ""}
+                initialSalary={tailorTargetApp?.salary_range || tailorTargetApp?.salary_target || ""}
+                initialLocation={tailorTargetApp?.location || ""}
+                initialUrl={tailorTargetApp?.url || ""}
+                applicationId={tailorTargetApp?.id}
+                onSuccess={() => {
+                    fetchApplications();
+                }}
+            />
         </div>
     );
 }

@@ -54,10 +54,20 @@ import {
   AutopilotPacketData,
 } from "@/components/jobs/autopilot-dossier-dialog";
 import { AutoApplyPayloadDialog } from "@/components/jobs/auto-apply-payload-dialog";
+import { DeepTailorModal } from "@/components/jobs/deep-tailor-modal";
 
 export default function DashboardJobsPage() {
   const router = useRouter();
   const listingsRef = useRef<HTMLDivElement>(null);
+
+  // Deep AI Tailoring Modal States
+  const [isDeepTailorOpen, setIsDeepTailorOpen] = useState(false);
+  const [deepTailorJob, setDeepTailorJob] = useState<ScrapedJob | null>(null);
+
+  const openDeepTailor = (job: ScrapedJob) => {
+    setDeepTailorJob(job);
+    setIsDeepTailorOpen(true);
+  };
 
   // Data States
   const [jobs, setJobs] = useState<ScrapedJob[]>([]);
@@ -921,30 +931,42 @@ export default function DashboardJobsPage() {
                 </CardContent>
 
                 <CardFooter className="p-5 pt-3 border-t border-[#b8c8b9] mt-auto flex flex-col gap-2">
-                  <div className="flex items-center gap-2 w-full">
-                    {/* 1-Click Application Autopilot Action */}
-                    <Button
-                      size="sm"
-                      onClick={() => openAutopilotModal(job)}
-                      className="flex-1 h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-xs transition-colors"
-                      title="Generate Tailored Resume + AI Cover Letter + Tracker"
-                    >
-                      <Rocket className="w-3.5 h-3.5 text-[#d8f36b]" />
-                      Application Autopilot
-                    </Button>
+                  <div className="flex flex-col gap-1.5 w-full">
+                    <div className="flex items-center gap-1.5 w-full">
+                      {/* Deep AI Job Tailor Action */}
+                      <Button
+                        size="sm"
+                        onClick={() => openDeepTailor(job)}
+                        className="flex-1 h-8 bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-xs transition-colors"
+                        title="Create Complete Resume from Scratch + Cover Letter + Dedicated Portfolio Page"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" />
+                        Deep AI Tailor
+                      </Button>
 
-                    {/* Apply external link */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      asChild
-                      className="h-8 px-2.5 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-xs font-semibold"
-                    >
-                      <a href={job.url} target="_blank" rel="noopener noreferrer" title="Apply on Company Site">
-                        Apply
-                        <ExternalLink className="w-3 h-3 ml-1 text-[#0d8274]" />
-                      </a>
-                    </Button>
+                      {/* 1-Click Application Autopilot Action */}
+                      <Button
+                        size="sm"
+                        onClick={() => openAutopilotModal(job)}
+                        className="h-8 px-2.5 bg-[#102b2b] hover:bg-[#0d8274] text-white text-xs font-bold rounded-sm gap-1 cursor-pointer shadow-xs transition-colors"
+                        title="Quick Autopilot Dossier"
+                      >
+                        <Rocket className="w-3 h-3 text-[#d8f36b]" />
+                        Autopilot
+                      </Button>
+
+                      {/* Apply external link */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="h-8 px-2 rounded-sm border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8] text-xs font-semibold"
+                      >
+                        <a href={job.url} target="_blank" rel="noopener noreferrer" title="Apply on Company Site">
+                          <ExternalLink className="w-3 h-3 text-[#0d8274]" />
+                        </a>
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between w-full pt-1 text-[11px] text-[#102b2b]/60">
@@ -1032,6 +1054,16 @@ export default function DashboardJobsPage() {
                   >
                     {isTracked ? "✓ Tracked" : "+ Track"}
                   </button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => openDeepTailor(job)}
+                    className="h-8 bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] text-xs font-bold rounded-sm gap-1 cursor-pointer transition-colors shadow-2xs"
+                    title="Deep AI Tailored Resume + Cover Letter + Dedicated Page"
+                  >
+                    <Sparkles className="w-3 h-3 text-[#d8f36b]" />
+                    Deep Tailor
+                  </Button>
 
                   <Button
                     size="sm"
@@ -1369,6 +1401,22 @@ export default function DashboardJobsPage() {
         onOpenChange={setIsDossierOpen}
         packet={activeDossierPacket}
         onRefreshPackets={fetchAutopilotPackets}
+      />
+
+      {/* Deep AI Job Tailor Modal */}
+      <DeepTailorModal
+        open={isDeepTailorOpen}
+        onOpenChange={setIsDeepTailorOpen}
+        initialRole={deepTailorJob?.role || ""}
+        initialCompany={deepTailorJob?.company || ""}
+        initialDescription={deepTailorJob?.description || ""}
+        initialSalary={deepTailorJob?.salary_range || ""}
+        initialLocation={deepTailorJob?.location || ""}
+        initialUrl={deepTailorJob?.url || ""}
+        onSuccess={() => {
+          fetchAutopilotPackets();
+          toast.success("Tailored career package and dedicated assets generated!");
+        }}
       />
     </div>
   );
