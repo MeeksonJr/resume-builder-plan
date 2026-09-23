@@ -237,12 +237,12 @@ export interface DashboardDataContext {
  */
 export function HeroWidget({ data }: { data: DashboardDataContext }) {
   return (
-    <section className="relative overflow-hidden border border-[#102b2b]/15 bg-[#102b2b] p-6 text-[#f8f4ec] shadow-[14px_16px_0_rgba(16,43,43,.12)] sm:p-8 lg:p-10 rounded-2xl transition-all">
-      <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full border border-[#d8f36b]/20 pointer-events-none" />
-      <div className="absolute -right-8 top-0 h-52 w-52 rounded-full border border-[#d8f36b]/15 pointer-events-none" />
+    <section className="dashboard-hero-section relative overflow-hidden border border-[#102b2b]/15 bg-[#102b2b] p-6 text-[#f8f4ec] shadow-[14px_16px_0_rgba(16,43,43,.12)] sm:p-8 lg:p-10 rounded-2xl transition-all">
+      <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full border border-[#d8f36b]/20 pointer-events-none opacity-40" />
+      <div className="absolute -right-8 top-0 h-52 w-52 rounded-full border border-[#d8f36b]/15 pointer-events-none opacity-40" />
       <div className="relative z-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
         <div className="max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#d8f36b] rounded-full">
+          <div className="hero-badge inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#d8f36b] rounded-full">
             <Sparkles className="h-3.5 w-3.5" /> ResumeForge workspace
           </div>
           <h1 className="text-3xl font-semibold leading-[.98] tracking-[-.06em] sm:text-5xl lg:text-6xl">
@@ -253,34 +253,34 @@ export function HeroWidget({ data }: { data: DashboardDataContext }) {
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row shrink-0">
-          <Button asChild className="h-11 rounded-xl bg-[#d8f36b] px-5 font-semibold text-[#102b2b] hover:bg-[#e5ff8b] shadow-md">
+          <Button asChild className="hero-primary-btn h-11 rounded-xl bg-[#d8f36b] px-5 font-semibold text-[#102b2b] hover:bg-[#e5ff8b] shadow-md">
             <Link href="/dashboard/resume/new">
               <Plus className="h-4 w-4 mr-1.5" /> New resume
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-11 rounded-xl border-[#c5d7d1]/30 bg-transparent px-5 text-[#f8f4ec] hover:bg-white/10">
+          <Button asChild variant="outline" className="hero-secondary-btn h-11 rounded-xl border-[#c5d7d1]/30 bg-transparent px-5 text-[#f8f4ec] hover:bg-white/10">
             <Link href="/dashboard/upload">
               <Upload className="h-4 w-4 mr-1.5" /> Import existing
             </Link>
           </Button>
         </div>
       </div>
-      <div className="relative z-10 mt-8 grid grid-cols-2 gap-4 border-t border-[#c5d7d1]/15 pt-6 sm:grid-cols-4">
+      <div className="hero-stats-grid relative z-10 mt-8 grid grid-cols-2 gap-4 border-t border-[#c5d7d1]/15 pt-6 sm:grid-cols-4">
         <div className="space-y-0.5">
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Resumes</p>
-          <p className="text-2xl font-bold font-mono tracking-tight">{data.resumes?.length || 0}</p>
+          <p className="hero-stat-label text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Resumes</p>
+          <p className="hero-stat-value text-2xl font-bold font-mono tracking-tight">{data.resumes?.length || 0}</p>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Applications</p>
-          <p className="text-2xl font-bold font-mono tracking-tight">{data.applications?.length || 0}</p>
+          <p className="hero-stat-label text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Applications</p>
+          <p className="hero-stat-value text-2xl font-bold font-mono tracking-tight">{data.applications?.length || 0}</p>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Interviews</p>
-          <p className="text-2xl font-bold font-mono tracking-tight">{data.interviews?.length || 0}</p>
+          <p className="hero-stat-label text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Interviews</p>
+          <p className="hero-stat-value text-2xl font-bold font-mono tracking-tight">{data.interviews?.length || 0}</p>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Membership</p>
-          <p className="text-2xl font-bold font-mono tracking-tight text-[#d8f36b]">{data.isPro ? "Pro Member" : "Free Tier"}</p>
+          <p className="hero-stat-label text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Membership</p>
+          <p className="hero-stat-value text-2xl font-bold font-mono tracking-tight text-[#d8f36b]">{data.isPro ? "Pro Member" : "Free Tier"}</p>
         </div>
       </div>
     </section>
@@ -295,7 +295,7 @@ export function QuickActionsWidget() {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <Link
         href="/dashboard/optimize"
-        className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg"
+        className="dashboard-widget-card group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg"
       >
         <div className="flex items-center justify-between">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -311,7 +311,7 @@ export function QuickActionsWidget() {
 
       <Link
         href="/dashboard/tracker"
-        className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg"
+        className="dashboard-widget-card group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg"
       >
         <div className="flex items-center justify-between">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -327,7 +327,7 @@ export function QuickActionsWidget() {
 
       <Link
         href="/dashboard/interview-prep"
-        className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg"
+        className="dashboard-widget-card group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-lg"
       >
         <div className="flex items-center justify-between">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -349,7 +349,7 @@ export function QuickActionsWidget() {
  */
 export function OnboardingWidget({ data }: { data: DashboardDataContext }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-1 shadow-sm">
+    <div className="dashboard-widget-card rounded-2xl border border-border bg-card p-1 shadow-sm">
       <OnboardingChecklist
         resumeCount={data.resumes?.length || 0}
         atsScore={data.highestAtsScore}
@@ -381,19 +381,19 @@ export function ResumesWidget({ data }: { data: DashboardDataContext }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 resumes-header-actions">
           <Link href="/dashboard/resume/new">
-            <Button size="sm" className="h-8 rounded-lg text-xs font-semibold">
+            <Button size="sm" className="resume-new-btn h-8 rounded-lg text-xs font-semibold">
               <Plus className="h-3.5 w-3.5 mr-1" /> New Resume
             </Button>
           </Link>
           <Link href="/dashboard/cover-letters">
-            <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs">
+            <Button size="sm" variant="outline" className="resume-cover-btn h-8 rounded-lg text-xs">
               Cover Letters
             </Button>
           </Link>
           <Link href="/dashboard/my-portfolios">
-            <Button size="sm" variant="ghost" className="h-8 rounded-lg text-xs">
+            <Button size="sm" variant="ghost" className="resume-portfolio-btn h-8 rounded-lg text-xs">
               Portfolios
             </Button>
           </Link>
@@ -453,7 +453,7 @@ export function CanvasWidgetWrapper({ data }: { data: DashboardDataContext }) {
  */
 export function CareerSwarmWidget() {
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <Card className="dashboard-widget-card rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <CardHeader className="p-5 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -548,7 +548,7 @@ export function ApplicationsPipelineWidget({ data }: { data: DashboardDataContex
   ];
 
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <Card className="dashboard-widget-card rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <CardHeader className="p-5 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -605,7 +605,7 @@ export function ApplicationsPipelineWidget({ data }: { data: DashboardDataContex
  */
 export function SalaryBenchmarksWidget({ data }: { data: DashboardDataContext }) {
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <Card className="dashboard-widget-card rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <CardHeader className="p-5 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">

@@ -96,15 +96,21 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
       const savedStyle = localStorage.getItem(DASHBOARD_STYLE_KEY) || "executive";
       setCurrentStyle(savedStyle);
       document.documentElement.setAttribute("data-dashboard-style", savedStyle);
+      document.body.setAttribute("data-dashboard-style", savedStyle);
     } catch (e) {
       console.error("Error loading dashboard layout:", e);
     }
 
     // Listen to real-time style changes from /dashboard/settings/appearance
     const handleStyleChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ style: string }>;
-      const newStyle = customEvent.detail?.style || localStorage.getItem(DASHBOARD_STYLE_KEY) || "executive";
+      const customEvent = e as CustomEvent<any>;
+      const newStyle =
+        (typeof customEvent.detail === "string" ? customEvent.detail : customEvent.detail?.style) ||
+        localStorage.getItem(DASHBOARD_STYLE_KEY) ||
+        "executive";
       setCurrentStyle(newStyle);
+      document.documentElement.setAttribute("data-dashboard-style", newStyle);
+      document.body.setAttribute("data-dashboard-style", newStyle);
     };
 
     window.addEventListener("dashboard-style-changed", handleStyleChange);
@@ -136,6 +142,7 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
     try {
       localStorage.setItem(DASHBOARD_STYLE_KEY, styleId);
       document.documentElement.setAttribute("data-dashboard-style", styleId);
+      document.body.setAttribute("data-dashboard-style", styleId);
       window.dispatchEvent(
         new CustomEvent("dashboard-style-changed", { detail: { style: styleId } })
       );
@@ -144,6 +151,7 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
       console.error("Failed to set dashboard style", e);
     }
   };
+
 
   const handleResetLayout = () => {
     saveLayout(DEFAULT_DASHBOARD_LAYOUT);
@@ -234,7 +242,10 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
   });
 
   return (
-    <div className="relative space-y-6 pb-20">
+    <div
+      className={`relative space-y-6 pb-20 dashboard-canvas style-${currentStyle} transition-all duration-300 min-h-screen`}
+      data-dashboard-style={currentStyle}
+    >
       {/* Top Customizable Control Bar */}
       <div className="sticky top-16 z-30 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-background/80 p-3 backdrop-blur-md shadow-sm">
         {/* Left: Style Switcher & Real-time Indicator */}
@@ -273,7 +284,7 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="p-2 text-[11px] text-primary cursor-pointer">
-                <Link href="/dashboard/settings/appearance" className="flex items-center justify-between w-full">
+                <Link href="/dashboard/settings?tab=appearance" className="flex items-center justify-between w-full">
                   <span>Open Full Appearance Settings</span>
                   <ExternalLink className="h-3 w-3" />
                 </Link>

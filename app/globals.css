@@ -140,54 +140,593 @@ html[data-density="compact"] .density-compact-space {
   gap: 0.5rem !important;
 }
 
-/* Dashboard Aesthetic Layout Styles */
-[data-dashboard-style="glass"] .dashboard-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+/* ========================================================
+   DASHBOARD AESTHETIC STYLES SYSTEM
+   ======================================================== */
+
+/* ========================================================
+   DASHBOARD AESTHETIC THEMES & COMPLETE CARD STYLING
+   ======================================================== */
+
+/* --------------------------------------------------------
+   1. EXECUTIVE SWISS (Editorial Brutalism, Deep Forest & Lime)
+   -------------------------------------------------------- */
+[data-dashboard-style="executive"] .dashboard-hero-section {
+  background-color: #102b2b !important;
+  color: #f8f4ec !important;
+  border: 1px solid rgba(16, 43, 43, 0.25) !important;
+  box-shadow: 10px 12px 0px rgba(16, 43, 43, 0.12) !important;
+  border-radius: 1rem !important;
 }
-.dark [data-dashboard-style="glass"] .dashboard-card,
-[data-dashboard-style="glass"].dark .dashboard-card,
-html.dark [data-dashboard-style="glass"] .dashboard-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+[data-dashboard-style="executive"] .dashboard-hero-section h1 {
+  color: #f8f4ec !important;
+}
+[data-dashboard-style="executive"] .dashboard-hero-section p {
+  color: #c5d7d1 !important;
+}
+[data-dashboard-style="executive"] .hero-primary-btn {
+  background-color: #d8f36b !important;
+  color: #102b2b !important;
+  font-weight: 800 !important;
+}
+[data-dashboard-style="executive"] .hero-secondary-btn {
+  border-color: rgba(197, 215, 209, 0.3) !important;
+  color: #f8f4ec !important;
+}
+[data-dashboard-style="executive"] .dashboard-widget-card,
+[data-dashboard-style="executive"] .card,
+[data-dashboard-style="executive"] [data-slot="card"],
+[data-dashboard-style="executive"] .group\/widget > div {
+  border: 1px solid rgba(16, 43, 43, 0.14) !important;
+  box-shadow: 4px 4px 0px 0px rgba(16, 43, 43, 0.08) !important;
+  border-radius: 0.75rem !important;
+}
+[data-dashboard-style="executive"] .career-intelligence-banner {
+  background: linear-gradient(135deg, rgba(16, 43, 43, 0.06), rgba(13, 130, 116, 0.08)) !important;
+  border: 1.5px solid rgba(16, 43, 43, 0.18) !important;
+  border-radius: 0.75rem !important;
 }
 
-[data-dashboard-style="minimal"] .dashboard-card {
-  background: transparent;
-  border: 1px solid var(--border);
+/* --------------------------------------------------------
+   2. MINIMALIST STUDIO (Monochrome Studio, Zero Shadows)
+   -------------------------------------------------------- */
+[data-dashboard-style="minimal"] {
+  --background: 0 0% 98%;
+}
+.dark[data-dashboard-style="minimal"],
+[data-dashboard-style="minimal"].dark,
+html.dark[data-dashboard-style="minimal"] {
+  --background: 240 10% 4%;
+}
+[data-dashboard-style="minimal"] .dashboard-hero-section {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid var(--border) !important;
   box-shadow: none !important;
+  border-radius: 0.5rem !important;
+}
+[data-dashboard-style="minimal"] .dashboard-hero-section h1,
+[data-dashboard-style="minimal"] .dashboard-hero-section div,
+[data-dashboard-style="minimal"] .dashboard-hero-section span {
+  color: hsl(var(--foreground)) !important;
+}
+[data-dashboard-style="minimal"] .dashboard-hero-section p {
+  color: hsl(var(--muted-foreground)) !important;
+}
+[data-dashboard-style="minimal"] .hero-primary-btn {
+  background: hsl(var(--foreground)) !important;
+  color: hsl(var(--background)) !important;
+  border-radius: 0.375rem !important;
+  box-shadow: none !important;
+}
+[data-dashboard-style="minimal"] .hero-secondary-btn {
+  border: 1px solid var(--border) !important;
+  color: hsl(var(--foreground)) !important;
+  border-radius: 0.375rem !important;
+  background: transparent !important;
+}
+[data-dashboard-style="minimal"] .hero-badge {
+  background: hsl(var(--muted)) !important;
+  border-color: var(--border) !important;
+  color: hsl(var(--foreground)) !important;
+  border-radius: 0.375rem !important;
+}
+[data-dashboard-style="minimal"] .dashboard-widget-card,
+[data-dashboard-style="minimal"] .card,
+[data-dashboard-style="minimal"] [data-slot="card"],
+[data-dashboard-style="minimal"] .bg-card,
+[data-dashboard-style="minimal"] .group\/widget > div {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  border-radius: 0.5rem !important;
+}
+[data-dashboard-style="minimal"] .dashboard-widget-card *,
+[data-dashboard-style="minimal"] .card *,
+[data-dashboard-style="minimal"] [data-slot="card"] * {
+  border-radius: 0.375rem;
+}
+[data-dashboard-style="minimal"] [class*="text-[#102b2b]"],
+[data-dashboard-style="minimal"] [class*="text-[#0d8274]"] {
+  color: hsl(var(--foreground)) !important;
+}
+[data-dashboard-style="minimal"] [class*="text-[#52716a]"],
+[data-dashboard-style="minimal"] [class*="text-[#365950]"],
+[data-dashboard-style="minimal"] [class*="text-[#a6c0b8]"] {
+  color: hsl(var(--muted-foreground)) !important;
+}
+[data-dashboard-style="minimal"] [class*="bg-[#f8f4ec]"],
+[data-dashboard-style="minimal"] [class*="bg-[#f5f7f1]"],
+[data-dashboard-style="minimal"] [class*="bg-[#e9eee8]"],
+[data-dashboard-style="minimal"] [class*="bg-[#f2efe6]"],
+[data-dashboard-style="minimal"] .bg-white {
+  background-color: transparent !important;
+  border-color: var(--border) !important;
+}
+[data-dashboard-style="minimal"] [class*="bg-[#d8f36b]"] {
+  background-color: hsl(var(--foreground)) !important;
+  color: hsl(var(--background)) !important;
+}
+[data-dashboard-style="minimal"] [class*="border-[#102b2b]"] {
+  border-color: var(--border) !important;
+}
+[data-dashboard-style="minimal"] .career-intelligence-banner {
+  background: hsl(var(--card)) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  border-radius: 0.5rem !important;
+}
+[data-dashboard-style="minimal"] .career-intelligence-banner a,
+[data-dashboard-style="minimal"] .career-intelligence-banner button {
+  background: hsl(var(--foreground)) !important;
+  color: hsl(var(--background)) !important;
   border-radius: 0.375rem !important;
 }
 
-[data-dashboard-style="creative"] .dashboard-card {
+/* --------------------------------------------------------
+   3. LIQUID GLASS (Frosted Specular Glassmorphism)
+   -------------------------------------------------------- */
+[data-dashboard-style="glass"].dashboard-canvas,
+html[data-dashboard-style="glass"] body {
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(56, 189, 248, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168, 85, 247, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(52, 211, 153, 0.12) 0%, transparent 70%) !important;
+}
+[data-dashboard-style="glass"] .dashboard-hero-section {
+  background: rgba(255, 255, 255, 0.55) !important;
+  color: #0f172a !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
   border-radius: 1.5rem !important;
-  border: 1.5px solid var(--border);
-  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }
-[data-dashboard-style="creative"] .dashboard-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.1);
+.dark [data-dashboard-style="glass"] .dashboard-hero-section,
+[data-dashboard-style="glass"].dark .dashboard-hero-section {
+  background: rgba(15, 23, 42, 0.65) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+[data-dashboard-style="glass"] .dashboard-hero-section h1 {
+  color: #0f172a !important;
+}
+.dark [data-dashboard-style="glass"] .dashboard-hero-section h1,
+[data-dashboard-style="glass"].dark .dashboard-hero-section h1 {
+  color: #ffffff !important;
+}
+[data-dashboard-style="glass"] .dashboard-hero-section p {
+  color: #334155 !important;
+}
+.dark [data-dashboard-style="glass"] .dashboard-hero-section p,
+[data-dashboard-style="glass"].dark .dashboard-hero-section p {
+  color: #cbd5e1 !important;
+}
+[data-dashboard-style="glass"] .hero-badge {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  color: #0f172a !important;
+  border-radius: 9999px !important;
+}
+.dark [data-dashboard-style="glass"] .hero-badge,
+[data-dashboard-style="glass"].dark .hero-badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+[data-dashboard-style="glass"] .hero-primary-btn {
+  background: rgba(16, 43, 43, 0.9) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(12px) !important;
+  border-radius: 0.75rem !important;
+}
+.dark [data-dashboard-style="glass"] .hero-primary-btn,
+[data-dashboard-style="glass"].dark .hero-primary-btn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a !important;
+}
+[data-dashboard-style="glass"] .hero-secondary-btn {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  color: #0f172a !important;
+  border-radius: 0.75rem !important;
+}
+.dark [data-dashboard-style="glass"] .hero-secondary-btn,
+[data-dashboard-style="glass"].dark .hero-secondary-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+[data-dashboard-style="glass"] .dashboard-widget-card,
+[data-dashboard-style="glass"] .card,
+[data-dashboard-style="glass"] [data-slot="card"],
+[data-dashboard-style="glass"] .bg-card,
+[data-dashboard-style="glass"] .group\/widget > div {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+.dark [data-dashboard-style="glass"] .dashboard-widget-card,
+.dark [data-dashboard-style="glass"] .card,
+.dark [data-dashboard-style="glass"] [data-slot="card"],
+.dark [data-dashboard-style="glass"] .bg-card,
+.dark [data-dashboard-style="glass"] .group\/widget > div,
+[data-dashboard-style="glass"].dark .dashboard-widget-card,
+[data-dashboard-style="glass"].dark .card,
+[data-dashboard-style="glass"].dark [data-slot="card"],
+[data-dashboard-style="glass"].dark .bg-card,
+[data-dashboard-style="glass"].dark .group\/widget > div {
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+/* Translucent Inner Nested Elements in Liquid Glass */
+[data-dashboard-style="glass"] [class*="bg-[#f8f4ec]"],
+[data-dashboard-style="glass"] [class*="bg-[#f5f7f1]"],
+[data-dashboard-style="glass"] [class*="bg-[#e9eee8]"],
+[data-dashboard-style="glass"] [class*="bg-[#f2efe6]"],
+[data-dashboard-style="glass"] [class*="bg-muted"],
+[data-dashboard-style="glass"] .bg-white,
+[data-dashboard-style="glass"] [class*="bg-white"] {
+  background-color: rgba(255, 255, 255, 0.38) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+.dark [data-dashboard-style="glass"] [class*="bg-[#f8f4ec]"],
+.dark [data-dashboard-style="glass"] [class*="bg-[#f5f7f1]"],
+.dark [data-dashboard-style="glass"] [class*="bg-[#e9eee8]"],
+.dark [data-dashboard-style="glass"] [class*="bg-[#f2efe6]"],
+.dark [data-dashboard-style="glass"] [class*="bg-muted"],
+.dark [data-dashboard-style="glass"] .bg-white,
+.dark [data-dashboard-style="glass"] [class*="bg-white"],
+[data-dashboard-style="glass"].dark [class*="bg-[#f8f4ec]"],
+[data-dashboard-style="glass"].dark [class*="bg-[#f5f7f1]"],
+[data-dashboard-style="glass"].dark [class*="bg-[#e9eee8]"],
+[data-dashboard-style="glass"].dark [class*="bg-[#f2efe6]"],
+[data-dashboard-style="glass"].dark [class*="bg-muted"],
+[data-dashboard-style="glass"].dark .bg-white,
+[data-dashboard-style="glass"].dark [class*="bg-white"] {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+[data-dashboard-style="glass"] .career-intelligence-banner {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(168, 85, 247, 0.12), rgba(255, 255, 255, 0.4)) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.05) !important;
 }
 
-[data-dashboard-style="terminal"] .dashboard-card {
+/* --------------------------------------------------------
+   4. CREATIVE BENTO (Bento Box Curves, Platform Harmonious Palette)
+   -------------------------------------------------------- */
+[data-dashboard-style="creative"] .dashboard-hero-section {
+  background: linear-gradient(135deg, #102b2b, #1b3d3d) !important;
+  color: #ffffff !important;
+  border-radius: 2rem !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 20px 40px -10px rgba(16, 43, 43, 0.25) !important;
+}
+[data-dashboard-style="creative"] .dashboard-hero-section h1 {
+  color: #ffffff !important;
+}
+[data-dashboard-style="creative"] .dashboard-hero-section p {
+  color: #c5d7d1 !important;
+}
+[data-dashboard-style="creative"] .hero-primary-btn {
+  background: #d8f36b !important;
+  color: #102b2b !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 8px 20px -4px rgba(216, 243, 107, 0.4) !important;
+  font-weight: 800 !important;
+}
+[data-dashboard-style="creative"] .hero-secondary-btn {
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 1rem !important;
+  background: transparent !important;
+}
+[data-dashboard-style="creative"] .hero-badge {
+  background: rgba(216, 243, 107, 0.15) !important;
+  border: 1px solid rgba(216, 243, 107, 0.3) !important;
+  color: #d8f36b !important;
+  border-radius: 9999px !important;
+}
+[data-dashboard-style="creative"] .dashboard-widget-card,
+[data-dashboard-style="creative"] .card,
+[data-dashboard-style="creative"] [data-slot="card"],
+[data-dashboard-style="creative"] .bg-card,
+[data-dashboard-style="creative"] .group\/widget > div {
+  border-radius: 1.75rem !important;
+  border: 1.5px solid rgba(16, 43, 43, 0.12) !important;
+  background: hsl(var(--card)) !important;
+  box-shadow: 0 14px 30px -4px rgba(16, 43, 43, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+}
+[data-dashboard-style="creative"] .dashboard-widget-card:hover,
+[data-dashboard-style="creative"] .card:hover,
+[data-dashboard-style="creative"] [data-slot="card"]:hover,
+[data-dashboard-style="creative"] .bg-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 20px 38px -4px rgba(16, 43, 43, 0.14) !important;
+}
+[data-dashboard-style="creative"] [class*="rounded-none"] {
+  border-radius: 1.25rem !important;
+}
+[data-dashboard-style="creative"] [class*="bg-[#f8f4ec]"],
+[data-dashboard-style="creative"] [class*="bg-[#f5f7f1]"],
+[data-dashboard-style="creative"] [class*="bg-[#f2efe6]"] {
+  background-color: hsl(var(--card)) !important;
+}
+[data-dashboard-style="creative"] .career-intelligence-banner {
+  background: linear-gradient(135deg, rgba(16, 43, 43, 0.06), rgba(13, 130, 116, 0.1)) !important;
+  border: 1.5px solid rgba(16, 43, 43, 0.16) !important;
+  border-radius: 1.75rem !important;
+}
+
+/* --------------------------------------------------------
+   5. PRO TELEMETRY (Cyber Matrix HUD, Monospace Emerald)
+   -------------------------------------------------------- */
+[data-dashboard-style="terminal"].dashboard-canvas,
+html[data-dashboard-style="terminal"] body,
+body[data-dashboard-style="terminal"] {
+  background-color: #040705 !important;
+  background-image: 
+    linear-gradient(rgba(16, 185, 129, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.07) 1px, transparent 1px) !important;
+  background-size: 28px 28px !important;
+}
+
+/* Control Bar */
+[data-dashboard-style="terminal"] .sticky {
+  background-color: #060a08 !important;
+  border-color: #10b981 !important;
   border-radius: 0px !important;
-  border: 1px solid var(--border);
-  background: hsl(var(--card));
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.12);
+  box-shadow: 4px 4px 0px 0px rgba(16, 185, 129, 0.3) !important;
 }
 
-[data-dashboard-style="executive"] .dashboard-card {
-  border-radius: 0px;
-  border: 1px solid var(--border);
-  box-shadow: 6px 6px 0px 0px rgba(16, 43, 43, 0.06);
+/* Hero Section */
+[data-dashboard-style="terminal"] .dashboard-hero-section {
+  background: #060a08 !important;
+  color: #10b981 !important;
+  border: 2px solid #10b981 !important;
+  border-radius: 0px !important;
+  box-shadow: 6px 6px 0px 0px rgba(16, 185, 129, 0.4) !important;
 }
+[data-dashboard-style="terminal"] .dashboard-hero-section h1 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  color: #10b981 !important;
+  text-shadow: 0 0 16px rgba(16, 185, 129, 0.6) !important;
+}
+[data-dashboard-style="terminal"] .dashboard-hero-section p {
+  color: #a7f3d0 !important;
+  font-family: ui-monospace, monospace !important;
+}
+[data-dashboard-style="terminal"] .hero-primary-btn {
+  background: #10b981 !important;
+  color: #022c22 !important;
+  border-radius: 0px !important;
+  font-family: ui-monospace, monospace !important;
+  font-weight: 800 !important;
+  border: 1px solid #34d399 !important;
+  box-shadow: 3px 3px 0px 0px rgba(16, 185, 129, 0.4) !important;
+}
+[data-dashboard-style="terminal"] .hero-secondary-btn {
+  border: 1px solid #10b981 !important;
+  color: #10b981 !important;
+  border-radius: 0px !important;
+  font-family: ui-monospace, monospace !important;
+  background: transparent !important;
+}
+[data-dashboard-style="terminal"] .hero-badge {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid #10b981 !important;
+  color: #10b981 !important;
+  font-family: ui-monospace, monospace !important;
+  border-radius: 0px !important;
+}
+[data-dashboard-style="terminal"] .hero-stat-label {
+  color: #6ee7b7 !important;
+  font-family: ui-monospace, monospace !important;
+}
+[data-dashboard-style="terminal"] .hero-stat-value {
+  color: #34d399 !important;
+  font-family: ui-monospace, monospace !important;
+}
+
+/* All Cards in Telemetry */
+[data-dashboard-style="terminal"] .dashboard-widget-card,
+[data-dashboard-style="terminal"] .card,
+[data-dashboard-style="terminal"] [data-slot="card"],
+[data-dashboard-style="terminal"] .bg-card,
+[data-dashboard-style="terminal"] .group\/widget > div {
+  border-radius: 0px !important;
+  border: 1.5px solid #10b981 !important;
+  background: #090e0b !important;
+  color: #ecfdf5 !important;
+  box-shadow: 5px 5px 0px 0px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Inner Nested Elements & Boxes */
+[data-dashboard-style="terminal"] [class*="bg-[#f8f4ec]"],
+[data-dashboard-style="terminal"] [class*="bg-[#f5f7f1]"],
+[data-dashboard-style="terminal"] [class*="bg-[#e9eee8]"],
+[data-dashboard-style="terminal"] [class*="bg-[#f2efe6]"],
+[data-dashboard-style="terminal"] [class*="bg-muted"],
+[data-dashboard-style="terminal"] .bg-white,
+[data-dashboard-style="terminal"] [class*="bg-white"] {
+  background-color: #0d1410 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #ecfdf5 !important;
+  border-radius: 0px !important;
+}
+
+/* Typography Hierarchy in Telemetry */
+[data-dashboard-style="terminal"] h1,
+[data-dashboard-style="terminal"] h2,
+[data-dashboard-style="terminal"] h3,
+[data-dashboard-style="terminal"] h4,
+[data-dashboard-style="terminal"] h5,
+[data-dashboard-style="terminal"] h6,
+[data-dashboard-style="terminal"] [class*="text-[#102b2b]"],
+[data-dashboard-style="terminal"] [class*="text-foreground"],
+[data-dashboard-style="terminal"] .dashboard-widget-card h2,
+[data-dashboard-style="terminal"] .dashboard-widget-card h3 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  letter-spacing: -0.02em !important;
+  color: #34d399 !important;
+}
+
+[data-dashboard-style="terminal"] p,
+[data-dashboard-style="terminal"] span,
+[data-dashboard-style="terminal"] [class*="text-[#52716a]"],
+[data-dashboard-style="terminal"] [class*="text-[#365950]"],
+[data-dashboard-style="terminal"] [class*="text-[#a6c0b8]"],
+[data-dashboard-style="terminal"] [class*="text-muted-foreground"] {
+  color: #a7f3d0 !important;
+  font-family: ui-monospace, monospace !important;
+}
+
+[data-dashboard-style="terminal"] [class*="text-[#0d8274]"] {
+  color: #6ee7b7 !important;
+  font-family: ui-monospace, monospace !important;
+  font-weight: 700 !important;
+}
+
+/* High Contrast Buttons in Telemetry (Eliminates White-on-White button contrast failures) */
+[data-dashboard-style="terminal"] button,
+[data-dashboard-style="terminal"] a[role="button"],
+[data-dashboard-style="terminal"] [data-slot="button"] {
+  border-radius: 0px !important;
+  font-family: ui-monospace, monospace !important;
+}
+
+/* Outline Buttons (Cover Letters, Open Board, Control Center, etc.) */
+[data-dashboard-style="terminal"] button[class*="border"],
+[data-dashboard-style="terminal"] [data-slot="button"][data-variant="outline"],
+[data-dashboard-style="terminal"] .resume-cover-btn,
+[data-dashboard-style="terminal"] [class*="border-[#102b2b]"] button {
+  background-color: #060a08 !important;
+  color: #10b981 !important;
+  border: 1.5px solid #10b981 !important;
+}
+[data-dashboard-style="terminal"] button[class*="border"]:hover,
+[data-dashboard-style="terminal"] [data-slot="button"][data-variant="outline"]:hover,
+[data-dashboard-style="terminal"] .resume-cover-btn:hover {
+  background-color: #10b981 !important;
+  color: #022c22 !important;
+}
+
+/* Ghost Buttons (Portfolios, Settings shortcuts, etc.) */
+[data-dashboard-style="terminal"] button[class*="ghost"],
+[data-dashboard-style="terminal"] [data-slot="button"][data-variant="ghost"],
+[data-dashboard-style="terminal"] .resume-portfolio-btn {
+  background-color: transparent !important;
+  color: #6ee7b7 !important;
+  border-color: transparent !important;
+}
+[data-dashboard-style="terminal"] button[class*="ghost"]:hover,
+[data-dashboard-style="terminal"] [data-slot="button"][data-variant="ghost"]:hover,
+[data-dashboard-style="terminal"] .resume-portfolio-btn:hover {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #10b981 !important;
+}
+
+/* Primary Lime/Teal Buttons -> Neon Emerald */
+[data-dashboard-style="terminal"] [class*="bg-[#d8f36b]"],
+[data-dashboard-style="terminal"] .resume-new-btn,
+[data-dashboard-style="terminal"] [data-slot="button"][data-variant="default"] {
+  background-color: #10b981 !important;
+  color: #022c22 !important;
+  border: 1px solid #34d399 !important;
+  font-weight: 800 !important;
+}
+
+/* Tabs in Telemetry */
+[data-dashboard-style="terminal"] [role="tablist"],
+[data-dashboard-style="terminal"] [class*="TabsList"] {
+  background-color: #060a08 !important;
+  border: 1.5px solid #10b981 !important;
+  border-radius: 0px !important;
+}
+[data-dashboard-style="terminal"] [role="tab"],
+[data-dashboard-style="terminal"] [class*="TabsTrigger"] {
+  border-radius: 0px !important;
+  font-family: ui-monospace, monospace !important;
+  color: #6ee7b7 !important;
+  background-color: transparent !important;
+}
+[data-dashboard-style="terminal"] [role="tab"][data-state="active"],
+[data-dashboard-style="terminal"] [class*="TabsTrigger"][data-state="active"] {
+  background-color: #10b981 !important;
+  color: #022c22 !important;
+  font-weight: 800 !important;
+}
+
+/* Badges in Telemetry */
+[data-dashboard-style="terminal"] [data-slot="badge"],
+[data-dashboard-style="terminal"] .badge,
+[data-dashboard-style="terminal"] [class*="Badge"] {
+  background-color: #060a08 !important;
+  color: #10b981 !important;
+  border: 1px solid #10b981 !important;
+  border-radius: 0px !important;
+  font-family: ui-monospace, monospace !important;
+}
+
+/* Career Intelligence Banner in Telemetry */
+[data-dashboard-style="terminal"] .career-intelligence-banner {
+  background: linear-gradient(135deg, #060a08, #0d1912) !important;
+  border: 1.5px solid #10b981 !important;
+  box-shadow: 4px 4px 0px 0px rgba(16, 185, 129, 0.3) !important;
+  border-radius: 0px !important;
+}
+[data-dashboard-style="terminal"] .career-intelligence-banner h3 {
+  color: #10b981 !important;
+  font-family: ui-monospace, monospace !important;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5) !important;
+}
+[data-dashboard-style="terminal"] .career-intelligence-banner p {
+  color: #a7f3d0 !important;
+  font-family: ui-monospace, monospace !important;
+}
+[data-dashboard-style="terminal"] .career-intelligence-banner a,
+[data-dashboard-style="terminal"] .career-intelligence-banner button {
+  background: #10b981 !important;
+  color: #022c22 !important;
+  border-radius: 0px !important;
+  font-family: ui-monospace, monospace !important;
+  font-weight: 800 !important;
+}
+
+
 
 @layer base {
   * {

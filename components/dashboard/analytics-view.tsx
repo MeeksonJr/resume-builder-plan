@@ -104,7 +104,7 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
     return (
         <div className="space-y-8 px-4 md:px-0">
             {/* Career Intelligence Banner */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 border border-primary/20 backdrop-blur-sm shadow-sm">
+            <div className="career-intelligence-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 border border-primary/20 backdrop-blur-sm shadow-sm">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />

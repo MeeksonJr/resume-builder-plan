@@ -125,9 +125,10 @@ export function AppearanceSettings() {
     const handleDashboardStyleChange = (style: DashboardStyle) => {
         setDashboardStyle(style)
         document.documentElement.setAttribute("data-dashboard-style", style)
+        document.body.setAttribute("data-dashboard-style", style)
         localStorage.setItem("dashboard-style", style)
         if (typeof window !== "undefined") {
-            window.dispatchEvent(new CustomEvent("dashboard-style-changed", { detail: style }))
+            window.dispatchEvent(new CustomEvent("dashboard-style-changed", { detail: { style } }))
         }
         const styleObj = dashboardStyles.find(s => s.id === style)
         toast.success(`Dashboard aesthetic updated to ${styleObj?.name || style}`)

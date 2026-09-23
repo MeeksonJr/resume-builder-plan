@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { User, Palette, Shield, Settings as SettingsIcon, Database, Target, GraduationCap, Code } from "lucide-react"
 
@@ -10,6 +11,24 @@ interface SettingsLayoutProps {
 }
 
 export function SettingsLayout({ children, defaultTab = "general" }: SettingsLayoutProps) {
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const tabFromUrl = searchParams.get("tab")
+    const [currentTab, setCurrentTab] = React.useState<string>(tabFromUrl || defaultTab)
+
+    React.useEffect(() => {
+        if (tabFromUrl && tabFromUrl !== currentTab) {
+            setCurrentTab(tabFromUrl)
+        }
+    }, [tabFromUrl])
+
+    const handleTabChange = (val: string) => {
+        setCurrentTab(val)
+        const params = new URLSearchParams(searchParams.toString())
+        params.set("tab", val)
+        router.replace(`/dashboard/settings?${params.toString()}`, { scroll: false })
+    }
+
     return (
         <div className="space-y-7">
             <div className="border-b border-border pb-6">
@@ -22,7 +41,7 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
                 </p>
             </div>
 
-            <Tabs defaultValue={defaultTab} className="space-y-7">
+            <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-7">
                 <TabsList aria-label="Settings sections" className="h-auto w-full justify-start gap-0 overflow-x-auto border-b border-border bg-transparent p-0">
                     <TabsTrigger value="general" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
                         <SettingsIcon className="h-4 w-4" />

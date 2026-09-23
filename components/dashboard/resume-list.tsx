@@ -334,7 +334,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                         <FileText className="h-7 w-7" aria-hidden="true" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <CardTitle className="truncate text-xl font-heading font-black tracking-tight leading-none mb-2">
+                        <CardTitle className="line-clamp-2 break-words text-xl font-heading font-black tracking-tight leading-tight mb-2">
                           {resume.title}
                         </CardTitle>
                         {resume.is_primary && (
