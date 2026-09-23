@@ -1,13 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { ResumeList } from "@/components/dashboard/resume-list";
-import { EmptyState } from "@/components/dashboard/empty-state";
-import { AnalyticsView } from "@/components/dashboard/analytics-view";
-import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
-import { CanvasCourseWidget } from "@/components/dashboard/canvas-course-widget";
-import { JobRecommendationsWidget } from "@/components/dashboard/job-recommendations-widget";
-import { ArrowUpRight, Briefcase, FileText, Plus, Sparkles, Target, Upload } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CustomizableDashboardView } from "@/components/dashboard/customizable-dashboard-view";
 
 interface DashboardPageProps {
   searchParams: Promise<{ success?: string }>;
@@ -87,8 +79,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     profile?.subscription_status === "active" ||
     profile?.subscription_status === "trialing";
 
-  console.log("[DashboardPage] Raw fetched profile:", profile);
-
   // Fetch Canvas coursework details
   const { data: canvasCourses } = await supabase
     .from("canvas_courses")
@@ -109,106 +99,24 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const displayName = profile?.full_name || profile?.email?.split("@")[0] || user.email?.split("@")[0];
 
   return (
-    <div className="relative space-y-10 pb-20">
-      <section className="relative overflow-hidden border border-[#102b2b]/15 bg-[#102b2b] p-6 text-[#f8f4ec] shadow-[14px_16px_0_rgba(16,43,43,.12)] sm:p-8 lg:p-10">
-        <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full border border-[#d8f36b]/20" />
-        <div className="absolute -right-8 top-0 h-52 w-52 rounded-full border border-[#d8f36b]/15" />
-        <div className="relative z-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-          <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#d8f36b]">
-              <Sparkles className="h-3.5 w-3.5" /> ResumeForge workspace
-            </div>
-            <h1 className="text-4xl font-semibold leading-[.98] tracking-[-.06em] sm:text-6xl">Good to see you, {displayName || "there"}.</h1>
-            <p className="max-w-xl text-base leading-relaxed text-[#c5d7d1] sm:text-lg">Keep your career materials moving. Build a resume, tailor it to a role, or check what needs your attention next.</p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="h-12 rounded-none bg-[#d8f36b] px-5 font-semibold text-[#102b2b] hover:bg-[#e5ff8b]"><Link href="/dashboard/resume/new"><Plus className="h-4 w-4" /> New resume</Link></Button>
-            <Button asChild variant="outline" className="h-12 rounded-none border-[#c5d7d1]/30 bg-transparent px-5 text-[#f8f4ec] hover:bg-white/10"><Link href="/dashboard/upload"><Upload className="h-4 w-4" /> Import existing</Link></Button>
-          </div>
-        </div>
-        <div className="relative z-10 mt-8 grid grid-cols-2 gap-3 border-t border-[#c5d7d1]/15 pt-6 sm:grid-cols-4">
-          <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Resumes</p><p className="mt-1 text-2xl font-semibold">{resumes?.length || 0}</p></div>
-          <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Applications</p><p className="mt-1 text-2xl font-semibold">{applications?.length || 0}</p></div>
-          <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Interviews</p><p className="mt-1 text-2xl font-semibold">{interviews?.length || 0}</p></div>
-          <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#a6c0b8]">Plan</p><p className="mt-1 text-2xl font-semibold text-[#d8f36b]">{isPro ? "Pro" : "Free"}</p></div>
-        </div>
-      </section>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Link href="/dashboard/optimize" className="group border border-[#102b2b]/15 bg-[#f8f4ec] p-5 transition-colors hover:border-[#0d8274]/50 hover:bg-white"><div className="flex items-center justify-between"><span className="flex h-10 w-10 items-center justify-center bg-[#d8f36b]"><Target className="h-5 w-5" /></span><ArrowUpRight className="h-4 w-4 text-[#0d8274] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div><h2 className="mt-6 font-semibold">Optimize for a role</h2><p className="mt-1 text-sm leading-relaxed text-[#52716a]">Compare your resume with a job description and find the gaps worth fixing.</p></Link>
-        <Link href="/dashboard/tracker" className="group border border-[#102b2b]/15 bg-[#f8f4ec] p-5 transition-colors hover:border-[#0d8274]/50 hover:bg-white"><div className="flex items-center justify-between"><span className="flex h-10 w-10 items-center justify-center bg-[#dbe8df]"><Briefcase className="h-5 w-5" /></span><ArrowUpRight className="h-4 w-4 text-[#0d8274] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div><h2 className="mt-6 font-semibold">Track the search</h2><p className="mt-1 text-sm leading-relaxed text-[#52716a]">Keep applications, follow-ups, and next actions in one visible place.</p></Link>
-        <Link href="/dashboard/interview-prep" className="group border border-[#102b2b]/15 bg-[#f8f4ec] p-5 transition-colors hover:border-[#0d8274]/50 hover:bg-white"><div className="flex items-center justify-between"><span className="flex h-10 w-10 items-center justify-center bg-[#dbe8df]"><Sparkles className="h-5 w-5 text-[#0d8274]" /></span><ArrowUpRight className="h-4 w-4 text-[#0d8274] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" /></div><h2 className="mt-6 font-semibold">Prepare for the room</h2><p className="mt-1 text-sm leading-relaxed text-[#52716a]">Practice answers and turn feedback into a stronger interview plan.</p></Link>
-      </div>
-
-      {/* Onboarding Checklist as unified banner */}
-      <div className="border-t border-[#102b2b]/15 pt-8">
-        <OnboardingChecklist
-          resumeCount={resumes?.length || 0}
-          atsScore={highestAtsScore}
-          savedAtsCount={savedAts?.length || 0}
-          applicationsCount={applications?.length || 0}
-          interviewsCount={interviews?.length || 0}
-          salaryInsightsCount={savedSalary?.length || 0}
-          hasPortfolio={(portfolios && portfolios.length > 0) || !!profile?.full_name}
-          isPro={isPro}
-        />
-      </div>
-
-      <div className="grid gap-8 lg:grid-cols-12 border-t border-[#102b2b]/15 pt-8">
-        {/* Left Column (7 Cols): Primary Resumes & Document Library */}
-        <div className="lg:col-span-7 space-y-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-[-.04em]">
-                <FileText className="h-5 w-5 text-[#0d8274]" />
-                <span>Resumes & Portfolios</span>
-              </h2>
-              <p className="text-xs text-[#52716a] sm:text-sm">
-                Manage and version your verified application materials.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard/resume/new">
-                <Button size="sm" className="rounded-none bg-[#102b2b] text-xs font-medium text-[#f8f4ec] hover:bg-[#164743]">
-                  <Plus className="h-3.5 w-3.5" /> Create resume
-                </Button>
-              </Link>
-              <Link href="/dashboard/cover-letters">
-                <Button size="sm" variant="outline" className="rounded-none border-[#102b2b]/20 text-xs text-[#365950]">
-                  Cover Letters
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {resumes && resumes.length > 0 ? (
-            <section className="relative">
-              <ResumeList resumes={resumes} />
-            </section>
-          ) : (
-            <EmptyState />
-          )}
-        </div>
-
-        {/* Right Column (5 Cols): Live Analytics, Jobs, and Academic Coursework */}
-        <div className="lg:col-span-5 space-y-8">
-          {resumes && resumes.length > 0 && (
-            <section className="relative">
-              <AnalyticsView resumes={resumes} events={events || []} />
-            </section>
-          )}
-
-          <JobRecommendationsWidget />
-
-          <CanvasCourseWidget
-            hasConfig={hasCanvasConfig}
-            courses={canvasCourses || []}
-            assignments={canvasAssignments || []}
-            grades={canvasGrades || []}
-          />
-        </div>
-      </div>
-    </div>
+    <CustomizableDashboardView
+      user={user}
+      displayName={displayName}
+      resumes={resumes || []}
+      events={events || []}
+      applications={applications || []}
+      interviews={interviews || []}
+      profile={profile}
+      isPro={isPro}
+      highestAtsScore={highestAtsScore}
+      savedAts={savedAts || []}
+      savedSalary={savedSalary || []}
+      portfolios={portfolios || []}
+      canvasCourses={canvasCourses || []}
+      canvasAssignments={canvasAssignments || []}
+      canvasGrades={canvasGrades || []}
+      hasCanvasConfig={hasCanvasConfig}
+    />
   );
 }
+
