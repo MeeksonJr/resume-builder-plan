@@ -9,6 +9,10 @@ interface PortfolioPageProps {
     }>;
 }
 
+// Ensure real-time updates from Visual Canvas Studio & Dashboard are reflected immediately
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Define metadataBase for resolving absolute URLs in this route segment
 export const metadataBase = new URL(process.env.NEXT_PUBLIC_APP_URL || "https://resumebuilder.ai");
 

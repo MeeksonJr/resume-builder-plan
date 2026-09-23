@@ -66,7 +66,7 @@ interface VisualPortfolioBuilderStudioClientProps {
   profile: any;
 }
 
-const DEFAULT_BLOCKS: CanvasBlock[] = [
+export const DEFAULT_BLOCKS: CanvasBlock[] = [
   {
     id: "blk-hero-1",
     type: "hero",
@@ -183,11 +183,17 @@ export function VisualPortfolioBuilderStudioClient({
   const [isRightOpen, setIsRightOpen] = useState(true);
   const [zoomScale, setZoomScale] = useState<"100%" | "fit" | "85%">("100%");
   const [isActiveLayout, setIsActiveLayout] = useState<boolean>(() => {
+    if (portfolio?.active_layout) {
+      return portfolio.active_layout === "canvas";
+    }
+    if (portfolio?.theme_settings?.active_layout) {
+      return portfolio.theme_settings.active_layout === "canvas";
+    }
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("resumeforge_portfolio_active_layout");
       if (saved) return saved === "canvas";
     }
-    return portfolio?.active_layout === "canvas" || portfolio?.theme_settings?.active_layout === "canvas" || true;
+    return true;
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTarget, setUploadTarget] = useState<"avatar" | "cover" | "block_image">("avatar");

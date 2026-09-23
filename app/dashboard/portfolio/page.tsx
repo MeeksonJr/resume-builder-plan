@@ -193,6 +193,11 @@ export default function PortfolioManagementPage() {
                 };
             }
             setPortfolio(currentPortfolio);
+            if (currentPortfolio?.active_layout === "canvas" || currentPortfolio?.active_layout === "template") {
+                setActiveLayoutMode(currentPortfolio.active_layout);
+            } else if (currentPortfolio?.theme_settings?.active_layout) {
+                setActiveLayoutMode(currentPortfolio.theme_settings.active_layout);
+            }
 
             // 2. Fetch resumes
             const { data: resumesData } = await supabase
