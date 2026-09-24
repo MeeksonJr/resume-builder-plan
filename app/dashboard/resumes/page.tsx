@@ -6,8 +6,9 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ResumesFilterBar } from "@/components/dashboard/resumes-filter-bar";
 import { EmptyState } from "@/components/dashboard/empty-state";
-import { ImportResumeButton } from "@/components/dashboard/import-resume-button";
 import { ResumeLibraryCard } from "@/components/dashboard/resume-library-card";
+import { ResumesHeaderActions, ResumesPlanBanner } from "@/components/dashboard/resumes-header-actions";
+import { getUserPlanTier, PLAN_LIMITS } from "@/lib/security/plan-gates";
 
 export const metadata = {
     title: "All Resumes | ResumeForge",
@@ -29,6 +30,16 @@ export default async function AllResumesPage({
         redirect("/auth/login");
     }
 
+    // Fetch user profile for plan tier checking
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_pro, subscription_status")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    const planTier = getUserPlanTier(profile);
+    const isPro = planTier === "pro";
+
     // Fetch all resumes for the user
     const { data: resumes } = await supabase
         .from("resumes")
@@ -37,6 +48,7 @@ export default async function AllResumesPage({
         .order("updated_at", { ascending: params.sort === "oldest" });
 
     const totalCount = resumes?.length || 0;
+    const canCreateResume = isPro || totalCount < PLAN_LIMITS.free.maxResumes;
     const publicCount = resumes?.filter((r) => r.is_public).length || 0;
     const totalViews = resumes?.reduce((sum, r) => sum + (r.view_count || 0), 0) || 0;
     const mostRecent = resumes?.[0];
@@ -66,6 +78,9 @@ export default async function AllResumesPage({
 
     return (
         <div className="mx-auto max-w-7xl space-y-8 px-2 sm:px-4 py-4">
+            {/* Plan Quota Banner for Free Users */}
+            <ResumesPlanBanner isPro={isPro} totalCount={totalCount} />
+
             {/* Editorial Header */}
             <div className="flex flex-col gap-6 border-b border-[#102b2b]/15 pb-8 sm:flex-row sm:items-end sm:justify-between">
                 <div>
@@ -84,18 +99,11 @@ export default async function AllResumesPage({
                 </div>
 
                 {/* Primary Action Buttons */}
-                <div className="flex items-center gap-3 shrink-0 flex-wrap">
-                    <ImportResumeButton />
-                    <Button
-                        asChild
-                        className="min-h-11 rounded-none bg-[#102b2b] px-5 font-bold text-white shadow-xs hover:bg-[#164743] transition-all"
-                    >
-                        <Link href="/dashboard/resume/new">
-                            <Plus className="mr-2 h-4 w-4 text-[#d8f36b]" />
-                            Create New Resume
-                        </Link>
-                    </Button>
-                </div>
+                <ResumesHeaderActions
+                    canCreate={canCreateResume}
+                    isPro={isPro}
+                    totalCount={totalCount}
+                />
             </div>
 
             {/* Quick KPI Summary Strip */}

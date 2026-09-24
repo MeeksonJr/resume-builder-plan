@@ -25,6 +25,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 interface CareerCoachContentProps {
     profile: any;
@@ -46,6 +47,7 @@ interface CareerAnalysis {
 export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [analysis, setAnalysis] = useState<CareerAnalysis | null>(null);
     const [savedAnalyses, setSavedAnalyses] = useState<CareerAnalysis[]>([]);
     const [selectedResumeId, setSelectedResumeId] = useState(resumes[0]?.id || "");
@@ -91,14 +93,22 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                 }),
             });
 
-            if (!response.ok) throw new Error("Failed to run analysis");
+            if (!response.ok) {
+                const errData = await response.json().catch(() => null);
+                if (response.status === 429 || errData?.error === "LIMIT_EXCEEDED") {
+                    setShowUpgradeModal(true);
+                    toast.error(errData?.message || "Daily limit reached for AI Career Coach.");
+                    return;
+                }
+                throw new Error(errData?.message || "Failed to run analysis");
+            }
 
             const data = await response.json();
             setAnalysis(data);
             toast.success("Career analysis complete!");
         } catch (error: any) {
             console.error(error);
-            toast.error("Failed to analyze career path.");
+            toast.error(error.message || "Failed to analyze career path.");
         } finally {
             setIsLoading(false);
         }
@@ -425,6 +435,14 @@ export function CareerCoachContent({ profile, resumes }: CareerCoachContentProps
                     </Card>
                 </div>
             )}
+
+            <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title="Career Coach Limit Reached"
+                description="Free users can run 1 Career Coach Roadmap per day. Upgrade to Pro for unlimited AI roadmaps, customized STAR skills audits, and continuous hiring insights."
+                featureName="Unlimited Career Coach"
+            />
         </div>
     );
 }

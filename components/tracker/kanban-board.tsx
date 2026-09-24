@@ -822,7 +822,7 @@ export function KanbanBoard() {
                                                         {/* Deep Tailored Resume (Special Priority) */}
                                                         {app.tailored_resume_id && (
                                                             <Link 
-                                                                href={`/builder/${app.tailored_resume_id}`}
+                                                                href={`/dashboard/resume/${app.tailored_resume_id}`}
                                                                 onClick={(e: any) => e.stopPropagation()}
                                                                 title="Open Tailored Resume in Builder"
                                                             >
@@ -1139,7 +1139,7 @@ export function KanbanBoard() {
                                                         <span className="font-bold text-[#102b2b] truncate">Dedicated Resume</span>
                                                     </div>
                                                     <Link 
-                                                        href={`/builder/${selectedApp.tailored_resume_id}`}
+                                                        href={`/dashboard/resume/${selectedApp.tailored_resume_id}`}
                                                         target="_blank"
                                                         className="text-[10px] font-bold text-[#0d8274] hover:underline flex items-center gap-1 shrink-0"
                                                     >

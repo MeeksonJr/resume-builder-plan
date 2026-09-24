@@ -55,10 +55,13 @@ import {
 } from "@/components/jobs/autopilot-dossier-dialog";
 import { AutoApplyPayloadDialog } from "@/components/jobs/auto-apply-payload-dialog";
 import { DeepTailorModal } from "@/components/jobs/deep-tailor-modal";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 export default function DashboardJobsPage() {
   const router = useRouter();
   const listingsRef = useRef<HTMLDivElement>(null);
+
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Deep AI Tailoring Modal States
   const [isDeepTailorOpen, setIsDeepTailorOpen] = useState(false);
@@ -294,8 +297,9 @@ export default function DashboardJobsPage() {
       console.log("[AUTOPILOT_RESPONSE]", { status: res.status, data });
 
       if (!res.ok) {
-        if (data.error === "LIMIT_EXCEEDED") {
-          toast.error(data.message || "Daily AI limit reached.");
+        if (data.error === "LIMIT_EXCEEDED" || res.status === 429) {
+          setShowUpgradeModal(true);
+          toast.error(data.message || "Daily AI tailoring limit reached. Upgrade to Pro for unlimited tailoring!");
           return;
         }
         throw new Error(data.error || "Failed to generate application packet");
@@ -1417,6 +1421,14 @@ export default function DashboardJobsPage() {
           fetchAutopilotPackets();
           toast.success("Tailored career package and dedicated assets generated!");
         }}
+      />
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        title="AI Tailoring Quota Reached"
+        description="Free plans include limited daily AI tailoring runs. Upgrade to ResumeForge Pro for unlimited deep tailoring, cover letters, and dedicated employer microsites."
+        featureName="Unlimited AI Tailoring"
       />
     </div>
   );

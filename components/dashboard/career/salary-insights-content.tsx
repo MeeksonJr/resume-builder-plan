@@ -30,6 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 interface SalaryInsightsContentProps {
     profile: any;
@@ -52,6 +53,7 @@ interface SalaryInsightsAnalysis {
 export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsContentProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [insights, setInsights] = useState<SalaryInsightsAnalysis | null>(null);
     const [selectedResumeId, setSelectedResumeId] = useState(resumes[0]?.id || "");
     const [targetRole, setTargetRole] = useState(profile?.target_role || "");
@@ -114,11 +116,13 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
             });
 
             if (!response.ok) {
-                const errData = await response.json();
-                if (response.status === 429 && errData.error === "LIMIT_EXCEEDED") {
-                    throw new Error(errData.message);
+                const errData = await response.json().catch(() => null);
+                if (response.status === 429 || errData?.error === "LIMIT_EXCEEDED") {
+                    setShowUpgradeModal(true);
+                    toast.error(errData?.message || "Daily limit reached for Salary Insights.");
+                    return;
                 }
-                throw new Error("Failed to run salary insights analysis");
+                throw new Error(errData?.message || "Failed to run salary insights analysis");
             }
 
             const data = await response.json();
@@ -143,9 +147,8 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
 
             // Direct check for free tier limit (maximum 1 saved item)
             if (!isProUser && savedHistory.length >= 1) {
-                toast.error("Free plan limit reached. Free users can only save 1 Salary Insight. Please upgrade to Pro or delete your existing saved item.", {
-                    duration: 6000,
-                });
+                setShowUpgradeModal(true);
+                toast.error("Free plan allows saving 1 Salary Insight. Upgrade to Pro for unlimited benchmarks and market history!");
                 setIsSaving(false);
                 return;
             }
@@ -701,6 +704,14 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title="Salary Insights Limit"
+                description="Free accounts can run 1 Salary Benchmark per day and save 1 insight. Upgrade to Pro for unlimited compensation analytics, market percentile calculations, and custom negotiation scripts."
+                featureName="Unlimited Salary Insights"
+            />
         </div>
     );
 }

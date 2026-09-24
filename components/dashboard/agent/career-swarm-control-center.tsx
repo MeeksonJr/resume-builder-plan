@@ -42,7 +42,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Terminal, Plus, XCircle } from "lucide-react";
+import { Terminal, Plus, XCircle, Lock } from "lucide-react";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 export interface SwarmLogEntry {
   id: string;
@@ -53,6 +55,18 @@ export interface SwarmLogEntry {
 }
 
 export function CareerSwarmControlCenter() {
+  const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeModalConfig, setUpgradeModalConfig] = useState({
+    title: "Autonomous 24/7 Career Swarm",
+    featureName: "24/7 Agent Swarm Monitoring",
+    description: "Free plans include 1 trial scout task demo. Upgrade to Pro to activate 24/7 autonomous swarm subagents, continuous job board monitoring, and 1-click auto-dispatch.",
+  });
+
+  React.useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
+
   const [preferences, setPreferences] = useState<SwarmPreferences>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("resumeforge_swarm_preferences");
@@ -173,6 +187,16 @@ export function CareerSwarmControlCenter() {
   }, [preferences.enabled]);
 
   const handleToggleSwarm = () => {
+    if (!isPro) {
+      setUpgradeModalConfig({
+        title: "Autonomous 24/7 Career Swarm",
+        featureName: "24/7 Agent Swarm Monitoring",
+        description: "Continuous 24/7 background agent scouting and auto-dispatch requires a ResumeForge Pro membership.",
+      });
+      setShowUpgradeModal(true);
+      return;
+    }
+
     const nextState = !preferences.enabled;
     setPreferences((prev) => ({ ...prev, enabled: nextState }));
     if (nextState) {
@@ -203,6 +227,16 @@ export function CareerSwarmControlCenter() {
   };
 
   const handleRunManualScout = () => {
+    if (!isPro && tasks.length >= 1) {
+      setUpgradeModalConfig({
+        title: "Swarm Scout Limit Reached",
+        featureName: "Multi-Portal Job Scouting",
+        description: "Free accounts include 1 trial scout task. Upgrade to Pro for unlimited multi-portal scouting across Greenhouse, Lever, and Workday.",
+      });
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsScouting(true);
     setTimeout(() => {
       setIsScouting(false);
@@ -253,6 +287,17 @@ export function CareerSwarmControlCenter() {
       return;
     }
 
+    if (!isPro && tasks.length >= 1) {
+      setUpgradeModalConfig({
+        title: "Swarm Task Ingestion Limit",
+        featureName: "Custom Swarm Ingestion",
+        description: "Free accounts are limited to 1 trial swarm task. Upgrade to Pro for unlimited target company ingestion, ATS tailoring, and automated dispatches.",
+      });
+      setIsAddModalOpen(false);
+      setShowUpgradeModal(true);
+      return;
+    }
+
     const customTask: SwarmTask = {
       id: `custom-${Date.now()}`,
       jobId: `custom-job-${Date.now()}`,
@@ -296,6 +341,16 @@ export function CareerSwarmControlCenter() {
   };
 
   const handleApproveDispatch = async (task: SwarmTask) => {
+    if (!isPro) {
+      setUpgradeModalConfig({
+        title: "Autonomous Portal Dispatch",
+        featureName: "Direct Application Dispatcher",
+        description: "Direct 1-click ATS portal dispatch (Greenhouse, Lever, Workday) is reserved for Pro members. Upgrade to auto-dispatch applications.",
+      });
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setDispatchingId(task.id);
     try {
       await executeApplicationDispatch(task.id, task.portalType, {
@@ -795,6 +850,14 @@ export function CareerSwarmControlCenter() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        title={upgradeModalConfig.title}
+        featureName={upgradeModalConfig.featureName}
+        description={upgradeModalConfig.description}
+      />
     </div>
   );
 }

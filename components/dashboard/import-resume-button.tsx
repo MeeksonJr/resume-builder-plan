@@ -9,7 +9,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export function ImportResumeButton() {
+export function ImportResumeButton({
+  canImport = true,
+  onLimitReached,
+}: {
+  canImport?: boolean;
+  onLimitReached?: () => void;
+} = {}) {
   const router = useRouter();
   const [isImporting, setIsImporting] = useState(false);
 
@@ -156,6 +162,19 @@ export function ImportResumeButton() {
       setIsImporting(false);
     }
   };
+
+  if (!canImport) {
+    return (
+      <Button
+        variant="outline"
+        className="min-h-11 rounded-none border-[#102b2b]/15 px-5 font-bold text-[#102b2b] shadow-none hover:bg-[#e9eee8] gap-2"
+        onClick={() => onLimitReached?.()}
+      >
+        <Upload className="h-4 w-4" />
+        Import JSON
+      </Button>
+    );
+  }
 
   return (
     <JsonImportDialog onImport={handleImport}>

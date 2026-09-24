@@ -7,10 +7,19 @@ import {
   CandidateSpeechMetrics,
   analyzeCandidateSpeech,
 } from "@/lib/interview/live-mock-sandbox";
-import { Mic, MicOff, Play, RotateCcw, Volume2, Sparkles, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { Mic, MicOff, Play, RotateCcw, Volume2, Sparkles, CheckCircle2, AlertCircle, ArrowRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 export function LiveMockInterviewRoom() {
+  const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
+
   const [selectedQuestion, setSelectedQuestion] = useState<InterviewQuestion>(MOCK_INTERVIEW_QUESTIONS[0]);
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -52,6 +61,11 @@ export function LiveMockInterviewRoom() {
   }, [isRecording]);
 
   const handleStartSimulatedLive = () => {
+    if (!isPro) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsRecording(true);
     setDuration(0);
     setTranscript("");
@@ -253,6 +267,14 @@ export function LiveMockInterviewRoom() {
           </div>
         </div>
       )}
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        title="Real-Time Voice Mock Interview"
+        description="Immersive voice interviews with real-time speech telemetry, pacing analysis, and vocal STAR evaluation require a ResumeForge Pro subscription."
+        featureName="Voice Mock Interview Practice"
+      />
     </div>
   );
 }

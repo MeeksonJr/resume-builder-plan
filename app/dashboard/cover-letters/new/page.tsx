@@ -43,16 +43,18 @@ export default function NewCoverLetterPage() {
     });
 
     const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+    const [existingCount, setExistingCount] = useState<number | null>(null);
 
     useEffect(() => {
         checkSubscription();
     }, [checkSubscription]);
 
     useEffect(() => {
-        async function fetchResumes() {
+        async function fetchInitialData() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // Fetch resumes
             const { data } = await supabase
                 .from("resumes")
                 .select("id, title")
@@ -64,11 +66,19 @@ export default function NewCoverLetterPage() {
                 setResumes(data);
                 if (data.length > 0) setSelectedResumeId(data[0].id);
             }
+
+            // Fetch existing cover letters count for plan check
+            const { count } = await supabase
+                .from("cover_letters")
+                .select("*", { count: "exact", head: true })
+                .eq("user_id", user.id);
+
+            setExistingCount(count || 0);
         }
-        fetchResumes();
+        fetchInitialData();
     }, [supabase]);
 
-    if (!isSubLoading && !isPro) {
+    if (!isSubLoading && !isPro && existingCount !== null && existingCount >= 1) {
         return (
             <div className="mx-auto max-w-4xl py-8 text-[#102b2b]">
                 <Button asChild variant="ghost" className="mb-8 rounded-none">
@@ -80,7 +90,7 @@ export default function NewCoverLetterPage() {
                 <Card className="relative overflow-hidden rounded-none border-[#102b2b]/15 bg-[#102b2b] text-[#e9eee8] shadow-none">
                     <div className="absolute right-0 top-0 p-3">
                         <div className="border border-[#d8f36b]/40 bg-[#d8f36b]/15 px-3 py-1 text-xs font-bold uppercase text-[#d8f36b]">
-                            Premium
+                            Pro Feature
                         </div>
                     </div>
                     <CardHeader className="text-center pt-16 pb-8">

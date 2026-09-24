@@ -72,7 +72,7 @@ import {
 } from "lucide-react";
 import { PortfolioLivePreview } from "@/components/portfolio/portfolio-live-preview";
 import { VisualPortfolioBuilder } from "@/components/portfolio/visual-portfolio-builder";
-
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 export default function PortfolioManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -91,6 +91,7 @@ export default function PortfolioManagementPage() {
     }>({ dailyStats: [], referrers: [], totalVisits: 0, uniqueVisitors: 0 });
     const [showPreview, setShowPreview] = useState(true);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
     const [isGenerating, setIsGenerating] = useState<string | null>(null);
     const [profile, setProfile] = useState<any>(null);
@@ -161,12 +162,16 @@ export default function PortfolioManagementPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // 1. Fetch portfolio
-            const { data: pData, error: pError } = await supabase
-                .from("portfolios")
-                .select("*")
-                .eq("user_id", user.id)
-                .single();
+            // 1. Fetch portfolio and user profile
+            const [
+                { data: pData, error: pError },
+                { data: profileData }
+            ] = await Promise.all([
+                supabase.from("portfolios").select("*").eq("user_id", user.id).single(),
+                supabase.from("profiles").select("is_pro, subscription_status").eq("id", user.id).maybeSingle()
+            ]);
+
+            setProfile(profileData);
 
             if (pError && pError.code !== "PGRST116") throw pError;
 
@@ -303,7 +308,25 @@ export default function PortfolioManagementPage() {
         fetchPortfolio();
     }, []);
 
+    const isPro = profile?.is_pro === true ||
+                  profile?.subscription_status === "active" ||
+                  profile?.subscription_status === "trialing";
+
+    const handleTogglePublic = (newVal: boolean) => {
+        if (newVal && !isPro) {
+            setShowUpgradeModal(true);
+            return;
+        }
+        setPortfolio({ ...portfolio, is_public: newVal });
+    };
+
     const handleSave = async () => {
+        if (portfolio.is_public && !isPro) {
+            setShowUpgradeModal(true);
+            toast.error("Free plan portfolios remain in draft mode. Upgrade to Pro to publish live!");
+            return;
+        }
+
         setIsSaving(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -544,7 +567,7 @@ export default function PortfolioManagementPage() {
                                     </span>
                                     <Button
                                         variant={portfolio.is_public ? "default" : "outline"}
-                                        onClick={() => setPortfolio({ ...portfolio, is_public: !portfolio.is_public })}
+                                        onClick={() => handleTogglePublic(!portfolio.is_public)}
                                         className={cn("w-24 font-bold", portfolio.is_public ? "bg-green-600 hover:bg-green-700 text-white" : "")}
                                     >
                                         {portfolio.is_public ? "Enabled" : "Disabled"}
@@ -653,7 +676,7 @@ export default function PortfolioManagementPage() {
                                     id="is_public_check"
                                     className="h-4 w-4 rounded border-input"
                                     checked={portfolio.is_public !== false}
-                                    onChange={(e) => setPortfolio({ ...portfolio, is_public: e.target.checked })}
+                                    onChange={(e) => handleTogglePublic(e.target.checked)}
                                 />
                                 <Label htmlFor="is_public_check" className="cursor-pointer">Public Portfolio</Label>
                                 <span className="text-xs text-muted-foreground ml-auto">
@@ -1713,6 +1736,14 @@ export default function PortfolioManagementPage() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title="Public Live Portfolio"
+                description="Free accounts can build and preview their portfolios inside Studio. Upgrade to Pro to activate your public live link and custom vanity slug for employers."
+                featureName="Live Public Portfolio & Custom Slug"
+            />
         </div>
         </div>
     );

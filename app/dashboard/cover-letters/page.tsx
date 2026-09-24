@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Mail, Plus, FileText, Trash2, Loader2, Clock, Calendar } from "lucide-react";
+import { Mail, Plus, FileText, Trash2, Loader2, Clock, Calendar, Lock, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
@@ -16,11 +16,19 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 export default function CoverLettersPage() {
     const supabase = createClient();
     const [loading, setLoading] = useState(true);
     const [coverLetters, setCoverLetters] = useState<any[]>([]);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+
+    useEffect(() => {
+        checkSubscription();
+    }, [checkSubscription]);
 
     const fetchCoverLetters = async () => {
         setLoading(true);
@@ -69,8 +77,44 @@ export default function CoverLettersPage() {
         );
     }
 
+    const canCreate = isPro || coverLetters.length < 1;
+
     return (
         <div className="space-y-7 text-[#102b2b]">
+            {/* Free Tier Quota Banner */}
+            {!isPro && (
+                <div className="border border-[#102b2b]/15 bg-white p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-[#0d8274]/10 border border-[#0d8274]/30 flex items-center justify-center shrink-0">
+                            <Lock className="w-4 h-4 text-[#0d8274]" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-black uppercase tracking-wider text-[#102b2b]">
+                                    Free Plan Quota
+                                </span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 bg-[#102b2b]/5 border border-[#102b2b]/10 text-[#102b2b]">
+                                    {coverLetters.length} / 1 Trial Letter Used
+                                </span>
+                            </div>
+                            <p className="text-xs text-[#102b2b]/70 mt-0.5">
+                                Upgrade to Pro for unlimited tailored cover letters matching any job description.
+                            </p>
+                        </div>
+                    </div>
+
+                    <Button
+                        onClick={() => setShowUpgradeModal(true)}
+                        size="sm"
+                        className="rounded-none bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] font-bold text-xs shrink-0 flex items-center gap-1.5"
+                    >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Unlock Unlimited</span>
+                        <ArrowRight className="w-3 h-3" />
+                    </Button>
+                </div>
+            )}
+
             <div className="flex flex-col gap-4 border-b border-[#102b2b]/15 pb-5 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-1">
                     <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0d8274]">Applications / Writing</p>
@@ -82,13 +126,33 @@ export default function CoverLettersPage() {
                         Generate and manage your tailored cover letters
                     </p>
                 </div>
-                <Button asChild className="h-10 rounded-none bg-[#102b2b] px-4 font-bold text-[#d8f36b] hover:bg-[#0d8274]">
-                    <Link href="/dashboard/cover-letters/new">
-                        <Plus className="mr-2 h-5 w-5" />
+
+                {canCreate ? (
+                    <Button asChild className="h-10 rounded-none bg-[#102b2b] px-4 font-bold text-[#d8f36b] hover:bg-[#0d8274]">
+                        <Link href="/dashboard/cover-letters/new">
+                            <Plus className="mr-2 h-5 w-5" />
+                            New Letter
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button 
+                        onClick={() => setShowUpgradeModal(true)}
+                        className="h-10 rounded-none bg-[#102b2b] px-4 font-bold text-[#d8f36b] hover:bg-[#0d8274] flex items-center gap-1.5"
+                    >
+                        <Lock className="mr-1 h-4 w-4" />
                         New Letter
-                    </Link>
-                </Button>
+                        <span className="text-[9px] bg-[#d8f36b] text-[#102b2b] px-1 py-0.2 font-black uppercase tracking-wider ml-1">Pro</span>
+                    </Button>
+                )}
             </div>
+
+            <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title="Cover Letter Limit Reached"
+                description="Free accounts include 1 trial cover letter. Upgrade to ResumeForge Pro for unlimited AI-written cover letters tailored to every job application."
+                featureName="Unlimited Cover Letters"
+            />
 
             <AnimatePresence mode="popLayout">
                 {!coverLetters || coverLetters.length === 0 ? (

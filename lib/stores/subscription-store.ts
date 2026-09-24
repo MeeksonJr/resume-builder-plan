@@ -21,6 +21,9 @@ export interface SubscriptionState {
     features: {
         unlimitedResumes: boolean;
         aiInterviewAccess: boolean;
+        voiceInterview: boolean;
+        publicPortfolio: boolean;
+        autonomousSwarm: boolean;
         advancedAnalytics: boolean;
         removeBranding: boolean;
     };
@@ -36,6 +39,9 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
     features: {
         unlimitedResumes: false,
         aiInterviewAccess: false,
+        voiceInterview: false,
+        publicPortfolio: false,
+        autonomousSwarm: false,
         advancedAnalytics: false,
         removeBranding: false,
     },
@@ -55,6 +61,9 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
                     features: {
                         unlimitedResumes: false,
                         aiInterviewAccess: false,
+                        voiceInterview: false,
+                        publicPortfolio: false,
+                        autonomousSwarm: false,
                         advancedAnalytics: false,
                         removeBranding: false,
                     }
@@ -64,14 +73,14 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
 
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('subscription_status, stripe_price_id, stripe_current_period_end')
+                .select('is_pro, subscription_status, stripe_price_id, stripe_current_period_end')
                 .eq('id', user.id)
                 .single();
 
             if (!profile) return;
 
             const status = (profile.subscription_status as SubscriptionStatus) || 'inactive';
-            const isActive = status === 'active' || status === 'trialing';
+            const isActive = profile.is_pro === true || status === 'active' || status === 'trialing';
 
             set({
                 isLoading: false,
@@ -81,7 +90,10 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
                 currentPeriodEnd: profile.stripe_current_period_end ? new Date(profile.stripe_current_period_end) : null,
                 features: {
                     unlimitedResumes: isActive,
-                    aiInterviewAccess: isActive, // Or limited logic for free
+                    aiInterviewAccess: true, // basic text practice for free, voice mode for pro
+                    voiceInterview: isActive,
+                    publicPortfolio: isActive,
+                    autonomousSwarm: isActive,
                     advancedAnalytics: isActive,
                     removeBranding: isActive,
                 }

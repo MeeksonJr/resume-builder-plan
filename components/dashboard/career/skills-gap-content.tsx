@@ -30,6 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
 
 interface SkillsGapContentProps {
     profile: any;
@@ -50,6 +51,7 @@ interface SkillsGapAnalysis {
 export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [analysis, setAnalysis] = useState<SkillsGapAnalysis | null>(null);
     const [selectedResumeId, setSelectedResumeId] = useState(resumes[0]?.id || "");
     const [targetRole, setTargetRole] = useState(profile?.target_role || "");
@@ -112,11 +114,13 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
             });
 
             if (!response.ok) {
-                const errData = await response.json();
-                if (response.status === 429 && errData.error === "LIMIT_EXCEEDED") {
-                    throw new Error(errData.message);
+                const errData = await response.json().catch(() => null);
+                if (response.status === 429 || errData?.error === "LIMIT_EXCEEDED") {
+                    setShowUpgradeModal(true);
+                    toast.error(errData?.message || "Daily limit reached for Skills Gap Audits.");
+                    return;
                 }
-                throw new Error("Failed to run skills gap analysis");
+                throw new Error(errData?.message || "Failed to run skills gap analysis");
             }
 
             const data = await response.json();
@@ -717,6 +721,14 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title="Skills Gap Audit Limit"
+                description="Free accounts can run 1 Skills Gap Audit per day. Upgrade to Pro for unlimited skills breakdown audits, real-time course recommendations, and custom STAR interview prep."
+                featureName="Unlimited Skills Gap Audits"
+            />
         </div>
     );
 }

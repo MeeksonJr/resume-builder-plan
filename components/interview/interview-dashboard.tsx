@@ -41,6 +41,9 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useSpeechSynthesis } from "@/lib/hooks/use-speech-synthesis";
 import { cn } from "@/lib/utils";
+import { useSubscriptionStore } from "@/lib/stores/subscription-store";
+import { UpgradeModal } from "@/components/ui/upgrade-modal";
+import { Lock, ArrowRight } from "lucide-react";
 
 interface InterviewDashboardProps {
     resumes: { id: string; title: string }[];
@@ -52,6 +55,19 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [upgradeConfig, setUpgradeConfig] = useState({
+        title: "Voice Mock Interview Practice",
+        featureName: "Real-Time Voice Mock Interviews",
+        description: "Voice interview simulation with real-time speech analytics requires a ResumeForge Pro subscription.",
+    });
+
+    const { isPro, isLoading: isSubLoading, checkSubscription } = useSubscriptionStore();
+
+    useEffect(() => {
+        checkSubscription();
+    }, [checkSubscription]);
+
     const [form, setForm] = useState({
         resumeId: resumes[0]?.id || "",
         targetRole: targetRole || "",
@@ -127,6 +143,47 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
 
     return (
         <div className="space-y-10">
+            {/* Free Plan Quota Banner */}
+            {!isPro && (
+                <div className="border border-[#102b2b]/15 bg-white p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-[#0d8274]/10 border border-[#0d8274]/30 flex items-center justify-center shrink-0">
+                            <Lock className="w-4 h-4 text-[#0d8274]" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-black uppercase tracking-wider text-[#102b2b]">
+                                    Free Plan Quota
+                                </span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 bg-[#102b2b]/5 border border-[#102b2b]/10 text-[#102b2b]">
+                                    {sessions.length} / 3 Sessions Used
+                                </span>
+                            </div>
+                            <p className="text-xs text-[#102b2b]/70 mt-0.5">
+                                Free tier includes 3 text interview rounds. Upgrade to Pro for unlimited prep and real-time voice mode!
+                            </p>
+                        </div>
+                    </div>
+
+                    <Button
+                        onClick={() => {
+                            setUpgradeConfig({
+                                title: "Unlock Unlimited Mock Interviews",
+                                featureName: "Unlimited Practice & Voice Mode",
+                                description: "Practice for any interview round with unlimited AI scenarios, speech pace scoring, and voice practice.",
+                            });
+                            setShowUpgradeModal(true);
+                        }}
+                        size="sm"
+                        className="rounded-none bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] font-bold text-xs shrink-0 flex items-center gap-1.5"
+                    >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Unlock Unlimited</span>
+                        <ArrowRight className="w-3 h-3" />
+                    </Button>
+                </div>
+            )}
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
@@ -184,9 +241,33 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                         </div>
                         Recent Rounds
                     </h2>
-                    <Dialog open={open} onOpenChange={setOpen}>
+                    <Dialog open={open} onOpenChange={(newOpen) => {
+                        if (newOpen && !isPro && sessions.length >= 3) {
+                            setUpgradeConfig({
+                                title: "Mock Interview Limit Reached",
+                                featureName: "Unlimited AI Mock Interviews",
+                                description: "You have completed your 3 free interview sessions. Upgrade to Pro for unlimited text and voice practice!",
+                            });
+                            setShowUpgradeModal(true);
+                            return;
+                        }
+                        setOpen(newOpen);
+                    }}>
                         <DialogTrigger asChild>
-                            <Button className="h-11 gap-2 rounded-none bg-[#d8f36b] font-bold text-[#102b2b] shadow-none transition-all hover:bg-[#c8e95a]">
+                            <Button 
+                                onClick={(e) => {
+                                    if (!isPro && sessions.length >= 3) {
+                                        e.preventDefault();
+                                        setUpgradeConfig({
+                                            title: "Mock Interview Limit Reached",
+                                            featureName: "Unlimited AI Mock Interviews",
+                                            description: "You have completed your 3 free interview sessions. Upgrade to Pro for unlimited text and voice practice!",
+                                        });
+                                        setShowUpgradeModal(true);
+                                    }
+                                }}
+                                className="h-11 gap-2 rounded-none bg-[#d8f36b] font-bold text-[#102b2b] shadow-none transition-all hover:bg-[#c8e95a]"
+                            >
                                 <Plus className="h-4 w-4" />
                                 New Session
                             </Button>
@@ -220,13 +301,29 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                         </div>
                                         <div
                                             className={cn(
-                                                "cursor-pointer border-2 p-4 transition-all duration-300",
+                                                "cursor-pointer border-2 p-4 transition-all duration-300 relative",
                                                 form.sessionMode === 'voice'
                                                     ? "border-[#0d8274] bg-[#0d8274]/10 ring-1 ring-[#0d8274]/20"
                                                     : "border-[#102b2b]/15 bg-[#f4f7f1] hover:border-[#0d8274]/50"
                                             )}
-                                            onClick={() => setForm({ ...form, sessionMode: 'voice' })}
+                                            onClick={() => {
+                                                if (!isPro) {
+                                                    setUpgradeConfig({
+                                                        title: "Voice Mock Interview Practice",
+                                                        featureName: "Real-Time Voice Mock Interviews",
+                                                        description: "Immersive simulated audio interviews with real-time speech analytics are exclusive to ResumeForge Pro.",
+                                                    });
+                                                    setShowUpgradeModal(true);
+                                                    return;
+                                                }
+                                                setForm({ ...form, sessionMode: 'voice' });
+                                            }}
                                         >
+                                            <div className="absolute right-2 top-2">
+                                                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-[#0d8274] text-[#d8f36b]">
+                                                    Pro
+                                                </span>
+                                            </div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <Mic className="h-4 w-4 text-[#0d8274]" />
                                                 <span className="font-black uppercase tracking-tight text-sm text-[#102b2b]">Simulated</span>
@@ -471,6 +568,14 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                     </div>
                 )}
             </div>
+
+            <UpgradeModal
+                open={showUpgradeModal}
+                onOpenChange={setShowUpgradeModal}
+                title={upgradeConfig.title}
+                featureName={upgradeConfig.featureName}
+                description={upgradeConfig.description}
+            />
         </div>
     );
 }

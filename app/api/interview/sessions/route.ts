@@ -47,6 +47,38 @@ export async function POST(req: Request) {
             return new NextResponse("Target role and difficulty are required", { status: 400 });
         }
 
+        // Plan Tier & Feature Gate Checks
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("is_pro, subscription_status")
+            .eq("id", user.id)
+            .maybeSingle();
+
+        const isPro = profile?.is_pro === true ||
+                      profile?.subscription_status === "active" ||
+                      profile?.subscription_status === "trialing";
+
+        if (sessionMode === "voice" && !isPro) {
+            return NextResponse.json(
+                { error: "Real-time voice mock interviews require a ResumeForge Pro subscription.", upgradeRequired: true },
+                { status: 403 }
+            );
+        }
+
+        if (!isPro) {
+            const { count: sessionCount } = await supabase
+                .from("interview_sessions")
+                .select("*", { count: "exact", head: true })
+                .eq("user_id", user.id);
+
+            if ((sessionCount || 0) >= 3) {
+                return NextResponse.json(
+                    { error: "Free tier is limited to 3 mock interview sessions. Upgrade to Pro for unlimited prep!", upgradeRequired: true },
+                    { status: 403 }
+                );
+            }
+        }
+
         // Get resume data for personalized questions
         let resumeData: any = {};
         if (resumeId) {
