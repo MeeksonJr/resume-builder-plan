@@ -54,6 +54,8 @@ import {
   X,
   Link2,
   Brain,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -247,152 +249,206 @@ export const THEME_PALETTES: Record<string, ThemePalette> = {
     id: "emerald",
     label: "Emerald",
     primary: "emerald",
-    accentText: "text-emerald-400",
-    accentTextLight: "text-emerald-300",
-    accentBorder: "border-emerald-500/35",
-    accentBorderHover: "hover:border-emerald-400/60",
-    accentBg: "bg-emerald-500/15",
-    accentBgHover: "hover:bg-emerald-500/25",
-    accentBadge: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-    accentButton: "bg-emerald-600 hover:bg-emerald-500 text-white",
-    ring: "ring-2 ring-emerald-400 border-emerald-400 shadow-xl shadow-emerald-500/20",
-    glow: "shadow-emerald-500/10",
-    glassBorder: "border-emerald-500/30",
-    glassBg: "bg-emerald-950/20",
-    gradient: "from-emerald-950/60 via-[#0e1726]/90 to-teal-950/50",
-    mesh: "from-emerald-500/25 via-[#0b1324]/90 to-[#070b14]",
-    cleanBorder: "border-emerald-500/20",
+    accentText: "text-emerald-700 dark:text-emerald-400",
+    accentTextLight: "text-emerald-600 dark:text-emerald-300",
+    accentBorder: "border-emerald-500/40 dark:border-emerald-500/35",
+    accentBorderHover: "hover:border-emerald-600 dark:hover:border-emerald-400/60",
+    accentBg: "bg-emerald-500/10 dark:bg-emerald-500/15",
+    accentBgHover: "hover:bg-emerald-500/20 dark:hover:bg-emerald-500/25",
+    accentBadge: "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+    accentButton: "bg-emerald-600 hover:bg-emerald-500 text-white font-medium",
+    ring: "ring-2 ring-emerald-500 dark:ring-emerald-400 border-emerald-500 dark:border-emerald-400 shadow-xl shadow-emerald-500/20",
+    glow: "shadow-emerald-500/15",
+    glassBorder: "border-emerald-500/30 dark:border-emerald-500/30",
+    glassBg: "bg-white/80 dark:bg-emerald-950/20",
+    gradient: "from-emerald-50/70 via-white to-teal-50/50 dark:from-emerald-950/60 dark:via-[#0e1726]/90 dark:to-teal-950/50",
+    mesh: "from-emerald-100/60 via-slate-50 to-teal-50/40 dark:from-emerald-500/25 dark:via-[#0b1324]/90 dark:to-[#070b14]",
+    cleanBorder: "border-slate-200/90 dark:border-emerald-500/20",
   },
   blue: {
     id: "blue",
     label: "Sapphire",
     primary: "blue",
-    accentText: "text-blue-400",
-    accentTextLight: "text-blue-300",
-    accentBorder: "border-blue-500/35",
-    accentBorderHover: "hover:border-blue-400/60",
-    accentBg: "bg-blue-500/15",
-    accentBgHover: "hover:bg-blue-500/25",
-    accentBadge: "bg-blue-500/15 text-blue-300 border-blue-500/30",
-    accentButton: "bg-blue-600 hover:bg-blue-500 text-white",
-    ring: "ring-2 ring-blue-400 border-blue-400 shadow-xl shadow-blue-500/20",
-    glow: "shadow-blue-500/10",
-    glassBorder: "border-blue-500/30",
-    glassBg: "bg-blue-950/20",
-    gradient: "from-blue-950/60 via-[#0e1726]/90 to-indigo-950/50",
-    mesh: "from-blue-500/25 via-[#0b1324]/90 to-[#070b14]",
-    cleanBorder: "border-blue-500/20",
+    accentText: "text-blue-700 dark:text-blue-400",
+    accentTextLight: "text-blue-600 dark:text-blue-300",
+    accentBorder: "border-blue-500/40 dark:border-blue-500/35",
+    accentBorderHover: "hover:border-blue-600 dark:hover:border-blue-400/60",
+    accentBg: "bg-blue-500/10 dark:bg-blue-500/15",
+    accentBgHover: "hover:bg-blue-500/20 dark:hover:bg-blue-500/25",
+    accentBadge: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",
+    accentButton: "bg-blue-600 hover:bg-blue-500 text-white font-medium",
+    ring: "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 shadow-xl shadow-blue-500/20",
+    glow: "shadow-blue-500/15",
+    glassBorder: "border-blue-500/30 dark:border-blue-500/30",
+    glassBg: "bg-white/80 dark:bg-blue-950/20",
+    gradient: "from-blue-50/70 via-white to-indigo-50/50 dark:from-blue-950/60 dark:via-[#0e1726]/90 dark:to-indigo-950/50",
+    mesh: "from-blue-100/60 via-slate-50 to-indigo-50/40 dark:from-blue-500/25 dark:via-[#0b1324]/90 dark:to-[#070b14]",
+    cleanBorder: "border-slate-200/90 dark:border-blue-500/20",
   },
   purple: {
     id: "purple",
     label: "Violet",
     primary: "purple",
-    accentText: "text-purple-400",
-    accentTextLight: "text-purple-300",
-    accentBorder: "border-purple-500/35",
-    accentBorderHover: "hover:border-purple-400/60",
-    accentBg: "bg-purple-500/15",
-    accentBgHover: "hover:bg-purple-500/25",
-    accentBadge: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-    accentButton: "bg-purple-600 hover:bg-purple-500 text-white",
-    ring: "ring-2 ring-purple-400 border-purple-400 shadow-xl shadow-purple-500/20",
-    glow: "shadow-purple-500/10",
-    glassBorder: "border-purple-500/30",
-    glassBg: "bg-purple-950/20",
-    gradient: "from-purple-950/60 via-[#0e1726]/90 to-pink-950/50",
-    mesh: "from-purple-500/25 via-[#0b1324]/90 to-[#070b14]",
-    cleanBorder: "border-purple-500/20",
+    accentText: "text-purple-700 dark:text-purple-400",
+    accentTextLight: "text-purple-600 dark:text-purple-300",
+    accentBorder: "border-purple-500/40 dark:border-purple-500/35",
+    accentBorderHover: "hover:border-purple-600 dark:hover:border-purple-400/60",
+    accentBg: "bg-purple-500/10 dark:bg-purple-500/15",
+    accentBgHover: "hover:bg-purple-500/20 dark:hover:bg-purple-500/25",
+    accentBadge: "bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30",
+    accentButton: "bg-purple-600 hover:bg-purple-500 text-white font-medium",
+    ring: "ring-2 ring-purple-500 dark:ring-purple-400 border-purple-500 dark:border-purple-400 shadow-xl shadow-purple-500/20",
+    glow: "shadow-purple-500/15",
+    glassBorder: "border-purple-500/30 dark:border-purple-500/30",
+    glassBg: "bg-white/80 dark:bg-purple-950/20",
+    gradient: "from-purple-50/70 via-white to-pink-50/50 dark:from-purple-950/60 dark:via-[#0e1726]/90 dark:to-pink-950/50",
+    mesh: "from-purple-100/60 via-slate-50 to-pink-50/40 dark:from-purple-500/25 dark:via-[#0b1324]/90 dark:to-[#070b14]",
+    cleanBorder: "border-slate-200/90 dark:border-purple-500/20",
   },
   rose: {
     id: "rose",
     label: "Ruby",
     primary: "rose",
-    accentText: "text-rose-400",
-    accentTextLight: "text-rose-300",
-    accentBorder: "border-rose-500/35",
-    accentBorderHover: "hover:border-rose-400/60",
-    accentBg: "bg-rose-500/15",
-    accentBgHover: "hover:bg-rose-500/25",
-    accentBadge: "bg-rose-500/15 text-rose-300 border-rose-500/30",
-    accentButton: "bg-rose-600 hover:bg-rose-500 text-white",
-    ring: "ring-2 ring-rose-400 border-rose-400 shadow-xl shadow-rose-500/20",
-    glow: "shadow-rose-500/10",
-    glassBorder: "border-rose-500/30",
-    glassBg: "bg-rose-950/20",
-    gradient: "from-rose-950/60 via-[#0e1726]/90 to-amber-950/50",
-    mesh: "from-rose-500/25 via-[#0b1324]/90 to-[#070b14]",
-    cleanBorder: "border-rose-500/20",
+    accentText: "text-rose-700 dark:text-rose-400",
+    accentTextLight: "text-rose-600 dark:text-rose-300",
+    accentBorder: "border-rose-500/40 dark:border-rose-500/35",
+    accentBorderHover: "hover:border-rose-600 dark:hover:border-rose-400/60",
+    accentBg: "bg-rose-500/10 dark:bg-rose-500/15",
+    accentBgHover: "hover:bg-rose-500/20 dark:hover:bg-rose-500/25",
+    accentBadge: "bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
+    accentButton: "bg-rose-600 hover:bg-rose-500 text-white font-medium",
+    ring: "ring-2 ring-rose-500 dark:ring-rose-400 border-rose-500 dark:border-rose-400 shadow-xl shadow-rose-500/20",
+    glow: "shadow-rose-500/15",
+    glassBorder: "border-rose-500/30 dark:border-rose-500/30",
+    glassBg: "bg-white/80 dark:bg-rose-950/20",
+    gradient: "from-rose-50/70 via-white to-amber-50/50 dark:from-rose-950/60 dark:via-[#0e1726]/90 dark:to-amber-950/50",
+    mesh: "from-rose-100/60 via-slate-50 to-amber-50/40 dark:from-rose-500/25 dark:via-[#0b1324]/90 dark:to-[#070b14]",
+    cleanBorder: "border-slate-200/90 dark:border-rose-500/20",
   },
   amber: {
     id: "amber",
     label: "Amber",
     primary: "amber",
-    accentText: "text-amber-400",
-    accentTextLight: "text-amber-300",
-    accentBorder: "border-amber-500/35",
-    accentBorderHover: "hover:border-amber-400/60",
-    accentBg: "bg-amber-500/15",
-    accentBgHover: "hover:bg-amber-500/25",
-    accentBadge: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-    accentButton: "bg-amber-600 hover:bg-amber-500 text-white",
-    ring: "ring-2 ring-amber-400 border-amber-400 shadow-xl shadow-amber-500/20",
-    glow: "shadow-amber-500/10",
-    glassBorder: "border-amber-500/30",
-    glassBg: "bg-amber-950/20",
-    gradient: "from-amber-950/60 via-[#0e1726]/90 to-orange-950/50",
-    mesh: "from-amber-500/25 via-[#0b1324]/90 to-[#070b14]",
-    cleanBorder: "border-amber-500/20",
+    accentText: "text-amber-800 dark:text-amber-400",
+    accentTextLight: "text-amber-700 dark:text-amber-300",
+    accentBorder: "border-amber-500/40 dark:border-amber-500/35",
+    accentBorderHover: "hover:border-amber-600 dark:hover:border-amber-400/60",
+    accentBg: "bg-amber-500/10 dark:bg-amber-500/15",
+    accentBgHover: "hover:bg-amber-500/20 dark:hover:bg-amber-500/25",
+    accentBadge: "bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+    accentButton: "bg-amber-600 hover:bg-amber-500 text-white font-medium",
+    ring: "ring-2 ring-amber-500 dark:ring-amber-400 border-amber-500 dark:border-amber-400 shadow-xl shadow-amber-500/20",
+    glow: "shadow-amber-500/15",
+    glassBorder: "border-amber-500/30 dark:border-amber-500/30",
+    glassBg: "bg-white/80 dark:bg-amber-950/20",
+    gradient: "from-amber-50/70 via-white to-orange-50/50 dark:from-amber-950/60 dark:via-[#0e1726]/90 dark:to-orange-950/50",
+    mesh: "from-amber-100/60 via-slate-50 to-orange-50/40 dark:from-amber-500/25 dark:via-[#0b1324]/90 dark:to-[#070b14]",
+    cleanBorder: "border-slate-200/90 dark:border-amber-500/20",
   },
   cyan: {
     id: "cyan",
     label: "Cyan",
     primary: "cyan",
-    accentText: "text-cyan-400",
-    accentTextLight: "text-cyan-300",
-    accentBorder: "border-cyan-500/35",
-    accentBorderHover: "hover:border-cyan-400/60",
-    accentBg: "bg-cyan-500/15",
-    accentBgHover: "hover:bg-cyan-500/25",
-    accentBadge: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-    accentButton: "bg-cyan-600 hover:bg-cyan-500 text-white",
-    ring: "ring-2 ring-cyan-400 border-cyan-400 shadow-xl shadow-cyan-500/20",
-    glow: "shadow-cyan-500/10",
-    glassBorder: "border-cyan-500/30",
-    glassBg: "bg-cyan-950/20",
-    gradient: "from-cyan-950/60 via-[#0e1726]/90 to-blue-950/50",
-    mesh: "from-cyan-500/25 via-[#0b1324]/90 to-[#070b14]",
-    cleanBorder: "border-cyan-500/20",
+    accentText: "text-cyan-700 dark:text-cyan-400",
+    accentTextLight: "text-cyan-600 dark:text-cyan-300",
+    accentBorder: "border-cyan-500/40 dark:border-cyan-500/35",
+    accentBorderHover: "hover:border-cyan-600 dark:hover:border-cyan-400/60",
+    accentBg: "bg-cyan-500/10 dark:bg-cyan-500/15",
+    accentBgHover: "hover:bg-cyan-500/20 dark:hover:bg-cyan-500/25",
+    accentBadge: "bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-500/30",
+    accentButton: "bg-cyan-600 hover:bg-cyan-500 text-white font-medium",
+    ring: "ring-2 ring-cyan-500 dark:ring-cyan-400 border-cyan-500 dark:border-cyan-400 shadow-xl shadow-cyan-500/20",
+    glow: "shadow-cyan-500/15",
+    glassBorder: "border-cyan-500/30 dark:border-cyan-500/30",
+    glassBg: "bg-white/80 dark:bg-cyan-950/20",
+    gradient: "from-cyan-50/70 via-white to-blue-50/50 dark:from-cyan-950/60 dark:via-[#0e1726]/90 dark:to-blue-950/50",
+    mesh: "from-cyan-100/60 via-slate-50 to-blue-50/40 dark:from-cyan-500/25 dark:via-[#0b1324]/90 dark:to-[#070b14]",
+    cleanBorder: "border-slate-200/90 dark:border-cyan-500/20",
   },
 };
 
 export function getStudioBlockContainerStyle(
   backgroundStyle: "clean" | "glass" | "gradient" | "mesh" = "clean",
   isSelected: boolean = false,
-  colorScheme: string = "emerald"
+  colorScheme: string = "emerald",
+  mode?: "dark" | "light"
 ) {
   const base = "relative p-6 sm:p-8 rounded-2xl transition-all duration-300 cursor-pointer";
   const scheme = THEME_PALETTES[colorScheme] || THEME_PALETTES.emerald;
 
+  // Explicit Light Mode (e.g. previewing light mode in Studio)
+  if (mode === "light") {
+    let styleClasses = "";
+    switch (backgroundStyle) {
+      case "glass":
+        styleClasses = `border ${scheme.glassBorder} bg-white/85 backdrop-blur-2xl shadow-lg shadow-slate-200/60 ring-1 ring-slate-900/5 text-slate-900`;
+        break;
+      case "gradient":
+        styleClasses = `border ${scheme.accentBorder} bg-gradient-to-br ${scheme.gradient} shadow-lg shadow-slate-200/50 text-slate-900`;
+        break;
+      case "mesh":
+        styleClasses = `border ${scheme.accentBorder} bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${scheme.mesh} backdrop-blur-md shadow-lg shadow-slate-200/50 text-slate-900`;
+        break;
+      case "clean":
+      default:
+        styleClasses = `border border-slate-200/90 bg-white shadow-sm backdrop-blur-xs hover:${scheme.accentBorder} text-slate-900`;
+        break;
+    }
+
+    const selectionClasses = isSelected
+      ? `${scheme.ring} z-10 scale-[1.002]`
+      : "hover:border-slate-300";
+
+    return `${base} ${styleClasses} ${selectionClasses}`;
+  }
+
+  // Explicit Dark Mode (e.g. previewing dark mode in Studio)
+  if (mode === "dark") {
+    let styleClasses = "";
+    switch (backgroundStyle) {
+      case "glass":
+        styleClasses = `border ${scheme.glassBorder} ${scheme.glassBg} backdrop-blur-2xl shadow-xl shadow-black/50 ring-1 ring-white/10 text-white`;
+        break;
+      case "gradient":
+        styleClasses = `border ${scheme.accentBorder} bg-gradient-to-br ${scheme.gradient} shadow-xl shadow-black/40 text-white`;
+        break;
+      case "mesh":
+        styleClasses = `border ${scheme.accentBorder} bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${scheme.mesh} backdrop-blur-md shadow-2xl shadow-black/50 text-white`;
+        break;
+      case "clean":
+      default:
+        styleClasses = `border ${scheme.cleanBorder} bg-[#0b111e]/90 shadow-sm backdrop-blur-xs hover:${scheme.accentBorder} text-white`;
+        break;
+    }
+
+    const selectionClasses = isSelected
+      ? `${scheme.ring} z-10 scale-[1.002]`
+      : "hover:border-white/30";
+
+    return `${base} ${styleClasses} ${selectionClasses}`;
+  }
+
+  // Dual-mode Responsive (default for public page /p/[slug], automatically adapts to next-themes)
   let styleClasses = "";
   switch (backgroundStyle) {
     case "glass":
-      styleClasses = `border ${scheme.glassBorder} ${scheme.glassBg} backdrop-blur-2xl shadow-xl shadow-black/50 ring-1 ring-white/10`;
+      styleClasses = `border ${scheme.glassBorder} bg-white/85 dark:bg-[#0e1726]/80 backdrop-blur-2xl shadow-lg dark:shadow-xl shadow-slate-200/60 dark:shadow-black/50 ring-1 ring-slate-900/5 dark:ring-white/10 text-slate-900 dark:text-white`;
       break;
     case "gradient":
-      styleClasses = `border ${scheme.accentBorder} bg-gradient-to-br ${scheme.gradient} shadow-xl shadow-black/40`;
+      styleClasses = `border ${scheme.accentBorder} bg-gradient-to-br ${scheme.gradient} shadow-lg dark:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-slate-900 dark:text-white`;
       break;
     case "mesh":
-      styleClasses = `border ${scheme.accentBorder} bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${scheme.mesh} backdrop-blur-md shadow-2xl shadow-black/50`;
+      styleClasses = `border ${scheme.accentBorder} bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${scheme.mesh} backdrop-blur-md shadow-lg dark:shadow-2xl shadow-slate-200/50 dark:shadow-black/50 text-slate-900 dark:text-white`;
       break;
     case "clean":
     default:
-      styleClasses = `border ${scheme.cleanBorder} bg-[#0b111e]/90 shadow-sm backdrop-blur-xs hover:${scheme.accentBorder}`;
+      styleClasses = `border border-slate-200/90 dark:border-white/10 bg-white dark:bg-[#0b111e]/90 shadow-sm backdrop-blur-xs hover:${scheme.accentBorder} text-slate-900 dark:text-white`;
       break;
   }
 
   const selectionClasses = isSelected
     ? `${scheme.ring} z-10 scale-[1.002]`
-    : "hover:border-white/30";
+    : "hover:border-slate-300 dark:hover:border-white/30";
 
   return `${base} ${styleClasses} ${selectionClasses}`;
 }
@@ -428,6 +484,12 @@ export function VisualPortfolioBuilderStudioClient({
     return (portfolio?.theme_settings?.typography as any) || "sans";
   });
   const [canvasBgMode, setCanvasBgMode] = useState<"deep" | "midnight" | "slate" | "pure">("deep");
+  const [previewThemeMode, setPreviewThemeMode] = useState<"dark" | "light">(() => {
+    return portfolio?.theme_settings?.default_theme_mode === "light" ? "light" : "dark";
+  });
+  const [defaultPublicTheme, setDefaultPublicTheme] = useState<"dark" | "light" | "system">(() => {
+    return (portfolio?.theme_settings?.default_theme_mode as any) || "system";
+  });
   
   const { memory, fetchFromServer: fetchMemory } = useUserMemoryStore();
   const memoryCompleteness = calculateMemoryCompleteness(memory);
@@ -875,6 +937,7 @@ export function VisualPortfolioBuilderStudioClient({
               color: activeThemeColor,
               typography: activeTypography,
               active_layout: nextVal ? "canvas" : "template",
+              default_theme_mode: defaultPublicTheme,
             },
             updated_at: new Date().toISOString(),
           })
@@ -901,6 +964,7 @@ export function VisualPortfolioBuilderStudioClient({
               color: activeThemeColor,
               typography: activeTypography,
               active_layout: isActiveLayout ? "canvas" : "template",
+              default_theme_mode: defaultPublicTheme,
             },
             updated_at: new Date().toISOString()
           })
@@ -1015,6 +1079,15 @@ export function VisualPortfolioBuilderStudioClient({
   };
 
   const getCanvasBgClass = () => {
+    if (previewThemeMode === "light") {
+      switch (canvasBgMode) {
+        case "midnight": return "bg-slate-200/90";
+        case "slate": return "bg-zinc-200/90";
+        case "pure": return "bg-white";
+        case "deep":
+        default: return "bg-slate-100";
+      }
+    }
     switch (canvasBgMode) {
       case "midnight": return "bg-[#090d16]";
       case "slate": return "bg-[#0f172a]";
@@ -1133,6 +1206,40 @@ export function VisualPortfolioBuilderStudioClient({
             <Smartphone className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Mobile</span>
           </Button>
+
+          <div className="h-3.5 w-[1px] bg-white/10 mx-0.5" />
+
+          {/* Theme Mode Toggle (Dark / Light Studio Preview) */}
+          <div className="flex items-center bg-black/40 rounded-lg p-0.5 gap-0.5 border border-white/10">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setPreviewThemeMode("dark")}
+              className={`h-6 px-2 rounded text-[11px] font-semibold gap-1 transition-all ${
+                previewThemeMode === "dark"
+                  ? "bg-slate-800 text-blue-300 shadow-xs border border-blue-400/30"
+                  : "text-white/50 hover:text-white"
+              }`}
+              title="Preview Dark Mode"
+            >
+              <Moon className="h-3 w-3" />
+              <span className="hidden md:inline">Dark</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setPreviewThemeMode("light")}
+              className={`h-6 px-2 rounded text-[11px] font-semibold gap-1 transition-all ${
+                previewThemeMode === "light"
+                  ? "bg-white text-amber-600 shadow-xs border border-amber-300"
+                  : "text-white/50 hover:text-white"
+              }`}
+              title="Preview Light Mode"
+            >
+              <Sun className="h-3 w-3" />
+              <span className="hidden md:inline">Light</span>
+            </Button>
+          </div>
 
           <div className="h-3.5 w-[1px] bg-white/10 mx-0.5" />
 
@@ -1548,6 +1655,51 @@ export function VisualPortfolioBuilderStudioClient({
                       ))}
                     </div>
                   </div>
+
+                  <div className="space-y-2 pt-2 border-t border-white/10">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-white/60">
+                        Default Public Theme
+                      </span>
+                      <Badge variant="outline" className="text-[9px] font-mono border-white/15 text-emerald-400 capitalize">
+                        {defaultPublicTheme}
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-white/50 px-1 leading-relaxed">
+                      Determines how visitors first experience your portfolio at your public URL. Dark mode stays dark, while Light mode renders clean, high-contrast, perfectly readable cards.
+                    </p>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: "dark", label: "Dark First", icon: Moon },
+                        { id: "light", label: "Light First", icon: Sun },
+                        { id: "system", label: "Auto / System", icon: Monitor },
+                      ].map((tm) => {
+                        const Icon = tm.icon;
+                        const isSelected = defaultPublicTheme === tm.id;
+                        return (
+                          <button
+                            key={tm.id}
+                            type="button"
+                            onClick={() => {
+                              setDefaultPublicTheme(tm.id as any);
+                              if (tm.id === "dark" || tm.id === "light") {
+                                setPreviewThemeMode(tm.id);
+                              }
+                              toast.success(`Default public theme set to ${tm.label}`);
+                            }}
+                            className={`p-2 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+                              isSelected
+                                ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 ring-1 ring-emerald-500/30"
+                                : "bg-white/[0.03] border-white/10 text-white/60 hover:text-white hover:bg-white/[0.06]"
+                            }`}
+                          >
+                            <Icon className={`h-3.5 w-3.5 ${isSelected ? "text-emerald-400" : "text-white/60"}`} />
+                            <span className="text-[11px] font-semibold">{tm.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1763,7 +1915,11 @@ export function VisualPortfolioBuilderStudioClient({
         {/* Center Canvas Viewport */}
         <main className={`flex-1 min-w-0 ${getCanvasBgClass()} flex items-start justify-center p-4 lg:p-6 overflow-y-auto overflow-x-hidden relative`}>
           <div
-            className={`transition-all duration-300 rounded-3xl border border-white/15 shadow-2xl bg-[#0d1422] flex flex-col overflow-hidden my-auto ${
+            className={`transition-all duration-300 rounded-3xl border shadow-2xl flex flex-col overflow-hidden my-auto ${
+              previewThemeMode === "light"
+                ? "bg-white border-slate-200/90 shadow-slate-300/40 text-slate-900"
+                : "bg-[#0d1422] border-white/15 shadow-2xl text-white"
+            } ${
               deviceMode === "desktop"
                 ? zoomScale === "fit"
                   ? "w-full max-w-2xl min-h-[550px] scale-95 origin-top"
@@ -1779,12 +1935,21 @@ export function VisualPortfolioBuilderStudioClient({
             <div className="p-6 sm:p-8 space-y-6">
               {blocks.filter(b => b.visible !== false).map((block) => {
                 const isSelected = selectedBlockId === block.id;
+                const isLight = previewThemeMode === "light";
                 const containerStyle = getStudioBlockContainerStyle(
                   block.backgroundStyle,
                   isSelected,
-                  activeThemeColor
+                  activeThemeColor,
+                  previewThemeMode
                 );
                 const theme = THEME_PALETTES[activeThemeColor] || THEME_PALETTES.emerald;
+
+                const txtPrimary = isLight ? "text-slate-900" : "text-white";
+                const txtSecondary = isLight ? "text-slate-600" : "text-white/70";
+                const txtMuted = isLight ? "text-slate-500" : "text-white/50";
+                const bdrSubtle = isLight ? "border-slate-200/90" : "border-white/10";
+                const cardBgSubtle = isLight ? "border-slate-200/90 bg-slate-50/80 hover:bg-slate-100/80" : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]";
+                const timelineRing = isLight ? "ring-white" : "ring-[#0d1422]";
 
                 // HERO BLOCK
                 if (block.type === "hero") {
@@ -1796,7 +1961,7 @@ export function VisualPortfolioBuilderStudioClient({
                     >
                       {block.content?.coverUrl && (
                         <div
-                          className="h-36 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-6 rounded-t-2xl bg-cover bg-center border-b border-white/10"
+                          className={cn("h-36 -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-6 rounded-t-2xl bg-cover bg-center border-b", isLight ? "border-slate-200" : "border-white/10")}
                           style={{ backgroundImage: `url(${block.content.coverUrl})` }}
                         />
                       )}
@@ -1806,10 +1971,10 @@ export function VisualPortfolioBuilderStudioClient({
                             <img
                               src={block.content.avatarUrl}
                               alt="Profile Avatar"
-                              className={cn("h-22 w-22 rounded-full object-cover border-2 shadow-md ring-4 ring-black/20", theme.accentBorder)}
+                              className={cn("h-22 w-22 rounded-full object-cover border-2 shadow-md ring-4", isLight ? "ring-slate-100" : "ring-black/20", theme.accentBorder)}
                             />
                           ) : (
-                            <div className={cn("h-22 w-22 rounded-full border-2 flex items-center justify-center text-2xl font-black shadow-md ring-4 ring-black/20", theme.accentBg, theme.accentBorder, theme.accentText)}>
+                            <div className={cn("h-22 w-22 rounded-full border-2 flex items-center justify-center text-2xl font-black shadow-md ring-4", isLight ? "ring-slate-100" : "ring-black/20", theme.accentBg, theme.accentBorder, theme.accentText)}>
                               {(block.title || profile?.full_name || "U").charAt(0).toUpperCase()}
                             </div>
                           )}
@@ -1826,7 +1991,7 @@ export function VisualPortfolioBuilderStudioClient({
                         </div>
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
-                            <h1 className="text-2xl font-black text-white tracking-tight">{block.title}</h1>
+                            <h1 className={cn("text-2xl font-black tracking-tight", txtPrimary)}>{block.title}</h1>
                             {block.content?.openToWork && (
                               <span className={cn("inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border", theme.accentBadge)}>
                                 <span className={cn("h-1.5 w-1.5 rounded-full animate-pulse", theme.accentText.replace("text-", "bg-"))} />
@@ -1837,7 +2002,7 @@ export function VisualPortfolioBuilderStudioClient({
                           <p className={cn("text-sm font-semibold", theme.accentText)}>
                             {block.content?.tagline || "Professional"}
                           </p>
-                          <p className="text-xs text-white/70 leading-relaxed max-w-xl">
+                          <p className={cn("text-xs leading-relaxed max-w-xl", txtSecondary)}>
                             {stripHtml(block.content?.bio) || "Add your summary in the inspector on the right."}
                           </p>
                           {block.content?.ctaText && (
@@ -1868,9 +2033,9 @@ export function VisualPortfolioBuilderStudioClient({
                         <div>
                           <div className="flex items-center gap-2">
                             <Code2 className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                            <h3 className="text-base font-bold text-white">{block.title}</h3>
+                            <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                           </div>
-                          {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
+                          {block.subtitle && <p className={cn("text-xs mt-0.5", txtMuted)}>{block.subtitle}</p>}
                         </div>
                         <Badge variant="outline" className={cn("text-[10px] font-mono", theme.accentBorder, theme.accentTextLight)}>
                           {skillsList.length} skills
@@ -1908,7 +2073,10 @@ export function VisualPortfolioBuilderStudioClient({
                             setIsRightOpen(true);
                           }}
                           className={cn(
-                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium text-white/50 border border-dashed border-white/20 transition-colors",
+                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium border border-dashed transition-colors",
+                            isLight
+                              ? "text-slate-500 border-slate-300 hover:text-slate-900"
+                              : "text-white/50 border-white/20 hover:text-white",
                             theme.accentBorderHover,
                             `hover:${theme.accentTextLight}`
                           )}
@@ -1935,9 +2103,9 @@ export function VisualPortfolioBuilderStudioClient({
                         <div>
                           <div className="flex items-center gap-2">
                             <Briefcase className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                            <h3 className="text-base font-bold text-white">{block.title}</h3>
+                            <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                           </div>
-                          {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
+                          {block.subtitle && <p className={cn("text-xs mt-0.5", txtMuted)}>{block.subtitle}</p>}
                         </div>
                         <Button
                           size="sm"
@@ -1967,22 +2135,22 @@ export function VisualPortfolioBuilderStudioClient({
 
                       <div className="space-y-4 pt-1">
                         {experiences.length === 0 ? (
-                          <div className="p-4 rounded-xl border border-dashed border-white/10 text-center text-xs text-white/40">
+                          <div className={cn("p-4 rounded-xl border border-dashed text-center text-xs", isLight ? "border-slate-200 text-slate-500" : "border-white/10 text-white/40")}>
                             No work experiences yet. Click "+ Add Role" to get started.
                           </div>
                         ) : (
                           experiences.map((exp: any, i: number) => (
                             <div key={i} className={cn("border-l-2 pl-4 space-y-1 relative", theme.accentBorder)}>
-                              <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4 ring-[#0d1422]", theme.accentText.replace("text-", "bg-"))} />
+                              <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4", timelineRing, theme.accentText.replace("text-", "bg-"))} />
                               <div className="flex justify-between items-baseline flex-wrap gap-2">
-                                <span className="text-xs font-bold text-white">{stripHtml(exp.role)}</span>
-                                <span className="text-[11px] text-white/50 font-mono">{exp.period}</span>
+                                <span className={cn("text-xs font-bold", txtPrimary)}>{stripHtml(exp.role)}</span>
+                                <span className={cn("text-[11px] font-mono", txtMuted)}>{exp.period}</span>
                               </div>
                               <p className={cn("text-xs font-medium", theme.accentText)}>
                                 {stripHtml(exp.company)}{exp.location ? ` • ${stripHtml(exp.location)}` : ""}
                               </p>
                               {exp.bullets && exp.bullets.length > 0 && (
-                                <ul className="list-disc list-inside text-xs text-white/70 space-y-1 mt-1.5 leading-relaxed">
+                                <ul className={cn("list-disc list-inside text-xs space-y-1 mt-1.5 leading-relaxed", txtSecondary)}>
                                   {exp.bullets.map((b: string, bi: number) => (
                                     <li key={bi}>{stripHtml(b)}</li>
                                   ))}
@@ -2010,9 +2178,9 @@ export function VisualPortfolioBuilderStudioClient({
                         <div>
                           <div className="flex items-center gap-2">
                             <FolderGit2 className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                            <h3 className="text-base font-bold text-white">{block.title}</h3>
+                            <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                           </div>
-                          {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
+                          {block.subtitle && <p className={cn("text-xs mt-0.5", txtMuted)}>{block.subtitle}</p>}
                         </div>
                         <Button
                           size="sm"
@@ -2041,14 +2209,14 @@ export function VisualPortfolioBuilderStudioClient({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                         {items.length === 0 ? (
-                          <div className="col-span-2 p-4 rounded-xl border border-dashed border-white/10 text-center text-xs text-white/40">
+                          <div className={cn("col-span-2 p-4 rounded-xl border border-dashed text-center text-xs", isLight ? "border-slate-200 text-slate-500" : "border-white/10 text-white/40")}>
                             No projects yet. Click "+ Add Project" to showcase work.
                           </div>
                         ) : (
                           items.map((proj: any, i: number) => (
-                            <div key={i} className={cn("p-4 rounded-xl border border-white/10 bg-white/[0.03] space-y-2 group transition-all", theme.accentBorderHover)}>
+                            <div key={i} className={cn("p-4 rounded-xl border space-y-2 group transition-all", cardBgSubtle, theme.accentBorderHover)}>
                               <div className="flex items-center justify-between gap-2">
-                                <p className={cn("text-xs font-bold text-white transition-colors", `group-hover:${theme.accentTextLight}`)}>
+                                <p className={cn("text-xs font-bold transition-colors", txtPrimary, `group-hover:${theme.accentTextLight}`)}>
                                   {stripHtml(proj.name)}
                                 </p>
                                 {proj.link && (
@@ -2057,13 +2225,13 @@ export function VisualPortfolioBuilderStudioClient({
                                     target="_blank"
                                     rel="noreferrer"
                                     onClick={e => e.stopPropagation()}
-                                    className={cn("text-white/40 transition-colors", `hover:${theme.accentText}`)}
+                                    className={cn("transition-colors", isLight ? "text-slate-400 hover:text-slate-900" : "text-white/40 hover:text-white", `hover:${theme.accentText}`)}
                                   >
                                     <ExternalLink className="h-3 w-3" />
                                   </a>
                                 )}
                               </div>
-                              <p className="text-xs text-white/70 line-clamp-3 leading-relaxed">{stripHtml(proj.desc)}</p>
+                              <p className={cn("text-xs line-clamp-3 leading-relaxed", txtSecondary)}>{stripHtml(proj.desc)}</p>
                               {proj.tags && proj.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 pt-1">
                                   {proj.tags.map((tag: string, ti: number) => (
@@ -2095,9 +2263,9 @@ export function VisualPortfolioBuilderStudioClient({
                         <div>
                           <div className="flex items-center gap-2">
                             <GraduationCap className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                            <h3 className="text-base font-bold text-white">{block.title}</h3>
+                            <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                           </div>
-                          {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
+                          {block.subtitle && <p className={cn("text-xs mt-0.5", txtMuted)}>{block.subtitle}</p>}
                         </div>
                         <Button
                           size="sm"
@@ -2127,22 +2295,22 @@ export function VisualPortfolioBuilderStudioClient({
 
                       <div className="space-y-4 pt-1">
                         {entries.length === 0 ? (
-                          <div className="p-4 rounded-xl border border-dashed border-white/10 text-center text-xs text-white/40">
+                          <div className={cn("p-4 rounded-xl border border-dashed text-center text-xs", isLight ? "border-slate-200 text-slate-500" : "border-white/10 text-white/40")}>
                             No degrees added yet. Click "+ Add Degree" to specify education.
                           </div>
                         ) : (
                           entries.map((edu: any, i: number) => (
                             <div key={i} className={cn("border-l-2 pl-4 space-y-1 relative", theme.accentBorder)}>
-                              <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4 ring-[#0d1422]", theme.accentText.replace("text-", "bg-"))} />
+                              <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4", timelineRing, theme.accentText.replace("text-", "bg-"))} />
                               <div className="flex justify-between items-baseline flex-wrap gap-2">
-                                <span className="text-xs font-bold text-white">{stripHtml(edu.degree || edu.institution)}</span>
-                                <span className="text-[11px] text-white/50 font-mono">{edu.period}</span>
+                                <span className={cn("text-xs font-bold", txtPrimary)}>{stripHtml(edu.degree || edu.institution)}</span>
+                                <span className={cn("text-[11px] font-mono", txtMuted)}>{edu.period}</span>
                               </div>
                               <p className={cn("text-xs font-medium", theme.accentText)}>
                                 {stripHtml(edu.institution)}{edu.field ? ` • ${stripHtml(edu.field)}` : ""}
                               </p>
                               {edu.honors && (
-                                <p className="text-xs text-white/60">{stripHtml(edu.honors)}</p>
+                                <p className={cn("text-xs", txtSecondary)}>{stripHtml(edu.honors)}</p>
                               )}
                             </div>
                           ))
@@ -2165,19 +2333,19 @@ export function VisualPortfolioBuilderStudioClient({
                     >
                       <div className="flex items-center gap-2 mb-3">
                         <Video className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                        <h3 className="text-base font-bold text-white">{block.title}</h3>
+                        <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                       </div>
-                      {block.subtitle && <p className="text-xs text-white/50 mb-3">{block.subtitle}</p>}
+                      {block.subtitle && <p className={cn("text-xs mb-3", txtMuted)}>{block.subtitle}</p>}
 
                       <div className={cn("p-5 rounded-xl border flex flex-col sm:flex-row items-center gap-4", theme.accentBorder, theme.accentBg)}>
                         <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm", theme.accentBg, theme.accentText)}>
                           <Play className={cn("h-5 w-5 fill-current", theme.accentText)} />
                         </div>
                         <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-white">
+                          <h4 className={cn("text-xs font-bold", txtPrimary)}>
                             {stripHtml(block.content?.pitchTitle) || "60-Second Career Elevator Pitch"}
                           </h4>
-                          <p className="text-xs text-white/60 leading-relaxed">
+                          <p className={cn("text-xs leading-relaxed", txtSecondary)}>
                             {stripHtml(block.content?.summary) || "Watch introduction highlighting core strengths and delivery results."}
                           </p>
                         </div>
@@ -2191,9 +2359,9 @@ export function VisualPortfolioBuilderStudioClient({
                       {highlights.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                           {highlights.map((h: string, hi: number) => (
-                            <div key={hi} className="p-2.5 rounded-lg border border-white/10 bg-white/[0.02] flex items-center gap-2">
+                            <div key={hi} className={cn("p-2.5 rounded-lg border flex items-center gap-2", cardBgSubtle)}>
                               <CheckCircle2 className={cn("h-3 w-3 shrink-0", theme.accentText)} />
-                              <span className="text-xs text-white/80">{stripHtml(h)}</span>
+                              <span className={cn("text-xs", txtPrimary)}>{stripHtml(h)}</span>
                             </div>
                           ))}
                         </div>
@@ -2214,17 +2382,17 @@ export function VisualPortfolioBuilderStudioClient({
                     >
                       <div className="flex items-center gap-2 mb-3">
                         <ShieldCheck className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                        <h3 className="text-base font-bold text-white">{block.title}</h3>
+                        <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                       </div>
-                      {block.subtitle && <p className="text-xs text-white/50 mb-3">{block.subtitle}</p>}
+                      {block.subtitle && <p className={cn("text-xs mb-3", txtMuted)}>{block.subtitle}</p>}
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {badges.map((badge: any, i: number) => (
                           <div key={i} className={cn("p-3.5 rounded-xl border flex items-center gap-3 transition-colors", theme.accentBorder, theme.accentBg, theme.accentBorderHover)}>
                             <Award className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-white truncate">{stripHtml(badge.name)}</p>
-                              <p className="text-[10px] text-white/50">{stripHtml(badge.issuer)} • {stripHtml(badge.date)}</p>
+                              <p className={cn("text-xs font-bold truncate", txtPrimary)}>{stripHtml(badge.name)}</p>
+                              <p className={cn("text-[10px]", txtMuted)}>{stripHtml(badge.issuer)} • {stripHtml(badge.date)}</p>
                             </div>
                           </div>
                         ))}
@@ -2251,12 +2419,12 @@ export function VisualPortfolioBuilderStudioClient({
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Mail className={cn("h-4 w-4 shrink-0", theme.accentText)} />
-                        <h3 className="text-base font-bold text-white">{block.title}</h3>
+                        <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
                       </div>
-                      {block.subtitle && <p className="text-xs text-white/50 mb-3">{block.subtitle}</p>}
-                      {note && <p className="text-xs text-white/70 mb-3">{stripHtml(note)}</p>}
+                      {block.subtitle && <p className={cn("text-xs mb-3", txtMuted)}>{block.subtitle}</p>}
+                      {note && <p className={cn("text-xs mb-3", txtSecondary)}>{stripHtml(note)}</p>}
 
-                      <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] flex flex-wrap gap-2.5 items-center">
+                      <div className={cn("p-4 rounded-xl border flex flex-wrap gap-2.5 items-center", cardBgSubtle)}>
                         {email && (
                           <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border", theme.accentBadge)}>
                             <Mail className="h-3.5 w-3.5" />
@@ -2264,31 +2432,48 @@ export function VisualPortfolioBuilderStudioClient({
                           </span>
                         )}
                         {phone && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-300 border border-blue-500/30 text-xs font-semibold">
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border",
+                            isLight
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : "bg-blue-500/15 text-blue-300 border-blue-500/30"
+                          )}>
                             <Phone className="h-3.5 w-3.5" />
                             {stripHtml(phone)}
                           </span>
                         )}
                         {location && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs">
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs",
+                            isLight ? "bg-slate-200/80 text-slate-800" : "bg-white/10 text-white/70"
+                          )}>
                             <Globe className={cn("h-3.5 w-3.5", theme.accentText)} />
                             {stripHtml(location)}
                           </span>
                         )}
                         {linkedin && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs">
-                            <Linkedin className="h-3.5 w-3.5 text-blue-400" />
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs",
+                            isLight ? "bg-slate-200/80 text-slate-800" : "bg-white/10 text-white/70"
+                          )}>
+                            <Linkedin className="h-3.5 w-3.5 text-blue-500" />
                             LinkedIn
                           </span>
                         )}
                         {github && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs">
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs",
+                            isLight ? "bg-slate-200/80 text-slate-800" : "bg-white/10 text-white/70"
+                          )}>
                             <Github className="h-3.5 w-3.5" />
                             GitHub
                           </span>
                         )}
                         {website && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs">
+                          <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs",
+                            isLight ? "bg-slate-200/80 text-slate-800" : "bg-white/10 text-white/70"
+                          )}>
                             <Globe className={cn("h-3.5 w-3.5", theme.accentText)} />
                             Website
                           </span>
@@ -2305,9 +2490,9 @@ export function VisualPortfolioBuilderStudioClient({
                     onClick={() => setSelectedBlockId(block.id)}
                     className={containerStyle}
                   >
-                    <h3 className="text-base font-bold text-white">{block.title}</h3>
-                    {block.subtitle && <p className="text-xs text-white/50 mb-2">{block.subtitle}</p>}
-                    <div className="p-4 rounded-lg bg-white/[0.02] border border-white/5 text-xs text-white/60">
+                    <h3 className={cn("text-base font-bold", txtPrimary)}>{block.title}</h3>
+                    {block.subtitle && <p className={cn("text-xs mb-2", txtMuted)}>{block.subtitle}</p>}
+                    <div className={cn("p-4 rounded-lg border text-xs", isLight ? "bg-slate-100 border-slate-200 text-slate-600" : "bg-white/[0.02] border-white/5 text-white/60")}>
                       {String((block as any).type || "custom").toUpperCase()} block content
                     </div>
                   </div>
