@@ -297,6 +297,14 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
                 Smart Import
               </Link>
               <Link
+                href="/dashboard/memory"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Brain className="h-4 w-4 text-primary" />
+                Career Memory
+              </Link>
+              <Link
                 href="/dashboard/optimize"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
                 onClick={() => setMobileMenuOpen(false)}

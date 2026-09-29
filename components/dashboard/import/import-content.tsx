@@ -28,7 +28,16 @@ import {
   Eye,
   Briefcase,
   GraduationCap,
-  Award
+  Award,
+  Brain,
+  Clock,
+  User,
+  FolderGit2,
+  Download,
+  Upload,
+  RefreshCw,
+  FileText,
+  Layers,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -45,6 +54,8 @@ import {
 } from "@/components/ui/dialog";
 import { validateLinkedInUrl } from "@/lib/scrapers/linkedin-scraper";
 import { cn } from "@/lib/utils";
+import { useUserMemoryStore } from "@/lib/stores/user-memory-store";
+import { calculateMemoryCompleteness } from "@/lib/types/user-memory";
 
 interface ImportContentProps {
   resumes: any[];
@@ -60,6 +71,15 @@ export function ImportContent({ resumes }: ImportContentProps) {
   const [selectedResumeId, setSelectedResumeId] = useState("");
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<{ title: string; description: string } | null>(null);
+
+  // User Memory synchronization states
+  const [syncToMemory, setSyncToMemory] = useState(true);
+  const [creatingMemoryResume, setCreatingMemoryResume] = useState(false);
+  const [selectedMemorySourceResumeId, setSelectedMemorySourceResumeId] = useState("");
+  const [isHarvesting, setIsHarvesting] = useState(false);
+
+  const { memory, importFromResumeData, fetchFromServer } = useUserMemoryStore();
+  const { score: completenessScore } = calculateMemoryCompleteness(memory);
 
   // Phase 41: Extraction Verification Preview Modal State
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
@@ -132,6 +152,9 @@ export function ImportContent({ resumes }: ImportContentProps) {
         toast.success("Profile parsed successfully! Review below before creating resume.");
       } else if (data.resumeId) {
         setPreviewModalOpen(false);
+        if (syncToMemory && data.resumeData) {
+          importFromResumeData(data.resumeData, "LinkedIn Import");
+        }
         toast.success("Resume imported successfully from LinkedIn!");
         router.push(`/dashboard/resume/${data.resumeId}`);
       }
@@ -139,6 +162,54 @@ export function ImportContent({ resumes }: ImportContentProps) {
       handleError(error, "LinkedIn Import");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateResumeFromMemory = async () => {
+    setCreatingMemoryResume(true);
+    try {
+      const res = await fetch("/api/user-memory/create-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memory,
+          title: `${memory.basics?.full_name || "Candidate"} Resume (From Memory)`,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to generate resume");
+      }
+
+      const data = await res.json();
+      toast.success("Resume created successfully from your Career Memory!");
+      router.push(`/dashboard/resume/${data.resumeId}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to create resume from memory");
+    } finally {
+      setCreatingMemoryResume(false);
+    }
+  };
+
+  const handleHarvestResumeIntoMemory = async () => {
+    if (!selectedMemorySourceResumeId) {
+      toast.error("Please select a resume to harvest");
+      return;
+    }
+
+    setIsHarvesting(true);
+    try {
+      const res = await fetch(`/api/resumes/${selectedMemorySourceResumeId}`);
+      if (!res.ok) throw new Error("Could not fetch resume details");
+      const fullResumeData = await res.json();
+
+      importFromResumeData(fullResumeData, `Harvested from ${fullResumeData.title || "Resume"}`);
+      toast.success("Career Memory successfully updated from selected resume!");
+    } catch (e: any) {
+      toast.error(e.message || "Harvest failed");
+    } finally {
+      setIsHarvesting(false);
     }
   };
 
@@ -177,7 +248,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
   return (
     <>
       <Tabs defaultValue="linkedin" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-muted/80 border border-border p-1.5 h-13 rounded-2xl grid grid-cols-2 max-w-[360px] shadow-xs">
+        <TabsList className="bg-muted/80 border border-border p-1.5 h-13 rounded-2xl grid grid-cols-3 max-w-[540px] shadow-xs">
           <TabsTrigger
             value="linkedin"
             className="rounded-xl data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs font-bold uppercase tracking-wider text-xs gap-2 text-muted-foreground transition-all hover:text-foreground cursor-pointer"
@@ -191,6 +262,13 @@ export function ImportContent({ resumes }: ImportContentProps) {
           >
             <Github className="h-4 w-4 text-foreground" />
             GitHub
+          </TabsTrigger>
+          <TabsTrigger
+            value="memory"
+            className="rounded-xl data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs font-bold uppercase tracking-wider text-xs gap-2 text-muted-foreground transition-all hover:text-foreground cursor-pointer"
+          >
+            <Brain className="h-4 w-4 text-primary" />
+            Career Memory
           </TabsTrigger>
         </TabsList>
 
@@ -329,6 +407,20 @@ export function ImportContent({ resumes }: ImportContentProps) {
                         </div>
                       </div>
 
+                      <div className="flex items-center gap-2.5 p-3 rounded-xl border border-primary/20 bg-primary/5">
+                        <input
+                          type="checkbox"
+                          id="syncToMemoryUrl"
+                          checked={syncToMemory}
+                          onChange={(e) => setSyncToMemory(e.target.checked)}
+                          className="h-4 w-4 rounded accent-primary cursor-pointer"
+                        />
+                        <Label htmlFor="syncToMemoryUrl" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-1.5">
+                          <Brain className="h-3.5 w-3.5 text-primary" />
+                          Automatically sync extracted candidate profile into Career Memory
+                        </Label>
+                      </div>
+
                       {/* Action Buttons */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <Button
@@ -389,6 +481,20 @@ export function ImportContent({ resumes }: ImportContentProps) {
                         value={linkedinData}
                         onChange={(e) => setLinkedinData(e.target.value)}
                       />
+
+                      <div className="flex items-center gap-2.5 p-3 rounded-xl border border-primary/20 bg-primary/5">
+                        <input
+                          type="checkbox"
+                          id="syncToMemoryText"
+                          checked={syncToMemory}
+                          onChange={(e) => setSyncToMemory(e.target.checked)}
+                          className="h-4 w-4 rounded accent-primary cursor-pointer"
+                        />
+                        <Label htmlFor="syncToMemoryText" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-1.5">
+                          <Brain className="h-3.5 w-3.5 text-primary" />
+                          Automatically sync extracted candidate profile into Career Memory
+                        </Label>
+                      </div>
                       <Button
                         onClick={() => handleLinkedinImport(false)}
                         disabled={loading || !linkedinData}
@@ -487,6 +593,156 @@ export function ImportContent({ resumes }: ImportContentProps) {
                       )}
                     </div>
                   </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TAB 3: CAREER MEMORY INGESTION & SYNTHESIZER */}
+            <TabsContent value="memory" className="m-0">
+              <Card className="bg-card text-card-foreground border border-border rounded-2xl md:rounded-3xl overflow-hidden shadow-xs">
+                <div className="min-h-[5.5rem] bg-gradient-to-r from-primary/15 via-muted/30 to-transparent border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:px-8">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+                      <Brain className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Career Memory Synthesizer</h2>
+                        <Badge variant="outline" className="text-[10px] font-bold border-primary/30 text-primary bg-primary/10">
+                          Universal Knowledge Core
+                        </Badge>
+                      </div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-0.5">
+                        One-click ingestion from your unified career memory into resumes, portfolios, and job applications
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => router.push("/dashboard/memory")}
+                    variant="outline"
+                    className="rounded-xl border-primary/30 hover:border-primary text-xs font-bold gap-1.5 shrink-0 cursor-pointer"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                    Open Full Memory Hub
+                  </Button>
+                </div>
+
+                <CardContent className="p-6 sm:p-8 space-y-6">
+                  {/* Candidate Overview Card */}
+                  <div className="p-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-card space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-14 w-14 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary font-black text-2xl shrink-0">
+                          {memory.basics?.full_name?.charAt(0) || "U"}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-foreground">
+                            {memory.basics?.full_name || "Anonymous Candidate"}
+                          </h3>
+                          <p className="text-xs font-semibold text-primary">
+                            {memory.basics?.headline || "Professional Career Profile"}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {memory.basics?.location || "Location not set"} • {memory.basics?.email || "No email"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Completeness Badge */}
+                      <div className="p-3 rounded-xl bg-card border border-border/80 text-right sm:text-right shrink-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Memory Score</p>
+                        <p className="text-xl font-black text-primary font-mono">{completenessScore}%</p>
+                      </div>
+                    </div>
+
+                    {/* Quick Metric Pills */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                      <div className="p-3 rounded-xl bg-background/80 border border-border/60 text-center">
+                        <p className="text-xs font-bold text-foreground">{memory.experiences?.length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Roles</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-background/80 border border-border/60 text-center">
+                        <p className="text-xs font-bold text-foreground">{memory.skills?.length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Skills</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-background/80 border border-border/60 text-center">
+                        <p className="text-xs font-bold text-foreground">{memory.projects?.length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Projects</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-background/80 border border-border/60 text-center">
+                        <p className="text-xs font-bold text-foreground">{memory.education?.length || 0}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Degrees</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Primary Synthesize Actions */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div className="p-5 rounded-2xl border border-border/80 bg-card/60 space-y-3 flex flex-col justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-primary" />
+                          Synthesize Resume from Memory
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          Instant one-click builder that compiles all your stored career history, education, verified skills, and projects into an ATS-formatted resume.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleCreateResumeFromMemory}
+                        disabled={creatingMemoryResume}
+                        className="w-full h-11 rounded-xl font-bold uppercase tracking-wider text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-sm cursor-pointer"
+                      >
+                        {creatingMemoryResume ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Building Resume...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4" />
+                            <span>Build Resume from Memory</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="p-5 rounded-2xl border border-border/80 bg-card/60 space-y-3 flex flex-col justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-primary" />
+                          Harvest Existing Resume into Memory
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          Extract contacts, jobs, skills, and projects from any existing resume in your workspace to enrich your permanent Memory.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Select value={selectedMemorySourceResumeId} onValueChange={setSelectedMemorySourceResumeId}>
+                          <SelectTrigger className="h-11 bg-background text-foreground border border-input rounded-xl font-medium text-xs">
+                            <SelectValue placeholder="Select resume to harvest..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {resumes.map((r) => (
+                              <SelectItem key={r.id} value={r.id} className="text-xs">
+                                {r.title || "Untitled Resume"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          onClick={handleHarvestResumeIntoMemory}
+                          disabled={isHarvesting || !selectedMemorySourceResumeId}
+                          variant="outline"
+                          className="w-full h-10 rounded-xl font-bold text-xs gap-1.5 cursor-pointer"
+                        >
+                          {isHarvesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                          Extract into Memory
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

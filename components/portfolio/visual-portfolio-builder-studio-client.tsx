@@ -53,6 +53,7 @@ import {
   Edit3,
   X,
   Link2,
+  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +61,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { useUserMemoryStore } from "@/lib/stores/user-memory-store";
+import { calculateMemoryCompleteness } from "@/lib/types/user-memory";
 import { cn } from "@/lib/utils";
 
 export function stripHtml(input?: string): string {
@@ -425,6 +428,13 @@ export function VisualPortfolioBuilderStudioClient({
     return (portfolio?.theme_settings?.typography as any) || "sans";
   });
   const [canvasBgMode, setCanvasBgMode] = useState<"deep" | "midnight" | "slate" | "pure">("deep");
+  
+  const { memory, fetchFromServer: fetchMemory } = useUserMemoryStore();
+  const memoryCompleteness = calculateMemoryCompleteness(memory);
+
+  React.useEffect(() => {
+    fetchMemory();
+  }, [fetchMemory]);
 
   const [isActiveLayout, setIsActiveLayout] = useState<boolean>(() => {
     if (portfolio?.active_layout) {
@@ -692,6 +702,158 @@ export function VisualPortfolioBuilderStudioClient({
         handleAddBlock("projects", newTitle, newContent, targetStyle);
         toast.success(`Imported projects from "${resume.title}"`);
       }
+    }
+  };
+
+  const handleImportMemorySection = (section: "hero" | "skills" | "experience" | "education" | "projects" | "contact" | "all") => {
+    const currentMemory = useUserMemoryStore.getState().memory;
+    const targetStyle: CanvasBlock["backgroundStyle"] = blocks.length > 0 ? blocks[0].backgroundStyle : "mesh";
+
+    if (section === "hero" || section === "all") {
+      const heroIdx = blocks.findIndex(b => b.type === "hero");
+      const heroContent = {
+        tagline: currentMemory.basics.headline || "Senior Professional & Systems Architect",
+        bio: currentMemory.basics.bio || currentMemory.basics.headline || "Passionate engineer delivering high-impact solutions.",
+        openToWork: true,
+        avatarUrl: currentMemory.basics.avatar_url || "",
+        coverUrl: "",
+        ctaText: "Get in Touch",
+        ctaLink: "#contact",
+      };
+
+      if (heroIdx >= 0) {
+        setBlocks(prev => prev.map((b, idx) => idx === heroIdx ? {
+          ...b,
+          content: { ...b.content, ...heroContent },
+          visible: true,
+        } : b));
+      } else {
+        handleAddBlock("hero", "Candidate Hero & Bio", heroContent, "gradient");
+      }
+      if (section === "hero") toast.success("Hero & Bio updated from Career Memory!");
+    }
+
+    if (section === "skills" || section === "all") {
+      const skillsIdx = blocks.findIndex(b => b.type === "skills");
+      const skillsList = currentMemory.skills && currentMemory.skills.length > 0
+        ? currentMemory.skills.map(s => s.name)
+        : ["TypeScript", "Next.js", "React", "PostgreSQL", "Node.js", "Tailwind CSS"];
+      const newContent = { skills: skillsList };
+
+      if (skillsIdx >= 0) {
+        setBlocks(prev => prev.map((b, idx) => idx === skillsIdx ? {
+          ...b,
+          title: "Core Competencies & Stack",
+          content: newContent,
+          visible: true,
+        } : b));
+      } else {
+        handleAddBlock("skills", "Core Competencies & Stack", newContent, "glass");
+      }
+      if (section === "skills") toast.success(`Imported ${skillsList.length} skills from Career Memory!`);
+    }
+
+    if (section === "experience" || section === "all") {
+      const expIdx = blocks.findIndex(b => b.type === "experience");
+      const experiences = (currentMemory.experiences || []).map(w => ({
+        company: w.company || "Tech Company",
+        role: w.position || "Software Engineer",
+        period: `${w.start_date || "2022"} - ${w.is_current ? "Present" : w.end_date || "2024"}`,
+        location: w.location || "Remote",
+        bullets: w.highlights && w.highlights.length > 0
+          ? w.highlights
+          : (w.description ? [w.description] : ["Delivered core business features and architectures."])
+      }));
+      const newContent = { experiences: experiences.length > 0 ? experiences : undefined };
+
+      if (expIdx >= 0) {
+        setBlocks(prev => prev.map((b, idx) => idx === expIdx ? {
+          ...b,
+          title: "Professional Work Experience",
+          content: newContent,
+          visible: true,
+        } : b));
+      } else {
+        handleAddBlock("experience", "Professional Work Experience", newContent, "clean");
+      }
+      if (section === "experience") toast.success(`Imported ${experiences.length} work positions from Career Memory!`);
+    }
+
+    if (section === "education" || section === "all") {
+      const eduIdx = blocks.findIndex(b => b.type === "education");
+      const eduEntries = (currentMemory.education || []).map(e => ({
+        institution: e.institution || "University",
+        degree: e.degree || "Bachelor's Degree",
+        field: e.field_of_study || "Computer Science",
+        period: `${e.start_date || ""} - ${e.end_date || ""}`,
+        honors: e.gpa ? `GPA: ${e.gpa}` : ""
+      }));
+      const newContent = { entries: eduEntries.length > 0 ? eduEntries : undefined };
+
+      if (eduIdx >= 0) {
+        setBlocks(prev => prev.map((b, idx) => idx === eduIdx ? {
+          ...b,
+          title: "Education & Academic Honors",
+          content: newContent,
+          visible: true,
+        } : b));
+      } else {
+        handleAddBlock("education", "Education & Academic Honors", newContent, "clean");
+      }
+      if (section === "education") toast.success(`Imported ${eduEntries.length} education records from Career Memory!`);
+    }
+
+    if (section === "projects" || section === "all") {
+      const projIdx = blocks.findIndex(b => b.type === "projects");
+      const projItems = (currentMemory.projects || []).map(p => ({
+        name: p.name || "Project",
+        desc: p.description || "Project overview and features.",
+        tags: Array.isArray(p.technologies) && p.technologies.length > 0 ? p.technologies : ["TypeScript", "Next.js"],
+        link: p.url || p.github_url || ""
+      }));
+      const newContent = { items: projItems.length > 0 ? projItems : undefined };
+
+      if (projIdx >= 0) {
+        setBlocks(prev => prev.map((b, idx) => idx === projIdx ? {
+          ...b,
+          title: "Featured Engineering Projects",
+          content: newContent,
+          visible: true,
+        } : b));
+      } else {
+        handleAddBlock("projects", "Featured Engineering Projects", newContent, "mesh");
+      }
+      if (section === "projects") toast.success(`Imported ${projItems.length} projects from Career Memory!`);
+    }
+
+    if (section === "contact" || section === "all") {
+      const contactIdx = blocks.findIndex(b => b.type === "contact");
+      const contactContent = {
+        email: currentMemory.basics.email || "",
+        phone: currentMemory.basics.phone || "",
+        location: currentMemory.basics.location || "",
+        linkedin: currentMemory.socials.linkedin || "",
+        github: currentMemory.socials.github || "",
+        website: currentMemory.socials.portfolio || "",
+        note: currentMemory.preferences.target_roles?.length
+          ? `Seeking opportunities as ${currentMemory.preferences.target_roles.join(", ")}.`
+          : "Open to discussions and collaboration."
+      };
+
+      if (contactIdx >= 0) {
+        setBlocks(prev => prev.map((b, idx) => idx === contactIdx ? {
+          ...b,
+          content: { ...b.content, ...contactContent },
+          visible: true,
+        } : b));
+      } else {
+        handleAddBlock("contact", "Let's Connect & Collaborate", contactContent, "gradient");
+      }
+      if (section === "contact") toast.success("Contact details updated from Career Memory!");
+    }
+
+    if (section === "all") {
+      toast.success("Synchronized all blocks from Career Memory!");
     }
   };
 
@@ -1391,15 +1553,115 @@ export function VisualPortfolioBuilderStudioClient({
 
               {/* TAB 3: IMPORT DATA */}
               {activeLeftTab === "resume" && (
-                <div className="space-y-3">
-                  <p className="text-xs text-white/60">
-                    Import parsed career milestones, skills, and projects directly from your verified resumes into canvas blocks.
-                  </p>
-                  {resumes.length === 0 ? (
-                    <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] text-center text-xs text-white/40">
-                      No parsed resumes found in your account yet.
+                <div className="space-y-4">
+                  {/* Career Memory Section */}
+                  <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/40 to-[#0e1726] space-y-3 shadow-md">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                          <Brain className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">Career Memory</p>
+                          <p className="text-[10px] text-emerald-300/80 font-mono">
+                            {memoryCompleteness.score}% complete
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[9px] font-mono">
+                        SYNCED
+                      </Badge>
                     </div>
-                  ) : (
+
+                    <div className="flex items-center gap-1.5 text-[10px] text-white/50 flex-wrap">
+                      <span>{memory.experiences?.length || 0} jobs</span> •
+                      <span>{memory.skills?.length || 0} skills</span> •
+                      <span>{memory.projects?.length || 0} projects</span> •
+                      <span>{memory.education?.length || 0} degrees</span>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      onClick={() => handleImportMemorySection("all")}
+                      className="w-full text-xs h-7 bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                    >
+                      <Sparkles className="h-3 w-3 mr-1.5" />
+                      Sync All Blocks from Memory
+                    </Button>
+
+                    <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-white/10">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleImportMemorySection("hero")}
+                        className="text-[11px] h-7 bg-white/10 text-white hover:bg-white/20 justify-start px-2"
+                      >
+                        + Hero & Bio
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleImportMemorySection("skills")}
+                        className="text-[11px] h-7 bg-white/10 text-white hover:bg-white/20 justify-start px-2"
+                      >
+                        + Skills ({memory.skills?.length || 0})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleImportMemorySection("experience")}
+                        className="text-[11px] h-7 bg-white/10 text-white hover:bg-white/20 justify-start px-2"
+                      >
+                        + Work ({memory.experiences?.length || 0})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleImportMemorySection("projects")}
+                        className="text-[11px] h-7 bg-white/10 text-white hover:bg-white/20 justify-start px-2"
+                      >
+                        + Projects ({memory.projects.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleImportMemorySection("education")}
+                        className="text-[11px] h-7 bg-white/10 text-white hover:bg-white/20 justify-start px-2"
+                      >
+                        + Education ({memory.education.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleImportMemorySection("contact")}
+                        className="text-[11px] h-7 bg-white/10 text-white hover:bg-white/20 justify-start px-2"
+                      >
+                        + Contact Info
+                      </Button>
+                    </div>
+
+                    <div className="text-center pt-0.5">
+                      <Link
+                        href="/dashboard/memory"
+                        className="text-[10px] text-emerald-400 hover:text-emerald-300 underline font-medium"
+                      >
+                        Manage & Edit Career Memory →
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/10 space-y-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/40 px-1">
+                      From Saved Resumes ({resumes.length})
+                    </span>
+                    <p className="text-xs text-white/60">
+                      Import parsed career milestones, skills, and projects directly from your verified resumes into canvas blocks.
+                    </p>
+                    {resumes.length === 0 ? (
+                      <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] text-center text-xs text-white/40">
+                        No parsed resumes found in your account yet.
+                      </div>
+                    ) : (
                     resumes.map(r => (
                       <div key={r.id} className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] space-y-2.5">
                         <div className="flex items-center justify-between">
@@ -1445,6 +1707,7 @@ export function VisualPortfolioBuilderStudioClient({
                       </div>
                     ))
                   )}
+                  </div>
                 </div>
               )}
 

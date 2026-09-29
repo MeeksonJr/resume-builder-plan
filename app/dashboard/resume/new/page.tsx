@@ -22,6 +22,7 @@ import {
     Code,
     Briefcase,
     TrendingUp,
+    Brain,
 } from "lucide-react";
 import { toast } from "sonner";
 import { TemplateGallery } from "@/components/templates/template-gallery";
@@ -30,6 +31,8 @@ import { SAMPLE_PERSONAS } from "@/lib/templates/sample-personas";
 import { JsonImportDialog } from "@/components/import/json-import-dialog";
 import { ImportDialog } from "@/components/import/import-dialog";
 import type { ParsedResumeData } from "@/lib/export/json-import";
+import { useUserMemoryStore } from "@/lib/stores/user-memory-store";
+import { calculateMemoryCompleteness } from "@/lib/types/user-memory";
 import { cn } from "@/lib/utils";
 
 type WizardStep = "template" | "content" | "finalize";
@@ -95,6 +98,83 @@ export default function NewResumePage() {
             setTitle(`${selectedTemplate.name} Resume`);
         }
         setCurrentStep("content");
+    };
+
+    const { memory, fetchFromServer: fetchMemory } = useUserMemoryStore();
+    const memoryCompleteness = calculateMemoryCompleteness(memory);
+
+    useEffect(() => {
+        fetchMemory();
+    }, [fetchMemory]);
+
+    const handleImportFromMemory = () => {
+        const currentMemory = useUserMemoryStore.getState().memory;
+        const memoryScore = calculateMemoryCompleteness(currentMemory);
+
+        const parsed: ParsedResumeData = {
+            title: currentMemory.basics.full_name
+                ? `${currentMemory.basics.full_name}'s Resume`
+                : `${selectedTemplate.name} Resume`,
+            profile: {
+                full_name: currentMemory.basics.full_name || "",
+                email: currentMemory.basics.email || "",
+                phone: currentMemory.basics.phone || "",
+                location: currentMemory.basics.location || "",
+                linkedin_url: currentMemory.socials.linkedin || "",
+                github_url: currentMemory.socials.github || "",
+                website_url: currentMemory.socials.portfolio || "",
+                summary: currentMemory.basics.bio || currentMemory.basics.headline || "",
+            },
+            workExperiences: (currentMemory.experiences || []).map((w, idx) => ({
+                company: w.company,
+                position: w.position,
+                location: w.location,
+                start_date: w.start_date,
+                end_date: w.end_date,
+                is_current: !!w.is_current,
+                description: w.description || "",
+                highlights: w.highlights || [],
+                display_order: idx,
+            })),
+            education: (currentMemory.education || []).map((e, idx) => ({
+                institution: e.institution,
+                degree: e.degree,
+                field_of_study: e.field_of_study || "",
+                start_date: e.start_date,
+                end_date: e.end_date,
+                gpa: e.gpa,
+                highlights: e.highlights || [],
+                display_order: idx,
+            })),
+            skills: (currentMemory.skills || []).map((s, idx) => ({
+                name: s.name,
+                category: s.category || "General",
+                proficiency_level: s.proficiency || 4,
+                display_order: idx,
+            })),
+            projects: (currentMemory.projects || []).map((p, idx) => ({
+                name: p.name,
+                description: p.description,
+                technologies: p.technologies || [],
+                url: p.url || p.github_url,
+                highlights: p.highlights || [],
+                display_order: idx,
+            })),
+            certifications: (currentMemory.certifications || []).map((c, idx) => ({
+                name: c.name,
+                issuer: c.issuer,
+                issue_date: c.issue_date,
+                credential_url: c.credential_url,
+                display_order: idx,
+            })),
+            languages: [],
+        };
+
+        setImportedData(parsed);
+        setContentSource("imported");
+        if (parsed.title) setTitle(parsed.title);
+        toast.success(`Loaded profile, ${parsed.workExperiences.length} jobs, and ${parsed.skills.length} skills from Career Memory!`);
+        setCurrentStep("finalize");
     };
 
     const handleJSONImported = (data: ParsedResumeData) => {
@@ -556,7 +636,57 @@ export default function NewResumePage() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {/* Option 0: Career Memory */}
+                        <Card className="rounded-none border-2 border-[#0d8274] bg-gradient-to-b from-[#f5fbf9] to-white shadow-md flex flex-col justify-between hover:shadow-lg transition-all relative overflow-hidden">
+                            <div className="absolute top-0 right-0 bg-[#0d8274] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5">
+                                Recommended
+                            </div>
+                            <CardHeader className="space-y-3">
+                                <div className="h-10 w-10 bg-[#0d8274]/15 flex items-center justify-center text-[#0d8274]">
+                                    <Brain className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-bold text-[#102b2b]">
+                                        Your Career Memory
+                                    </CardTitle>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <div className="h-1.5 flex-1 bg-slate-200 overflow-hidden">
+                                             <div
+                                                className="h-full bg-[#0d8274] transition-all"
+                                                style={{ width: `${memoryCompleteness.score}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-[10px] font-mono font-bold text-[#0d8274]">
+                                            {memoryCompleteness.score}%
+                                        </span>
+                                    </div>
+                                </div>
+                                <CardDescription className="text-xs text-[#52716a] leading-relaxed">
+                                    Instant load from your synced memory: {memory.experiences?.length || 0} jobs, {memory.education?.length || 0} degrees, {memory.skills?.length || 0} skills, and social handles.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardFooter className="pt-2 flex flex-col gap-2">
+                                <Button
+                                    onClick={handleImportFromMemory}
+                                    className="w-full rounded-none bg-[#0d8274] text-white hover:bg-[#0a685d] text-xs font-bold h-10 gap-1.5 shadow-sm"
+                                >
+                                    <Brain className="h-3.5 w-3.5" />
+                                    <span>Use Career Memory</span>
+                                    <ArrowRight className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    className="w-full rounded-none text-[11px] font-semibold text-[#52716a] hover:text-[#102b2b] h-7"
+                                >
+                                    <Link href="/dashboard/memory">
+                                        Manage Memory Details
+                                    </Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+
                         {/* Option 1: Import Existing Resume */}
                         <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm flex flex-col justify-between hover:border-[#102b2b]/40 transition-all">
                             <CardHeader className="space-y-3">

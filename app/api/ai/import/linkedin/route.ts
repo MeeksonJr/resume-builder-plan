@@ -227,11 +227,92 @@ export async function POST(req: Request) {
       console.warn("[LINKEDIN_IMPORT] Optional baseline version recording skipped:", verErr);
     }
 
+    // Automatically sync into user memory so all features (resumes, portfolios, applications) can leverage it
+    try {
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("settings")
+          .eq("id", user.id)
+          .single();
+
+        const currentSettings = profile?.settings || {};
+        const currentMemory = currentSettings.user_memory || {};
+        
+        const updatedMemory = {
+          version: 1,
+          ...currentMemory,
+          last_updated: new Date().toISOString(),
+          sources: Array.from(new Set([...(currentMemory.sources || []), "LinkedIn Import"])),
+          basics: {
+            full_name: resumeData.personalInfo?.fullName || currentMemory.basics?.full_name || "",
+            headline: (resumeData.personalInfo as any)?.title || resumeData.personalInfo?.summary?.slice(0, 80) || currentMemory.basics?.headline || "Software Professional",
+            email: resumeData.personalInfo?.email || currentMemory.basics?.email || "",
+            phone: resumeData.personalInfo?.phone || currentMemory.basics?.phone || "",
+            location: resumeData.personalInfo?.location || currentMemory.basics?.location || "",
+            bio: resumeData.personalInfo?.summary || currentMemory.basics?.bio || "",
+            avatar_url: currentMemory.basics?.avatar_url || "",
+          },
+          socials: {
+            ...(currentMemory.socials || {}),
+            linkedin: resumeData.personalInfo?.linkedin || profileUrl || currentMemory.socials?.linkedin || "",
+          },
+          experiences: resumeData.workExperience?.length > 0 
+            ? resumeData.workExperience.map((w: any, idx: number) => ({
+                id: `exp_li_${Date.now()}_${idx}`,
+                company: w.company || "Company",
+                position: w.position || "Position",
+                location: w.location || "",
+                start_date: w.startDate || "",
+                end_date: w.endDate || "",
+                is_current: !w.endDate || w.endDate.toLowerCase() === "present",
+                description: w.description || "",
+                highlights: w.highlights || [],
+              }))
+            : currentMemory.experiences || [],
+          education: resumeData.education?.length > 0
+            ? resumeData.education.map((e: any, idx: number) => ({
+                id: `edu_li_${Date.now()}_${idx}`,
+                institution: e.institution || "University",
+                degree: e.degree || "Degree",
+                field_of_study: e.field || "",
+                location: "",
+                start_date: e.startDate || "",
+                end_date: e.endDate || "",
+                highlights: [],
+              }))
+            : currentMemory.education || [],
+          skills: resumeData.skills?.[0]?.items?.length > 0
+            ? resumeData.skills[0].items.map((s: string, idx: number) => ({
+                id: `sk_li_${Date.now()}_${idx}`,
+                name: s,
+                category: "Languages",
+                proficiency: 4,
+              }))
+            : currentMemory.skills || [],
+          projects: currentMemory.projects || [],
+          certifications: currentMemory.certifications || [],
+          preferences: currentMemory.preferences || { target_roles: [], work_style: "remote", authorized_work_locations: [] },
+        };
+
+        await supabase
+          .from("profiles")
+          .update({
+            settings: { ...currentSettings, user_memory: updatedMemory },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+      }
+    } catch (memErr) {
+      console.warn("[LINKEDIN_IMPORT] Memory sync error:", memErr);
+    }
+
     return NextResponse.json({
       resumeId: newResume.id,
       source: extractionSource,
       confidenceScore,
-      message: "LinkedIn profile successfully imported!",
+      resumeData,
+      message: "LinkedIn profile successfully imported and saved to Career Memory!",
     });
   } catch (error: any) {
     console.error("[LINKEDIN_IMPORT_ERROR]", error);

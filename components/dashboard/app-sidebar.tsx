@@ -81,6 +81,7 @@ const getNavItems = (isAdmin: boolean) => {
                 { title: "All Resumes", href: "/dashboard/resumes" },
                 { title: "Create New", href: "/dashboard/resume/new" },
                 { title: "Smart Import", href: "/dashboard/import" },
+                { title: "Career Memory", href: "/dashboard/memory" },
             ],
         },
         {
