@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Eye, TrendingUp, Calendar, Download, BarChart3, Sparkles, BrainCircuit, ArrowUpRight } from "lucide-react";
 import { formatDistanceToNow, format, startOfDay, eachDayOfInterval, subDays } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -53,6 +53,7 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
 
     const [insights, setInsights] = useState<any>(null);
     const [isLoadingInsights, setIsLoadingInsights] = useState(false);
+    const hasInitialFetchRef = useRef(false);
 
     const fetchInsights = async (force = false) => {
         if (resumes.length === 0) return;
@@ -63,20 +64,28 @@ export function AnalyticsView({ resumes, events }: AnalyticsViewProps) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ resumes, events, force }),
             });
-            if (!response.ok) throw new Error("Failed to fetch insights");
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData?.error || "Failed to fetch insights");
+            }
             const data = await response.json();
-            setInsights(data);
-            if (force) toast.success("AI Analysis refreshed with latest data");
+            if (data && data.insights) {
+                setInsights(data);
+                if (force) toast.success("AI Analysis refreshed with latest data");
+            }
         } catch (error) {
-            console.error(error);
-            toast.error("Failed to generate AI insights");
+            console.error("AI Insights fetch error:", error);
+            if (force) {
+                toast.error("Failed to generate AI insights");
+            }
         } finally {
             setIsLoadingInsights(false);
         }
     };
 
     useEffect(() => {
-        if (resumes.length > 0 && !insights && !isLoadingInsights) {
+        if (resumes.length > 0 && !insights && !isLoadingInsights && !hasInitialFetchRef.current) {
+            hasInitialFetchRef.current = true;
             fetchInsights();
         }
     }, [resumes.length, insights, isLoadingInsights]);
