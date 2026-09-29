@@ -44,6 +44,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { validateLinkedInUrl } from "@/lib/scrapers/linkedin-scraper";
+import { cn } from "@/lib/utils";
 
 interface ImportContentProps {
   resumes: any[];
@@ -175,20 +176,20 @@ export function ImportContent({ resumes }: ImportContentProps) {
 
   return (
     <>
-      <Tabs defaultValue="linkedin" value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="bg-slate-950/40 backdrop-blur-md border border-primary/5 p-1 h-14 rounded-2xl grid grid-cols-2 max-w-[400px]">
+      <Tabs defaultValue="linkedin" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="bg-muted/80 border border-border p-1.5 h-13 rounded-2xl grid grid-cols-2 max-w-[360px] shadow-xs">
           <TabsTrigger
             value="linkedin"
-            className="rounded-xl data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-black uppercase tracking-widest text-[10px] gap-2 transition-all"
+            className="rounded-xl data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs font-bold uppercase tracking-wider text-xs gap-2 text-muted-foreground transition-all hover:text-foreground cursor-pointer"
           >
-            <Linkedin className="h-4 w-4" />
+            <Linkedin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             LinkedIn
           </TabsTrigger>
           <TabsTrigger
             value="github"
-            className="rounded-xl data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-black uppercase tracking-widest text-[10px] gap-2 transition-all"
+            className="rounded-xl data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs font-bold uppercase tracking-wider text-xs gap-2 text-muted-foreground transition-all hover:text-foreground cursor-pointer"
           >
-            <Github className="h-4 w-4" />
+            <Github className="h-4 w-4 text-foreground" />
             GitHub
           </TabsTrigger>
         </TabsList>
@@ -202,71 +203,77 @@ export function ImportContent({ resumes }: ImportContentProps) {
             transition={{ duration: 0.3 }}
           >
             <TabsContent value="linkedin" className="m-0">
-              <Card className="bg-slate-950/40 backdrop-blur-xl border-primary/5 rounded-[32px] overflow-hidden shadow-2xl">
-                <div className="h-24 bg-gradient-to-br from-blue-600/10 via-slate-900 to-transparent border-b border-primary/5 flex items-center justify-between px-10">
+              <Card className="bg-card text-card-foreground border border-border rounded-2xl md:rounded-3xl overflow-hidden shadow-xs">
+                <div className="min-h-[5.5rem] bg-gradient-to-r from-blue-500/10 via-muted/30 to-transparent border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:px-8">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-blue-500/10 shadow-inner">
-                      <Linkedin className="h-6 w-6 text-blue-400" />
+                    <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                      <Linkedin className="h-6 w-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-black uppercase tracking-tight">LinkedIn Synthesizer</h2>
-                        <Badge variant="outline" className="text-[10px] font-bold border-blue-500/30 text-blue-400 bg-blue-500/5">
+                        <h2 className="text-xl font-black uppercase tracking-tight text-foreground">LinkedIn Synthesizer</h2>
+                        <Badge variant="outline" className="text-[10px] font-bold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
                           Verified Parser
                         </Badge>
                       </div>
-                      <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-0.5">
                         Instant profile URL extraction or raw text ingestion
                       </p>
                     </div>
                   </div>
 
                   {/* Mode Switcher */}
-                  <div className="flex items-center bg-slate-900/80 p-1 rounded-xl border border-primary/10">
-                    <Button
+                  <div className="flex items-center bg-muted/80 p-1.5 rounded-xl border border-border shrink-0 shadow-xs">
+                    <button
                       type="button"
-                      variant={linkedinMode === "url" ? "secondary" : "ghost"}
-                      size="sm"
                       onClick={() => setLinkedinMode("url")}
-                      className="h-8 text-xs font-bold rounded-lg gap-1.5"
+                      className={cn(
+                        "h-8 px-3 text-xs font-bold rounded-lg gap-1.5 flex items-center transition-all cursor-pointer",
+                        linkedinMode === "url"
+                          ? "bg-background text-foreground shadow-xs font-black"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
                     >
-                      <Link2 className="h-3.5 w-3.5" />
+                      <Link2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                       Direct Profile URL
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       type="button"
-                      variant={linkedinMode === "text" ? "secondary" : "ghost"}
-                      size="sm"
                       onClick={() => setLinkedinMode("text")}
-                      className="h-8 text-xs font-bold rounded-lg gap-1.5"
+                      className={cn(
+                        "h-8 px-3 text-xs font-bold rounded-lg gap-1.5 flex items-center transition-all cursor-pointer",
+                        linkedinMode === "text"
+                          ? "bg-background text-foreground shadow-xs font-black"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
                     >
-                      <Terminal className="h-3.5 w-3.5" />
+                      <Terminal className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                       Paste Text
-                    </Button>
+                    </button>
                   </div>
                 </div>
 
-                <CardContent className="p-10 space-y-8">
+                <CardContent className="p-6 sm:p-8 space-y-6">
                   {linkedinMode === "url" ? (
                     <div className="space-y-6">
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">
+                          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                             Public LinkedIn Profile URL or Handle
                           </Label>
                           {urlValidation.isValid && (
-                            <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold gap-1">
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold gap-1">
                               <CheckCircle2 className="h-3 w-3" /> Valid: @{urlValidation.username}
                             </Badge>
                           )}
                         </div>
                         <div className="relative group">
-                          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none text-muted-foreground/40">
-                            <Linkedin className="h-5 w-5 text-blue-400" />
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none text-muted-foreground">
+                            <Linkedin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           </div>
                           <Input
                             placeholder="https://www.linkedin.com/in/username or username slug"
-                            className="h-16 pl-12 pr-4 bg-slate-900/40 border-primary/10 rounded-2xl font-bold text-base focus:ring-blue-500/20 focus:border-blue-500/40 transition-all placeholder:text-muted-foreground/25"
+                            className="h-14 pl-12 pr-4 bg-background text-foreground border border-input rounded-xl font-medium text-sm focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/60 transition-all shadow-xs"
                             value={linkedinUrl}
                             onChange={(e) => setLinkedinUrl(e.target.value)}
                           />
@@ -274,8 +281,8 @@ export function ImportContent({ resumes }: ImportContentProps) {
                       </div>
 
                       {/* Quick Sample Profiles Chips */}
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
+                      <div className="space-y-2.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                           Try Instant Demo Profiles:
                         </span>
                         <div className="flex flex-wrap gap-2">
@@ -284,9 +291,9 @@ export function ImportContent({ resumes }: ImportContentProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => setLinkedinUrl("https://www.linkedin.com/in/alex-morgan-tech")}
-                            className="h-8 rounded-xl text-xs bg-slate-900/30 border-primary/10 hover:border-blue-500/40 hover:bg-blue-500/5 gap-1.5 font-medium"
+                            className="h-8 rounded-lg text-xs bg-background text-foreground border-border hover:bg-muted hover:text-foreground gap-1.5 font-medium transition-all shadow-xs"
                           >
-                            <Sparkles className="h-3 w-3 text-blue-400" />
+                            <Sparkles className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                             Alex Morgan (Full Stack Staff Eng)
                           </Button>
                           <Button
@@ -294,9 +301,9 @@ export function ImportContent({ resumes }: ImportContentProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => setLinkedinUrl("https://www.linkedin.com/in/sarah-chen-dev")}
-                            className="h-8 rounded-xl text-xs bg-slate-900/30 border-primary/10 hover:border-blue-500/40 hover:bg-blue-500/5 gap-1.5 font-medium"
+                            className="h-8 rounded-lg text-xs bg-background text-foreground border-border hover:bg-muted hover:text-foreground gap-1.5 font-medium transition-all shadow-xs"
                           >
-                            <Sparkles className="h-3 w-3 text-purple-400" />
+                            <Sparkles className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                             Sarah Chen (AI & ML Specialist)
                           </Button>
                           <Button
@@ -304,19 +311,19 @@ export function ImportContent({ resumes }: ImportContentProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => setLinkedinUrl("https://www.linkedin.com/in/jordan-taylor-product")}
-                            className="h-8 rounded-xl text-xs bg-slate-900/30 border-primary/10 hover:border-blue-500/40 hover:bg-blue-500/5 gap-1.5 font-medium"
+                            className="h-8 rounded-lg text-xs bg-background text-foreground border-border hover:bg-muted hover:text-foreground gap-1.5 font-medium transition-all shadow-xs"
                           >
-                            <Sparkles className="h-3 w-3 text-emerald-400" />
+                            <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                             Jordan Taylor (Principal PM)
                           </Button>
                         </div>
                       </div>
 
-                      <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-3">
-                        <ShieldCheck className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
-                        <div className="text-xs text-blue-400/90 leading-relaxed">
-                          <p className="font-semibold text-blue-300">Real-Time Extraction Engine</p>
-                          <p className="text-muted-foreground/80 mt-0.5">
+                      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
+                        <ShieldCheck className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                        <div className="text-xs leading-relaxed">
+                          <p className="font-bold text-blue-900 dark:text-blue-200">Real-Time Extraction Engine</p>
+                          <p className="text-muted-foreground mt-0.5">
                             Our engine queries real-time scrapers, parses public meta attributes, and structures work histories, verified skills, and academic credentials into your resume.
                           </p>
                         </div>
@@ -329,16 +336,16 @@ export function ImportContent({ resumes }: ImportContentProps) {
                           variant="outline"
                           onClick={() => handleLinkedinImport(true)}
                           disabled={loading || !linkedinUrl}
-                          className="h-14 rounded-2xl font-bold uppercase tracking-wider text-xs border-primary/10 hover:bg-primary/5 gap-2"
+                          className="h-12 rounded-xl font-bold uppercase tracking-wider text-xs border-border bg-background hover:bg-muted text-foreground gap-2 transition-all shadow-xs"
                         >
                           <Eye className="h-4 w-4 text-primary" />
-                          Preview & Verify Extraction
+                          Preview &amp; Verify Extraction
                         </Button>
                         <Button
                           type="button"
                           onClick={() => handleLinkedinImport(false)}
                           disabled={loading || !linkedinUrl}
-                          className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs relative group overflow-hidden shadow-2xl shadow-blue-500/20 bg-blue-600 hover:bg-blue-500 gap-2"
+                          className="h-12 rounded-xl font-bold uppercase tracking-widest text-xs relative group overflow-hidden shadow-sm bg-blue-600 text-white hover:bg-blue-700 gap-2 transition-all"
                         >
                           {loading ? (
                             <>
@@ -358,14 +365,14 @@ export function ImportContent({ resumes }: ImportContentProps) {
                     /* Text Paste Mode */
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">
+                        <Label className="text-xs font-bold text-foreground">
                           Profile Data Corpus (Pasted Text / PDF Text)
                         </Label>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="text-xs text-blue-400 hover:text-blue-300 gap-1.5 h-7"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 gap-1.5 h-8 font-semibold"
                           onClick={() =>
                             setLinkedinData(
                               `Alex Rivera\nSenior Full-Stack Cloud Architect | Distributed Systems & AI Platforms\nGreater Seattle Area | alex.rivera@example.com | linkedin.com/in/alexrivera-cloud\n\nSummary:\nHigh-impact software engineering leader with 8+ years architecting fault-tolerant cloud services, high-throughput microservices, and AI workflow pipelines. Specializes in TypeScript, Next.js, Go, Kubernetes, and PostgreSQL.\n\nExperience:\nStaff Software Engineer | Veloce Cloud Systems | 2022 - Present | Seattle, WA\n- Architected distributed data ingestion engine processing 1.2M events/sec with sub-50ms p99 latency.\n- Spearheaded team migration to Kubernetes and automated CI/CD canary deployments across 4 regions.\n- Mentored 12 junior and mid-level engineers across backend and infrastructure guilds.\n\nSenior Software Engineer | DataForge Analytics | 2019 - 2022 | San Francisco, CA\n- Built real-time analytics streaming pipelines using Apache Kafka, PostgreSQL, and Node.js.\n- Reduced cloud infrastructure compute expenditure by 34% through proactive autoscaling policies.\n\nEducation:\nUniversity of Washington | B.S. in Computer Science | 2015 - 2019\n\nSkills:\nLanguages: TypeScript, Go, Python, SQL, JavaScript\nCloud & Infrastructure: AWS, Kubernetes, Docker, Terraform, CI/CD\nDatabases & Storage: PostgreSQL, Redis, DynamoDB`
@@ -378,14 +385,14 @@ export function ImportContent({ resumes }: ImportContentProps) {
                       </div>
                       <Textarea
                         placeholder="Paste your LinkedIn profile text or PDF export content here..."
-                        className="min-h-[260px] bg-slate-900/30 border-primary/10 rounded-2xl p-6 font-medium text-muted-foreground/80 focus:ring-primary/20 placeholder:text-muted-foreground/20 resize-none transition-all leading-relaxed"
+                        className="min-h-[260px] bg-background text-foreground border border-input rounded-xl p-4 font-normal text-sm focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/60 resize-none transition-all leading-relaxed shadow-xs"
                         value={linkedinData}
                         onChange={(e) => setLinkedinData(e.target.value)}
                       />
                       <Button
                         onClick={() => handleLinkedinImport(false)}
                         disabled={loading || !linkedinData}
-                        className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs relative group overflow-hidden shadow-2xl shadow-blue-500/20 bg-blue-600 hover:bg-blue-500"
+                        className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs relative group overflow-hidden shadow-sm bg-blue-600 text-white hover:bg-blue-700 transition-all"
                       >
                         <div className="relative flex items-center justify-center gap-2">
                           {loading ? (
@@ -408,51 +415,51 @@ export function ImportContent({ resumes }: ImportContentProps) {
             </TabsContent>
 
             <TabsContent value="github" className="m-0">
-              <Card className="bg-slate-950/40 backdrop-blur-xl border-primary/5 rounded-[32px] overflow-hidden shadow-2xl">
-                <div className="h-24 bg-gradient-to-br from-slate-400/10 via-slate-900 to-transparent border-b border-primary/5 flex items-center px-10">
+              <Card className="bg-card text-card-foreground border border-border rounded-2xl md:rounded-3xl overflow-hidden shadow-xs">
+                <div className="min-h-[5.5rem] bg-gradient-to-r from-muted/50 via-muted/20 to-transparent border-b border-border flex items-center px-6 sm:px-8">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-white/5 shadow-inner border border-white/5">
-                      <Github className="h-6 w-6 text-white" />
+                    <div className="p-3 rounded-2xl bg-muted text-foreground border border-border shrink-0 shadow-xs">
+                      <Github className="h-6 w-6" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black uppercase tracking-tight">GitHub Ingestor</h2>
-                      <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-widest">
+                      <h2 className="text-xl font-black uppercase tracking-tight text-foreground">GitHub Ingestor</h2>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-0.5">
                         Import your top repositories
                       </p>
                     </div>
                   </div>
                 </div>
-                <CardContent className="p-10 space-y-10">
-                  <div className="grid gap-10 md:grid-cols-2">
-                    <div className="space-y-4">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">
+                <CardContent className="p-6 sm:p-8 space-y-8">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2.5">
+                      <Label className="text-xs font-bold text-foreground">
                         GitHub Username
                       </Label>
                       <div className="relative group">
-                        <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                        <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="e.g. facebook"
-                          className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl pl-11 font-bold focus:ring-primary/20 transition-all"
+                          className="h-12 bg-background text-foreground border border-input rounded-xl pl-11 font-medium text-sm focus-visible:ring-2 focus-visible:ring-primary placeholder:text-muted-foreground/60 transition-all shadow-xs"
                           value={githubUsername}
                           onChange={(e) => setGithubUsername(e.target.value)}
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">
+                    <div className="space-y-2.5">
+                      <Label className="text-xs font-bold text-foreground">
                         Target Resume
                       </Label>
                       <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-                        <SelectTrigger className="h-14 bg-slate-900/50 border-primary/10 rounded-2xl font-bold transition-all focus:ring-primary/20">
+                        <SelectTrigger className="h-12 bg-background text-foreground border border-input rounded-xl font-medium text-sm transition-all focus-visible:ring-2 focus-visible:ring-primary shadow-xs">
                           <div className="flex items-center gap-2">
                             <UserSquare2 className="h-4 w-4 text-primary" />
                             <SelectValue placeholder="Select target resume" />
                           </div>
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-950 border-primary/10 rounded-2xl">
+                        <SelectContent className="bg-popover text-popover-foreground border border-border rounded-xl shadow-md">
                           {resumes.map((r) => (
-                            <SelectItem key={r.id} value={r.id} className="font-bold text-xs py-3 focus:bg-primary/10 rounded-xl">
+                            <SelectItem key={r.id} value={r.id} className="font-semibold text-xs py-2.5 focus:bg-accent focus:text-accent-foreground rounded-lg cursor-pointer">
                               {r.title || "Untitled Resume"}
                             </SelectItem>
                           ))}
@@ -464,17 +471,17 @@ export function ImportContent({ resumes }: ImportContentProps) {
                   <Button
                     onClick={handleGithubImport}
                     disabled={loading || !githubUsername || !selectedResumeId}
-                    className="w-full h-16 rounded-[20px] font-black uppercase tracking-widest text-sm relative group overflow-hidden shadow-2xl shadow-primary/20 bg-slate-900 border border-primary/10 hover:bg-slate-800"
+                    className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs relative group overflow-hidden shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
                   >
-                    <div className="relative flex items-center justify-center gap-3">
+                    <div className="relative flex items-center justify-center gap-2">
                       {loading ? (
                         <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                           <span>Ingesting Repositories...</span>
                         </>
                       ) : (
                         <>
-                          <Plus className="h-5 w-5 text-primary" />
+                          <Plus className="h-4 w-4" />
                           <span>Append Projects to Resume</span>
                         </>
                       )}
@@ -489,25 +496,25 @@ export function ImportContent({ resumes }: ImportContentProps) {
 
       {/* Phase 41: Verification & Extraction Preview Dialog */}
       <Dialog open={previewModalOpen} onOpenChange={setPreviewModalOpen}>
-        <DialogContent className="max-w-2xl bg-slate-950/95 border-primary/15 rounded-3xl p-8 backdrop-blur-2xl">
+        <DialogContent className="max-w-2xl bg-card text-card-foreground border border-border rounded-2xl p-6 sm:p-8 shadow-xl">
           <DialogHeader className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
+                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
                   <Linkedin className="h-5 w-5" />
                 </div>
-                <DialogTitle className="text-lg font-black tracking-tight">
+                <DialogTitle className="text-lg font-black tracking-tight text-foreground">
                   Extracted LinkedIn Profile Preview
                 </DialogTitle>
               </div>
               {extractedPreview && (
-                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-bold gap-1">
+                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   {extractedPreview.confidenceScore}% Confidence
                 </Badge>
               )}
             </div>
-            <DialogDescription className="text-xs text-muted-foreground/80">
+            <DialogDescription className="text-xs text-muted-foreground">
               Verify the extracted candidate data below. Click &quot;Confirm &amp; Build Resume&quot; to populate your new ResumeForge project.
             </DialogDescription>
           </DialogHeader>
@@ -515,17 +522,17 @@ export function ImportContent({ resumes }: ImportContentProps) {
           {extractedPreview?.resumeData && (
             <div className="space-y-5 py-4 max-h-[60vh] overflow-y-auto pr-2">
               {/* Candidate Info Card */}
-              <div className="p-4 rounded-2xl bg-slate-900/60 border border-primary/10 space-y-2">
+              <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-black text-base text-foreground">
+                  <h3 className="font-bold text-base text-foreground">
                     {extractedPreview.resumeData.personalInfo?.fullName || "Candidate"}
                   </h3>
-                  <span className="text-xs text-muted-foreground/60">
+                  <span className="text-xs text-muted-foreground">
                     {extractedPreview.resumeData.personalInfo?.location}
                   </span>
                 </div>
                 {extractedPreview.resumeData.personalInfo?.summary && (
-                  <p className="text-xs text-muted-foreground/80 leading-relaxed italic">
+                  <p className="text-xs text-muted-foreground leading-relaxed italic">
                     &quot;{extractedPreview.resumeData.personalInfo.summary}&quot;
                   </p>
                 )}
@@ -533,18 +540,18 @@ export function ImportContent({ resumes }: ImportContentProps) {
 
               {/* Work Experience */}
               <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground uppercase tracking-wider">
                   <Briefcase className="h-3.5 w-3.5 text-primary" />
                   <span>Work Experience ({extractedPreview.resumeData.workExperience?.length || 0})</span>
                 </div>
                 <div className="space-y-2">
                   {extractedPreview.resumeData.workExperience?.map((exp: any, i: number) => (
-                    <div key={i} className="p-3 rounded-xl bg-slate-900/30 border border-primary/5 text-xs flex items-center justify-between">
+                    <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border text-xs flex items-center justify-between">
                       <div>
                         <p className="font-bold text-foreground">{exp.position}</p>
-                        <p className="text-muted-foreground/70">{exp.company}</p>
+                        <p className="text-muted-foreground">{exp.company}</p>
                       </div>
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground/60">
+                      <Badge variant="outline" className="text-[10px] text-muted-foreground">
                         {exp.startDate} – {exp.endDate || "Present"}
                       </Badge>
                     </div>
@@ -555,18 +562,18 @@ export function ImportContent({ resumes }: ImportContentProps) {
               {/* Education */}
               {extractedPreview.resumeData.education?.length > 0 && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground uppercase tracking-wider">
                     <GraduationCap className="h-3.5 w-3.5 text-primary" />
                     <span>Education ({extractedPreview.resumeData.education.length})</span>
                   </div>
                   <div className="space-y-2">
                     {extractedPreview.resumeData.education.map((edu: any, i: number) => (
-                      <div key={i} className="p-3 rounded-xl bg-slate-900/30 border border-primary/5 text-xs flex items-center justify-between">
+                      <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border text-xs flex items-center justify-between">
                         <div>
                           <p className="font-bold text-foreground">{edu.institution}</p>
-                          <p className="text-muted-foreground/70">{edu.degree} {edu.field ? `in ${edu.field}` : ""}</p>
+                          <p className="text-muted-foreground">{edu.degree} {edu.field ? `in ${edu.field}` : ""}</p>
                         </div>
-                        <Badge variant="outline" className="text-[10px] text-muted-foreground/60">
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground">
                           {edu.startDate} – {edu.endDate}
                         </Badge>
                       </div>
@@ -578,7 +585,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
               {/* Skills Tags */}
               {extractedPreview.resumeData.skills?.[0]?.items?.length > 0 && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground uppercase tracking-wider">
                     <Award className="h-3.5 w-3.5 text-primary" />
                     <span>Identified Skills ({extractedPreview.resumeData.skills[0].items.length})</span>
                   </div>
@@ -599,7 +606,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
             </div>
           )}
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-primary/10">
+          <DialogFooter className="gap-2 sm:gap-0 pt-3 border-t border-border">
             <Button
               type="button"
               variant="ghost"
@@ -612,7 +619,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
               type="button"
               onClick={() => handleLinkedinImport(false)}
               disabled={loading}
-              className="rounded-xl font-black uppercase tracking-wider text-xs bg-blue-600 hover:bg-blue-500 gap-2 shadow-lg shadow-blue-500/20"
+              className="rounded-xl font-bold uppercase tracking-wider text-xs bg-blue-600 text-white hover:bg-blue-700 gap-2 shadow-sm"
             >
               {loading ? (
                 <>
@@ -632,14 +639,14 @@ export function ImportContent({ resumes }: ImportContentProps) {
 
       {/* Error Dialog */}
       <Dialog open={errorModalOpen} onOpenChange={setErrorModalOpen}>
-        <DialogContent className="max-w-md bg-slate-950/90 border-destructive/20 rounded-3xl p-8 backdrop-blur-2xl">
+        <DialogContent className="max-w-md bg-card text-card-foreground border border-destructive/20 rounded-2xl p-6 sm:p-8 shadow-xl">
           <DialogHeader className="space-y-4">
-            <div className="h-12 w-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive">
+            <div className="h-12 w-12 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive">
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black tracking-tight">{errorMessage?.title}</DialogTitle>
-              <DialogDescription className="text-sm font-medium text-muted-foreground/80 mt-2 leading-relaxed">
+              <DialogTitle className="text-xl font-black tracking-tight text-foreground">{errorMessage?.title}</DialogTitle>
+              <DialogDescription className="text-sm font-medium text-muted-foreground mt-2 leading-relaxed">
                 {errorMessage?.description}
               </DialogDescription>
             </div>
@@ -647,7 +654,7 @@ export function ImportContent({ resumes }: ImportContentProps) {
           <DialogFooter className="mt-6">
             <Button
               onClick={() => setErrorModalOpen(false)}
-              className="w-full h-12 rounded-2xl font-black uppercase tracking-widest text-xs bg-slate-900 border border-primary/10 hover:bg-slate-800"
+              className="w-full h-11 rounded-xl font-bold uppercase tracking-wider text-xs bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Acknowledge
             </Button>

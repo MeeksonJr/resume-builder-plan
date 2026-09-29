@@ -29,22 +29,22 @@ export default function ImportPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col justify-between gap-5 border-b border-[#102b2b]/15 px-1 pb-7 md:flex-row md:items-end">
+            <div className="flex flex-col justify-between gap-5 border-b border-border/80 px-1 pb-7 md:flex-row md:items-end">
                 <div className="space-y-1">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">Resume intake</p>
-                    <h1 className="flex items-center gap-3 text-4xl font-black tracking-[-0.04em] text-[#102b2b] md:text-5xl">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Resume intake</p>
+                    <h1 className="flex items-center gap-3 text-4xl font-black tracking-tight text-foreground md:text-5xl">
                         Smart import
-                        <Import className="h-6 w-6 text-[#0d8274]" aria-hidden="true" />
+                        <Import className="h-6 w-6 text-primary" aria-hidden="true" />
                     </h1>
-                    <p className="flex items-center gap-2 text-sm text-[#102b2b]/65 sm:text-base">
-                        <span className="h-1.5 w-1.5 bg-[#d8f36b]" />
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground sm:text-base">
+                        <span className="h-2 w-2 rounded-full bg-primary" />
                         Quickly ingest your professional data from LinkedIn, GitHub, and more.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 border border-[#102b2b]/15 bg-[#f5f7f1] px-4 py-2">
-                    <ShieldCheck className="h-4 w-4 text-[#0d8274]" aria-hidden="true" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#102b2b]/60">Secure ingestion</span>
+                <div className="flex items-center gap-3 border border-border bg-card px-4 py-2 rounded-xl shadow-xs">
+                    <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Secure ingestion</span>
                 </div>
             </div>
 
