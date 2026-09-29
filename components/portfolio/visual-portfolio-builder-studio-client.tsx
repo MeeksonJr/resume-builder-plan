@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Eye,
+  EyeOff,
   Smartphone,
   Tablet,
   Monitor,
@@ -59,6 +60,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+
+export function stripHtml(input?: string): string {
+  if (!input) return "";
+  return input
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export interface CanvasBlock {
   id: string;
@@ -202,68 +218,172 @@ export const DEFAULT_BLOCKS: CanvasBlock[] = [
   }
 ];
 
+export interface ThemePalette {
+  id: string;
+  label: string;
+  primary: string;
+  accentText: string;
+  accentTextLight: string;
+  accentBorder: string;
+  accentBorderHover: string;
+  accentBg: string;
+  accentBgHover: string;
+  accentBadge: string;
+  accentButton: string;
+  ring: string;
+  glow: string;
+  glassBorder: string;
+  glassBg: string;
+  gradient: string;
+  mesh: string;
+  cleanBorder: string;
+}
+
+export const THEME_PALETTES: Record<string, ThemePalette> = {
+  emerald: {
+    id: "emerald",
+    label: "Emerald",
+    primary: "emerald",
+    accentText: "text-emerald-400",
+    accentTextLight: "text-emerald-300",
+    accentBorder: "border-emerald-500/35",
+    accentBorderHover: "hover:border-emerald-400/60",
+    accentBg: "bg-emerald-500/15",
+    accentBgHover: "hover:bg-emerald-500/25",
+    accentBadge: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+    accentButton: "bg-emerald-600 hover:bg-emerald-500 text-white",
+    ring: "ring-2 ring-emerald-400 border-emerald-400 shadow-xl shadow-emerald-500/20",
+    glow: "shadow-emerald-500/10",
+    glassBorder: "border-emerald-500/30",
+    glassBg: "bg-emerald-950/20",
+    gradient: "from-emerald-950/60 via-[#0e1726]/90 to-teal-950/50",
+    mesh: "from-emerald-500/25 via-[#0b1324]/90 to-[#070b14]",
+    cleanBorder: "border-emerald-500/20",
+  },
+  blue: {
+    id: "blue",
+    label: "Sapphire",
+    primary: "blue",
+    accentText: "text-blue-400",
+    accentTextLight: "text-blue-300",
+    accentBorder: "border-blue-500/35",
+    accentBorderHover: "hover:border-blue-400/60",
+    accentBg: "bg-blue-500/15",
+    accentBgHover: "hover:bg-blue-500/25",
+    accentBadge: "bg-blue-500/15 text-blue-300 border-blue-500/30",
+    accentButton: "bg-blue-600 hover:bg-blue-500 text-white",
+    ring: "ring-2 ring-blue-400 border-blue-400 shadow-xl shadow-blue-500/20",
+    glow: "shadow-blue-500/10",
+    glassBorder: "border-blue-500/30",
+    glassBg: "bg-blue-950/20",
+    gradient: "from-blue-950/60 via-[#0e1726]/90 to-indigo-950/50",
+    mesh: "from-blue-500/25 via-[#0b1324]/90 to-[#070b14]",
+    cleanBorder: "border-blue-500/20",
+  },
+  purple: {
+    id: "purple",
+    label: "Violet",
+    primary: "purple",
+    accentText: "text-purple-400",
+    accentTextLight: "text-purple-300",
+    accentBorder: "border-purple-500/35",
+    accentBorderHover: "hover:border-purple-400/60",
+    accentBg: "bg-purple-500/15",
+    accentBgHover: "hover:bg-purple-500/25",
+    accentBadge: "bg-purple-500/15 text-purple-300 border-purple-500/30",
+    accentButton: "bg-purple-600 hover:bg-purple-500 text-white",
+    ring: "ring-2 ring-purple-400 border-purple-400 shadow-xl shadow-purple-500/20",
+    glow: "shadow-purple-500/10",
+    glassBorder: "border-purple-500/30",
+    glassBg: "bg-purple-950/20",
+    gradient: "from-purple-950/60 via-[#0e1726]/90 to-pink-950/50",
+    mesh: "from-purple-500/25 via-[#0b1324]/90 to-[#070b14]",
+    cleanBorder: "border-purple-500/20",
+  },
+  rose: {
+    id: "rose",
+    label: "Ruby",
+    primary: "rose",
+    accentText: "text-rose-400",
+    accentTextLight: "text-rose-300",
+    accentBorder: "border-rose-500/35",
+    accentBorderHover: "hover:border-rose-400/60",
+    accentBg: "bg-rose-500/15",
+    accentBgHover: "hover:bg-rose-500/25",
+    accentBadge: "bg-rose-500/15 text-rose-300 border-rose-500/30",
+    accentButton: "bg-rose-600 hover:bg-rose-500 text-white",
+    ring: "ring-2 ring-rose-400 border-rose-400 shadow-xl shadow-rose-500/20",
+    glow: "shadow-rose-500/10",
+    glassBorder: "border-rose-500/30",
+    glassBg: "bg-rose-950/20",
+    gradient: "from-rose-950/60 via-[#0e1726]/90 to-amber-950/50",
+    mesh: "from-rose-500/25 via-[#0b1324]/90 to-[#070b14]",
+    cleanBorder: "border-rose-500/20",
+  },
+  amber: {
+    id: "amber",
+    label: "Amber",
+    primary: "amber",
+    accentText: "text-amber-400",
+    accentTextLight: "text-amber-300",
+    accentBorder: "border-amber-500/35",
+    accentBorderHover: "hover:border-amber-400/60",
+    accentBg: "bg-amber-500/15",
+    accentBgHover: "hover:bg-amber-500/25",
+    accentBadge: "bg-amber-500/15 text-amber-300 border-amber-500/30",
+    accentButton: "bg-amber-600 hover:bg-amber-500 text-white",
+    ring: "ring-2 ring-amber-400 border-amber-400 shadow-xl shadow-amber-500/20",
+    glow: "shadow-amber-500/10",
+    glassBorder: "border-amber-500/30",
+    glassBg: "bg-amber-950/20",
+    gradient: "from-amber-950/60 via-[#0e1726]/90 to-orange-950/50",
+    mesh: "from-amber-500/25 via-[#0b1324]/90 to-[#070b14]",
+    cleanBorder: "border-amber-500/20",
+  },
+  cyan: {
+    id: "cyan",
+    label: "Cyan",
+    primary: "cyan",
+    accentText: "text-cyan-400",
+    accentTextLight: "text-cyan-300",
+    accentBorder: "border-cyan-500/35",
+    accentBorderHover: "hover:border-cyan-400/60",
+    accentBg: "bg-cyan-500/15",
+    accentBgHover: "hover:bg-cyan-500/25",
+    accentBadge: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
+    accentButton: "bg-cyan-600 hover:bg-cyan-500 text-white",
+    ring: "ring-2 ring-cyan-400 border-cyan-400 shadow-xl shadow-cyan-500/20",
+    glow: "shadow-cyan-500/10",
+    glassBorder: "border-cyan-500/30",
+    glassBg: "bg-cyan-950/20",
+    gradient: "from-cyan-950/60 via-[#0e1726]/90 to-blue-950/50",
+    mesh: "from-cyan-500/25 via-[#0b1324]/90 to-[#070b14]",
+    cleanBorder: "border-cyan-500/20",
+  },
+};
+
 export function getStudioBlockContainerStyle(
   backgroundStyle: "clean" | "glass" | "gradient" | "mesh" = "clean",
   isSelected: boolean = false,
   colorScheme: string = "emerald"
 ) {
   const base = "relative p-6 sm:p-8 rounded-2xl transition-all duration-300 cursor-pointer";
-
-  const colorMap: Record<string, { border: string; gradient: string; mesh: string; ring: string }> = {
-    emerald: {
-      border: "border-emerald-500/35",
-      gradient: "from-emerald-950/60 via-[#0e1726]/90 to-teal-950/50",
-      mesh: "from-emerald-500/25 via-[#0b1324]/90 to-[#070b14]",
-      ring: "ring-2 ring-emerald-400 border-emerald-400 shadow-xl shadow-emerald-500/20",
-    },
-    blue: {
-      border: "border-blue-500/35",
-      gradient: "from-blue-950/60 via-[#0e1726]/90 to-indigo-950/50",
-      mesh: "from-blue-500/25 via-[#0b1324]/90 to-[#070b14]",
-      ring: "ring-2 ring-blue-400 border-blue-400 shadow-xl shadow-blue-500/20",
-    },
-    purple: {
-      border: "border-purple-500/35",
-      gradient: "from-purple-950/60 via-[#0e1726]/90 to-pink-950/50",
-      mesh: "from-purple-500/25 via-[#0b1324]/90 to-[#070b14]",
-      ring: "ring-2 ring-purple-400 border-purple-400 shadow-xl shadow-purple-500/20",
-    },
-    rose: {
-      border: "border-rose-500/35",
-      gradient: "from-rose-950/60 via-[#0e1726]/90 to-amber-950/50",
-      mesh: "from-rose-500/25 via-[#0b1324]/90 to-[#070b14]",
-      ring: "ring-2 ring-rose-400 border-rose-400 shadow-xl shadow-rose-500/20",
-    },
-    amber: {
-      border: "border-amber-500/35",
-      gradient: "from-amber-950/60 via-[#0e1726]/90 to-orange-950/50",
-      mesh: "from-amber-500/25 via-[#0b1324]/90 to-[#070b14]",
-      ring: "ring-2 ring-amber-400 border-amber-400 shadow-xl shadow-amber-500/20",
-    },
-    cyan: {
-      border: "border-cyan-500/35",
-      gradient: "from-cyan-950/60 via-[#0e1726]/90 to-blue-950/50",
-      mesh: "from-cyan-500/25 via-[#0b1324]/90 to-[#070b14]",
-      ring: "ring-2 ring-cyan-400 border-cyan-400 shadow-xl shadow-cyan-500/20",
-    },
-  };
-
-  const scheme = colorMap[colorScheme] || colorMap.emerald;
+  const scheme = THEME_PALETTES[colorScheme] || THEME_PALETTES.emerald;
 
   let styleClasses = "";
   switch (backgroundStyle) {
     case "glass":
-      styleClasses = "border border-white/25 bg-white/[0.08] backdrop-blur-2xl shadow-xl shadow-black/50 ring-1 ring-white/10";
+      styleClasses = `border ${scheme.glassBorder} ${scheme.glassBg} backdrop-blur-2xl shadow-xl shadow-black/50 ring-1 ring-white/10`;
       break;
     case "gradient":
-      styleClasses = `border ${scheme.border} bg-gradient-to-br ${scheme.gradient} shadow-xl shadow-black/40`;
+      styleClasses = `border ${scheme.accentBorder} bg-gradient-to-br ${scheme.gradient} shadow-xl shadow-black/40`;
       break;
     case "mesh":
-      styleClasses = `border ${scheme.border} bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${scheme.mesh} backdrop-blur-md shadow-2xl shadow-black/50`;
+      styleClasses = `border ${scheme.accentBorder} bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${scheme.mesh} backdrop-blur-md shadow-2xl shadow-black/50`;
       break;
     case "clean":
     default:
-      styleClasses = "border border-white/10 bg-[#111827]/75 shadow-sm backdrop-blur-xs hover:border-white/20";
+      styleClasses = `border ${scheme.cleanBorder} bg-[#0b111e]/90 shadow-sm backdrop-blur-xs hover:${scheme.accentBorder}`;
       break;
   }
 
@@ -352,7 +472,12 @@ export function VisualPortfolioBuilderStudioClient({
     toast.success("Section removed");
   };
 
-  const handleAddBlock = (type: CanvasBlock["type"], title: string, customContent?: Record<string, any>) => {
+  const handleAddBlock = (
+    type: CanvasBlock["type"],
+    title: string,
+    customContent?: Record<string, any>,
+    preferredStyle?: CanvasBlock["backgroundStyle"]
+  ) => {
     let defaultContent: Record<string, any> = {};
     switch (type) {
       case "hero":
@@ -446,12 +571,15 @@ export function VisualPortfolioBuilderStudioClient({
         break;
     }
 
+    const initialStyle: CanvasBlock["backgroundStyle"] =
+      preferredStyle || (blocks.length > 0 ? blocks[0].backgroundStyle : "mesh");
+
     const newBlock: CanvasBlock = {
       id: `blk-${type}-${Date.now()}`,
       type,
       title,
       visible: true,
-      backgroundStyle: "glass",
+      backgroundStyle: initialStyle,
       content: customContent && Object.keys(customContent).length > 0 ? customContent : defaultContent
     };
     setBlocks(prev => [...prev, newBlock]);
@@ -465,47 +593,105 @@ export function VisualPortfolioBuilderStudioClient({
   };
 
   const handleImportResumeSection = (resume: any, section: "skills" | "experience" | "education" | "projects") => {
+    const existingIndex = blocks.findIndex(b => b.type === section);
+    const existingBlock = existingIndex >= 0 ? blocks[existingIndex] : null;
+    const targetStyle: CanvasBlock["backgroundStyle"] = existingBlock?.backgroundStyle || (blocks.length > 0 ? blocks[0].backgroundStyle : "mesh");
+
     if (section === "skills") {
       const skillsList = resume.skills && resume.skills.length > 0
-        ? resume.skills.map((s: any) => typeof s === "string" ? s : s.name || s)
+        ? resume.skills.map((s: any) => stripHtml(typeof s === "string" ? s : s.name || s)).filter(Boolean)
         : ["TypeScript", "Next.js", "React", "PostgreSQL", "Node.js", "Tailwind CSS"];
-      handleAddBlock("skills", `${resume.title || "Resume"} Skills`, { skills: skillsList });
-      toast.success(`Imported skills from "${resume.title}"`);
+      const newTitle = `${resume.title || "Resume"} Skills`;
+      const newContent = { skills: skillsList };
+
+      if (existingBlock) {
+        setBlocks(prev => prev.map((b, idx) => idx === existingIndex ? {
+          ...b,
+          title: newTitle,
+          content: newContent,
+          visible: true,
+        } : b));
+        setSelectedBlockId(existingBlock.id);
+        toast.success(`Updated Skills block from "${resume.title}"`);
+      } else {
+        handleAddBlock("skills", newTitle, newContent, targetStyle);
+        toast.success(`Imported skills from "${resume.title}"`);
+      }
     } else if (section === "experience") {
       const experiences = (resume.work_experiences || []).map((w: any) => ({
-        company: w.company || "Tech Company",
-        role: w.position || "Software Engineer",
+        company: stripHtml(w.company) || "Tech Company",
+        role: stripHtml(w.position) || "Software Engineer",
         period: `${w.start_date || "2022"} - ${w.is_current ? "Present" : w.end_date || "2024"}`,
-        location: w.location || "Remote",
-        bullets: w.highlights && w.highlights.length > 0 ? w.highlights : (w.description ? [w.description] : ["Architected key feature improvements."])
+        location: stripHtml(w.location) || "Remote",
+        bullets: w.highlights && w.highlights.length > 0
+          ? w.highlights.map((h: string) => stripHtml(h)).filter(Boolean)
+          : (w.description ? [stripHtml(w.description)] : ["Architected key feature improvements."])
       }));
-      handleAddBlock("experience", `${resume.title || "Resume"} Experience`, {
-        experiences: experiences.length > 0 ? experiences : undefined
-      });
-      toast.success(`Imported work timeline from "${resume.title}"`);
+      const newTitle = `${resume.title || "Resume"} Experience`;
+      const newContent = { experiences: experiences.length > 0 ? experiences : undefined };
+
+      if (existingBlock) {
+        setBlocks(prev => prev.map((b, idx) => idx === existingIndex ? {
+          ...b,
+          title: newTitle,
+          content: newContent,
+          visible: true,
+        } : b));
+        setSelectedBlockId(existingBlock.id);
+        toast.success(`Updated Experience block from "${resume.title}"`);
+      } else {
+        handleAddBlock("experience", newTitle, newContent, targetStyle);
+        toast.success(`Imported work timeline from "${resume.title}"`);
+      }
     } else if (section === "education") {
       const eduEntries = (resume.education || []).map((e: any) => ({
-        institution: e.institution || "University",
-        degree: e.degree || "Bachelor's Degree",
-        field: e.field_of_study || "Computer Science",
+        institution: stripHtml(e.institution) || "University",
+        degree: stripHtml(e.degree) || "Bachelor's Degree",
+        field: stripHtml(e.field_of_study) || "Computer Science",
         period: `${e.start_date || ""} - ${e.end_date || ""}`,
-        honors: e.gpa ? `GPA: ${e.gpa}` : ""
+        honors: stripHtml(e.gpa ? `GPA: ${e.gpa}` : (e.honors || ""))
       }));
-      handleAddBlock("education", `${resume.title || "Resume"} Education`, {
-        entries: eduEntries.length > 0 ? eduEntries : undefined
-      });
-      toast.success(`Imported education from "${resume.title}"`);
+      const newTitle = `${resume.title || "Resume"} Education`;
+      const newContent = { entries: eduEntries.length > 0 ? eduEntries : undefined };
+
+      if (existingBlock) {
+        setBlocks(prev => prev.map((b, idx) => idx === existingIndex ? {
+          ...b,
+          title: newTitle,
+          content: newContent,
+          visible: true,
+        } : b));
+        setSelectedBlockId(existingBlock.id);
+        toast.success(`Updated Education block from "${resume.title}"`);
+      } else {
+        handleAddBlock("education", newTitle, newContent, targetStyle);
+        toast.success(`Imported education from "${resume.title}"`);
+      }
     } else if (section === "projects") {
       const projItems = (resume.projects || []).map((p: any) => ({
-        name: p.name || p.title || "Project",
-        desc: p.description || "Project overview and features.",
-        tags: Array.isArray(p.technologies) ? p.technologies : ["TypeScript", "React"],
+        name: stripHtml(p.name || p.title) || "Project",
+        desc: stripHtml(p.description) || "Project overview and features.",
+        tags: Array.isArray(p.technologies)
+          ? p.technologies.map((t: string) => stripHtml(t)).filter(Boolean)
+          : ["TypeScript", "React"],
         link: p.url || ""
       }));
-      handleAddBlock("projects", `${resume.title || "Resume"} Projects`, {
-        items: projItems.length > 0 ? projItems : undefined
-      });
-      toast.success(`Imported projects from "${resume.title}"`);
+      const newTitle = `${resume.title || "Resume"} Projects`;
+      const newContent = { items: projItems.length > 0 ? projItems : undefined };
+
+      if (existingBlock) {
+        setBlocks(prev => prev.map((b, idx) => idx === existingIndex ? {
+          ...b,
+          title: newTitle,
+          content: newContent,
+          visible: true,
+        } : b));
+        setSelectedBlockId(existingBlock.id);
+        toast.success(`Updated Projects block from "${resume.title}"`);
+      } else {
+        handleAddBlock("projects", newTitle, newContent, targetStyle);
+        toast.success(`Imported projects from "${resume.title}"`);
+      }
     }
   };
 
@@ -906,65 +1092,96 @@ export function VisualPortfolioBuilderStudioClient({
                       Canvas Sections ({blocks.length})
                     </span>
                     <div className="space-y-1.5">
-                      {blocks.map((b, idx) => (
-                        <div
-                          key={b.id}
-                          onClick={() => setSelectedBlockId(b.id)}
-                          className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
-                            selectedBlockId === b.id
-                              ? "bg-emerald-500/10 border-emerald-500/50 text-white shadow-sm ring-1 ring-emerald-500/20"
-                              : "bg-white/[0.03] border-white/5 text-white/70 hover:bg-white/[0.06] hover:text-white"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <GripVertical className="h-4 w-4 text-white/30 shrink-0" />
-                            <div className="truncate">
-                              <p className="text-xs font-semibold truncate">{b.title}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="text-[9px] text-white/40 uppercase font-mono">{b.type}</span>
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-white/60 font-mono capitalize">
-                                  {b.backgroundStyle}
-                                </span>
+                      {blocks.map((b, idx) => {
+                        const isSelected = selectedBlockId === b.id;
+                        const isHidden = b.visible === false;
+                        const currentTheme = THEME_PALETTES[activeThemeColor] || THEME_PALETTES.emerald;
+
+                        return (
+                          <div
+                            key={b.id}
+                            onClick={() => setSelectedBlockId(b.id)}
+                            className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
+                              isHidden ? "opacity-60 bg-black/40 border-dashed border-white/10" : ""
+                            } ${
+                              isSelected
+                                ? `${currentTheme.accentBg} ${currentTheme.accentBorder} text-white shadow-sm ring-1 ring-white/20`
+                                : "bg-white/[0.03] border-white/5 text-white/70 hover:bg-white/[0.06] hover:text-white"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <GripVertical className="h-4 w-4 text-white/30 shrink-0" />
+                              <div className="truncate">
+                                <p className={`text-xs font-semibold truncate ${isHidden ? "line-through text-white/50" : ""}`}>
+                                  {b.title}
+                                </p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[9px] text-white/40 uppercase font-mono">{b.type}</span>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-white/60 font-mono capitalize">
+                                    {b.backgroundStyle}
+                                  </span>
+                                  {isHidden && (
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">
+                                      Hidden
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMoveBlock(idx, "up");
-                              }}
-                              disabled={idx === 0}
-                              className="p-1 hover:bg-white/10 rounded disabled:opacity-20 text-white/60 hover:text-white"
-                              title="Move section up"
-                            >
-                              <MoveUp className="h-3 w-3" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMoveBlock(idx, "down");
-                              }}
-                              disabled={idx === blocks.length - 1}
-                              className="p-1 hover:bg-white/10 rounded disabled:opacity-20 text-white/60 hover:text-white"
-                              title="Move section down"
-                            >
-                              <MoveDown className="h-3 w-3" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteBlock(b.id);
-                              }}
-                              className="p-1 hover:bg-rose-500/20 text-white/40 hover:text-rose-400 rounded"
-                              title="Delete section"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
+                            <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const nextVis = b.visible === false;
+                                  setBlocks(prev => prev.map(item => item.id === b.id ? { ...item, visible: nextVis } : item));
+                                  toast.success(`"${b.title}" is now ${nextVis ? "visible" : "hidden"} on canvas`);
+                                }}
+                                className={`p-1 rounded transition-colors ${
+                                  isHidden
+                                    ? "text-amber-400 bg-amber-500/15 hover:bg-amber-500/25"
+                                    : "text-white/50 hover:text-white hover:bg-white/10"
+                                }`}
+                                title={isHidden ? "Show block on canvas" : "Hide block from canvas"}
+                              >
+                                {isHidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveBlock(idx, "up");
+                                }}
+                                disabled={idx === 0}
+                                className="p-1 hover:bg-white/10 rounded disabled:opacity-20 text-white/60 hover:text-white"
+                                title="Move section up"
+                              >
+                                <MoveUp className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveBlock(idx, "down");
+                                }}
+                                disabled={idx === blocks.length - 1}
+                                className="p-1 hover:bg-white/10 rounded disabled:opacity-20 text-white/60 hover:text-white"
+                                title="Move section down"
+                              >
+                                <MoveDown className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteBlock(b.id);
+                                }}
+                                className="p-1 hover:bg-rose-500/20 text-white/40 hover:text-rose-400 rounded"
+                                title="Delete section"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1304,6 +1521,7 @@ export function VisualPortfolioBuilderStudioClient({
                   isSelected,
                   activeThemeColor
                 );
+                const theme = THEME_PALETTES[activeThemeColor] || THEME_PALETTES.emerald;
 
                 // HERO BLOCK
                 if (block.type === "hero") {
@@ -1325,10 +1543,10 @@ export function VisualPortfolioBuilderStudioClient({
                             <img
                               src={block.content.avatarUrl}
                               alt="Profile Avatar"
-                              className="h-22 w-22 rounded-full object-cover border-2 border-emerald-400 shadow-md ring-4 ring-emerald-500/10"
+                              className={cn("h-22 w-22 rounded-full object-cover border-2 shadow-md ring-4 ring-black/20", theme.accentBorder)}
                             />
                           ) : (
-                            <div className="h-22 w-22 rounded-full bg-emerald-500/20 border-2 border-emerald-400/50 flex items-center justify-center text-emerald-400 text-2xl font-black shadow-md ring-4 ring-emerald-500/10">
+                            <div className={cn("h-22 w-22 rounded-full border-2 flex items-center justify-center text-2xl font-black shadow-md ring-4 ring-black/20", theme.accentBg, theme.accentBorder, theme.accentText)}>
                               {(block.title || profile?.full_name || "U").charAt(0).toUpperCase()}
                             </div>
                           )}
@@ -1337,7 +1555,7 @@ export function VisualPortfolioBuilderStudioClient({
                               e.stopPropagation();
                               triggerFileUpload("avatar");
                             }}
-                            className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg"
+                            className={cn("absolute -bottom-1 -right-1 p-1.5 rounded-full text-white shadow-lg transition-transform hover:scale-105", theme.accentButton)}
                             title="Upload Avatar"
                           >
                             <UploadCloud className="h-3.5 w-3.5" />
@@ -1347,21 +1565,21 @@ export function VisualPortfolioBuilderStudioClient({
                           <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                             <h1 className="text-2xl font-black text-white tracking-tight">{block.title}</h1>
                             {block.content?.openToWork && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className={cn("inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border", theme.accentBadge)}>
+                                <span className={cn("h-1.5 w-1.5 rounded-full animate-pulse", theme.accentText.replace("text-", "bg-"))} />
                                 Available for Work
                               </span>
                             )}
                           </div>
-                          <p className="text-sm font-semibold text-emerald-400">
+                          <p className={cn("text-sm font-semibold", theme.accentText)}>
                             {block.content?.tagline || "Professional"}
                           </p>
                           <p className="text-xs text-white/70 leading-relaxed max-w-xl">
-                            {block.content?.bio || "Add your summary in the inspector on the right."}
+                            {stripHtml(block.content?.bio) || "Add your summary in the inspector on the right."}
                           </p>
                           {block.content?.ctaText && (
                             <div className="pt-2">
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow">
+                              <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold shadow", theme.accentButton)}>
                                 {block.content.ctaText}
                                 <ExternalLink className="h-3 w-3" />
                               </span>
@@ -1386,12 +1604,12 @@ export function VisualPortfolioBuilderStudioClient({
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <Code2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                            <Code2 className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                             <h3 className="text-base font-bold text-white">{block.title}</h3>
                           </div>
                           {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
                         </div>
-                        <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-300 font-mono">
+                        <Badge variant="outline" className={cn("text-[10px] font-mono", theme.accentBorder, theme.accentTextLight)}>
                           {skillsList.length} skills
                         </Badge>
                       </div>
@@ -1400,9 +1618,13 @@ export function VisualPortfolioBuilderStudioClient({
                         {skillsList.map((sk: string, i: number) => (
                           <span
                             key={i}
-                            className="group/tag inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-2xs hover:border-emerald-500/60 transition-colors"
+                            className={cn(
+                              "group/tag inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-semibold shadow-2xs transition-colors",
+                              theme.accentBadge,
+                              theme.accentBorderHover
+                            )}
                           >
-                            <span>{sk}</span>
+                            <span>{stripHtml(sk)}</span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1422,7 +1644,11 @@ export function VisualPortfolioBuilderStudioClient({
                             setSelectedBlockId(block.id);
                             setIsRightOpen(true);
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium text-white/50 border border-dashed border-white/20 hover:border-emerald-400 hover:text-emerald-300 transition-colors"
+                          className={cn(
+                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-medium text-white/50 border border-dashed border-white/20 transition-colors",
+                            theme.accentBorderHover,
+                            `hover:${theme.accentTextLight}`
+                          )}
                         >
                           <Plus className="h-3 w-3" />
                           <span>Add tag in Inspector</span>
@@ -1445,7 +1671,7 @@ export function VisualPortfolioBuilderStudioClient({
                       <div className="flex items-center justify-between gap-2 mb-4">
                         <div>
                           <div className="flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-emerald-400 shrink-0" />
+                            <Briefcase className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                             <h3 className="text-base font-bold text-white">{block.title}</h3>
                           </div>
                           {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
@@ -1469,7 +1695,7 @@ export function VisualPortfolioBuilderStudioClient({
                             updateSelectedBlockContent({ experiences: updated });
                             toast.success("Added new experience entry");
                           }}
-                          className="text-[11px] h-7 px-2 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 border border-emerald-500/30 gap-1"
+                          className={cn("text-[11px] h-7 px-2 border gap-1", theme.accentTextLight, theme.accentBorder, theme.accentBgHover)}
                         >
                           <Plus className="h-3 w-3" />
                           Add Role
@@ -1483,19 +1709,19 @@ export function VisualPortfolioBuilderStudioClient({
                           </div>
                         ) : (
                           experiences.map((exp: any, i: number) => (
-                            <div key={i} className="border-l-2 border-emerald-500/40 pl-4 space-y-1 relative">
-                              <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-[#0d1422]" />
+                            <div key={i} className={cn("border-l-2 pl-4 space-y-1 relative", theme.accentBorder)}>
+                              <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4 ring-[#0d1422]", theme.accentText.replace("text-", "bg-"))} />
                               <div className="flex justify-between items-baseline flex-wrap gap-2">
-                                <span className="text-xs font-bold text-white">{exp.role}</span>
+                                <span className="text-xs font-bold text-white">{stripHtml(exp.role)}</span>
                                 <span className="text-[11px] text-white/50 font-mono">{exp.period}</span>
                               </div>
-                              <p className="text-xs font-medium text-emerald-400">
-                                {exp.company}{exp.location ? ` • ${exp.location}` : ""}
+                              <p className={cn("text-xs font-medium", theme.accentText)}>
+                                {stripHtml(exp.company)}{exp.location ? ` • ${stripHtml(exp.location)}` : ""}
                               </p>
                               {exp.bullets && exp.bullets.length > 0 && (
                                 <ul className="list-disc list-inside text-xs text-white/70 space-y-1 mt-1.5 leading-relaxed">
                                   {exp.bullets.map((b: string, bi: number) => (
-                                    <li key={bi}>{b}</li>
+                                    <li key={bi}>{stripHtml(b)}</li>
                                   ))}
                                 </ul>
                               )}
@@ -1520,7 +1746,7 @@ export function VisualPortfolioBuilderStudioClient({
                       <div className="flex items-center justify-between gap-2 mb-4">
                         <div>
                           <div className="flex items-center gap-2">
-                            <FolderGit2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                            <FolderGit2 className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                             <h3 className="text-base font-bold text-white">{block.title}</h3>
                           </div>
                           {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
@@ -1543,7 +1769,7 @@ export function VisualPortfolioBuilderStudioClient({
                             updateSelectedBlockContent({ items: updated });
                             toast.success("Added new project entry");
                           }}
-                          className="text-[11px] h-7 px-2 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 border border-emerald-500/30 gap-1"
+                          className={cn("text-[11px] h-7 px-2 border gap-1", theme.accentTextLight, theme.accentBorder, theme.accentBgHover)}
                         >
                           <Plus className="h-3 w-3" />
                           Add Project
@@ -1557,10 +1783,10 @@ export function VisualPortfolioBuilderStudioClient({
                           </div>
                         ) : (
                           items.map((proj: any, i: number) => (
-                            <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/[0.03] space-y-2 group hover:border-emerald-500/40 transition-colors">
+                            <div key={i} className={cn("p-4 rounded-xl border border-white/10 bg-white/[0.03] space-y-2 group transition-all", theme.accentBorderHover)}>
                               <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
-                                  {proj.name}
+                                <p className={cn("text-xs font-bold text-white transition-colors", `group-hover:${theme.accentTextLight}`)}>
+                                  {stripHtml(proj.name)}
                                 </p>
                                 {proj.link && (
                                   <a
@@ -1568,18 +1794,18 @@ export function VisualPortfolioBuilderStudioClient({
                                     target="_blank"
                                     rel="noreferrer"
                                     onClick={e => e.stopPropagation()}
-                                    className="text-white/40 hover:text-emerald-400 transition-colors"
+                                    className={cn("text-white/40 transition-colors", `hover:${theme.accentText}`)}
                                   >
                                     <ExternalLink className="h-3 w-3" />
                                   </a>
                                 )}
                               </div>
-                              <p className="text-xs text-white/60 line-clamp-2 leading-relaxed">{proj.desc}</p>
+                              <p className="text-xs text-white/70 line-clamp-3 leading-relaxed">{stripHtml(proj.desc)}</p>
                               {proj.tags && proj.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 pt-1">
+                                <div className="flex flex-wrap gap-1.5 pt-1">
                                   {proj.tags.map((tag: string, ti: number) => (
-                                    <span key={ti} className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-white/70 font-mono">
-                                      {tag}
+                                    <span key={ti} className={cn("text-[10px] px-2 py-0.5 rounded font-mono font-medium shadow-2xs", theme.accentBadge)}>
+                                      {stripHtml(tag)}
                                     </span>
                                   ))}
                                 </div>
@@ -1605,7 +1831,7 @@ export function VisualPortfolioBuilderStudioClient({
                       <div className="flex items-center justify-between gap-2 mb-4">
                         <div>
                           <div className="flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-emerald-400 shrink-0" />
+                            <GraduationCap className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                             <h3 className="text-base font-bold text-white">{block.title}</h3>
                           </div>
                           {block.subtitle && <p className="text-xs text-white/50 mt-0.5">{block.subtitle}</p>}
@@ -1629,7 +1855,7 @@ export function VisualPortfolioBuilderStudioClient({
                             updateSelectedBlockContent({ entries: updated });
                             toast.success("Added education entry");
                           }}
-                          className="text-[11px] h-7 px-2 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 border border-emerald-500/30 gap-1"
+                          className={cn("text-[11px] h-7 px-2 border gap-1", theme.accentTextLight, theme.accentBorder, theme.accentBgHover)}
                         >
                           <Plus className="h-3 w-3" />
                           Add Degree
@@ -1643,17 +1869,17 @@ export function VisualPortfolioBuilderStudioClient({
                           </div>
                         ) : (
                           entries.map((edu: any, i: number) => (
-                            <div key={i} className="border-l-2 border-emerald-500/40 pl-4 space-y-1 relative">
-                              <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-[#0d1422]" />
+                            <div key={i} className={cn("border-l-2 pl-4 space-y-1 relative", theme.accentBorder)}>
+                              <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4 ring-[#0d1422]", theme.accentText.replace("text-", "bg-"))} />
                               <div className="flex justify-between items-baseline flex-wrap gap-2">
-                                <span className="text-xs font-bold text-white">{edu.degree || edu.institution}</span>
+                                <span className="text-xs font-bold text-white">{stripHtml(edu.degree || edu.institution)}</span>
                                 <span className="text-[11px] text-white/50 font-mono">{edu.period}</span>
                               </div>
-                              <p className="text-xs font-medium text-emerald-400">
-                                {edu.institution}{edu.field ? ` • ${edu.field}` : ""}
+                              <p className={cn("text-xs font-medium", theme.accentText)}>
+                                {stripHtml(edu.institution)}{edu.field ? ` • ${stripHtml(edu.field)}` : ""}
                               </p>
                               {edu.honors && (
-                                <p className="text-xs text-white/60">{edu.honors}</p>
+                                <p className="text-xs text-white/60">{stripHtml(edu.honors)}</p>
                               )}
                             </div>
                           ))
@@ -1675,25 +1901,25 @@ export function VisualPortfolioBuilderStudioClient({
                       className={containerStyle}
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <Video className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <Video className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                         <h3 className="text-base font-bold text-white">{block.title}</h3>
                       </div>
                       {block.subtitle && <p className="text-xs text-white/50 mb-3">{block.subtitle}</p>}
 
-                      <div className="p-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm">
-                          <Play className="h-5 w-5 fill-emerald-400" />
+                      <div className={cn("p-5 rounded-xl border flex flex-col sm:flex-row items-center gap-4", theme.accentBorder, theme.accentBg)}>
+                        <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm", theme.accentBg, theme.accentText)}>
+                          <Play className={cn("h-5 w-5 fill-current", theme.accentText)} />
                         </div>
                         <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
                           <h4 className="text-xs font-bold text-white">
-                            {block.content?.pitchTitle || "60-Second Career Elevator Pitch"}
+                            {stripHtml(block.content?.pitchTitle) || "60-Second Career Elevator Pitch"}
                           </h4>
                           <p className="text-xs text-white/60 leading-relaxed">
-                            {block.content?.summary || "Watch introduction highlighting core strengths and delivery results."}
+                            {stripHtml(block.content?.summary) || "Watch introduction highlighting core strengths and delivery results."}
                           </p>
                         </div>
                         {videoUrl && (
-                          <span className="text-[11px] px-2.5 py-1 rounded bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-mono">
+                          <span className={cn("text-[11px] px-2.5 py-1 rounded font-mono", theme.accentBadge)}>
                             Video Linked
                           </span>
                         )}
@@ -1703,8 +1929,8 @@ export function VisualPortfolioBuilderStudioClient({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                           {highlights.map((h: string, hi: number) => (
                             <div key={hi} className="p-2.5 rounded-lg border border-white/10 bg-white/[0.02] flex items-center gap-2">
-                              <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
-                              <span className="text-xs text-white/80">{h}</span>
+                              <CheckCircle2 className={cn("h-3 w-3 shrink-0", theme.accentText)} />
+                              <span className="text-xs text-white/80">{stripHtml(h)}</span>
                             </div>
                           ))}
                         </div>
@@ -1724,18 +1950,18 @@ export function VisualPortfolioBuilderStudioClient({
                       className={containerStyle}
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <ShieldCheck className="h-4 w-4 text-purple-400 shrink-0" />
+                        <ShieldCheck className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                         <h3 className="text-base font-bold text-white">{block.title}</h3>
                       </div>
                       {block.subtitle && <p className="text-xs text-white/50 mb-3">{block.subtitle}</p>}
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {badges.map((badge: any, i: number) => (
-                          <div key={i} className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/10 flex items-center gap-3">
-                            <Award className="h-4 w-4 text-purple-400 shrink-0" />
+                          <div key={i} className={cn("p-3.5 rounded-xl border flex items-center gap-3 transition-colors", theme.accentBorder, theme.accentBg, theme.accentBorderHover)}>
+                            <Award className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-white truncate">{badge.name}</p>
-                              <p className="text-[10px] text-white/50">{badge.issuer} • {badge.date}</p>
+                              <p className="text-xs font-bold text-white truncate">{stripHtml(badge.name)}</p>
+                              <p className="text-[10px] text-white/50">{stripHtml(badge.issuer)} • {stripHtml(badge.date)}</p>
                             </div>
                           </div>
                         ))}
@@ -1761,29 +1987,29 @@ export function VisualPortfolioBuilderStudioClient({
                       className={containerStyle}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Mail className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <Mail className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                         <h3 className="text-base font-bold text-white">{block.title}</h3>
                       </div>
                       {block.subtitle && <p className="text-xs text-white/50 mb-3">{block.subtitle}</p>}
-                      {note && <p className="text-xs text-white/70 mb-3">{note}</p>}
+                      {note && <p className="text-xs text-white/70 mb-3">{stripHtml(note)}</p>}
 
                       <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] flex flex-wrap gap-2.5 items-center">
                         {email && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
+                          <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border", theme.accentBadge)}>
                             <Mail className="h-3.5 w-3.5" />
-                            {email}
+                            {stripHtml(email)}
                           </span>
                         )}
                         {phone && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-300 border border-blue-500/30 text-xs font-semibold">
                             <Phone className="h-3.5 w-3.5" />
-                            {phone}
+                            {stripHtml(phone)}
                           </span>
                         )}
                         {location && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs">
-                            <Globe className="h-3.5 w-3.5 text-emerald-400" />
-                            {location}
+                            <Globe className={cn("h-3.5 w-3.5", theme.accentText)} />
+                            {stripHtml(location)}
                           </span>
                         )}
                         {linkedin && (
@@ -1800,7 +2026,7 @@ export function VisualPortfolioBuilderStudioClient({
                         )}
                         {website && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs">
-                            <Globe className="h-3.5 w-3.5 text-emerald-400" />
+                            <Globe className={cn("h-3.5 w-3.5", theme.accentText)} />
                             Website
                           </span>
                         )}
@@ -1831,79 +2057,117 @@ export function VisualPortfolioBuilderStudioClient({
         {/* Right Column: Deep Block Property Inspector */}
         {isRightOpen && (
           <aside className="w-80 xl:w-96 border-l border-white/10 bg-[#0c121e] p-5 flex flex-col shrink-0 overflow-y-auto space-y-5 z-20">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <span className="text-xs font-bold uppercase tracking-wider text-white/80 flex items-center gap-2">
-                <Sliders className="h-3.5 w-3.5 text-emerald-400" />
-                Block Inspector
-              </span>
-              <Badge variant="outline" className="text-[10px] font-mono border-white/20 text-emerald-300 uppercase">
-                {selectedBlock?.type}
-              </Badge>
-            </div>
+            {(() => {
+              const currentTheme = THEME_PALETTES[activeThemeColor] || THEME_PALETTES.emerald;
 
-            {selectedBlock ? (
-              <div className="space-y-5">
-                {/* SECTION 1: HEADER & SUBTITLE */}
-                <div className="space-y-3 p-3.5 rounded-xl border border-white/10 bg-white/[0.02]">
-                  <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">
-                    Header Details
-                  </span>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-semibold text-white/50 uppercase">Section Title</label>
-                    <Input
-                      value={selectedBlock.title}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, title: val } : b));
-                      }}
-                      className="bg-black/40 border-white/15 text-white text-xs h-9"
-                    />
+              return (
+                <>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <span className="text-xs font-bold uppercase tracking-wider text-white/80 flex items-center gap-2">
+                      <Sliders className={cn("h-3.5 w-3.5", currentTheme.accentText)} />
+                      Block Inspector
+                    </span>
+                    <Badge variant="outline" className={cn("text-[10px] font-mono border-white/20 uppercase", currentTheme.accentTextLight)}>
+                      {selectedBlock?.type}
+                    </Badge>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-semibold text-white/50 uppercase">Section Subtitle</label>
-                    <Input
-                      value={selectedBlock.subtitle || ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, subtitle: val } : b));
-                      }}
-                      placeholder="Optional section description..."
-                      className="bg-black/40 border-white/15 text-white text-xs h-9"
-                    />
-                  </div>
-                </div>
 
-                {/* SECTION 2: VISUAL THEME STYLE */}
-                <div className="space-y-2 p-3.5 rounded-xl border border-white/10 bg-white/[0.02]">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">
-                      Visual Theme Style
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-mono capitalize">
-                      {selectedBlock.backgroundStyle}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    {(["clean", "glass", "gradient", "mesh"] as const).map((style) => (
-                      <Button
-                        key={style}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, backgroundStyle: style } : b));
-                          toast.success(`Set block theme style to "${style}"`);
-                        }}
-                        className={`text-xs h-8 capitalize font-semibold transition-all ${
-                          selectedBlock.backgroundStyle === style
-                            ? "bg-emerald-500/25 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/40"
-                            : "border-white/10 bg-white/[0.02] text-white/70 hover:bg-white/10 hover:text-white"
-                        }`}
-                      >
-                        {style}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
+                  {selectedBlock ? (
+                    <div className="space-y-5">
+                      {/* BLOCK VISIBILITY TOGGLE */}
+                      <div className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <div className="flex items-center gap-2.5">
+                          {selectedBlock.visible !== false ? (
+                            <Eye className={cn("h-4 w-4", currentTheme.accentText)} />
+                          ) : (
+                            <EyeOff className="h-4 w-4 text-amber-400" />
+                          )}
+                          <div>
+                            <p className="text-xs font-semibold text-white">Block Visibility</p>
+                            <p className="text-[10px] text-white/50">
+                              {selectedBlock.visible !== false ? "Visible on public canvas" : "Hidden from public canvas"}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const nextVis = selectedBlock.visible === false;
+                            setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, visible: nextVis } : b));
+                            toast.success(nextVis ? `"${selectedBlock.title}" is now visible` : `"${selectedBlock.title}" hidden from canvas`);
+                          }}
+                          className={`text-xs h-7 px-3 font-semibold transition-all ${
+                            selectedBlock.visible !== false
+                              ? `${currentTheme.accentBadge} shadow-sm`
+                              : "bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30"
+                          }`}
+                        >
+                          {selectedBlock.visible !== false ? "Visible" : "Hidden"}
+                        </Button>
+                      </div>
+
+                      {/* SECTION 1: HEADER & SUBTITLE */}
+                      <div className="space-y-3 p-3.5 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">
+                          Header Details
+                        </span>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-semibold text-white/50 uppercase">Section Title</label>
+                          <Input
+                            value={selectedBlock.title}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, title: val } : b));
+                            }}
+                            className="bg-black/40 border-white/15 text-white text-xs h-9"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-semibold text-white/50 uppercase">Section Subtitle</label>
+                          <Input
+                            value={selectedBlock.subtitle || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, subtitle: val } : b));
+                            }}
+                            placeholder="Optional section description..."
+                            className="bg-black/40 border-white/15 text-white text-xs h-9"
+                          />
+                        </div>
+                      </div>
+
+                      {/* SECTION 2: VISUAL THEME STYLE */}
+                      <div className="space-y-2 p-3.5 rounded-xl border border-white/10 bg-white/[0.02]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-white/70 uppercase tracking-wider">
+                            Visual Theme Style
+                          </span>
+                          <span className={cn("text-[10px] font-mono capitalize", currentTheme.accentTextLight)}>
+                            {selectedBlock.backgroundStyle}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          {(["clean", "glass", "gradient", "mesh"] as const).map((style) => (
+                            <Button
+                              key={style}
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setBlocks(prev => prev.map(b => b.id === selectedBlock.id ? { ...b, backgroundStyle: style } : b));
+                                toast.success(`Set block theme style to "${style}"`);
+                              }}
+                              className={`text-xs h-8 capitalize font-semibold transition-all ${
+                                selectedBlock.backgroundStyle === style
+                                  ? `${currentTheme.accentBadge} ring-1 ring-white/20 shadow-md`
+                                  : "border-white/10 bg-white/[0.02] text-white/70 hover:bg-white/10 hover:text-white"
+                              }`}
+                            >
+                              {style}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
 
                 {/* SECTION 3: SPECIFIC CONTENT EDITORS ACCORDING TO TYPE */}
 
@@ -2672,6 +2936,9 @@ export function VisualPortfolioBuilderStudioClient({
             ) : (
               <p className="text-xs text-white/40">Select a block on the canvas to configure properties.</p>
             )}
+                </>
+              );
+            })()}
           </aside>
         )}
 

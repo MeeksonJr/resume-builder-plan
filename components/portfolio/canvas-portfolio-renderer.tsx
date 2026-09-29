@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { CanvasBlock } from "./visual-portfolio-builder-studio-client";
+import {
+  CanvasBlock,
+  THEME_PALETTES,
+  getStudioBlockContainerStyle,
+  stripHtml
+} from "./visual-portfolio-builder-studio-client";
 import {
   ShieldCheck,
   Video,
@@ -29,20 +34,6 @@ interface CanvasPortfolioRendererProps {
   className?: string;
 }
 
-function getBlockContainerStyle(backgroundStyle?: string) {
-  switch (backgroundStyle) {
-    case "glass":
-      return "border border-white/20 dark:border-white/10 bg-white/70 dark:bg-card/40 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/10";
-    case "gradient":
-      return "border border-emerald-500/30 bg-gradient-to-br from-card via-card/80 to-emerald-500/10 shadow-lg shadow-emerald-500/5";
-    case "mesh":
-      return "border border-cyan-500/30 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/15 via-card/90 to-card/50 backdrop-blur-md shadow-xl";
-    case "clean":
-    default:
-      return "border border-border/70 bg-card/60 backdrop-blur-xs shadow-xs";
-  }
-}
-
 export function CanvasPortfolioRenderer({
   blocks,
   profile,
@@ -50,6 +41,8 @@ export function CanvasPortfolioRenderer({
   className = "",
 }: CanvasPortfolioRendererProps) {
   const visibleBlocks = (blocks || []).filter((b) => b.visible !== false);
+  const activeThemeColor = portfolio?.theme_settings?.color || "emerald";
+  const theme = THEME_PALETTES[activeThemeColor] || THEME_PALETTES.emerald;
 
   if (visibleBlocks.length === 0) {
     return (
@@ -64,7 +57,7 @@ export function CanvasPortfolioRenderer({
       {visibleBlocks.map((block) => {
         const containerClasses = cn(
           "relative p-6 sm:p-8 rounded-2xl transition-all duration-300",
-          getBlockContainerStyle(block.backgroundStyle)
+          getStudioBlockContainerStyle(block.backgroundStyle, false, activeThemeColor)
         );
 
         if (block.type === "hero") {
@@ -72,8 +65,8 @@ export function CanvasPortfolioRenderer({
             ? block.title
             : (portfolio?.full_name || profile?.full_name || block.title);
 
-          const tagline = block.content?.tagline || portfolio?.tagline || "Professional";
-          const bio = block.content?.bio || portfolio?.bio || profile?.summary;
+          const tagline = stripHtml(block.content?.tagline || portfolio?.tagline || "Professional");
+          const bio = stripHtml(block.content?.bio || portfolio?.bio || profile?.summary);
           const openToWork = block.content?.openToWork ?? portfolio?.open_to_work ?? true;
 
           return (
@@ -89,10 +82,22 @@ export function CanvasPortfolioRenderer({
                   <img
                     src={block.content.avatarUrl}
                     alt="Profile Avatar"
-                    className="h-24 w-24 rounded-full object-cover border-2 border-emerald-500 shadow-md shrink-0 ring-4 ring-emerald-500/10"
+                    className={cn(
+                      "h-24 w-24 rounded-full object-cover border-2 shadow-md shrink-0 ring-4",
+                      theme.accentBorder,
+                      theme.ring
+                    )}
                   />
                 ) : (
-                  <div className="h-24 w-24 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center text-emerald-500 text-3xl font-black shrink-0 ring-4 ring-emerald-500/10">
+                  <div
+                    className={cn(
+                      "h-24 w-24 rounded-full flex items-center justify-center text-3xl font-black shrink-0 ring-4 border-2",
+                      theme.accentBg,
+                      theme.accentBorder,
+                      theme.accentText,
+                      theme.ring
+                    )}
+                  >
                     {heroHeading.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -102,13 +107,20 @@ export function CanvasPortfolioRenderer({
                       {heroHeading}
                     </h1>
                     {openToWork && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shrink-0",
+                          theme.accentBg,
+                          theme.accentText,
+                          theme.accentBorder
+                        )}
+                      >
+                        <span className={cn("h-1.5 w-1.5 rounded-full animate-pulse", theme.accentText.replace("text-", "bg-"))} />
                         Available for Work
                       </span>
                     )}
                   </div>
-                  <p className="text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400">
+                  <p className={cn("text-sm sm:text-base font-semibold", theme.accentText)}>
                     {tagline}
                   </p>
                   {bio && (
@@ -132,7 +144,7 @@ export function CanvasPortfolioRenderer({
             <div key={block.id} className={containerClasses}>
               <div className="mb-4">
                 <div className="flex items-center gap-2">
-                  <Code2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <Code2 className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                   <h2 className="text-lg font-bold tracking-tight text-foreground">{block.title}</h2>
                 </div>
                 {block.subtitle && (
@@ -143,7 +155,11 @@ export function CanvasPortfolioRenderer({
                 {skillsList.map((sk: string, i: number) => (
                   <span
                     key={i}
-                    className="px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 hover:border-emerald-500/40 transition-colors shadow-2xs"
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold border transition-colors shadow-2xs",
+                      theme.accentBadge,
+                      theme.accentBorderHover
+                    )}
                   >
                     {sk}
                   </span>
@@ -160,7 +176,7 @@ export function CanvasPortfolioRenderer({
             <div key={block.id} className={containerClasses}>
               <div className="mb-5">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <Briefcase className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                   <h2 className="text-lg font-bold tracking-tight text-foreground">{block.title}</h2>
                 </div>
                 {block.subtitle && (
@@ -169,17 +185,17 @@ export function CanvasPortfolioRenderer({
               </div>
               <div className="space-y-6 pt-1">
                 {experiences.map((exp: any, i: number) => (
-                  <div key={i} className="border-l-2 border-emerald-500/40 pl-4 sm:pl-5 space-y-1.5 relative">
-                    <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-background" />
+                  <div key={i} className={cn("border-l-2 pl-4 sm:pl-5 space-y-1.5 relative", theme.accentBorder)}>
+                    <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4 ring-background", theme.accentText.replace("text-", "bg-"))} />
                     <div className="flex justify-between items-baseline flex-wrap gap-2">
-                      <span className="text-sm font-bold text-foreground">{exp.role}</span>
+                      <span className="text-sm font-bold text-foreground">{stripHtml(exp.role)}</span>
                       <span className="text-xs text-muted-foreground font-mono">{exp.period}</span>
                     </div>
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{exp.company}</p>
+                    <p className={cn("text-xs font-semibold", theme.accentText)}>{stripHtml(exp.company)}</p>
                     {exp.bullets && exp.bullets.length > 0 && (
                       <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1 mt-2 leading-relaxed">
                         {exp.bullets.map((b: string, bi: number) => (
-                          <li key={bi}>{b}</li>
+                          <li key={bi}>{stripHtml(b)}</li>
                         ))}
                       </ul>
                     )}
@@ -197,7 +213,7 @@ export function CanvasPortfolioRenderer({
             <div key={block.id} className={containerClasses}>
               <div className="mb-5">
                 <div className="flex items-center gap-2">
-                  <FolderGit2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <FolderGit2 className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                   <h2 className="text-lg font-bold tracking-tight text-foreground">{block.title}</h2>
                 </div>
                 {block.subtitle && (
@@ -208,18 +224,21 @@ export function CanvasPortfolioRenderer({
                 {items.map((proj: any, i: number) => (
                   <div
                     key={i}
-                    className="p-5 rounded-xl border border-border/50 bg-background/50 hover:bg-background/80 transition-all space-y-3 shadow-2xs group"
+                    className={cn(
+                      "p-5 rounded-xl border border-border/50 bg-background/50 hover:bg-background/80 transition-all space-y-3 shadow-2xs group",
+                      theme.accentBorderHover
+                    )}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-sm font-bold text-foreground group-hover:text-emerald-500 transition-colors">
-                        {proj.name}
+                      <h3 className="text-sm font-bold text-foreground transition-colors group-hover:text-primary">
+                        {stripHtml(proj.name)}
                       </h3>
                       {proj.link && (
                         <a
                           href={proj.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-emerald-500 transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
@@ -227,7 +246,7 @@ export function CanvasPortfolioRenderer({
                     </div>
                     {proj.desc && (
                       <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                        {proj.desc}
+                        {stripHtml(proj.desc)}
                       </p>
                     )}
                     {proj.tags && proj.tags.length > 0 && (
@@ -235,7 +254,10 @@ export function CanvasPortfolioRenderer({
                         {proj.tags.map((tag: string, ti: number) => (
                           <span
                             key={ti}
-                            className="text-[10px] px-2 py-0.5 rounded-md font-mono bg-muted text-muted-foreground border border-border/40"
+                            className={cn(
+                              "text-[10px] px-2.5 py-0.5 rounded-md font-mono border font-semibold shadow-2xs",
+                              theme.accentBadge
+                            )}
                           >
                             {tag}
                           </span>
@@ -264,7 +286,7 @@ export function CanvasPortfolioRenderer({
             <div key={block.id} className={containerClasses}>
               <div className="mb-5">
                 <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <GraduationCap className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                   <h2 className="text-lg font-bold tracking-tight text-foreground">{block.title}</h2>
                 </div>
                 {block.subtitle && (
@@ -273,19 +295,19 @@ export function CanvasPortfolioRenderer({
               </div>
               <div className="space-y-4 pt-1">
                 {entries.map((edu: any, i: number) => (
-                  <div key={i} className="border-l-2 border-emerald-500/40 pl-4 sm:pl-5 space-y-1 relative">
-                    <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-background" />
+                  <div key={i} className={cn("border-l-2 pl-4 sm:pl-5 space-y-1 relative", theme.accentBorder)}>
+                    <span className={cn("absolute -left-[5px] top-1.5 h-2 w-2 rounded-full ring-4 ring-background", theme.accentText.replace("text-", "bg-"))} />
                     <div className="flex justify-between items-baseline flex-wrap gap-2">
                       <span className="text-sm font-bold text-foreground">
-                        {edu.degree || edu.institution}
+                        {stripHtml(edu.degree || edu.institution)}
                       </span>
                       <span className="text-xs text-muted-foreground font-mono">{edu.period}</span>
                     </div>
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                      {edu.institution}{edu.field ? ` • ${edu.field}` : ""}
+                    <p className={cn("text-xs font-semibold", theme.accentText)}>
+                      {stripHtml(edu.institution)}{edu.field ? ` • ${stripHtml(edu.field)}` : ""}
                     </p>
                     {edu.honors && (
-                      <p className="text-xs text-muted-foreground leading-relaxed">{edu.honors}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{stripHtml(edu.honors)}</p>
                     )}
                   </div>
                 ))}
@@ -306,16 +328,16 @@ export function CanvasPortfolioRenderer({
             <div key={block.id} className={containerClasses}>
               <div className="mb-4">
                 <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
-                  <Video className="h-4 w-4 text-emerald-500" />
+                  <Video className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                   {block.title}
                 </h2>
                 {block.subtitle && <p className="text-xs text-muted-foreground mt-0.5">{block.subtitle}</p>}
               </div>
 
               <div className="space-y-4">
-                <div className="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row items-center gap-4">
-                  <div className="h-14 w-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0 shadow-sm">
-                    <Play className="h-6 w-6 fill-emerald-500" />
+                <div className={cn("p-6 rounded-2xl border flex flex-col sm:flex-row items-center gap-4", theme.accentBorder, theme.accentBg)}>
+                  <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm", theme.accentBg, theme.accentText)}>
+                    <Play className={cn("h-6 w-6", theme.accentText.replace("text-", "fill-"))} />
                   </div>
                   <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
                     <h4 className="text-sm font-bold text-foreground">
@@ -330,7 +352,7 @@ export function CanvasPortfolioRenderer({
                       href={videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md transition-all shrink-0"
+                      className={cn("inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-md transition-all shrink-0", theme.accentButton)}
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                       Watch Video
@@ -342,8 +364,8 @@ export function CanvasPortfolioRenderer({
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                     {highlights.map((h: string, hi: number) => (
                       <div key={hi} className="p-3 rounded-xl border border-border/40 bg-card/40 flex items-start gap-2">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="text-xs text-foreground/80 leading-snug">{h}</span>
+                        <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", theme.accentText)} />
+                        <span className="text-xs text-foreground/80 leading-snug">{stripHtml(h)}</span>
                       </div>
                     ))}
                   </div>
@@ -363,16 +385,16 @@ export function CanvasPortfolioRenderer({
             <div key={block.id} className={containerClasses}>
               <div className="mb-4">
                 <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-purple-500" />
+                  <ShieldCheck className={cn("h-4 w-4 shrink-0", theme.accentText)} />
                   {block.title}
                 </h2>
                 {block.subtitle && <p className="text-xs text-muted-foreground mt-0.5">{block.subtitle}</p>}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {badges.map((badge: any, i: number) => (
-                  <div key={i} className="p-4 rounded-xl border border-purple-500/25 bg-purple-500/5 flex items-center justify-between gap-3 group">
+                  <div key={i} className={cn("p-4 rounded-xl border flex items-center justify-between gap-3 group transition-colors", theme.accentBorder, theme.accentBg)}>
                     <div className="flex items-center gap-3 min-w-0">
-                      <Award className="h-5 w-5 text-purple-400 shrink-0" />
+                      <Award className={cn("h-5 w-5 shrink-0", theme.accentTextLight)} />
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold text-foreground truncate">{badge.name}</p>
                         <p className="text-[10px] text-muted-foreground">{badge.issuer} • {badge.date}</p>
@@ -383,7 +405,7 @@ export function CanvasPortfolioRenderer({
                         href={badge.verifyUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-muted-foreground group-hover:text-purple-400 transition-colors p-1"
+                        className={cn("text-muted-foreground transition-colors p-1 hover:", theme.accentText)}
                         title="Verify Credential"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
@@ -412,13 +434,17 @@ export function CanvasPortfolioRenderer({
                 {block.subtitle && <p className="text-xs text-muted-foreground mt-0.5">{block.subtitle}</p>}
               </div>
               {note && (
-                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{note}</p>
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{stripHtml(note)}</p>
               )}
               <div className="p-5 rounded-2xl border border-border/40 bg-card/30 flex flex-wrap gap-3 items-center">
                 {email && (
                   <a
                     href={`mailto:${email}`}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 text-xs font-semibold hover:bg-emerald-500/20 transition-all shadow-2xs"
+                    className={cn(
+                      "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all shadow-2xs",
+                      theme.accentBadge,
+                      theme.accentBorderHover
+                    )}
                   >
                     <Mail className="h-4 w-4" />
                     {email}
@@ -435,7 +461,7 @@ export function CanvasPortfolioRenderer({
                 )}
                 {location && (
                   <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted/60 text-xs font-medium text-muted-foreground border border-border/40">
-                    <MapPin className="h-4 w-4 text-emerald-500" />
+                    <MapPin className={cn("h-4 w-4", theme.accentText)} />
                     {location}
                   </span>
                 )}
@@ -444,7 +470,7 @@ export function CanvasPortfolioRenderer({
                     href={linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-emerald-500 border border-border/40 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-blue-500 border border-border/40 transition-colors"
                   >
                     <Linkedin className="h-3.5 w-3.5 text-blue-500" />
                     LinkedIn
@@ -455,7 +481,7 @@ export function CanvasPortfolioRenderer({
                     href={github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-emerald-500 border border-border/40 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-purple-400 border border-border/40 transition-colors"
                   >
                     <Github className="h-3.5 w-3.5" />
                     GitHub
@@ -466,9 +492,12 @@ export function CanvasPortfolioRenderer({
                     href={website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-emerald-500 border border-border/40 transition-colors"
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground border border-border/40 transition-colors hover:",
+                      theme.accentText
+                    )}
                   >
-                    <Globe className="h-3.5 w-3.5 text-emerald-500" />
+                    <Globe className={cn("h-3.5 w-3.5", theme.accentText)} />
                     Website
                   </a>
                 )}
