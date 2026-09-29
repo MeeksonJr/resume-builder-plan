@@ -2,7 +2,24 @@
 
 import React from "react";
 import { CanvasBlock } from "./visual-portfolio-builder-studio-client";
-import { ShieldCheck, Video, ExternalLink, Mail, MapPin, Briefcase, Code2, FolderGit2, CheckCircle2, Award } from "lucide-react";
+import {
+  ShieldCheck,
+  Video,
+  ExternalLink,
+  Mail,
+  MapPin,
+  Briefcase,
+  Code2,
+  FolderGit2,
+  CheckCircle2,
+  Award,
+  GraduationCap,
+  Phone,
+  Globe,
+  Linkedin,
+  Github,
+  Play
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CanvasPortfolioRendererProps {
@@ -15,14 +32,14 @@ interface CanvasPortfolioRendererProps {
 function getBlockContainerStyle(backgroundStyle?: string) {
   switch (backgroundStyle) {
     case "glass":
-      return "border border-border/50 bg-card/50 backdrop-blur-xl shadow-lg";
+      return "border border-white/20 dark:border-white/10 bg-white/70 dark:bg-card/40 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-white/10";
     case "gradient":
-      return "border border-border/50 bg-gradient-to-br from-card/90 via-card/50 to-primary/5 shadow-md";
+      return "border border-emerald-500/30 bg-gradient-to-br from-card via-card/80 to-emerald-500/10 shadow-lg shadow-emerald-500/5";
     case "mesh":
-      return "border border-border/40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-card/70 to-card/30 backdrop-blur-md shadow-md";
+      return "border border-cyan-500/30 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/15 via-card/90 to-card/50 backdrop-blur-md shadow-xl";
     case "clean":
     default:
-      return "border border-border/40 bg-card/40 backdrop-blur-xs";
+      return "border border-border/70 bg-card/60 backdrop-blur-xs shadow-xs";
   }
 }
 
@@ -232,7 +249,59 @@ export function CanvasPortfolioRenderer({
           );
         }
 
+        if (block.type === "education") {
+          const entries = block.content?.entries || [
+            {
+              institution: "Stanford University",
+              degree: "B.S. in Computer Science",
+              field: "Artificial Intelligence & Distributed Systems",
+              period: "2018 - 2022",
+              honors: "Dean's Honor List • Magna Cum Laude"
+            }
+          ];
+
+          return (
+            <div key={block.id} className={containerClasses}>
+              <div className="mb-5">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <h2 className="text-lg font-bold tracking-tight text-foreground">{block.title}</h2>
+                </div>
+                {block.subtitle && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{block.subtitle}</p>
+                )}
+              </div>
+              <div className="space-y-4 pt-1">
+                {entries.map((edu: any, i: number) => (
+                  <div key={i} className="border-l-2 border-emerald-500/40 pl-4 sm:pl-5 space-y-1 relative">
+                    <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-background" />
+                    <div className="flex justify-between items-baseline flex-wrap gap-2">
+                      <span className="text-sm font-bold text-foreground">
+                        {edu.degree || edu.institution}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono">{edu.period}</span>
+                    </div>
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      {edu.institution}{edu.field ? ` • ${edu.field}` : ""}
+                    </p>
+                    {edu.honors && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">{edu.honors}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
         if (block.type === "video_pitch") {
+          const videoUrl = block.content?.videoUrl;
+          const highlights = block.content?.highlights || [
+            "10+ Years Building High-Scale Distributed Systems",
+            "Specialized in Next.js, TypeScript & Edge Computing",
+            "Proven leadership scaling engineering teams from Seed to Series B"
+          ];
+
           return (
             <div key={block.id} className={containerClasses}>
               <div className="mb-4">
@@ -242,18 +311,43 @@ export function CanvasPortfolioRenderer({
                 </h2>
                 {block.subtitle && <p className="text-xs text-muted-foreground mt-0.5">{block.subtitle}</p>}
               </div>
-              <div className="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row items-center gap-4">
-                <div className="h-14 w-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
-                  <Video className="h-7 w-7" />
+
+              <div className="space-y-4">
+                <div className="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row items-center gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0 shadow-sm">
+                    <Play className="h-6 w-6 fill-emerald-500" />
+                  </div>
+                  <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
+                    <h4 className="text-sm font-bold text-foreground">
+                      {block.content?.pitchTitle || "60-Second Video Elevator Pitch"}
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {block.content?.summary || "Watch my 60-second introduction highlighting key projects and delivery strengths."}
+                    </p>
+                  </div>
+                  {videoUrl && (
+                    <a
+                      href={videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md transition-all shrink-0"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Watch Video
+                    </a>
+                  )}
                 </div>
-                <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
-                  <h4 className="text-sm font-bold text-foreground">
-                    {block.content?.pitchTitle || "60-Second Video Elevator Pitch"}
-                  </h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {block.content?.summary || "Watch my 60-second introduction highlighting key projects and delivery strengths."}
-                  </p>
-                </div>
+
+                {highlights && highlights.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                    {highlights.map((h: string, hi: number) => (
+                      <div key={hi} className="p-3 rounded-xl border border-border/40 bg-card/40 flex items-start gap-2">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="text-xs text-foreground/80 leading-snug">{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -261,8 +355,8 @@ export function CanvasPortfolioRenderer({
 
         if (block.type === "web3_badges") {
           const badges = block.content?.badges || [
-            { name: "Verified Distributed Systems Engineer", issuer: "ResumeForge Protocol", date: "2026" },
-            { name: "EIP-712 Cryptographically Signed Assessment", issuer: "Career Authority", date: "2026" }
+            { name: "Verified Distributed Systems Engineer", issuer: "ResumeForge Protocol", date: "2026", verifyUrl: "https://resumeforge.io" },
+            { name: "EIP-712 Cryptographically Signed Assessment", issuer: "Career Authority", date: "2026", verifyUrl: "https://resumeforge.io" }
           ];
 
           return (
@@ -276,12 +370,25 @@ export function CanvasPortfolioRenderer({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {badges.map((badge: any, i: number) => (
-                  <div key={i} className="p-4 rounded-xl border border-purple-500/25 bg-purple-500/5 flex items-center gap-3">
-                    <Award className="h-5 w-5 text-purple-400 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-foreground truncate">{badge.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{badge.issuer} • {badge.date}</p>
+                  <div key={i} className="p-4 rounded-xl border border-purple-500/25 bg-purple-500/5 flex items-center justify-between gap-3 group">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Award className="h-5 w-5 text-purple-400 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground truncate">{badge.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{badge.issuer} • {badge.date}</p>
+                      </div>
                     </div>
+                    {badge.verifyUrl && (
+                      <a
+                        href={badge.verifyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground group-hover:text-purple-400 transition-colors p-1"
+                        title="Verify Credential"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
@@ -292,6 +399,11 @@ export function CanvasPortfolioRenderer({
         if (block.type === "contact") {
           const email = block.content?.email || portfolio?.user_id || "engineer@resumeforge.io";
           const location = block.content?.location || portfolio?.location || "San Francisco, CA / Remote";
+          const phone = block.content?.phone || portfolio?.phone;
+          const linkedin = block.content?.linkedin || portfolio?.linkedin_url;
+          const github = block.content?.github || portfolio?.github_url;
+          const website = block.content?.website || portfolio?.website_url;
+          const note = block.content?.note;
 
           return (
             <div key={block.id} className={containerClasses}>
@@ -299,7 +411,10 @@ export function CanvasPortfolioRenderer({
                 <h2 className="text-lg font-bold tracking-tight text-foreground">{block.title}</h2>
                 {block.subtitle && <p className="text-xs text-muted-foreground mt-0.5">{block.subtitle}</p>}
               </div>
-              <div className="p-5 rounded-2xl border border-border/40 bg-card/30 flex flex-wrap gap-4 items-center">
+              {note && (
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{note}</p>
+              )}
+              <div className="p-5 rounded-2xl border border-border/40 bg-card/30 flex flex-wrap gap-3 items-center">
                 {email && (
                   <a
                     href={`mailto:${email}`}
@@ -309,11 +424,53 @@ export function CanvasPortfolioRenderer({
                     {email}
                   </a>
                 )}
+                {phone && (
+                  <a
+                    href={`tel:${phone}`}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25 text-xs font-semibold hover:bg-blue-500/20 transition-all shadow-2xs"
+                  >
+                    <Phone className="h-4 w-4" />
+                    {phone}
+                  </a>
+                )}
                 {location && (
-                  <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted/60 text-xs font-medium text-muted-foreground border border-border/40">
                     <MapPin className="h-4 w-4 text-emerald-500" />
                     {location}
                   </span>
+                )}
+                {linkedin && (
+                  <a
+                    href={linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-emerald-500 border border-border/40 transition-colors"
+                  >
+                    <Linkedin className="h-3.5 w-3.5 text-blue-500" />
+                    LinkedIn
+                  </a>
+                )}
+                {github && (
+                  <a
+                    href={github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-emerald-500 border border-border/40 transition-colors"
+                  >
+                    <Github className="h-3.5 w-3.5" />
+                    GitHub
+                  </a>
+                )}
+                {website && (
+                  <a
+                    href={website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/60 text-xs font-medium text-foreground hover:text-emerald-500 border border-border/40 transition-colors"
+                  >
+                    <Globe className="h-3.5 w-3.5 text-emerald-500" />
+                    Website
+                  </a>
                 )}
               </div>
             </div>
