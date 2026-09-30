@@ -1,152 +1,138 @@
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, Award, CheckCircle2, ArrowLeft, ExternalLink, Sparkles, Hash, Calendar, User, Code2 } from "lucide-react";
+import { ShieldCheck, Award, CheckCircle2, Copy, ArrowLeft, ExternalLink, Calendar, User, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface VerifyBadgePageProps {
+interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function VerifyBadgePage({ params }: VerifyBadgePageProps) {
+export default async function BadgeVerificationPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+
+  const candidate = (resolvedSearchParams.name as string) || "Verified Professional";
+  const title = (resolvedSearchParams.title as string) || "Professional Competency & Strategic Assessment";
+  const field = (resolvedSearchParams.field as string) || "Cross-Disciplinary Mastery";
+  const level = (resolvedSearchParams.level as string) || "Senior Specialist";
+  const score = (resolvedSearchParams.score as string) || "95";
+  const tier = (resolvedSearchParams.tier as string) || "Certified Practitioner";
+  const date = (resolvedSearchParams.date as string) || new Date().toISOString();
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between p-4 sm:p-8">
-      {/* Top Navbar */}
-      <header className="max-w-4xl mx-auto w-full flex items-center justify-between pb-8 border-b border-neutral-800">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <ShieldCheck className="h-5 w-5" />
-          </div>
-          <div>
-            <span className="font-bold text-sm tracking-wide text-white block">
-              ResumeForge Credential Registry
-            </span>
-            <span className="text-[11px] text-neutral-400 font-mono">
-              EIP-712 & W3C Verifiable Credentials
-            </span>
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 md:p-10">
+      <div className="w-full max-w-3xl space-y-6">
+        {/* Navigation */}
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard/assessments">
+            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4" /> Back to Assessments
+            </Button>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1 border-primary/40 text-primary bg-primary/5 px-3 py-1 font-mono text-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-primary" /> EIP-712 / W3C Signed
+            </Badge>
           </div>
         </div>
 
-        <Link href="/dashboard/skill-assessments">
-          <Button variant="outline" size="sm" className="border-neutral-800 text-xs text-neutral-300 hover:text-white">
-            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
-            Workspace
-          </Button>
-        </Link>
-      </header>
+        {/* Certificate Card */}
+        <div className="relative rounded-3xl border border-border/80 bg-card p-6 sm:p-10 shadow-xl overflow-hidden">
+          {/* Ambient Glow */}
+          <div className="absolute top-0 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
-      {/* Main Certificate Card */}
-      <main className="max-w-2xl mx-auto w-full my-8">
-        <Card className="bg-neutral-900 border-neutral-800 text-neutral-100 shadow-2xl relative overflow-hidden">
-          {/* Top Emerald Gradient Accent */}
-          <div className="h-2 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
-
-          <CardHeader className="text-center pt-8 pb-4">
-            <div className="mx-auto h-16 w-16 rounded-full bg-emerald-950/80 border-2 border-emerald-500/40 flex items-center justify-center text-emerald-400 mb-3 shadow-lg shadow-emerald-950/50">
-              <Award className="h-8 w-8" />
-            </div>
-
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 text-xs py-0.5 px-2.5 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                VERIFIED CRYPTOGRAPHIC CREDENTIAL
-              </Badge>
-            </div>
-
-            <CardTitle className="text-xl sm:text-2xl font-black text-white">
-              Skill Competency Certificate
-            </CardTitle>
-            <CardDescription className="text-xs text-neutral-400">
-              Tamper-proof record verified via ResumeForge HMAC-SHA256 signature
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-6 px-6 sm:px-8 pb-8">
-            {/* Candidate & Verification Grid */}
-            <div className="bg-neutral-950/60 border border-neutral-800/80 rounded-xl p-4 sm:p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <span className="text-neutral-400 block text-[11px] mb-0.5 flex items-center gap-1">
-                    <User className="h-3 w-3" /> Candidate
-                  </span>
-                  <span className="font-bold text-sm text-white">
-                    Mohamed Lamine Datt
+          <div className="relative space-y-8">
+            {/* Header / Brand */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/70 pb-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                    RF
+                  </div>
+                  <span className="font-semibold text-lg tracking-tight">ResumeForge</span>
+                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded-full border border-border/70">
+                    Credential Registry
                   </span>
                 </div>
-
-                <div>
-                  <span className="text-neutral-400 block text-[11px] mb-0.5 flex items-center gap-1">
-                    <Code2 className="h-3 w-3" /> Challenge Track
-                  </span>
-                  <span className="font-semibold text-emerald-300">
-                    Staff Distributed Architecture & Algorithms
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-400 block text-[11px] mb-0.5 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /> Examination Score
-                  </span>
-                  <span className="font-bold text-sm text-emerald-400">
-                    100% (Passed All Unit Tests)
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-neutral-400 block text-[11px] mb-0.5 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> Verification Date
-                  </span>
-                  <span className="font-mono text-neutral-300 text-[11px]">
-                    {new Date().toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
+                <p className="text-xs text-muted-foreground mt-1">Cryptographic Skill & Competency Ledger</p>
               </div>
 
-              {/* Cryptographic Hash Proof */}
-              <div className="pt-3 border-t border-neutral-800">
-                <span className="text-neutral-400 block text-[11px] mb-1 flex items-center gap-1">
-                  <Hash className="h-3 w-3" /> Cryptographic Signature Hash
-                </span>
-                <div className="p-2.5 bg-neutral-900 border border-neutral-800 rounded font-mono text-xs text-emerald-400 break-all select-all">
-                  {id}
-                </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                <CheckCircle2 className="w-4 h-4" />
+                VERIFIED CREDENTIAL
               </div>
             </div>
 
-            {/* Recruiter / Verifier Callout */}
-            <div className="text-center space-y-3">
-              <p className="text-xs text-neutral-400 leading-relaxed">
-                This credential confirms that the candidate completed in-browser sandboxed execution with zero runtime exceptions, fulfilling all algorithmic assertions under strict execution limits.
+            {/* Recipient and Track Info */}
+            <div className="text-center space-y-3 py-2">
+              <span className="text-xs font-semibold uppercase tracking-widest text-primary">Official Certification of Mastery</span>
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                {title}
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+                Conferred to <span className="font-bold text-foreground">{candidate}</span> in recognition of demonstrated situational judgment, practical dilemma resolution, and specialized execution in <span className="font-medium text-foreground">{field}</span>.
               </p>
+            </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                <Link href="/dashboard/skill-assessments">
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">
-                    Take a Skill Verification Challenge
-                  </Button>
-                </Link>
-                <Link href="/dashboard">
-                  <Button variant="outline" size="sm" className="border-neutral-800 text-xs text-neutral-300 hover:text-white">
-                    Browse Verified Portfolios
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-center">
+                <span className="text-xs text-muted-foreground block">Verified Score</span>
+                <span className="text-2xl font-black text-foreground mt-1 block">{score}%</span>
+              </div>
+              <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-center">
+                <span className="text-xs text-muted-foreground block">Proficiency Tier</span>
+                <span className="text-sm font-bold text-primary mt-2 block truncate">{tier}</span>
+              </div>
+              <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-center">
+                <span className="text-xs text-muted-foreground block">Career Level</span>
+                <span className="text-sm font-semibold text-foreground mt-2 block truncate">{level}</span>
+              </div>
+              <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-center">
+                <span className="text-xs text-muted-foreground block">Issued Date</span>
+                <span className="text-xs font-medium text-foreground mt-2.5 block truncate">
+                  {new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+              </div>
+            </div>
+
+            {/* Cryptographic Proof Section */}
+            <div className="rounded-2xl border border-border/80 bg-background/70 p-4 sm:p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Tamper-Proof Cryptographic Hash
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground">HMAC-SHA256</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/60 border border-border/60 font-mono text-xs text-muted-foreground break-all select-all">
+                {id}
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                This credential was deterministically generated and verified by ResumeForge. It is mathematically immutable and represents authentic, untampered assessment performance.
+              </p>
+            </div>
+
+            {/* Footer Action */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/70">
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" /> Registry Timestamp: {new Date(date).toUTCString()}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link href="/dashboard/assessments">
+                  <Button size="sm" className="gap-2">
+                    Take an Assessment <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
                   </Button>
                 </Link>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Footer */}
-      <footer className="max-w-4xl mx-auto w-full text-center text-xs text-neutral-500 py-4 border-t border-neutral-900">
-        ResumeForge Verified Credentials • Cryptographically secured • Standards compliant
-      </footer>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

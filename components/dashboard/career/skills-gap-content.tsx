@@ -281,31 +281,31 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
         <div className="space-y-6">
             {/* Limit Warning/Upgrade Callout */}
             {!isProUser && (
-                <div className="flex items-center justify-between border border-amber-200 bg-amber-50/50 p-4 rounded-none">
+                <div className="flex items-center justify-between border border-amber-500/20 bg-amber-500/10 p-4 rounded-xl">
                     <div className="flex gap-2.5 items-start">
-                        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-xs font-bold text-amber-800">Free Account Limits</p>
-                            <p className="text-[11px] text-amber-700 mt-0.5">
+                            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Free Account Limits</p>
+                            <p className="text-[11px] text-amber-700 dark:text-amber-400/90 mt-0.5">
                                 You can run 1 Skills Gap Audit per day and save 1 report in your history. Upgrade to Pro for unlimited audits and saves!
                             </p>
                         </div>
                     </div>
-                    <Button asChild size="sm" className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold text-xs shrink-0 ml-4 h-8">
+                    <Button asChild size="sm" className="rounded-lg font-bold text-xs shrink-0 ml-4 h-8 shadow-xs">
                         <a href="/pricing">Upgrade <Unlock className="h-3 w-3 ml-1" /></a>
                     </Button>
                 </div>
             )}
 
             {/* Actions Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border border-[#102b2b]/15 bg-[#f4f7f2] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border border-border bg-card/80 backdrop-blur-xs p-4 rounded-xl shadow-xs">
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={() => setShowHistoryPanel(!showHistoryPanel)}
-                        variant="outline"
+                        variant={showHistoryPanel ? "default" : "outline"}
                         className={cn(
-                            "h-11 gap-2 rounded-none border-[#102b2b]/25 font-bold text-[#102b2b]",
-                            showHistoryPanel && "bg-[#102b2b] text-white hover:bg-[#102b2b]"
+                            "h-11 gap-2 rounded-lg font-bold border-border",
+                            showHistoryPanel && "bg-primary text-primary-foreground shadow-xs"
                         )}
                     >
                         <History className="h-4 w-4" />
@@ -316,7 +316,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                         <Button 
                             onClick={saveAnalysis} 
                             disabled={isSaving} 
-                            className="h-11 gap-2 rounded-none bg-[#0d8274] text-white hover:bg-[#102b2b] font-bold shadow-none"
+                            className="h-11 gap-2 rounded-lg font-bold shadow-xs"
                         >
                             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             Save Audit Results
@@ -325,7 +325,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
 
                     {analysis?.id && (
                         <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="h-10 gap-2 rounded-none border border-[#0d8274]/20 bg-[#0d8274]/10 px-4 font-bold text-[#0d8274]">
+                            <Badge variant="secondary" className="h-10 gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 font-bold text-primary">
                                 <CheckCircle2 className="h-4 w-4" />
                                 Saved to History
                             </Badge>
@@ -333,9 +333,9 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                                 size="icon"
                                 variant="outline"
                                 onClick={() => togglePin(analysis.id!, analysis.is_pinned || false)}
-                                className="h-10 w-10 border-[#102b2b]/15 rounded-none text-[#102b2b]/70 hover:text-[#102b2b]"
+                                className="h-10 w-10 border-border rounded-lg text-muted-foreground hover:text-foreground"
                             >
-                                <Pin className={cn("h-4 w-4", analysis.is_pinned && "fill-[#0d8274] text-[#0d8274]")} />
+                                <Pin className={cn("h-4 w-4", analysis.is_pinned && "fill-primary text-primary")} />
                             </Button>
                         </div>
                     )}
@@ -347,7 +347,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                         onClick={() => {
                             setAnalysis(null);
                         }}
-                        className="h-11 text-xs font-bold text-[#102b2b]/60 hover:text-[#102b2b] hover:bg-transparent"
+                        className="h-11 text-xs font-bold text-muted-foreground hover:text-foreground"
                     >
                         Clear Screen
                     </Button>
@@ -361,11 +361,11 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden border border-[#102b2b]/15 bg-white p-5 space-y-4"
+                        className="overflow-hidden border border-border bg-card p-5 space-y-4 rounded-xl shadow-xs"
                     >
-                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#102b2b]/10 pb-4">
-                            <h3 className="text-sm font-bold text-[#102b2b] uppercase tracking-wider flex items-center gap-2">
-                                <History className="h-4 w-4 text-[#0d8274]" />
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+                            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                                <History className="h-4 w-4 text-primary" />
                                 Skills Gap Audit History
                             </h3>
                             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
@@ -464,13 +464,13 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
             </AnimatePresence>
 
             {/* Input Dashboard Form */}
-            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-heading font-black flex items-center gap-2">
-                        <BrainCircuit className="h-5 w-5 text-[#0d8274]" />
+                    <CardTitle className="text-xl font-heading font-black flex items-center gap-2 text-foreground">
+                        <BrainCircuit className="h-5 w-5 text-primary" />
                         Skills Gap Analyzer
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-muted-foreground">
                         Evaluate your current skills against industry standard requirements for your target career role.
                     </CardDescription>
                 </CardHeader>
@@ -478,12 +478,12 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                     <div className="grid gap-4 md:grid-cols-2">
                         {/* Resume Selector */}
                         <div className="space-y-2">
-                            <Label htmlFor="resume-select" className="text-sm font-bold">Select Resume</Label>
+                            <Label htmlFor="resume-select" className="text-sm font-bold text-foreground">Select Resume</Label>
                             <select
                                 id="resume-select"
                                 value={selectedResumeId}
                                 onChange={(e) => setSelectedResumeId(e.target.value)}
-                                className="w-full h-11 px-3 border border-[#102b2b]/15 bg-white text-[#102b2b] text-sm focus:outline-none focus:ring-1 focus:ring-[#0d8274] transition-all rounded-none"
+                                className="w-full h-11 px-3 border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all rounded-xl"
                             >
                                 <option value="" disabled>Select a resume...</option>
                                 {resumes.map((r) => (
@@ -496,13 +496,13 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
 
                         {/* Target Role Input */}
                         <div className="space-y-2">
-                            <Label htmlFor="target-role-input" className="text-sm font-bold">Target Career Role</Label>
+                            <Label htmlFor="target-role-input" className="text-sm font-bold text-foreground">Target Career Role</Label>
                             <Input
                                 id="target-role-input"
                                 value={targetRole}
                                 onChange={(e) => setTargetRole(e.target.value)}
                                 placeholder="e.g. Cloud Architect, React Developer, Product Manager"
-                                className="h-11 rounded-none border-[#102b2b]/15 bg-white text-[#102b2b]"
+                                className="h-11 rounded-xl border-border bg-background text-foreground"
                             />
                         </div>
                     </div>
@@ -510,7 +510,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                     <Button
                         onClick={runAnalysis}
                         disabled={isLoading || !selectedResumeId || !targetRole.trim()}
-                        className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] h-11 px-6 font-bold w-full md:w-auto"
+                        className="rounded-xl h-11 px-6 font-bold w-full md:w-auto shadow-xs"
                     >
                         {isLoading ? (
                             <>
@@ -539,8 +539,8 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                     >
                         {/* Summary Score Gauge and Stats */}
                         <div className="grid gap-6 md:grid-cols-3">
-                            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none md:col-span-1 flex flex-col items-center justify-center p-6 text-center">
-                                <span className="text-xs font-black uppercase tracking-wider text-muted-foreground mb-4">
+                            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl md:col-span-1 flex flex-col items-center justify-center p-6 text-center">
+                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
                                     Role Compatibility
                                 </span>
                                 
@@ -549,7 +549,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                                     <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
                                         {/* Background Path */}
                                         <path
-                                            className="stroke-gray-100 fill-none"
+                                            className="stroke-muted fill-none"
                                             strokeWidth="3"
                                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                         />
@@ -578,15 +578,15 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                             </Card>
 
                             {/* Skills Comparison */}
-                            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none md:col-span-2">
+                            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl md:col-span-2">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="text-md font-bold">Skills Comparison</CardTitle>
-                                    <CardDescription>How your current profile compares to industry requirements</CardDescription>
+                                    <CardTitle className="text-base font-bold text-foreground">Skills Comparison</CardTitle>
+                                    <CardDescription className="text-xs text-muted-foreground">How your current profile compares to industry requirements</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {/* Matching */}
                                     <div className="space-y-2">
-                                        <h4 className="text-xs font-black uppercase text-green-700 tracking-wider flex items-center gap-1.5">
+                                        <h4 className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
                                             <CheckCircle2 className="h-4 w-4" />
                                             Matching Skills ({analysis.matchingSkills.length})
                                         </h4>
@@ -595,7 +595,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                                                 <span className="text-xs text-muted-foreground italic">No matching skills identified. Run a detailed audit.</span>
                                             ) : (
                                                 analysis.matchingSkills.map((s, idx) => (
-                                                    <Badge key={idx} variant="outline" className="border-green-200 bg-green-50/50 text-green-800 rounded-none px-2.5 py-1 text-xs">
+                                                    <Badge key={idx} variant="outline" className="border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-lg px-2.5 py-1 text-xs">
                                                         {s}
                                                     </Badge>
                                                 ))
@@ -604,10 +604,10 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                                     </div>
 
                                     {/* Gaps */}
-                                    <div className="grid gap-4 sm:grid-cols-2 border-t border-[#102b2b]/10 pt-4">
+                                    <div className="grid gap-4 sm:grid-cols-2 border-t border-border pt-4">
                                         {/* Missing Hard Skills */}
                                         <div className="space-y-2">
-                                            <h4 className="text-xs font-black uppercase text-red-700 tracking-wider flex items-center gap-1.5">
+                                            <h4 className="text-xs font-bold uppercase text-red-600 dark:text-red-400 tracking-wider flex items-center gap-1.5">
                                                 <AlertTriangle className="h-4 w-4" />
                                                 Missing Hard Skills ({analysis.missingHardSkills.length})
                                             </h4>
@@ -616,7 +616,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                                                     <span className="text-xs text-muted-foreground italic">None missing!</span>
                                                 ) : (
                                                     analysis.missingHardSkills.map((s, idx) => (
-                                                        <Badge key={idx} variant="outline" className="border-red-200 bg-red-50/50 text-red-800 rounded-none px-2.5 py-1 text-xs">
+                                                        <Badge key={idx} variant="outline" className="border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300 rounded-lg px-2.5 py-1 text-xs">
                                                             {s}
                                                         </Badge>
                                                     ))
@@ -626,7 +626,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
 
                                         {/* Missing Soft Skills */}
                                         <div className="space-y-2">
-                                            <h4 className="text-xs font-black uppercase text-amber-700 tracking-wider flex items-center gap-1.5">
+                                            <h4 className="text-xs font-bold uppercase text-amber-600 dark:text-amber-400 tracking-wider flex items-center gap-1.5">
                                                 <AlertTriangle className="h-4 w-4" />
                                                 Missing Soft Skills ({analysis.missingSoftSkills.length})
                                             </h4>
@@ -635,7 +635,7 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                                                     <span className="text-xs text-muted-foreground italic">None missing!</span>
                                                 ) : (
                                                     analysis.missingSoftSkills.map((s, idx) => (
-                                                        <Badge key={idx} variant="outline" className="border-amber-200 bg-amber-50/50 text-amber-800 rounded-none px-2.5 py-1 text-xs">
+                                                        <Badge key={idx} variant="outline" className="border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300 rounded-lg px-2.5 py-1 text-xs">
                                                             {s}
                                                         </Badge>
                                                     ))
@@ -650,32 +650,32 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                         {/* Action Roadmap & Credentials */}
                         <div className="grid gap-6 md:grid-cols-2">
                             {/* Bridge the Gap Roadmap */}
-                            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+                            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-md font-bold flex items-center gap-2">
-                                        <Target className="h-4 w-4 text-[#0d8274]" />
+                                    <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                                        <Target className="h-4 w-4 text-primary" />
                                         Bridge the Gap Action Steps
                                     </CardTitle>
-                                    <CardDescription>Interactive roadmap checklist of actions to complete</CardDescription>
+                                    <CardDescription className="text-xs text-muted-foreground">Interactive roadmap checklist of actions to complete</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="space-y-3">
+                                    <div className="space-y-2.5">
                                         {analysis.actionSteps.map((step, idx) => (
                                             <div 
                                                 key={idx} 
                                                 onClick={() => toggleStep(idx)}
                                                 className={cn(
-                                                    "flex items-start gap-3 p-3 border border-[#102b2b]/10 bg-white hover:bg-[#e9eee8]/35 transition-all cursor-pointer select-none",
-                                                    checkedSteps[idx] && "bg-[#d8f36b]/10 border-[#0d8274]/35 opacity-70"
+                                                    "flex items-start gap-3 p-3 border border-border/70 rounded-xl bg-card hover:bg-muted/60 transition-all cursor-pointer select-none",
+                                                    checkedSteps[idx] && "bg-primary/5 border-primary/30 opacity-80"
                                                 )}
                                             >
                                                 <div className={cn(
-                                                    "h-5 w-5 shrink-0 border border-[#102b2b]/20 flex items-center justify-center transition-all mt-0.5",
-                                                    checkedSteps[idx] ? "bg-[#102b2b] border-[#102b2b] text-[#d8f36b]" : "bg-white"
+                                                    "h-5 w-5 shrink-0 rounded-md border border-border flex items-center justify-center transition-all mt-0.5",
+                                                    checkedSteps[idx] ? "bg-primary border-primary text-primary-foreground" : "bg-background"
                                                 )}>
-                                                    {checkedSteps[idx] && <CheckCircle2 className="h-4 w-4" />}
+                                                    {checkedSteps[idx] && <CheckCircle2 className="h-3.5 w-3.5" />}
                                                 </div>
-                                                <span className={cn("text-xs leading-5 text-[#102b2b]", checkedSteps[idx] && "line-through text-[#102b2b]/50")}>
+                                                <span className={cn("text-xs leading-5 text-foreground", checkedSteps[idx] && "line-through text-muted-foreground")}>
                                                     {step}
                                                 </span>
                                             </div>
@@ -685,30 +685,30 @@ export function SkillsGapContent({ profile, resumes }: SkillsGapContentProps) {
                             </Card>
 
                             {/* Recommended Certifications */}
-                            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+                            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-md font-bold flex items-center gap-2">
-                                        <Trophy className="h-4 w-4 text-[#0d8274]" />
+                                    <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                                        <Trophy className="h-4 w-4 text-primary" />
                                         Recommended Certifications
                                     </CardTitle>
-                                    <CardDescription>Credentials that will significantly boost your profile relevance</CardDescription>
+                                    <CardDescription className="text-xs text-muted-foreground">Credentials that will significantly boost your profile relevance</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         {analysis.recommendedCertifications.length === 0 ? (
-                                            <div className="text-xs text-muted-foreground italic p-4 text-center border border-dashed border-[#102b2b]/10">
+                                            <div className="text-xs text-muted-foreground italic p-4 text-center border border-dashed border-border rounded-xl">
                                                 No certifications recommended at this time.
                                             </div>
                                         ) : (
                                             analysis.recommendedCertifications.map((cert, idx) => (
-                                                <div key={idx} className="border border-[#102b2b]/10 p-3 bg-[#f5f7f2]/40 hover:bg-[#f5f7f2] transition-colors space-y-2">
+                                                <div key={idx} className="border border-border/70 rounded-xl p-3 bg-muted/40 hover:bg-muted/70 transition-colors space-y-1.5">
                                                     <div className="flex items-center justify-between flex-wrap gap-1">
-                                                        <span className="font-bold text-xs text-[#102b2b]">{cert.name}</span>
-                                                        <Badge className="bg-[#102b2b] text-[#d8f36b] rounded-none text-[9px] font-black uppercase tracking-wider">
+                                                        <span className="font-bold text-xs text-foreground">{cert.name}</span>
+                                                        <Badge className="bg-primary/10 text-primary border border-primary/20 rounded-md text-[9px] font-bold uppercase tracking-wider">
                                                             {cert.provider}
                                                         </Badge>
                                                     </div>
-                                                    <p className="text-[11px] text-[#102b2b]/70 leading-relaxed">
+                                                    <p className="text-[11px] text-muted-foreground leading-relaxed">
                                                         {cert.relevance}
                                                     </p>
                                                 </div>

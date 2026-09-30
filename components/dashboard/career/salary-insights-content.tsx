@@ -291,31 +291,31 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
         <div className="space-y-6">
             {/* Limit Warning/Upgrade Callout */}
             {!isProUser && (
-                <div className="flex items-center justify-between border border-amber-200 bg-amber-50/50 p-4 rounded-none">
+                <div className="flex items-center justify-between border border-amber-500/20 bg-amber-500/10 p-4 rounded-xl">
                     <div className="flex gap-2.5 items-start">
-                        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-xs font-bold text-amber-800">Free Account Limits</p>
-                            <p className="text-[11px] text-amber-700 mt-0.5">
+                            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Free Account Limits</p>
+                            <p className="text-[11px] text-amber-700 dark:text-amber-400/90 mt-0.5">
                                 You can run 1 Salary Insights check per day and save 1 report in your history. Upgrade to Pro for unlimited checks and saves!
                             </p>
                         </div>
                     </div>
-                    <Button asChild size="sm" className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold text-xs shrink-0 ml-4 h-8">
+                    <Button asChild size="sm" className="rounded-lg font-bold text-xs shrink-0 ml-4 h-8 shadow-xs">
                         <a href="/pricing">Upgrade <Unlock className="h-3 w-3 ml-1" /></a>
                     </Button>
                 </div>
             )}
 
             {/* Actions Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border border-[#102b2b]/15 bg-[#f4f7f2] p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border border-border bg-card/80 backdrop-blur-xs p-4 rounded-xl shadow-xs">
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={() => setShowHistoryPanel(!showHistoryPanel)}
-                        variant="outline"
+                        variant={showHistoryPanel ? "default" : "outline"}
                         className={cn(
-                            "h-11 gap-2 rounded-none border-[#102b2b]/25 font-bold text-[#102b2b]",
-                            showHistoryPanel && "bg-[#102b2b] text-white hover:bg-[#102b2b]"
+                            "h-11 gap-2 rounded-lg font-bold border-border",
+                            showHistoryPanel && "bg-primary text-primary-foreground shadow-xs"
                         )}
                     >
                         <History className="h-4 w-4" />
@@ -326,7 +326,7 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                         <Button 
                             onClick={saveInsights} 
                             disabled={isSaving} 
-                            className="h-11 gap-2 rounded-none bg-[#0d8274] text-white hover:bg-[#102b2b] font-bold shadow-none"
+                            className="h-11 gap-2 rounded-lg font-bold shadow-xs"
                         >
                             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             Save Search Results
@@ -335,7 +335,7 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
 
                     {insights?.id && (
                         <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="h-10 gap-2 rounded-none border border-[#0d8274]/20 bg-[#0d8274]/10 px-4 font-bold text-[#0d8274]">
+                            <Badge variant="secondary" className="h-10 gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 font-bold text-primary">
                                 <CheckCircle2 className="h-4 w-4" />
                                 Saved to History
                             </Badge>
@@ -343,9 +343,9 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                                 size="icon"
                                 variant="outline"
                                 onClick={() => togglePin(insights.id!, insights.is_pinned || false)}
-                                className="h-10 w-10 border-[#102b2b]/15 rounded-none text-[#102b2b]/70 hover:text-[#102b2b]"
+                                className="h-10 w-10 border-border rounded-lg text-muted-foreground hover:text-foreground"
                             >
-                                <Pin className={cn("h-4 w-4", insights.is_pinned && "fill-[#0d8274] text-[#0d8274]")} />
+                                <Pin className={cn("h-4 w-4", insights.is_pinned && "fill-primary text-primary")} />
                             </Button>
                         </div>
                     )}
@@ -357,7 +357,7 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                         onClick={() => {
                             setInsights(null);
                         }}
-                        className="h-11 text-xs font-bold text-[#102b2b]/60 hover:text-[#102b2b] hover:bg-transparent"
+                        className="h-11 text-xs font-bold text-muted-foreground hover:text-foreground"
                     >
                         Clear Screen
                     </Button>
@@ -476,13 +476,13 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
             </AnimatePresence>
 
             {/* Input Dashboard Form */}
-            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                 <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-heading font-black flex items-center gap-2">
-                        <Coins className="h-5 w-5 text-[#0d8274]" />
+                    <CardTitle className="text-xl font-heading font-black flex items-center gap-2 text-foreground">
+                        <Coins className="h-5 w-5 text-primary" />
                         Salary Insights Engine
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-muted-foreground">
                         Estimate market rate salary ranges and premium skills values based on your target role, location, and resume.
                     </CardDescription>
                 </CardHeader>
@@ -490,12 +490,12 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                     <div className="grid gap-4 md:grid-cols-3">
                         {/* Resume Selector */}
                         <div className="space-y-2">
-                            <Label htmlFor="resume-select" className="text-sm font-bold">Select Resume</Label>
+                            <Label htmlFor="resume-select" className="text-sm font-bold text-foreground">Select Resume</Label>
                             <select
                                 id="resume-select"
                                 value={selectedResumeId}
                                 onChange={(e) => setSelectedResumeId(e.target.value)}
-                                className="w-full h-11 px-3 border border-[#102b2b]/15 bg-white text-[#102b2b] text-sm focus:outline-none focus:ring-1 focus:ring-[#0d8274] transition-all rounded-none"
+                                className="w-full h-11 px-3 border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all rounded-xl"
                             >
                                 <option value="" disabled>Select a resume...</option>
                                 {resumes.map((r) => (
@@ -508,25 +508,25 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
 
                         {/* Target Role Input */}
                         <div className="space-y-2">
-                            <Label htmlFor="target-role-input" className="text-sm font-bold">Target Role</Label>
+                            <Label htmlFor="target-role-input" className="text-sm font-bold text-foreground">Target Role</Label>
                             <Input
                                 id="target-role-input"
                                 value={targetRole}
                                 onChange={(e) => setTargetRole(e.target.value)}
                                 placeholder="e.g. Senior Software Engineer"
-                                className="h-11 rounded-none border-[#102b2b]/15 bg-white text-[#102b2b]"
+                                className="h-11 rounded-xl border-border bg-background text-foreground"
                             />
                         </div>
 
                         {/* Location Input */}
                         <div className="space-y-2">
-                            <Label htmlFor="location-input" className="text-sm font-bold">Target Location</Label>
+                            <Label htmlFor="location-input" className="text-sm font-bold text-foreground">Target Location</Label>
                             <Input
                                 id="location-input"
                                 value={locationInput}
                                 onChange={(e) => setLocationInput(e.target.value)}
                                 placeholder="e.g. New York, NY or Remote"
-                                className="h-11 rounded-none border-[#102b2b]/15 bg-white text-[#102b2b]"
+                                className="h-11 rounded-xl border-border bg-background text-foreground"
                             />
                         </div>
                     </div>
@@ -534,7 +534,7 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                     <Button
                         onClick={runAnalysis}
                         disabled={isLoading || !selectedResumeId || !targetRole.trim()}
-                        className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] h-11 px-6 font-bold w-full md:w-auto"
+                        className="rounded-xl h-11 px-6 font-bold w-full md:w-auto shadow-xs"
                     >
                         {isLoading ? (
                             <>
@@ -562,20 +562,20 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                         className="space-y-6"
                     >
                         {/* Compensation Range Slider Visualizer */}
-                        <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+                        <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                             <CardHeader className="pb-2">
-                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-[#0d8274]">Annual Base Compensation</span>
-                                <CardTitle className="text-xl font-heading font-black">Benchmark Salary Curve</CardTitle>
-                                <CardDescription>Estimated compensation ranges for <strong>{targetRole}</strong> in <strong>{locationInput}</strong></CardDescription>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Annual Base Compensation</span>
+                                <CardTitle className="text-xl font-heading font-black text-foreground">Benchmark Salary Curve</CardTitle>
+                                <CardDescription className="text-xs text-muted-foreground">Estimated compensation ranges for <strong>{targetRole}</strong> in <strong>{locationInput}</strong></CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-8 pt-4 pb-6">
                                 {/* Track Gauge */}
                                 <div className="relative pt-6 px-2">
                                     {/* Slider Line Track */}
-                                    <div className="h-2 w-full bg-[#102b2b]/10 rounded-full relative">
+                                    <div className="h-2 w-full bg-muted rounded-full relative">
                                         {/* Highlighted Middle Range */}
                                         <div 
-                                            className="absolute h-full bg-[#0d8274]/20" 
+                                            className="absolute h-full bg-primary/20 rounded-full" 
                                             style={{ left: "15%", right: "15%" }}
                                         />
                                     </div>
@@ -583,19 +583,19 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                                     {/* Tick Markers */}
                                     <div className="absolute top-[22px] w-full flex justify-between px-1 text-[10px] font-bold text-muted-foreground">
                                         <div className="flex flex-col items-center">
-                                            <CircleDot className="h-3 w-3 text-red-500 fill-white" />
+                                            <CircleDot className="h-3 w-3 text-red-500 fill-background" />
                                             <span className="mt-1">Low End</span>
-                                            <span className="font-mono text-[#102b2b]">{formatCurrency(insights.low, insights.currency)}</span>
+                                            <span className="font-mono text-foreground font-semibold">{formatCurrency(insights.low, insights.currency)}</span>
                                         </div>
                                         <div className="flex flex-col items-center absolute" style={{ left: "50%", transform: "translateX(-50%)" }}>
-                                            <CircleDot className="h-3 w-3 text-[#102b2b] fill-white" />
+                                            <CircleDot className="h-3 w-3 text-primary fill-background" />
                                             <span className="mt-1">Median</span>
-                                            <span className="font-mono text-[#102b2b]">{formatCurrency(insights.median, insights.currency)}</span>
+                                            <span className="font-mono text-foreground font-semibold">{formatCurrency(insights.median, insights.currency)}</span>
                                         </div>
                                         <div className="flex flex-col items-center">
-                                            <CircleDot className="h-3 w-3 text-green-500 fill-white" />
+                                            <CircleDot className="h-3 w-3 text-emerald-500 fill-background" />
                                             <span className="mt-1">High End</span>
-                                            <span className="font-mono text-[#102b2b]">{formatCurrency(insights.high, insights.currency)}</span>
+                                            <span className="font-mono text-foreground font-semibold">{formatCurrency(insights.high, insights.currency)}</span>
                                         </div>
                                     </div>
 
@@ -607,39 +607,39 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
                                     >
-                                        <div className="bg-[#102b2b] text-[#d8f36b] text-xs font-black px-2.5 py-1.5 shadow-md flex items-center gap-1">
-                                            <MapPin className="h-3 w-3 shrink-0 text-[#d8f36b]" />
+                                        <div className="bg-primary text-primary-foreground text-xs font-bold px-2.5 py-1.5 rounded-lg shadow-sm flex items-center gap-1">
+                                            <MapPin className="h-3 w-3 shrink-0" />
                                             {formatCurrency(insights.median * insights.locationMultiplier, insights.currency)}
                                         </div>
-                                        <div className="w-1.5 h-1.5 bg-[#102b2b] rotate-45 -mt-1" />
-                                        <span className="text-[8px] font-bold uppercase tracking-widest text-[#102b2b]/60 mt-1">Location Adjusted</span>
+                                        <div className="w-1.5 h-1.5 bg-primary rotate-45 -mt-1" />
+                                        <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground mt-1">Location Adjusted</span>
                                     </motion.div>
                                 </div>
 
-                                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 border-t border-[#102b2b]/10 pt-6 mt-10">
+                                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 border-t border-border pt-6 mt-10">
                                     <div className="space-y-1">
                                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Market Demand</span>
                                         <div className="flex items-center gap-2">
-                                            <TrendingUp className="h-4 w-4 text-[#0d8274]" />
-                                            <span className="font-black text-sm text-[#102b2b]">{insights.marketDemand} Demand</span>
+                                            <TrendingUp className="h-4 w-4 text-primary" />
+                                            <span className="font-bold text-sm text-foreground">{insights.marketDemand} Demand</span>
                                         </div>
                                     </div>
                                     <div className="space-y-1">
                                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Location Multiplier</span>
                                         <div className="flex items-center gap-1.5">
                                             {insights.locationMultiplier >= 1.0 ? (
-                                                <ArrowUpRight className="h-4 w-4 text-green-600" />
+                                                <ArrowUpRight className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                             ) : (
-                                                <ArrowDownRight className="h-4 w-4 text-red-600" />
+                                                <ArrowDownRight className="h-4 w-4 text-red-600 dark:text-red-400" />
                                             )}
-                                            <span className="font-black text-sm text-[#102b2b]">{insights.locationMultiplier}x</span>
+                                            <span className="font-bold text-sm text-foreground">{insights.locationMultiplier}x</span>
                                             <span className="text-[10px] text-muted-foreground">({insights.locationMultiplier >= 1.0 ? `+${Math.round((insights.locationMultiplier - 1.0) * 100)}%` : `-${Math.round((1.0 - insights.locationMultiplier) * 100)}%`})</span>
                                         </div>
                                     </div>
                                     <div className="space-y-1 col-span-2 sm:col-span-1">
                                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Target Region</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-black text-sm text-[#102b2b]">{locationInput}</span>
+                                            <span className="font-bold text-sm text-foreground">{locationInput}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -649,28 +649,28 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                         {/* High-Value Skills premiums & negotiation points */}
                         <div className="grid gap-6 md:grid-cols-2">
                             {/* Skills Premium Valuation */}
-                            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+                            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-md font-bold flex items-center gap-2">
-                                        <Coins className="h-4 w-4 text-[#0d8274]" />
+                                    <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                                        <Coins className="h-4 w-4 text-primary" />
                                         High-Value Resume Skills
                                     </CardTitle>
-                                    <CardDescription>Premium skills present on your resume that drive higher starting pay</CardDescription>
+                                    <CardDescription className="text-xs text-muted-foreground">Premium skills present on your resume that drive higher starting pay</CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="space-y-3">
                                     {insights.skillsValuation.length === 0 ? (
-                                        <div className="text-xs text-muted-foreground italic p-4 text-center border border-dashed border-[#102b2b]/10">
+                                        <div className="text-xs text-muted-foreground italic p-4 text-center border border-dashed border-border rounded-xl">
                                             No skill premium valuations available.
                                         </div>
                                     ) : (
                                         insights.skillsValuation.map((item, idx) => (
-                                            <div key={idx} className="border border-[#102b2b]/10 p-3.5 bg-[#f5f7f2]/40 hover:bg-[#f5f7f2] transition-all flex items-start gap-4">
-                                                <div className="bg-[#102b2b] text-[#d8f36b] font-mono font-bold text-xs px-2.5 py-1 shrink-0 mt-0.5">
+                                            <div key={idx} className="border border-border/70 rounded-xl p-3.5 bg-muted/40 hover:bg-muted/70 transition-all flex items-start gap-3.5">
+                                                <div className="bg-primary/10 text-primary border border-primary/20 font-mono font-bold text-xs px-2.5 py-1 rounded-md shrink-0 mt-0.5">
                                                     {item.estimatedBoost}
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <span className="font-black text-xs text-[#102b2b] block">{item.skill}</span>
-                                                    <p className="text-[11px] text-[#102b2b]/70 leading-relaxed">
+                                                    <span className="font-bold text-xs text-foreground block">{item.skill}</span>
+                                                    <p className="text-[11px] text-muted-foreground leading-relaxed">
                                                         {item.explanation}
                                                     </p>
                                                 </div>
@@ -681,20 +681,20 @@ export function SalaryInsightsContent({ profile, resumes }: SalaryInsightsConten
                             </Card>
 
                             {/* Custom Negotiation Strategy Guide */}
-                            <Card className="border border-[#102b2b]/15 bg-white shadow-none rounded-none">
+                            <Card className="border border-border bg-card text-card-foreground shadow-xs rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-md font-bold flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-[#0d8274]" />
+                                    <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                                        <CheckCircle2 className="h-4 w-4 text-primary" />
                                         Negotiation Strategies
                                     </CardTitle>
-                                    <CardDescription>Custom strategies leveraging your specific project achievements</CardDescription>
+                                    <CardDescription className="text-xs text-muted-foreground">Custom strategies leveraging your specific project achievements</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ul className="space-y-3">
+                                    <ul className="space-y-2.5">
                                         {insights.negotiationPoints.map((point, idx) => (
-                                            <li key={idx} className="flex items-start gap-3 text-xs leading-5 text-[#102b2b]/80">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-[#0d8274] shrink-0 mt-2" />
-                                                <span>{point}</span>
+                                            <li key={idx} className="flex items-start gap-2.5 text-xs leading-relaxed text-muted-foreground">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                                                <span className="text-foreground/90">{point}</span>
                                             </li>
                                         ))}
                                     </ul>
