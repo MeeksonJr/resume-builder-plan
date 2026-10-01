@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { withFallback } from "@/lib/ai/index";
 import { generateText } from "ai";
 import { generateDynamicCareerAssessment, CareerAssessmentTrack, ExperienceLevel } from "@/lib/assessment/multi-career-engine";
+import { getOrGenerateQuestions } from "@/lib/rapidapi/quick-assess";
 
 export async function POST(req: Request) {
   try {
@@ -154,6 +155,18 @@ Important: Return ONLY JSON. No introductory words, no markdown backticks outsid
 
     // High quality deterministic fallback
     const fallbackTrack = generateDynamicCareerAssessment(title, level);
+
+    // Seed the question bank for this career in background (free RapidAPI call for future cache hits)
+    void (async () => {
+      try {
+        await getOrGenerateQuestions({
+          careerField: title,
+          difficulty: level === "Entry Level" ? "junior" : level === "Mid Level" ? "mid" : level === "Executive / Director" ? "executive" : "senior",
+          numQuestions: 10,
+        });
+      } catch (_) {}
+    })();
+
     return NextResponse.json({ track: fallbackTrack, source: "deterministic" });
   } catch (error: any) {
     console.error("[Assessment Generate Error]:", error);

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createResumeSnapshot } from "@/lib/version-control";
 import { generateInterviewQuestions } from "@/lib/ai";
 import { NextResponse } from "next/server";
+import { getOrGenerateQuestions } from "@/lib/rapidapi/quick-assess";
 
 export async function GET(req: Request) {
     try {
@@ -85,16 +86,51 @@ export async function POST(req: Request) {
             resumeData = await createResumeSnapshot(resumeId);
         }
 
-        // Generate questions using AI
-        const { questions } = await generateInterviewQuestions(
-            resumeData as any,
-            targetRole,
-            difficulty as "junior" | "mid" | "senior",
-            targetCompany
-        );
+        // Hybrid Question Generation:
+        // 1. Fetch cached technical questions from RapidAPI / Supabase bank (free, instant)
+        // 2. Generate behavioral/situational from AI (resume-tailored)
+        const technicalCount = Math.floor(questionCount * 0.4); // 40% technical from cache
+        const aiCount = questionCount - technicalCount; // 60% behavioral/situational from AI
+
+        const [cachedResult, aiResult] = await Promise.allSettled([
+            getOrGenerateQuestions({
+                careerField: targetRole,
+                difficulty: difficulty as "junior" | "mid" | "senior",
+                numQuestions: technicalCount,
+            }),
+            generateInterviewQuestions(
+                resumeData as any,
+                targetRole,
+                difficulty as "junior" | "mid" | "senior",
+                targetCompany
+            ),
+        ]);
+
+        // Merge: cached technical questions formatted as interview questions
+        type InterviewQ = { type: "behavioral" | "technical" | "situational"; question: string; star_tip?: string; expected_competencies?: string[] };
+        const technicalQuestions: InterviewQ[] = [];
+        if (cachedResult.status === "fulfilled" && cachedResult.value.questions.length > 0) {
+            cachedResult.value.questions.slice(0, technicalCount).forEach((q) => {
+                technicalQuestions.push({
+                    type: "technical" as const,
+                    question: q.question,
+                    star_tip: q.rationale || undefined,
+                    expected_competencies: q.competency ? [q.competency] : ["Domain Knowledge"],
+                });
+            });
+        }
+
+        const aiQuestions: InterviewQ[] = aiResult.status === "fulfilled" ? aiResult.value.questions : [];
+
+        // Interleave: start with behavioral, sprinkle technical in between
+        const mergedQuestions: InterviewQ[] = [
+            ...aiQuestions.slice(0, Math.ceil(aiCount / 2)),
+            ...technicalQuestions,
+            ...aiQuestions.slice(Math.ceil(aiCount / 2)),
+        ];
 
         // Limit to requested count
-        const selectedQuestions = questions.slice(0, questionCount);
+        const selectedQuestions: InterviewQ[] = mergedQuestions.slice(0, questionCount);
 
         // Create session
         const { data: session, error: sessionError } = await supabase
