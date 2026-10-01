@@ -175,7 +175,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                             setShowUpgradeModal(true);
                         }}
                         size="sm"
-                        className="rounded-none bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] font-bold text-xs shrink-0 flex items-center gap-1.5"
+                        className="rounded-none bg-[#0d8274] hover:bg-[#102b2b] text-[#f8f4ec] hover:text-white font-bold text-xs shrink-0 flex items-center gap-1.5"
                     >
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>Unlock Unlimited</span>
@@ -320,7 +320,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                             }}
                                         >
                                             <div className="absolute right-2 top-2">
-                                                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-[#0d8274] text-[#d8f36b]">
+                                                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-[#0d8274] text-[#f8f4ec]">
                                                     Pro
                                                 </span>
                                             </div>
@@ -454,15 +454,15 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                     </div>
                                 </div>
 
-                                <Button onClick={handleCreateSession} disabled={isCreating} className="h-12 w-full gap-3 rounded-none bg-[#102b2b] text-sm font-bold uppercase tracking-widest text-[#d8f36b] shadow-none hover:bg-[#0d8274]">
+                                <Button onClick={handleCreateSession} disabled={isCreating} className="h-12 w-full gap-3 rounded-none bg-[#102b2b] text-sm font-bold uppercase tracking-widest text-[#f8f4ec] shadow-none hover:text-white hover:bg-[#0d8274]">
                                     {isCreating ? (
                                         <>
-                                            <Loader2 className="h-5 w-5 animate-spin text-[#d8f36b]" />
+                                            <Loader2 className="h-5 w-5 animate-spin text-white" />
                                             Analyzing Resume & Calibrating AI...
                                         </>
                                     ) : (
                                         <>
-                                            <Sparkles className="h-5 w-5 text-[#d8f36b]" />
+                                            <Sparkles className="h-5 w-5 text-white" />
                                             Initialize Interview Session
                                         </>
                                     )}
@@ -504,7 +504,7 @@ export function InterviewDashboard({ resumes, sessions, targetRole }: InterviewD
                                                             Round #{sessions.length - i}
                                                         </Badge>
                                                         {session.target_company && (
-                                                            <Badge className="text-[9px] font-bold py-0 h-4 rounded-none bg-[#102b2b] text-[#d8f36b]">
+                                                            <Badge className="text-[9px] font-bold py-0 h-4 rounded-none bg-[#102b2b] text-[#f8f4ec]">
                                                                 {session.target_company}
                                                             </Badge>
                                                         )}

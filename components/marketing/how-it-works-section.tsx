@@ -40,7 +40,7 @@ export function HowItWorksSection() {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="mb-6 inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#d8f36b]"
+                        className="mb-6 inline-flex items-center gap-2 border border-[#0d8274]/40 bg-[#0d8274]/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#f8f4ec]"
                     >
                         How It Works
                     </motion.div>
@@ -81,7 +81,7 @@ export function HowItWorksSection() {
 
                             <div className="relative">
                                 {/* Step number */}
-                                <div className="absolute -left-3 -top-3 flex h-9 w-9 items-center justify-center border border-[#d8f36b]/40 bg-[#164743] text-sm font-bold text-[#d8f36b] transition-colors group-hover:border-[#d8f36b]">
+                                <div className="absolute -left-3 -top-3 flex h-9 w-9 items-center justify-center border border-[#0d8274]/40 bg-[#164743] text-sm font-bold text-[#f8f4ec] transition-colors group-hover:border-[#0d8274]">
                                     {idx + 1}
                                 </div>
 

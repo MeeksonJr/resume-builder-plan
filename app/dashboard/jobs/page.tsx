@@ -463,15 +463,15 @@ export default function DashboardJobsPage() {
           <div className="p-3.5 rounded-md bg-white/10 border border-white/15 backdrop-blur-xs flex flex-col gap-2 min-w-[260px]">
             <div className="flex items-center justify-between text-[11px] text-[#e9eee8]/80">
               <span className="font-semibold flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-[#d8f36b]" />
+                <FileText className="w-3.5 h-3.5 text-[#f8f4ec]" />
                 Target Resume:
               </span>
-              <span className="text-[10px] text-[#d8f36b] font-bold">Active Scorer</span>
+              <span className="text-[10px] text-[#f8f4ec] font-bold">Active Scorer</span>
             </div>
 
             <div className="flex items-center gap-2">
               <Select value={selectedResumeId} onValueChange={handleResumeSwitch}>
-                <SelectTrigger className="h-9 bg-[#f7faf5] border-none text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#d8f36b] flex-1">
+                <SelectTrigger className="h-9 bg-[#f7faf5] border-none text-xs font-bold text-[#102b2b] focus:ring-1 focus:ring-[#0d8274] flex-1">
                   <SelectValue placeholder="Select a resume" />
                 </SelectTrigger>
                 <SelectContent className="border-[#b8c8b9]">
@@ -505,20 +505,20 @@ export default function DashboardJobsPage() {
         {/* 4-KPI Metric Strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/10 text-white">
           <div className="p-3 rounded-sm bg-white/5 border border-white/10">
-            <span className="text-[10px] uppercase font-bold text-[#d8f36b] block">Total Matched</span>
-            <span className="text-lg sm:text-2xl font-black font-mono">{jobs.length}</span>
+            <span className="text-[10px] uppercase font-bold text-[#c5d7d1] block">Total Matched</span>
+            <span className="text-lg sm:text-2xl font-black font-mono text-[#f8f4ec]">{jobs.length}</span>
           </div>
           <div className="p-3 rounded-sm bg-white/5 border border-white/10">
-            <span className="text-[10px] uppercase font-bold text-[#d8f36b] block">85%+ High ATS Fits</span>
-            <span className="text-lg sm:text-2xl font-black font-mono text-[#d8f36b]">{highMatchCount}</span>
+            <span className="text-[10px] uppercase font-bold text-[#c5d7d1] block">85%+ High ATS Fits</span>
+            <span className="text-lg sm:text-2xl font-black font-mono text-[#f8f4ec]">{highMatchCount}</span>
           </div>
           <div className="p-3 rounded-sm bg-white/5 border border-white/10">
-            <span className="text-[10px] uppercase font-bold text-[#d8f36b] block">Avg. Base Comp</span>
-            <span className="text-lg sm:text-2xl font-black font-mono">$152,000</span>
+            <span className="text-[10px] uppercase font-bold text-[#c5d7d1] block">Avg. Base Comp</span>
+            <span className="text-lg sm:text-2xl font-black font-mono text-[#f8f4ec]">$152,000</span>
           </div>
           <div className="p-3 rounded-sm bg-white/5 border border-white/10">
-            <span className="text-[10px] uppercase font-bold text-[#d8f36b] block">In Tracker</span>
-            <span className="text-lg sm:text-2xl font-black font-mono">{trackedJobIds.length}</span>
+            <span className="text-[10px] uppercase font-bold text-[#c5d7d1] block">In Tracker</span>
+            <span className="text-lg sm:text-2xl font-black font-mono text-[#f8f4ec]">{trackedJobIds.length}</span>
           </div>
         </div>
       </div>
@@ -561,7 +561,7 @@ export default function DashboardJobsPage() {
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 text-[#d8f36b]" />
+              <Sparkles className="w-4 h-4 text-white" />
               Search & Scrape Online
             </>
           )}
@@ -574,22 +574,22 @@ export default function DashboardJobsPage() {
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full lg:w-auto">
             <TabsList className="bg-[#102b2b] border border-[#102b2b] p-1 rounded-md h-auto min-h-11 flex flex-wrap">
-              <TabsTrigger value="all" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="all" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 All Matches ({jobs.length})
               </TabsTrigger>
-              <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 85%+ ATS Fit ({highMatchCount})
               </TabsTrigger>
-              <TabsTrigger value="remote" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="remote" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 Remote Only ({jobs.filter(j => j.is_remote).length})
               </TabsTrigger>
-              <TabsTrigger value="saved" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="saved" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 Saved Roles ({savedJobIds.length})
               </TabsTrigger>
-              <TabsTrigger value="tracked" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="tracked" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 In Tracker ({trackedJobIds.length})
               </TabsTrigger>
-              <TabsTrigger value="autopilot" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] gap-1.5 font-bold">
+              <TabsTrigger value="autopilot" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] gap-1.5 font-bold">
                 <Rocket className="w-3.5 h-3.5" />
                 Autopilot Results ({autopilotPackets.length})
               </TabsTrigger>
@@ -675,7 +675,7 @@ export default function DashboardJobsPage() {
                 onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    ? "bg-[#102b2b] text-[#f8f4ec] shadow-2xs"
                     : "text-[#102b2b]/60 hover:text-[#102b2b]"
                 }`}
                 title="Grid View (Large Cards)"
@@ -687,7 +687,7 @@ export default function DashboardJobsPage() {
                 onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    ? "bg-[#102b2b] text-[#f8f4ec] shadow-2xs"
                     : "text-[#102b2b]/60 hover:text-[#102b2b]"
                 }`}
                 title="Compact List View (Dense Rows)"
@@ -721,7 +721,7 @@ export default function DashboardJobsPage() {
             </p>
             <Button
               onClick={() => setSelectedTab("all")}
-              className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer"
+              className="bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer"
             >
               <Briefcase className="w-3.5 h-3.5" />
               Explore Matching Roles →
@@ -741,7 +741,7 @@ export default function DashboardJobsPage() {
                   <CardHeader className="p-5 pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-sm bg-[#102b2b] text-[#d8f36b] font-black text-xs flex items-center justify-center uppercase shrink-0 shadow-2xs">
+                        <div className="w-9 h-9 rounded-sm bg-[#102b2b] text-[#f8f4ec] font-black text-xs flex items-center justify-center uppercase shrink-0 shadow-2xs">
                           {pkt.company.substring(0, 2)}
                         </div>
                         <div className="min-w-0">
@@ -805,7 +805,7 @@ export default function DashboardJobsPage() {
                         setActiveDossierPacket(pkt);
                         setIsDossierOpen(true);
                       }}
-                      className="w-full h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-2xs"
+                      className="w-full h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-2xs"
                     >
                       <Rocket className="w-3.5 h-3.5" />
                       Open Application Dossier →
@@ -826,7 +826,7 @@ export default function DashboardJobsPage() {
           <p className="text-xs text-[#102b2b]/60 max-w-sm mt-1 mb-6">
             No openings matched your active filters. Try searching for a different job title or click "Search & Scrape Online" to fetch fresh listings.
           </p>
-          <Button onClick={() => { setSearchRole(""); setSelectedTab("all"); }} className="bg-[#102b2b] text-[#d8f36b] text-xs font-bold">
+          <Button onClick={() => { setSearchRole(""); setSelectedTab("all"); }} className="bg-[#102b2b] text-[#f8f4ec] text-xs font-bold">
             Clear Filters
           </Button>
         </div>
@@ -845,7 +845,7 @@ export default function DashboardJobsPage() {
                 <CardHeader className="p-5 pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-sm bg-[#102b2b] text-[#d8f36b] font-black text-xs flex items-center justify-center uppercase shrink-0">
+                      <div className="w-8 h-8 rounded-sm bg-[#102b2b] text-[#f8f4ec] font-black text-xs flex items-center justify-center uppercase shrink-0">
                         {job.company.substring(0, 2)}
                       </div>
                       <div className="min-w-0">
@@ -941,10 +941,10 @@ export default function DashboardJobsPage() {
                       <Button
                         size="sm"
                         onClick={() => openDeepTailor(job)}
-                        className="flex-1 h-8 bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-xs transition-colors"
+                        className="flex-1 h-8 bg-[#0d8274] hover:bg-[#102b2b] text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer shadow-xs transition-colors"
                         title="Create Complete Resume from Scratch + Cover Letter + Dedicated Portfolio Page"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" />
+                        <Sparkles className="w-3.5 h-3.5 text-white" />
                         Deep AI Tailor
                       </Button>
 
@@ -955,7 +955,7 @@ export default function DashboardJobsPage() {
                         className="h-8 px-2.5 bg-[#102b2b] hover:bg-[#0d8274] text-white text-xs font-bold rounded-sm gap-1 cursor-pointer shadow-xs transition-colors"
                         title="Quick Autopilot Dossier"
                       >
-                        <Rocket className="w-3 h-3 text-[#d8f36b]" />
+                        <Rocket className="w-3 h-3 text-white" />
                         Autopilot
                       </Button>
 
@@ -1004,7 +1004,7 @@ export default function DashboardJobsPage() {
                 {/* Left: Role, Company & Location */}
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="bg-[#102b2b] text-[#d8f36b] border-none text-[10px] font-bold py-0.5 px-2 rounded-xs">
+                    <Badge variant="outline" className="bg-[#102b2b] text-[#f8f4ec] border-none text-[10px] font-bold py-0.5 px-2 rounded-xs">
                       {job.company}
                     </Badge>
                     <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-sm bg-[#d8f36b] text-[#102b2b] border border-[#102b2b]/15 flex items-center gap-1">
@@ -1062,20 +1062,20 @@ export default function DashboardJobsPage() {
                   <Button
                     size="sm"
                     onClick={() => openDeepTailor(job)}
-                    className="h-8 bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] text-xs font-bold rounded-sm gap-1 cursor-pointer transition-colors shadow-2xs"
+                    className="h-8 bg-[#0d8274] hover:bg-[#102b2b] text-white text-xs font-bold rounded-sm gap-1 cursor-pointer transition-colors shadow-2xs"
                     title="Deep AI Tailored Resume + Cover Letter + Dedicated Page"
                   >
-                    <Sparkles className="w-3 h-3 text-[#d8f36b]" />
+                    <Sparkles className="w-3 h-3 text-white" />
                     Deep Tailor
                   </Button>
 
                   <Button
                     size="sm"
                     onClick={() => openAutopilotModal(job)}
-                    className="h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1 cursor-pointer transition-colors shadow-2xs"
+                    className="h-8 bg-[#102b2b] hover:bg-[#0d8274] text-white text-xs font-bold rounded-sm gap-1 cursor-pointer transition-colors shadow-2xs"
                     title="Generate Tailored Resume + AI Cover Letter + Tracker"
                   >
-                    <Rocket className="w-3 h-3 text-[#d8f36b]" />
+                    <Rocket className="w-3 h-3 text-white" />
                     Autopilot
                   </Button>
 
@@ -1144,7 +1144,7 @@ export default function DashboardJobsPage() {
                   onClick={() => handlePageChange(Number(p))}
                   className={`h-8 w-8 p-0 rounded-sm text-xs font-bold transition-colors ${
                     p === safeCurrentPage
-                      ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-2xs hover:bg-[#164743] hover:text-[#d8f36b]"
+                      ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-2xs hover:bg-[#164743] hover:text-[#f8f4ec]"
                       : "border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8]"
                   }`}
                 >
@@ -1194,7 +1194,7 @@ export default function DashboardJobsPage() {
             <div className="space-y-6">
               <DialogHeader>
                 <div className="flex items-center gap-2.5 mb-1">
-                  <span className="p-2 rounded-lg bg-[#102b2b] text-[#d8f36b] shadow-sm">
+                  <span className="p-2 rounded-lg bg-[#102b2b] text-[#f8f4ec] shadow-sm">
                     <Rocket className="w-5 h-5" />
                   </span>
                   <div>
@@ -1377,7 +1377,7 @@ export default function DashboardJobsPage() {
                       size="sm"
                       onClick={handleExecuteTailor}
                       disabled={tailoringInProgress || resumes.length === 0}
-                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-md h-9 px-5 gap-2 shadow-md"
+                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-md h-9 px-5 gap-2 shadow-md"
                     >
                       {tailoringInProgress ? (
                         <>

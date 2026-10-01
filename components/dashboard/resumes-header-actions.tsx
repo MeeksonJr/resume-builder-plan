@@ -34,7 +34,7 @@ export function ResumesHeaderActions({
             className="min-h-11 rounded-none bg-[#102b2b] px-5 font-bold text-white shadow-xs hover:bg-[#164743] transition-all"
           >
             <Link href="/dashboard/resume/new">
-              <Plus className="mr-2 h-4 w-4 text-[#d8f36b]" />
+              <Plus className="mr-2 h-4 w-4 text-white" />
               Create New Resume
             </Link>
           </Button>
@@ -43,7 +43,7 @@ export function ResumesHeaderActions({
             onClick={() => setShowUpgradeModal(true)}
             className="min-h-11 rounded-none bg-[#102b2b] px-5 font-bold text-white shadow-xs hover:bg-[#164743] transition-all flex items-center gap-2"
           >
-            <Lock className="h-4 w-4 text-[#d8f36b]" />
+            <Lock className="h-4 w-4 text-white" />
             <span>Create New Resume</span>
             <span className="text-[10px] bg-[#d8f36b] text-[#102b2b] px-1.5 py-0.2 font-black uppercase tracking-wider ml-1">
               Pro

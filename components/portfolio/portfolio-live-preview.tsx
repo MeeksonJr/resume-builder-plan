@@ -87,15 +87,15 @@ export function PortfolioLivePreview({
         <div className="flex items-center gap-1 rounded-sm bg-[#d8f36b]/20 px-2 py-1">
           {isCanvasMode ? (
             <>
-              <Sparkles className="h-3 w-3 text-[#d8f36b]" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-[#d8f36b]">
+              <Sparkles className="h-3 w-3 text-[#0d8274]" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#102b2b]">
                 Canvas Active
               </span>
             </>
           ) : (
             <>
-              <Monitor className="h-3 w-3 text-[#d8f36b]" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-[#d8f36b]">
+              <Monitor className="h-3 w-3 text-[#0d8274]" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#102b2b]">
                 Template Active
               </span>
             </>

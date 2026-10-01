@@ -89,7 +89,7 @@ export default function NewCoverLetterPage() {
                 </Button>
                 <Card className="relative overflow-hidden rounded-none border-[#102b2b]/15 bg-[#102b2b] text-[#e9eee8] shadow-none">
                     <div className="absolute right-0 top-0 p-3">
-                        <div className="border border-[#d8f36b]/40 bg-[#d8f36b]/15 px-3 py-1 text-xs font-bold uppercase text-[#d8f36b]">
+                        <div className="border border-[#0d8274]/40 bg-[#0d8274]/20 px-3 py-1 text-xs font-bold uppercase text-[#f8f4ec]">
                             Pro Feature
                         </div>
                     </div>

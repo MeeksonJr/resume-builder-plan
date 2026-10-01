@@ -331,7 +331,7 @@ export function AutoApplyPayloadDialog({
         <div className="bg-[#102b2b] text-[#f8f4ec] px-6 py-5 shrink-0 border-b border-white/10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="p-2 bg-[#d8f36b]/20 text-[#d8f36b] border border-[#d8f36b]/30 rounded-xl">
+              <span className="p-2 bg-[#0d8274]/20 text-[#f8f4ec] border border-[#0d8274]/40 rounded-xl">
                 <Zap className="h-5 w-5" />
               </span>
               <div>
@@ -350,10 +350,10 @@ export function AutoApplyPayloadDialog({
 
             {/* Completeness Pill */}
             <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-xl border border-white/15 shrink-0">
-              <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" />
+              <Sparkles className="w-3.5 h-3.5 text-white" />
               <div className="text-right">
                 <div className="text-[10px] text-white/70 uppercase tracking-wider font-semibold">ATS Readiness</div>
-                <div className="text-xs font-bold text-[#d8f36b]">{readiness.score}% Complete</div>
+                <div className="text-xs font-bold text-[#f8f4ec]">{readiness.score}% Complete</div>
               </div>
             </div>
           </div>
@@ -406,7 +406,7 @@ export function AutoApplyPayloadDialog({
                       }}
                       className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all ${
                         platform === p.id
-                          ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-sm ring-2 ring-[#d8f36b]/40"
+                          ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-sm ring-2 ring-[#0d8274]/40"
                           : "bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50"
                       }`}
                     >
@@ -551,7 +551,7 @@ export function AutoApplyPayloadDialog({
                   onClick={handleCopy}
                   className="h-9 text-xs font-bold rounded-xl bg-[#102b2b] hover:bg-[#102b2b]/90 text-white gap-1.5"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-[#d8f36b]" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? "Copied!" : "Copy Payload"}
                 </Button>
               </div>
@@ -665,7 +665,7 @@ export function AutoApplyPayloadDialog({
                       <div key={i} className="leading-tight">{log}</div>
                     ))}
                     {dispatchResult && (
-                      <div className="text-[#d8f36b] font-bold pt-1 border-t border-white/10">
+                      <div className="text-emerald-400 font-bold pt-1 border-t border-white/10">
                         ✓ VERIFIED: {dispatchResult.verificationId} ({dispatchResult.timestamp})
                       </div>
                     )}
@@ -700,7 +700,7 @@ export function AutoApplyPayloadDialog({
               onClick={handleCopy}
               className="h-9 text-xs font-bold rounded-xl bg-[#102b2b] hover:bg-[#102b2b]/90 text-white gap-1.5"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-[#d8f36b]" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "Copied!" : "Copy Formatted Payload"}
             </Button>
           </div>

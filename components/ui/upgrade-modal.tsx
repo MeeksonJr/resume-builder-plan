@@ -54,11 +54,11 @@ export function UpgradeModal({
       <DialogContent className="max-w-md p-0 overflow-hidden rounded-none border-2 border-[#102b2b] bg-[#f8f4ec] shadow-2xl">
         {/* Header Banner */}
         <div className="bg-[#102b2b] text-[#f8f4ec] p-6 text-center space-y-2 relative">
-          <div className="mx-auto w-12 h-12 bg-[#0d8274] border border-[#d8f36b]/40 rounded-full flex items-center justify-center shadow-lg">
-            <Sparkles className="w-6 h-6 text-[#d8f36b]" />
+          <div className="mx-auto w-12 h-12 bg-[#0d8274] border border-[#0d8274]/40 rounded-full flex items-center justify-center shadow-lg">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#d8f36b]/15 border border-[#d8f36b]/30 rounded-none text-[#d8f36b] text-[10px] uppercase font-black tracking-widest">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#0d8274]/20 border border-[#0d8274]/40 rounded-none text-[#f8f4ec] text-[10px] uppercase font-black tracking-widest">
             <Lock className="w-3 h-3" />
             {featureName ? `${featureName} • Pro Feature` : "Pro Plan Required"}
           </div>
@@ -107,9 +107,9 @@ export function UpgradeModal({
                 onOpenChange(false);
                 router.push("/dashboard/subscription");
               }}
-              className="w-full h-11 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] font-bold rounded-none text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md transition-colors"
+              className="w-full h-11 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] font-bold rounded-none text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md transition-colors"
             >
-              <Zap className="w-4 h-4 text-[#d8f36b]" />
+              <Zap className="w-4 h-4 text-[#f8f4ec]" />
               <span>Upgrade to Pro Now</span>
               <ArrowRight className="w-4 h-4" />
             </Button>

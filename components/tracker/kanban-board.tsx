@@ -418,15 +418,15 @@ export function KanbanBoard() {
                 <div className="flex items-center gap-2">
                     <Button
                         onClick={handleOpenNewJobTailorModal}
-                        className="h-10 gap-2 rounded-none bg-[#0d8274] px-4 text-[#d8f36b] hover:bg-[#102b2b] border border-[#d8f36b]/30 font-bold transition-colors cursor-pointer shadow-xs"
+                        className="h-10 gap-2 rounded-none bg-[#0d8274] px-4 text-white hover:bg-[#102b2b] border border-[#0d8274] font-bold transition-colors cursor-pointer shadow-xs"
                         title="AI Tailored Resume, Cover Letter & Dedicated Portfolio"
                     >
-                        <Sparkles className="h-4 w-4 text-[#d8f36b]" />
+                        <Sparkles className="h-4 w-4 text-white" />
                         Deep AI Tailor
                     </Button>
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-10 gap-2 rounded-none bg-[#102b2b] px-4 text-[#d8f36b] hover:bg-[#0d8274] cursor-pointer">
+                            <Button className="h-10 gap-2 rounded-none bg-[#102b2b] px-4 text-[#f8f4ec] hover:bg-[#0d8274] cursor-pointer">
                                 <Plus className="h-4 w-4" />
                                 Add Job
                             </Button>
@@ -441,8 +441,8 @@ export function KanbanBoard() {
                         <div className="flex items-center justify-between px-6 py-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] shrink-0 gap-4 min-w-0">
                             <div className="space-y-0.5 min-w-0 flex-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8f36b]">Application Pipeline</span>
-                                    <Badge className="rounded-none bg-[#d8f36b]/15 text-[#d8f36b] border-[#d8f36b]/30 text-[10px] uppercase font-black">New Card</Badge>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a6c0b8]">Application Pipeline</span>
+                                    <Badge className="rounded-none bg-[#0d8274]/20 text-[#f8f4ec] border-[#0d8274]/40 text-[10px] uppercase font-black">New Card</Badge>
                                 </div>
                                 <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-white mt-0.5 truncate" title={role ? `${role}${company ? ` — ${company}` : ''}` : "Track New Application"}>
                                     {role ? `${role}${company ? ` — ${company}` : ''}` : "Track New Application"}
@@ -452,7 +452,7 @@ export function KanbanBoard() {
                                 </p>
                             </div>
                             <div className="flex items-center gap-3 pr-8 shrink-0">
-                                <Badge variant="outline" className="rounded-none border-[#d8f36b]/40 text-[#d8f36b] bg-[#d8f36b]/10 text-xs font-bold uppercase tracking-wider px-3 py-1">
+                                <Badge variant="outline" className="rounded-none border-[#0d8274]/40 text-[#f8f4ec] bg-[#0d8274]/20 text-xs font-bold uppercase tracking-wider px-3 py-1">
                                     {COLUMNS.find(c => c.id === status)?.label || status}
                                 </Badge>
                             </div>
@@ -702,7 +702,7 @@ export function KanbanBoard() {
                                 </Button>
                                 <Button
                                     onClick={handleAddJob}
-                                    className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-6 sm:px-8"
+                                    className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none bg-[#102b2b] text-[#f8f4ec] hover:bg-[#0d8274] font-bold px-6 sm:px-8"
                                 >
                                     Track Application
                                 </Button>
@@ -721,7 +721,7 @@ export function KanbanBoard() {
                     className={cn(
                         "px-3 py-1.5 text-xs font-bold whitespace-nowrap border transition-colors cursor-pointer",
                         mobileFilter === "all"
-                            ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-xs"
+                            ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-xs"
                             : "bg-white text-[#102b2b] border-[#102b2b]/15 hover:bg-[#102b2b]/5"
                     )}
                 >
@@ -737,7 +737,7 @@ export function KanbanBoard() {
                             className={cn(
                                 "px-3 py-1.5 text-xs font-bold whitespace-nowrap border transition-colors flex items-center gap-1.5 cursor-pointer",
                                 mobileFilter === col.id
-                                    ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-xs"
+                                    ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-xs"
                                     : "bg-white text-[#102b2b] border-[#102b2b]/15 hover:bg-[#102b2b]/5"
                             )}
                         >
@@ -826,8 +826,8 @@ export function KanbanBoard() {
                                                                 onClick={(e: any) => e.stopPropagation()}
                                                                 title="Open Tailored Resume in Builder"
                                                             >
-                                                                <Badge className="rounded-none bg-[#0d8274] text-[#d8f36b] hover:bg-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-bold border border-[#0d8274]">
-                                                                    <Sparkles className="w-2.5 h-2.5 text-[#d8f36b]" />
+                                                                <Badge className="rounded-none bg-[#0d8274] text-white hover:bg-[#102b2b] text-[9px] px-1.5 py-0.5 flex items-center gap-1 font-bold border border-[#0d8274]">
+                                                                    <Sparkles className="w-2.5 h-2.5 text-white" />
                                                                     <span className="max-w-[110px] truncate">Tailored Resume</span>
                                                                     <ExternalLink className="w-2 h-2 ml-0.5 opacity-80" />
                                                                 </Badge>
@@ -856,8 +856,8 @@ export function KanbanBoard() {
                                                                 href={`/dashboard/resume/${app.resume_id}`}
                                                                 onClick={(e: any) => e.stopPropagation()}
                                                             >
-                                                                <Badge className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] hover:text-white text-[9px] px-1.5 py-0.5 flex items-center gap-1">
-                                                                    <FileText className="w-2.5 h-2.5 text-[#d8f36b]" />
+                                                                <Badge className="rounded-none bg-[#102b2b] text-[#f8f4ec] hover:bg-[#0d8274] hover:text-white text-[9px] px-1.5 py-0.5 flex items-center gap-1">
+                                                                    <FileText className="w-2.5 h-2.5 text-[#f8f4ec]" />
                                                                     <span className="max-w-[110px] truncate">{getResumeTitle(app.resume_id)}</span>
                                                                     <ExternalLink className="w-2 h-2 ml-0.5 opacity-60" />
                                                                 </Badge>
@@ -915,7 +915,7 @@ export function KanbanBoard() {
                                                         e.stopPropagation();
                                                         handleOpenTailorForApp(app);
                                                     }}
-                                                    className="w-full h-7 rounded-none border-[#0d8274]/30 bg-[#0d8274]/5 hover:bg-[#0d8274] text-[#0d8274] hover:text-[#d8f36b] text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-none"
+                                                    className="w-full h-7 rounded-none border-[#0d8274]/30 bg-[#0d8274]/5 hover:bg-[#0d8274] text-[#0d8274] hover:text-white text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-none"
                                                     title="Generate 100% Tailored Resume, Cover Letter & Dedicated Portfolio Page"
                                                 >
                                                     <Sparkles className="w-3 h-3" />
@@ -989,7 +989,7 @@ export function KanbanBoard() {
                     <div className="flex items-center justify-between px-6 py-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] shrink-0 gap-4 min-w-0">
                         <div className="space-y-0.5 min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8f36b]">Job Tracker Dossier</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a6c0b8]">Job Tracker Dossier</span>
                                 {selectedApp?.priority === "high" && (
                                     <Badge className="rounded-none bg-red-500/20 text-red-300 border-red-500/30 text-[10px] uppercase font-black">🔥 High Priority</Badge>
                                 )}
@@ -1002,7 +1002,7 @@ export function KanbanBoard() {
                             </p>
                         </div>
                         <div className="flex items-center gap-3 pr-8 shrink-0">
-                            <Badge variant="outline" className="rounded-none border-[#d8f36b]/40 text-[#d8f36b] bg-[#d8f36b]/10 text-xs font-bold uppercase tracking-wider px-3 py-1 shrink-0">
+                            <Badge variant="outline" className="rounded-none border-[#0d8274]/40 text-[#f8f4ec] bg-[#0d8274]/20 text-xs font-bold uppercase tracking-wider px-3 py-1 shrink-0">
                                 {COLUMNS.find(c => c.id === editStatus)?.label || editStatus}
                             </Badge>
                         </div>
@@ -1121,7 +1121,7 @@ export function KanbanBoard() {
                                                     Deep AI Tailored Suite
                                                 </h4>
                                             </div>
-                                            <Badge className="rounded-none bg-[#0d8274] text-[#d8f36b] text-[9px] font-black uppercase">
+                                            <Badge className="rounded-none bg-[#0d8274] text-white text-[9px] font-black uppercase">
                                                 Zero Omissions
                                             </Badge>
                                         </div>
@@ -1171,9 +1171,9 @@ export function KanbanBoard() {
                                                 setIsEditOpen(false);
                                                 handleOpenTailorForApp(selectedApp);
                                             }}
-                                            className="w-full h-9 rounded-none bg-[#0d8274] text-[#d8f36b] hover:bg-[#102b2b] text-xs font-bold gap-2 cursor-pointer shadow-xs transition-colors"
+                                            className="w-full h-9 rounded-none bg-[#0d8274] text-white hover:bg-[#102b2b] text-xs font-bold gap-2 cursor-pointer shadow-xs transition-colors"
                                         >
-                                            <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" />
+                                            <Sparkles className="w-3.5 h-3.5 text-white" />
                                             {selectedApp.tailored_resume_id ? "Re-tailor Job Package & Portfolio" : "Deep AI Tailor Resume & Portfolio"}
                                         </Button>
                                     </div>
@@ -1345,7 +1345,7 @@ export function KanbanBoard() {
                             </Button>
                             <Button
                                 onClick={handleUpdateJob}
-                                className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274] font-bold px-6 sm:px-8"
+                                className="h-10 sm:h-11 flex-1 sm:flex-initial rounded-none bg-[#102b2b] text-[#f8f4ec] hover:bg-[#0d8274] font-bold px-6 sm:px-8"
                             >
                                 Save Changes
                             </Button>

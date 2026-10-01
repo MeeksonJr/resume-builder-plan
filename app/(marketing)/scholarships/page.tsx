@@ -193,7 +193,7 @@ export default function ScholarshipsPage() {
 
             <Link href="/dashboard">
               <Button size="sm" variant="secondary" className="rounded-sm h-9 text-xs font-semibold gap-1.5 cursor-pointer bg-[#102b2b] hover:bg-[#0d8274] text-[#e9eee8]">
-                <Sparkles className="w-3.5 h-3.5 text-[#d8f36b]" aria-hidden="true" />
+                <Sparkles className="w-3.5 h-3.5 text-white" aria-hidden="true" />
                 Match My Profile
               </Button>
             </Link>

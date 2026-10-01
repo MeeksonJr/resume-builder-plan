@@ -162,7 +162,7 @@ export function PublicResumeClient({
             {/* Mobile Sticky Quick-Action Dock (visible only on sm:hidden) */}
             <div className="sm:hidden fixed bottom-3 inset-x-3 z-40 bg-[#102b2b]/95 backdrop-blur-md text-white px-3 py-2 border border-white/15 shadow-2xl flex items-center justify-between gap-2 print:hidden">
                 <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="truncate text-xs font-bold text-[#d8f36b]">{candidateName}</span>
+                    <span className="truncate text-xs font-bold text-[#f8f4ec]">{candidateName}</span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                     <VideoElevatorPitchModal

@@ -202,7 +202,7 @@ export default async function PortfoliosDirectoryPage({
                                 Try adjusting your search filters or browse all available portfolios.
                             </p>
                         </div>
-                        <Button className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274]" asChild>
+                        <Button className="rounded-none bg-[#102b2b] text-[#f8f4ec] hover:text-white hover:bg-[#0d8274]" asChild>
                             <a href="/dashboard/portfolios">View All Portfolios</a>
                         </Button>
                     </div>

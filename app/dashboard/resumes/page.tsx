@@ -110,7 +110,7 @@ export default async function AllResumesPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-0">
                 <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
                     <div className="h-10 w-10 rounded-none bg-[#102b2b] text-white flex items-center justify-center shrink-0">
-                        <FileText className="h-5 w-5 text-[#d8f36b]" />
+                        <FileText className="h-5 w-5 text-white" />
                     </div>
                     <div className="min-w-0">
                         <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">

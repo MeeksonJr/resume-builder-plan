@@ -167,14 +167,14 @@ export function VideoElevatorPitchModal({
                   <button
                     type="button"
                     onClick={togglePlay}
-                    className="hover:text-[#d8f36b] transition-colors"
+                    className="hover:text-white transition-colors"
                   >
                     {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                   </button>
                   <button
                     type="button"
                     onClick={handleRestart}
-                    className="hover:text-[#d8f36b] transition-colors"
+                    className="hover:text-white transition-colors"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
                   </button>
@@ -187,11 +187,11 @@ export function VideoElevatorPitchModal({
                   <button
                     type="button"
                     onClick={() => setIsMuted(!isMuted)}
-                    className="hover:text-[#d8f36b] transition-colors"
+                    className="hover:text-white transition-colors"
                   >
                     {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                   </button>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#d8f36b]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#f8f4ec]">
                     1080p HD
                   </span>
                 </div>

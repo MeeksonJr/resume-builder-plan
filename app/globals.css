@@ -141,75 +141,174 @@ html[data-density="compact"] .density-compact-space {
 }
 
 /* ========================================================
-   LIGHT MODE TEXT CONTRAST FIX
-   The primary color in light mode (hsl 72 84% 69%) is a
-   yellow-lime that is nearly invisible (~1.5:1 contrast)
-   when used as text on white/light-gray card backgrounds.
+   GLOBAL LIGHT MODE LIME TEXT & ACCENT OVERRIDE
+   The lime color (#d8f36b / hsl 72 84% 69%) has near-zero
+   contrast (~1.3:1) when rendered as text on light/sand backgrounds.
 
-   Strategy:
-   - text-primary → deep teal (#0d5c55) in light mode
-   - text-emerald-300/400/500 → much darker emerald-700 shade
-   - text-green-300/400/500 → green-700 shade
-   - Dark mode is UNAFFECTED (its primary is blue #60a5fa,
-     and emerald-300/400 on dark backgrounds is correct)
+   Strategy (Light Mode - when dark mode toggle is OFF):
+   1. On standard light/card surfaces:
+      - text-[#d8f36b], text-lime-*, text-primary, text-emerald-*
+        are adjusted to rich executive teal (#0d8274 / #0d5c55)
+        giving 5:1 to 7:1 crisp WCAG AA/AAA contrast.
+   2. Inside dark containers (bg-[#102b2b], bg-[#0d8274], bg-slate-900, etc.):
+      - text is adjusted to warm Swiss cream (#f8f4ec) or crisp white (#ffffff)
+        so it never renders as dark-on-dark or washed-out lime.
+   3. Dark mode is completely UNAFFECTED.
    ======================================================== */
 
-/* ─── text-primary ───────────────────────────────────── */
+/* ─── Global Light Mode Lime Text Override ───────────── */
+html:not(.dark) .text-\[\#d8f36b\],
+html:not(.dark) [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="text-[#c9e95c]"],
+html:not(.dark) [class*="text-[#c6e655]"],
+html:not(.dark) [class*="text-[#c2dc53]"],
+:root:not(.dark) .text-\[\#d8f36b\],
+:root:not(.dark) [class*="text-[#d8f36b]"],
+body:not(.dark) .text-\[\#d8f36b\],
+body:not(.dark) [class*="text-[#d8f36b]"] {
+  color: #0d8274 !important;
+}
+
+/* Hover states in light mode */
+html:not(.dark) [class*="hover:text-[#d8f36b]"]:hover,
+:root:not(.dark) [class*="hover:text-[#d8f36b]"]:hover,
+body:not(.dark) [class*="hover:text-[#d8f36b]"]:hover {
+  color: #0d8274 !important;
+}
+
+/* Lucide and SVG icons using lime text */
+html:not(.dark) svg[class*="text-[#d8f36b]"],
+html:not(.dark) .text-\[\#d8f36b\] svg,
+html:not(.dark) [class*="text-[#d8f36b]"] svg {
+  color: #0d8274 !important;
+  stroke: #0d8274 !important;
+}
+
+/* ─── Tailwind Lime and Primary text in Light Mode ──── */
+html:not(.dark) .text-primary,
 :root:not(.dark) .text-primary,
-html:not(.dark) .text-primary {
-  color: #0d5c55 !important;  /* deep forest teal — 7:1 contrast on white */
+body:not(.dark) .text-primary {
+  color: #0d5c55 !important;
 }
 
-/* ─── text-emerald-* ─────────────────────────────────── */
-/* emerald-300 (#6ee7b7) — worst offender: ~1.9:1 on white */
+html:not(.dark) [class*="text-lime-"],
+:root:not(.dark) [class*="text-lime-"],
+body:not(.dark) [class*="text-lime-"] {
+  color: #0d8274 !important;
+}
+
+/* ─── Tailwind Emerald & Green in Light Mode ─────────── */
+html:not(.dark) .text-emerald-300,
 :root:not(.dark) .text-emerald-300,
-html:not(.dark) .text-emerald-300 {
-  color: #047857 !important;  /* emerald-700 */
-}
-/* emerald-400 (#34d399) — ~2.4:1 on white: still fails WCAG AA */
+html:not(.dark) .text-emerald-400,
 :root:not(.dark) .text-emerald-400,
-html:not(.dark) .text-emerald-400 {
-  color: #0f766e !important;  /* emerald-700 teal variant */
-}
-/* emerald-500 (#10b981) — borderline: bring to 700 for safety */
-:root:not(.dark) .text-emerald-500,
-html:not(.dark) .text-emerald-500 {
-  color: #0f766e !important;  /* emerald-700 teal variant */
+html:not(.dark) .text-emerald-500,
+:root:not(.dark) .text-emerald-500 {
+  color: #0d8274 !important;
 }
 
-/* ─── text-green-* ───────────────────────────────────── */
+html:not(.dark) .text-green-300,
 :root:not(.dark) .text-green-300,
-html:not(.dark) .text-green-300 {
-  color: #166534 !important;  /* green-800 */
-}
+html:not(.dark) .text-green-400,
 :root:not(.dark) .text-green-400,
-html:not(.dark) .text-green-400 {
-  color: #15803d !important;  /* green-700 */
-}
-:root:not(.dark) .text-green-500,
-html:not(.dark) .text-green-500 {
-  color: #15803d !important;  /* green-700 */
+html:not(.dark) .text-green-500,
+:root:not(.dark) .text-green-500 {
+  color: #15803d !important;
 }
 
-/* ─── Special dark-surface containers ────────────────── */
-/* Some components intentionally use dark card surfaces with light text.
-   These containers are identified by their dark background classes.
-   Inside these, revert emerald text to proper light values. */
-:root:not(.dark) [class*="bg-[#0d1524]"] .text-emerald-300,
-:root:not(.dark) [class*="bg-[#0d1524]"] .text-emerald-400,
-:root:not(.dark) [class*="bg-slate-900"] .text-emerald-300,
-:root:not(.dark) [class*="bg-slate-900"] .text-emerald-400,
-:root:not(.dark) [class*="bg-gray-900"] .text-emerald-300,
-:root:not(.dark) [class*="bg-gray-900"] .text-emerald-400,
-:root:not(.dark) [class*="bg-zinc-900"] .text-emerald-300,
-:root:not(.dark) [class*="bg-zinc-900"] .text-emerald-400,
-:root:not(.dark) [class*="bg-neutral-900"] .text-emerald-300,
-:root:not(.dark) [class*="bg-neutral-900"] .text-emerald-400,
+/* ─── Badges and cards with light lime background & lime text ───── */
+html:not(.dark) .badge[class*="text-[#d8f36b]"],
+html:not(.dark) [data-slot="badge"][class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]"][class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#d8f36b]/10"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]/15"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]/20"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]/30"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#d8f36b]/10"].text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#d8f36b]/15"].text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#d8f36b]/20"].text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#d8f36b]/30"].text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#d8f36b]"] svg,
+html:not(.dark) [class*="bg-[#d8f36b]/10"] svg,
+html:not(.dark) [class*="bg-[#d8f36b]/20"] svg {
+  color: #102b2b !important;
+  stroke: #102b2b !important;
+  font-weight: 700 !important;
+}
+
+/* ─── Dark-surface containers in Light Mode ──────────── */
+/* When lime text is placed inside dark surfaces (e.g. hero banners,
+   dark buttons, dark pills), change to crisp warm white/cream (#f8f4ec)
+   so it matches the site's Swiss typography and remains highly visible. */
+html:not(.dark) [class*="bg-[#102b2b]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#102b2b]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#0d8274]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#0d8274]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#164743]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#164743]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#0d1524]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#0d1524]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#132338]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#132338]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#091515]"] .text-\[\#d8f36b\],
+html:not(.dark) [class*="bg-[#091515]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#1e293b]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#0f172a]"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-slate-800"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-slate-900"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-slate-950"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-gray-900"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-zinc-800"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-zinc-900"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-zinc-950"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-neutral-900"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-black"] [class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#102b2b]"] .text-primary,
+html:not(.dark) [class*="bg-[#0d8274]"] .text-primary,
+html:not(.dark) [class*="bg-[#164743]"] .text-primary,
+html:not(.dark) [class*="bg-[#0d1524]"] .text-primary,
+html:not(.dark) [class*="bg-[#102b2b]"] [class*="text-lime-"],
+html:not(.dark) [class*="bg-[#0d8274]"] [class*="text-lime-"],
+html:not(.dark) [class*="bg-[#164743]"] [class*="text-lime-"] {
+  color: #f8f4ec !important;
+}
+
+/* Hover inside dark containers */
+html:not(.dark) [class*="bg-[#102b2b]"] [class*="hover:text-[#d8f36b]"]:hover,
+html:not(.dark) [class*="bg-[#0d8274]"] [class*="hover:text-[#d8f36b]"]:hover,
+html:not(.dark) [class*="bg-[#164743]"] [class*="hover:text-[#d8f36b]"]:hover {
+  color: #ffffff !important;
+}
+
+/* SVGs inside dark containers */
+html:not(.dark) [class*="bg-[#102b2b]"] svg[class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#102b2b]"] [class*="text-[#d8f36b]"] svg,
+html:not(.dark) [class*="bg-[#0d8274]"] svg[class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#0d8274]"] [class*="text-[#d8f36b]"] svg,
+html:not(.dark) [class*="bg-[#164743]"] svg[class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#164743]"] [class*="text-[#d8f36b]"] svg,
+html:not(.dark) [class*="bg-[#0d1524]"] svg[class*="text-[#d8f36b]"],
+html:not(.dark) [class*="bg-[#0d1524]"] [class*="text-[#d8f36b]"] svg {
+  color: #f8f4ec !important;
+  stroke: #f8f4ec !important;
+}
+
+/* Revert emerald text to proper light values inside dark containers */
 html:not(.dark) [class*="bg-[#0d1524]"] .text-emerald-300,
 html:not(.dark) [class*="bg-[#0d1524]"] .text-emerald-400,
+html:not(.dark) [class*="bg-[#102b2b]"] .text-emerald-300,
+html:not(.dark) [class*="bg-[#102b2b]"] .text-emerald-400,
 html:not(.dark) [class*="bg-slate-900"] .text-emerald-300,
-html:not(.dark) [class*="bg-slate-900"] .text-emerald-400 {
-  color: #6ee7b7 !important;  /* restore emerald-300 on dark cards */
+html:not(.dark) [class*="bg-slate-900"] .text-emerald-400,
+html:not(.dark) [class*="bg-gray-900"] .text-emerald-300,
+html:not(.dark) [class*="bg-gray-900"] .text-emerald-400,
+html:not(.dark) [class*="bg-zinc-900"] .text-emerald-300,
+html:not(.dark) [class*="bg-zinc-900"] .text-emerald-400,
+html:not(.dark) [class*="bg-neutral-900"] .text-emerald-300,
+html:not(.dark) [class*="bg-neutral-900"] .text-emerald-400 {
+  color: #6ee7b7 !important;
 }
 
 /* ─── Sidebar active nav items ───────────────────────── */

@@ -471,7 +471,7 @@ export default function ResumeAnalyticsPage() {
                             className="h-9 rounded-none bg-[#102b2b] text-white hover:bg-[#164743] gap-1.5 text-xs font-bold"
                         >
                             <Link href={`/dashboard/resume/${id}`}>
-                                <Edit3 className="h-3.5 w-3.5 text-[#d8f36b]" />
+                                <Edit3 className="h-3.5 w-3.5 text-[#f8f4ec]" />
                                 <span>Open Editor</span>
                             </Link>
                         </Button>
@@ -489,7 +489,7 @@ export default function ResumeAnalyticsPage() {
                             Total Impressions
                         </span>
                         <div className="h-7 w-7 rounded-none bg-[#102b2b] text-white flex items-center justify-center shrink-0">
-                            <Eye className="h-3.5 w-3.5 text-[#d8f36b]" />
+                            <Eye className="h-3.5 w-3.5 text-[#f8f4ec]" />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 pt-1">
@@ -532,7 +532,7 @@ export default function ResumeAnalyticsPage() {
                             Engagement Rate
                         </span>
                         <div className="h-7 w-7 rounded-none bg-neutral-800 text-white flex items-center justify-center shrink-0">
-                            <MousePointer2 className="h-3.5 w-3.5 text-[#d8f36b]" />
+                            <MousePointer2 className="h-3.5 w-3.5 text-[#f8f4ec]" />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 pt-1">

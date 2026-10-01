@@ -148,7 +148,7 @@ export function PortfolioCard({ portfolio, featured = false }: PortfolioCardProp
             {/* Footer */}
             <CardFooter className="p-6 pt-0">
                 <Button
-                    className="h-10 w-full gap-2 rounded-none bg-[#102b2b] font-bold text-[#d8f36b] transition-colors hover:bg-[#0d8274]"
+                    className="h-10 w-full gap-2 rounded-none bg-[#102b2b] font-bold text-[#f8f4ec] hover:text-white transition-colors hover:bg-[#0d8274]"
                     asChild
                 >
                     <Link href={`/p/${portfolio.slug}`}>

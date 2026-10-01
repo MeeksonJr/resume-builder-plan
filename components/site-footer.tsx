@@ -82,7 +82,7 @@ export function SiteFooter() {
                             <div className="flex h-9 w-9 items-center justify-center bg-[#d8f36b] text-[#102b2b]">
                                 <span className="text-base font-extrabold">R</span>
                             </div>
-                            <span className="text-2xl font-extrabold tracking-tight">ResumeForge<span className="text-[#d8f36b]">.</span></span>
+                            <span className="text-2xl font-extrabold tracking-tight">ResumeForge<span className="text-[#0d8274]">.</span></span>
                         </Link>
                         <p className="max-w-sm text-sm leading-relaxed text-[#a6c0b8]">
                             A calmer, sharper way to build the materials that move your career forward.
@@ -107,10 +107,10 @@ export function SiteFooter() {
                     <div>
                         <h4 className="font-semibold text-white mb-4">Funding & Tools</h4>
                         <ul className="space-y-3 text-sm text-slate-400">
-                            <li><Link href="/dashboard/resumes" className="transition-colors hover:text-[#d8f36b]">Resume builder</Link></li>
-                            <li><Link href="/dashboard/optimize" className="transition-colors hover:text-[#d8f36b]">ATS optimizer</Link></li>
+                            <li><Link href="/dashboard/resumes" className="transition-colors hover:text-white">Resume builder</Link></li>
+                            <li><Link href="/dashboard/optimize" className="transition-colors hover:text-white">ATS optimizer</Link></li>
                             <li><Link href="/pricing" className="hover:text-indigo-400 transition-colors">Pricing</Link></li>
-                            <li><Link href="/dashboard/interview-prep" className="transition-colors hover:text-[#d8f36b]">Interview prep</Link></li>
+                            <li><Link href="/dashboard/interview-prep" className="transition-colors hover:text-white">Interview prep</Link></li>
                         </ul>
                     </div>
 

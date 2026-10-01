@@ -86,8 +86,8 @@ export function TemplateInspectModal({
                                 {template.subtitle}
                             </Badge>
                         </DialogTitle>
-                        <div className="hidden sm:flex items-center gap-1.5 text-[#d8f36b] text-xs font-mono">
-                            <ShieldCheck className="h-4 w-4" />
+                        <div className="hidden sm:flex items-center gap-1.5 text-[#f8f4ec] text-xs font-mono">
+                            <ShieldCheck className="h-4 w-4 text-[#0d8274]" />
                             <span>{template.atsScore}% ATS Ready</span>
                         </div>
                     </div>

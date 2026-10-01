@@ -579,7 +579,7 @@ export default function NewResumePage() {
                     <div className="bg-[#102b2b] text-[#f8f4ec] p-6 rounded-none shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-1">
                             <h2 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                <Sparkles className="h-4 w-4 text-[#d8f36b]" />
+                                <Sparkles className="h-4 w-4 text-white" />
                                 Explore 8 Professionally Crafted Templates
                             </h2>
                             <p className="text-xs text-[#a6c0b8] max-w-2xl">

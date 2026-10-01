@@ -586,7 +586,7 @@ export default function DashboardScholarshipsPage() {
             <div className="p-4 rounded-md bg-[#0d8274] border border-[#e9eee8]/20 text-center min-w-[140px]">
               <span className="text-[10px] uppercase font-bold text-[#e9eee8]/70 block">Database Total</span>
               <span className="text-2xl font-black text-[#e9eee8] font-mono">{opportunities.length}</span>
-              <span className="text-[10px] text-[#d8f36b] font-medium block mt-0.5">Active Listings</span>
+              <span className="text-[10px] text-[#f8f4ec] font-semibold block mt-0.5">Active Listings</span>
             </div>
             <div className="p-4 rounded-md bg-[#d8f36b] border border-[#102b2b]/20 text-center min-w-[140px]">
               <span className="text-[10px] uppercase font-bold text-[#102b2b]/70 block">Potential Funding</span>
@@ -658,7 +658,7 @@ export default function DashboardScholarshipsPage() {
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 text-[#d8f36b]" />
+              <Sparkles className="w-4 h-4 text-white" />
               Search & Scrape Online
             </>
           )}
@@ -671,26 +671,26 @@ export default function DashboardScholarshipsPage() {
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full lg:w-auto">
             <TabsList className="bg-[#102b2b] border border-[#102b2b] p-1 rounded-md h-auto min-h-11 flex flex-wrap">
-              <TabsTrigger value="all-matches" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="all-matches" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-bold">
                 All Matches ({opportunities.length})
               </TabsTrigger>
-              <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-bold">
                 95%+ Fit
               </TabsTrigger>
-              <TabsTrigger value="no-essay" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="no-essay" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-bold">
                 No Essay
               </TabsTrigger>
-              <TabsTrigger value="saved" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="saved" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-bold">
                 Saved ({opportunities.filter(o => o.user_status === 'saved').length})
               </TabsTrigger>
-              <TabsTrigger value="applying" className="rounded-sm text-xs px-3 data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b]">
+              <TabsTrigger value="applying" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-bold">
                 In Progress ({opportunities.filter(o => o.user_status === 'applying').length})
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
           {/* Hide Closed Toggle */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[#102b2b] border border-[#102b2b]/20 text-[#d8f36b] text-xs font-semibold shrink-0">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-[#102b2b] border border-[#102b2b]/20 text-[#f8f4ec] text-xs font-semibold shrink-0">
             <input
               type="checkbox"
               id="hideClosedCheckbox"
@@ -773,7 +773,7 @@ export default function DashboardScholarshipsPage() {
                 onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    ? "bg-[#102b2b] text-[#f8f4ec] shadow-2xs"
                     : "text-[#102b2b]/60 hover:text-[#102b2b]"
                 }`}
                 title="Grid View (Large Cards)"
@@ -785,7 +785,7 @@ export default function DashboardScholarshipsPage() {
                 onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded-xs transition-colors cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-[#102b2b] text-[#d8f36b] shadow-2xs"
+                    ? "bg-[#102b2b] text-[#f8f4ec] shadow-2xs"
                     : "text-[#102b2b]/60 hover:text-[#102b2b]"
                 }`}
                 title="Compact List View (Dense Rows)"
@@ -1070,7 +1070,7 @@ export default function DashboardScholarshipsPage() {
                   onClick={() => handlePageChange(Number(p))}
                   className={`h-8 w-8 p-0 rounded-sm text-xs font-bold transition-colors ${
                     p === safeCurrentPage
-                      ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] shadow-2xs hover:bg-[#164743] hover:text-[#d8f36b]"
+                      ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-2xs hover:bg-[#164743] hover:text-[#f8f4ec]"
                       : "border-[#b8c8b9] text-[#102b2b] hover:bg-[#e9eee8]"
                   }`}
                 >

@@ -272,10 +272,10 @@ export function AutopilotDossierDialog({
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8f36b]">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f8f4ec]">
                     Autopilot Application Dossier
                   </span>
-                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-xs bg-[#d8f36b]/20 border border-[#d8f36b]/40 text-[#d8f36b]">
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-xs bg-[#0d8274]/20 border border-[#0d8274]/40 text-[#f8f4ec]">
                     {packet.matchScore || 85}% ATS Match
                   </span>
                 </div>
@@ -406,7 +406,7 @@ export function AutopilotDossierDialog({
                       <Button
                         size="sm"
                         onClick={() => setActiveSlide(2)}
-                        className="flex-1 h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-xs gap-1.5"
+                        className="flex-1 h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-xs gap-1.5"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         Preview Resume
@@ -450,7 +450,7 @@ export function AutopilotDossierDialog({
                       <Button
                         size="sm"
                         onClick={() => setActiveSlide(3)}
-                        className="flex-1 h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-xs gap-1.5"
+                        className="flex-1 h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-xs gap-1.5"
                       >
                         <Mail className="w-3.5 h-3.5" />
                         View Full Letter
@@ -514,7 +514,7 @@ export function AutopilotDossierDialog({
                     {/* Interview Readiness Teaser */}
                     <div className="p-4 rounded-sm bg-[#102b2b] text-white border border-[#102b2b] shadow-2xs space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#d8f36b]">
+                        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[#f8f4ec]">
                           Next Step: Interview Simulation
                         </span>
                         {isInterviewComplete && (
@@ -556,7 +556,7 @@ export function AutopilotDossierDialog({
                     <Button
                       size="sm"
                       onClick={() => setActiveSlide(2)}
-                      className="flex-1 h-9 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5"
+                      className="flex-1 h-9 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-sm gap-1.5"
                     >
                       <span>Preview Resume</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -616,7 +616,7 @@ export function AutopilotDossierDialog({
                   <Button
                     size="sm"
                     onClick={() => router.push(`/dashboard/resume/${packet.newResumeId}`)}
-                    className="h-7 bg-[#102b2b] text-[#d8f36b] text-xs font-bold rounded-xs gap-1"
+                    className="h-7 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-xs gap-1"
                   >
                     <ExternalLink className="w-3 h-3" />
                     Open Full Editor
@@ -688,7 +688,7 @@ export function AutopilotDossierDialog({
                     <Button
                       size="sm"
                       onClick={() => router.push(`/dashboard/cover-letters/${packet.coverLetterId}`)}
-                      className="h-7 bg-[#102b2b] text-[#d8f36b] text-xs font-bold rounded-xs gap-1"
+                      className="h-7 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-xs gap-1"
                     >
                       <ExternalLink className="w-3 h-3" />
                       Open Editor
@@ -744,7 +744,7 @@ export function AutopilotDossierDialog({
                     size="sm"
                     variant="ghost"
                     onClick={refreshInterviewSession}
-                    className="h-7 text-xs text-[#d8f36b] hover:bg-white/10"
+                    className="h-7 text-xs text-[#f8f4ec] hover:text-white hover:bg-white/10"
                   >
                     <RotateCcw className="w-3 h-3 mr-1" /> Refresh
                   </Button>
@@ -798,7 +798,7 @@ export function AutopilotDossierDialog({
                     <Button
                       size="sm"
                       onClick={() => router.push(`/dashboard/interview-prep/${interviewSession.id}`)}
-                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] text-xs font-bold rounded-xs gap-1.5"
+                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-xs gap-1.5"
                     >
                       <Trophy className="w-3.5 h-3.5" />
                       Review Full Interview Feedback & Answers →
@@ -860,7 +860,7 @@ export function AutopilotDossierDialog({
                     <Button
                       size="sm"
                       onClick={() => router.push(`/dashboard/interview-prep/${interviewSession.id}`)}
-                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] text-xs font-bold rounded-xs gap-1.5"
+                      className="bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-xs gap-1.5"
                     >
                       <Mic className="w-3.5 h-3.5" />
                       Resume Mock Interview →
@@ -968,7 +968,7 @@ export function AutopilotDossierDialog({
                   <Button
                     onClick={handleLaunchInterviewSession}
                     disabled={creatingInterview}
-                    className="w-full sm:w-auto h-11 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white font-black uppercase tracking-wider text-xs px-8 rounded-sm gap-2 shadow-sm"
+                    className="w-full sm:w-auto h-11 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white font-black uppercase tracking-wider text-xs px-8 rounded-sm gap-2 shadow-sm"
                   >
                     {creatingInterview ? (
                       <>
@@ -1009,7 +1009,7 @@ export function AutopilotDossierDialog({
             size="sm"
             onClick={() => setActiveSlide((prev) => Math.min(4, prev + 1))}
             disabled={activeSlide === 4}
-            className="h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#d8f36b] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer"
+            className="h-8 bg-[#102b2b] hover:bg-[#0d8274] text-[#f8f4ec] hover:text-white text-xs font-bold rounded-sm gap-1.5 cursor-pointer"
           >
             Next Slide
             <ArrowRight className="w-3.5 h-3.5" />

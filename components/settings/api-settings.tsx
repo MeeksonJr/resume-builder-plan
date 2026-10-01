@@ -110,7 +110,7 @@ export function ApiSettings() {
                     </div>
                     <Button 
                         type="submit" 
-                        className="rounded-none bg-[#102b2b] text-[#d8f36b] hover:bg-[#0d8274]"
+                        className="rounded-none bg-[#102b2b] text-[#f8f4ec] hover:text-white hover:bg-[#0d8274]"
                         disabled={loading || !keyName.trim()}
                     >
                         {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

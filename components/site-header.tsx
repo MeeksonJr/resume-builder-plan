@@ -50,7 +50,7 @@ export function SiteHeader() {
                         : "border-[#102b2b]/5 bg-[#f8f4ec]/90 shadow-sm backdrop-blur-sm"
                 } flex items-center justify-between border px-4 py-3 transition-all duration-300 md:px-6`}>
                     <Link href="/" className="flex items-center gap-2 font-heading text-xl font-bold tracking-[-.04em] text-[#102b2b] group">
-                        <span className="flex h-8 w-8 items-center justify-center bg-[#102b2b] text-sm font-bold text-[#d8f36b] transition-transform group-hover:-rotate-6">R</span>
+                        <span className="flex h-8 w-8 items-center justify-center bg-[#102b2b] text-sm font-bold text-[#f8f4ec] transition-transform group-hover:-rotate-6">R</span>
                         <span>ResumeForge<span className="text-[#0d8274]">.</span></span>
                     </Link>
 

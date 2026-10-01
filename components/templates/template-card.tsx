@@ -130,7 +130,7 @@ export function TemplateCard({
                             </>
                         ) : (
                             <>
-                                <Sparkles className="h-3.5 w-3.5 text-[#d8f36b]" />
+                                <Sparkles className="h-3.5 w-3.5 text-[#0d8274]" />
                                 Use Template
                             </>
                         )}
