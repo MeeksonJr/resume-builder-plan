@@ -201,7 +201,7 @@ export async function scrapeLiveJobs(
               salary_max: salMax,
               salary_range: salRange,
               employment_type: "Full-time",
-              description: desc.length > 50 ? desc.substring(0, 750) + "..." : `Opportunity for a ${j.title || query}.`,
+              description: desc || `Opportunity for a ${j.title || query}.`,
               requirements: reqs.length > 0 ? reqs : [
                 "Strong background in modern application development",
                 "Demonstrated experience designing and shipping scalable systems",
@@ -286,7 +286,7 @@ function generateDynamicFallbackJobs(query: string, location: string): ScrapedJo
       salary_max: c.max,
       salary_range: `${c.salary} / yr`,
       employment_type: "Full-time",
-      description: `Join ${c.name} as a ${role}. You will collaborate closely with product, design, and engineering teams to deliver high-performance, resilient experiences for hundreds of thousands of active users worldwide.`,
+      description: `About the Role:\nAs a ${role} at ${c.name}, you will be an integral member of our core product engineering organization. You will collaborate directly with product managers, staff designers, and platform architects to build, refine, and scale high-impact systems that serve hundreds of thousands of active users worldwide.\n\nKey Responsibilities:\n• Architect, implement, and operate resilient, test-driven application features from discovery through deployment.\n• Partner closely with cross-functional peers to translate complex workflow requirements into intuitive, high-performance experiences.\n• Champion engineering excellence through thorough code reviews, architectural RFCs, and continuous observability optimization.\n• Triage complex production bottlenecks and maintain high reliability across our distributed tech stack.\n\nQualifications & Requirements:\n${requirements.map(r => `• ${r}`).join("\n")}\n\nWhat We Offer:\n• Competitive compensation (${c.salary} / yr) plus equity incentives and comprehensive health coverage.\n• Flexible working environment (${isRemote ? "100% Remote" : c.location}) with dedicated home office and learning stipends.`,
       requirements,
       url: `https://${c.name.toLowerCase().replace(/\s+/g, "")}.com/careers`,
       posted_at: new Date(Date.now() - (idx * 86400000 + 3600000)).toISOString(),

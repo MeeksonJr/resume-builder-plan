@@ -319,7 +319,7 @@ export const useUserMemoryStore = create<UserMemoryStore>()(
         if (!data) return;
         set((state) => {
           const current = state.memory;
-          const contact = data.contact || data.profile || {};
+          const contact = data.contact || data.profile || data.personalInfo || {};
           const workList = data.work_experiences || data.workExperiences || data.experience || [];
           const eduList = data.education || data.educations || [];
           const skillList = data.skills || [];
@@ -361,17 +361,25 @@ export const useUserMemoryStore = create<UserMemoryStore>()(
             highlights: Array.isArray(e.highlights) ? e.highlights.map(clean) : [],
           }));
 
-          // Parse skills
-          const mappedSkills: MemorySkill[] = skillList.map((s: any, idx: number) => {
+          // Parse skills (handles both flat array and grouped skill objects)
+          const mappedSkills: MemorySkill[] = skillList.flatMap((s: any, idx: number) => {
+            if (Array.isArray(s.skills)) {
+              return s.skills.map((subSkill: string, subIdx: number) => ({
+                id: `sk_${Date.now()}_${idx}_${subIdx}`,
+                name: clean(subSkill),
+                category: s.category || "Languages",
+                proficiency: 4,
+              })).filter((sk: any) => Boolean(sk.name));
+            }
             const skillName = typeof s === "string" ? clean(s) : clean(s.name);
-            const category =
-              typeof s === "object" && s.category ? s.category : "Languages";
-            return {
+            if (!skillName) return [];
+            const category = typeof s === "object" && s.category ? s.category : "Languages";
+            return [{
               id: `sk_${Date.now()}_${idx}`,
               name: skillName,
               category: (category as any) || "Languages",
               proficiency: typeof s === "object" && s.proficiency_level ? s.proficiency_level : 4,
-            };
+            }];
           });
 
           // Parse projects
@@ -411,7 +419,7 @@ export const useUserMemoryStore = create<UserMemoryStore>()(
               sources: updatedSources,
               basics: {
                 full_name: clean(contact.full_name || contact.name || current.basics.full_name),
-                headline: clean(contact.headline || contact.position || current.basics.headline),
+                headline: clean(contact.headline || contact.title || contact.label || contact.position || current.basics.headline),
                 email: clean(contact.email || current.basics.email),
                 phone: clean(contact.phone || current.basics.phone),
                 location: clean(contact.location || current.basics.location),
@@ -422,7 +430,7 @@ export const useUserMemoryStore = create<UserMemoryStore>()(
                 ...current.socials,
                 linkedin: contact.linkedin_url || contact.linkedin || current.socials.linkedin,
                 github: contact.github_url || contact.github || current.socials.github,
-                portfolio: contact.website_url || contact.website || current.socials.portfolio,
+                portfolio: contact.website_url || contact.website || contact.url || current.socials.portfolio,
               },
               experiences: mappedExperiences.length > 0 ? mappedExperiences : current.experiences,
               education: mappedEducation.length > 0 ? mappedEducation : current.education,

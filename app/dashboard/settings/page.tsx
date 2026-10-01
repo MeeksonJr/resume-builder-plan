@@ -9,6 +9,7 @@ import { DataSettings } from "@/components/settings/data-settings"
 import { CareerSettings } from "@/components/settings/career-settings"
 import { CanvasSettings } from "@/components/settings/canvas-settings"
 import { ApiSettings } from "@/components/settings/api-settings"
+import { UniversitySettings } from "@/components/settings/university-settings"
 
 export const metadata = {
     title: "Settings | ResumeForge",
@@ -67,6 +68,14 @@ export default async function SettingsPage() {
                 description="Connect your Canvas account to synchronize your courses, assignments, and grades."
             >
                 <CanvasSettings profile={profile} />
+            </SettingsTab>
+
+            <SettingsTab
+                value="university"
+                title="University & Student Portal"
+                description="Verify your higher education institution to unlock campus cohort portals, alumni networks, and verified student badges."
+            >
+                <UniversitySettings profile={profile} />
             </SettingsTab>
 
             <SettingsTab

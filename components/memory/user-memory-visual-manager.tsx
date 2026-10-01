@@ -235,11 +235,11 @@ export function UserMemoryVisualManager({ userResumes = [], onOpenStudio }: User
 
     setIsExtractingResume(true);
     try {
-      const res = await fetch(`/api/resumes/${selectedResumeId}`);
+      const res = await fetch(`/api/resume/${selectedResumeId}?format=full`);
       if (!res.ok) throw new Error("Could not fetch resume details");
       const fullResumeData = await res.json();
 
-      importFromResumeData(fullResumeData, `Imported from ${fullResumeData.title || "Resume"}`);
+      importFromResumeData(fullResumeData, `Imported from ${fullResumeData.resume?.title || fullResumeData.title || "Resume"}`);
       toast.success("User Memory successfully updated from selected resume!");
       setImportResumeModalOpen(false);
     } catch (e: any) {

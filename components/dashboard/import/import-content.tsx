@@ -200,11 +200,11 @@ export function ImportContent({ resumes }: ImportContentProps) {
 
     setIsHarvesting(true);
     try {
-      const res = await fetch(`/api/resumes/${selectedMemorySourceResumeId}`);
+      const res = await fetch(`/api/resume/${selectedMemorySourceResumeId}?format=full`);
       if (!res.ok) throw new Error("Could not fetch resume details");
       const fullResumeData = await res.json();
 
-      importFromResumeData(fullResumeData, `Harvested from ${fullResumeData.title || "Resume"}`);
+      importFromResumeData(fullResumeData, `Harvested from ${fullResumeData.resume?.title || fullResumeData.title || "Resume"}`);
       toast.success("Career Memory successfully updated from selected resume!");
     } catch (e: any) {
       toast.error(e.message || "Harvest failed");

@@ -59,6 +59,10 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
                         <GraduationCap className="h-4 w-4" />
                         <span className="hidden sm:inline">Canvas</span>
                     </TabsTrigger>
+                    <TabsTrigger value="university" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
+                        <GraduationCap className="h-4 w-4 text-[#0d8274]" />
+                        <span className="hidden sm:inline">University</span>
+                    </TabsTrigger>
                     <TabsTrigger value="appearance" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
                         <Palette className="h-4 w-4" />
                         <span className="hidden sm:inline">Appearance</span>

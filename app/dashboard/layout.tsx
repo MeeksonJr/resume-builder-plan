@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { TopNav } from "@/components/dashboard/top-nav";
 import { CommandMenu } from "@/components/dashboard/command-menu";
 import { OfflineIndicatorBanner } from "@/components/pwa/offline-indicator-banner";
+import { UserOnboardingDialog } from "@/components/onboarding/user-onboarding-dialog";
 
 export default async function DashboardLayout({
   children,
@@ -42,6 +43,7 @@ export default async function DashboardLayout({
         <TopNav isPro={isPro} />
         <CommandMenu />
         <OfflineIndicatorBanner />
+        <UserOnboardingDialog />
         <main className="flex-1 overflow-y-auto">
           <div className="w-full px-4 py-8 md:px-8 lg:px-10">
             {children}

@@ -21,6 +21,8 @@ import {
   Clock,
   FileText,
   AlertCircle,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +53,8 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
   const [loading, setLoading] = useState(true);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
+  const reportRef = React.useRef<HTMLDivElement>(null);
+  const [completedActions, setCompletedActions] = useState<Record<string, boolean>>({});
 
   // Fetch all career intelligence data
   useEffect(() => {
@@ -98,12 +102,92 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
         reportGeneratedAt: new Date().toISOString(),
       }));
       toast.success("Career trajectory report generated!");
+
+      // Smooth scroll down to the generated report
+      setTimeout(() => {
+        reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 250);
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate career report");
     } finally {
       setGeneratingReport(false);
     }
+  };
+
+  const handleCopyReport = () => {
+    const report = data?.latestReport;
+    if (!report) return;
+
+    const markdown = `# Career Trajectory Report - ${report.careerMomentum || "Overview"}
+Generated: ${new Date().toLocaleDateString()}
+
+## Executive Summary
+${report.executiveSummary}
+
+## Strengths Identified
+${(report.strengthsIdentified || []).map((s: string) => `- ${s}`).join("\n")}
+
+## Growth Areas & Actionable Gaps
+${(report.growthAreas || []).map((g: string) => `- ${g}`).join("\n")}
+
+## 30-Day Milestone
+${(report.actionPlan30 || []).map((a: string) => `- [ ] ${a}`).join("\n")}
+
+## 60-Day Milestone
+${(report.actionPlan60 || []).map((a: string) => `- [ ] ${a}`).join("\n")}
+
+## 90-Day Milestone
+${(report.actionPlan90 || []).map((a: string) => `- [ ] ${a}`).join("\n")}
+
+## Market Position Assessment
+${report.marketPositionAssessment}
+`;
+
+    navigator.clipboard.writeText(markdown);
+    toast.success("Full career report copied to clipboard in Markdown format!");
+  };
+
+  const handleDownloadReport = () => {
+    const report = data?.latestReport;
+    if (!report) return;
+
+    const text = `CAREER TRAJECTORY & STRATEGIC ASSESSMENT REPORT
+Momentum: ${report.careerMomentum || "Analyzing"}
+Generated: ${new Date().toLocaleDateString()}
+
+EXECUTIVE SUMMARY:
+${report.executiveSummary}
+
+KEY STRENGTHS:
+${(report.strengthsIdentified || []).map((s: string, idx: number) => `${idx + 1}. ${s}`).join("\n")}
+
+AREAS FOR GROWTH:
+${(report.growthAreas || []).map((g: string, idx: number) => `${idx + 1}. ${g}`).join("\n")}
+
+FIRST 30 DAYS:
+${(report.actionPlan30 || []).map((a: string) => `[ ] ${a}`).join("\n")}
+
+DAYS 30-60:
+${(report.actionPlan60 || []).map((a: string) => `[ ] ${a}`).join("\n")}
+
+DAYS 60-90:
+${(report.actionPlan90 || []).map((a: string) => `[ ] ${a}`).join("\n")}
+
+MARKET POSITION ASSESSMENT:
+${report.marketPositionAssessment}
+`;
+
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `career-trajectory-report-${new Date().toISOString().split("T")[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Career trajectory report downloaded!");
   };
 
   if (loading) {
@@ -561,7 +645,7 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
       <AbTestingScorecard abTesting={data?.abTesting} />
 
       {/* ===== SECTION 7: AI CAREER TRAJECTORY REPORT ===== */}
-      <div className="border border-[#102b2b]/15 bg-white shadow-[14px_16px_0_rgba(16,43,43,.12)] overflow-hidden">
+      <div ref={reportRef} className="border border-[#102b2b]/15 bg-white shadow-[14px_16px_0_rgba(16,43,43,.12)] overflow-hidden">
         {/* Report Header */}
         <div className="bg-[#102b2b] text-[#f8f4ec] px-6 py-5 sm:px-8 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -581,28 +665,50 @@ export function CareerIntelligenceDashboard({ isPro }: CareerIntelligenceDashboa
               AI-synthesized strategic assessment of your career data
             </p>
           </div>
-          <Button
-            onClick={generateReport}
-            disabled={generatingReport}
-            className="bg-[#d8f36b] text-[#102b2b] hover:bg-[#e5ff8b] font-bold rounded-none h-10 px-5 shrink-0 cursor-pointer"
-          >
-            {generatingReport ? (
+          <div className="flex items-center gap-2 flex-wrap">
+            {report && (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Analyzing...
-              </>
-            ) : report ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Report
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate Report
+                <Button
+                  variant="outline"
+                  onClick={handleCopyReport}
+                  className="bg-white/10 hover:bg-white/20 text-[#f8f4ec] border-white/20 font-bold rounded-none h-10 px-3.5 text-xs cursor-pointer"
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1.5" />
+                  Copy Markdown
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadReport}
+                  className="bg-white/10 hover:bg-white/20 text-[#f8f4ec] border-white/20 font-bold rounded-none h-10 px-3.5 text-xs cursor-pointer"
+                >
+                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                  Download TXT
+                </Button>
               </>
             )}
-          </Button>
+            <Button
+              onClick={generateReport}
+              disabled={generatingReport}
+              className="bg-[#d8f36b] text-[#102b2b] hover:bg-[#e5ff8b] font-bold rounded-none h-10 px-5 shrink-0 cursor-pointer"
+            >
+              {generatingReport ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Analyzing...
+                </>
+              ) : report ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Report
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate Report
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Report Content */}

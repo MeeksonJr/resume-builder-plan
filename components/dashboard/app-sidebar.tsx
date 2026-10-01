@@ -56,7 +56,7 @@ interface AppSidebarProps {
     profile: any
 }
 
-const getNavItems = (isAdmin: boolean) => {
+const getNavItems = (isAdmin: boolean, profile?: any) => {
     const items = [
         {
             title: "Dashboard",
@@ -117,7 +117,15 @@ const getNavItems = (isAdmin: boolean) => {
             items: [
                 { title: "My Portfolio", href: "/dashboard/portfolio" },
                 { title: "Discovery", href: "/dashboard/portfolios" },
-                { title: "University Portals", href: "/dashboard/portal/stanford", icon: GraduationCap },
+                ...(profile?.school_verified && profile?.university_slug
+                    ? [
+                        {
+                            title: profile.university_name || "Campus Portal",
+                            href: `/dashboard/portal/${profile.university_slug}`,
+                            icon: GraduationCap,
+                        },
+                      ]
+                    : []),
             ],
         },
         {
@@ -135,8 +143,8 @@ const getNavItems = (isAdmin: boolean) => {
         items.push({
             title: "Admin",
             href: "/dashboard/admin",
-            icon: User, // Using User icon for now, could be Shield/Lock
-            items: [] // Add empty items to match type if needed, or adjust type
+            icon: User,
+            items: [],
         } as any);
     }
 
@@ -206,7 +214,10 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
         router.refresh()
     }
 
-    const navItems = React.useMemo(() => getNavItems(profile?.role === 'admin'), [profile?.role]);
+    const navItems = React.useMemo(
+        () => getNavItems(profile?.role === 'admin', profile),
+        [profile?.role, profile?.school_verified, profile?.university_slug, profile?.university_name]
+    );
 
     return (
         <Sidebar collapsible="icon" className="glass-border border-r bg-background/60 backdrop-blur-xl">

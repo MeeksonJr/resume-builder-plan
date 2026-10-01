@@ -44,13 +44,16 @@ export async function GET() {
     let projList: any[] = [];
     let certList: any[] = [];
 
+    let personalInfo: any = null;
+
     if (targetResumeId) {
-      const [wRes, eRes, sRes, pRes, cRes] = await Promise.all([
-        supabase.from("work_experiences").select("*").eq("resume_id", targetResumeId).order("display_order"),
-        supabase.from("educations").select("*").eq("resume_id", targetResumeId).order("display_order"),
-        supabase.from("skills").select("*").eq("resume_id", targetResumeId).order("display_order"),
-        supabase.from("projects").select("*").eq("resume_id", targetResumeId).order("display_order"),
-        supabase.from("certifications").select("*").eq("resume_id", targetResumeId).order("display_order"),
+      const [wRes, eRes, sRes, pRes, cRes, piRes] = await Promise.all([
+        supabase.from("work_experiences").select("*").eq("resume_id", targetResumeId).order("sort_order"),
+        supabase.from("education").select("*").eq("resume_id", targetResumeId).order("sort_order"),
+        supabase.from("skills").select("*").eq("resume_id", targetResumeId).order("sort_order"),
+        supabase.from("projects").select("*").eq("resume_id", targetResumeId).order("sort_order"),
+        supabase.from("certifications").select("*").eq("resume_id", targetResumeId).order("sort_order"),
+        supabase.from("personal_info").select("*").eq("resume_id", targetResumeId).maybeSingle(),
       ]);
 
       workList = wRes.data || [];
@@ -58,6 +61,7 @@ export async function GET() {
       skillsList = sRes.data || [];
       projList = pRes.data || [];
       certList = cRes.data || [];
+      personalInfo = piRes.data || null;
     }
 
     // If profile has data, create an initial user memory
@@ -68,18 +72,18 @@ export async function GET() {
         last_updated: new Date().toISOString(),
         sources: ["Profile & Primary Resume Bootstrap"],
         basics: {
-          full_name: profile?.full_name || "Professional",
-          headline: profile?.settings?.headline || "Software Engineer",
-          email: profile?.email || user.email || "",
-          phone: contactSettings.phone || profile?.phone || "",
-          location: profile?.location || "",
-          bio: profile?.bio || profile?.summary || "",
+          full_name: personalInfo?.full_name || profile?.full_name || "Professional",
+          headline: personalInfo?.title || profile?.settings?.headline || "Software Engineer",
+          email: personalInfo?.email || profile?.email || user.email || "",
+          phone: personalInfo?.phone || contactSettings.phone || profile?.phone || "",
+          location: personalInfo?.location || profile?.location || "",
+          bio: personalInfo?.summary || profile?.bio || profile?.summary || "",
           avatar_url: profile?.avatar_url || "",
         },
         socials: {
-          linkedin: contactSettings.linkedin || profile?.linkedin_url || "",
-          github: contactSettings.github || profile?.github_url || "",
-          portfolio: profile?.website_url || "",
+          linkedin: personalInfo?.linkedin || contactSettings.linkedin || profile?.linkedin_url || "",
+          github: personalInfo?.github || contactSettings.github || profile?.github_url || "",
+          portfolio: personalInfo?.website || profile?.website_url || "",
         },
         experiences: workList.map((w, idx) => ({
           id: w.id || `exp_${idx}`,

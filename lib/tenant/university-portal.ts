@@ -186,7 +186,46 @@ export function resolveUniversityTenant(slugOrDomain: string): UniversityTenant 
     }
   }
 
-  return PRESET_TENANTS.stanford;
+  // Dynamic tenant for any selected or searched university
+  const schoolTitle = normalized
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
+  const fullName = schoolTitle.toLowerCase().includes("university") || schoolTitle.toLowerCase().includes("college")
+    ? schoolTitle
+    : `${schoolTitle} University`;
+
+  return {
+    slug: normalized,
+    name: `${fullName} Career Center`,
+    institutionType: "university",
+    primaryColor: "#0d8274",
+    accentColor: "#d8f36b",
+    customDomain: `careers.${normalized}.edu`,
+    ssoEnabled: true,
+    ferpaCompliant: true,
+    activeCohorts: [
+      {
+        id: `${normalized}-tech-2026`,
+        name: `Class of 2026 - Engineering & Technology`,
+        graduationYear: 2026,
+        totalStudents: 92,
+        averageAtsScore: 88.5,
+        placementRatePercent: 81.0,
+        applicationsDispatched: 1250,
+      },
+      {
+        id: `${normalized}-business-2026`,
+        name: `Class of 2026 - Business & Analytics`,
+        graduationYear: 2026,
+        totalStudents: 74,
+        averageAtsScore: 86.8,
+        placementRatePercent: 79.4,
+        applicationsDispatched: 880,
+      },
+    ],
+  };
 }
 
 /**

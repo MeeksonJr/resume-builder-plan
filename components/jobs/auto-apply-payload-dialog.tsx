@@ -290,13 +290,14 @@ export function AutoApplyPayloadDialog({
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        await supabase.from("jobs").insert({
+        await supabase.from("applications").insert({
           user_id: user.id,
-          title: jobRole || "Software Engineer",
+          role: jobRole || "Software Engineer",
           company: companyName || "Target Company",
           status: "applied",
           location: candidateProfile.location || "Remote",
-          salary: desiredSalary,
+          salary_range: desiredSalary,
+          job_url: jobUrl || null,
           notes: `Autofilled via ${platform.toUpperCase()} payload generator on ${new Date().toLocaleDateString()}`,
         });
         toast.success(`Saved "${jobRole || "Application"}" to Job Tracker as Applied!`);
@@ -326,7 +327,7 @@ export function AutoApplyPayloadDialog({
         )}
       </DialogTrigger>
 
-      <DialogContent className="w-[96vw] max-w-4xl sm:max-w-3xl md:max-w-4xl max-h-[92vh] rounded-2xl border-neutral-800 p-0 overflow-hidden bg-white dark:bg-slate-950 flex flex-col shadow-2xl">
+      <DialogContent className="w-[96vw] max-w-5xl md:max-w-5xl lg:max-w-6xl max-h-[94vh] rounded-2xl border-neutral-800 p-0 overflow-hidden bg-white dark:bg-slate-950 flex flex-col shadow-2xl">
         {/* Modal Header */}
         <div className="bg-[#102b2b] text-[#f8f4ec] px-6 py-5 shrink-0 border-b border-white/10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -362,7 +363,7 @@ export function AutoApplyPayloadDialog({
         {/* Modal Body with Tabs */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto mb-4 bg-neutral-100 dark:bg-slate-900 rounded-xl p-1">
+            <TabsList className="grid grid-cols-3 w-full max-w-2xl mx-auto mb-6 bg-neutral-100 dark:bg-slate-900 rounded-xl p-1.5 h-12">
               <TabsTrigger value="config" className="text-xs font-bold gap-1.5 rounded-lg">
                 <Sliders className="w-3.5 h-3.5" />
                 Config & Preferences

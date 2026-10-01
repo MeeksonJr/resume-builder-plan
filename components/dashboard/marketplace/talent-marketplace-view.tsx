@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   CandidateMarketplaceProfile,
   RecruiterIntroRequest,
@@ -27,21 +27,29 @@ import {
   Clock,
   Filter,
   Bot,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { RecruiterSourcingAgentView } from "@/components/dashboard/marketplace/recruiter-sourcing-agent-view";
 
 export function TalentMarketplaceView() {
   const [candidates, setCandidates] = useState<CandidateMarketplaceProfile[]>(SAMPLE_MARKETPLACE_CANDIDATES);
   const [introRequests, setIntroRequests] = useState<RecruiterIntroRequest[]>([]);
   const [activeTab, setActiveTab] = useState<"browse" | "my_profile" | "inbox" | "sourcing_agent">("browse");
+  const [currentRecruiterId, setCurrentRecruiterId] = useState("recruiter-me");
 
   // User's own marketplace profile state
+  const [isMarketplaceActive, setIsMarketplaceActive] = useState(true);
+  const [marketplaceHeadline, setMarketplaceHeadline] = useState(
+    "Senior Fullstack & Distributed Systems Engineer specializing in React, TypeScript, and high-scale backends."
+  );
   const [myAvailability, setMyAvailability] = useState<AvailabilityStatus>("actively_looking");
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [hideCompany, setHideCompany] = useState(true);
-  const [desiredSalaryMin, setDesiredSalaryMin] = useState(210000);
-  const [desiredSalaryMax, setDesiredSalaryMax] = useState(260000);
+  const [desiredSalaryMin, setDesiredSalaryMin] = useState(190000);
+  const [desiredSalaryMax, setDesiredSalaryMax] = useState(250000);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // Recruiter modal state
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
@@ -51,27 +59,137 @@ export function TalentMarketplaceView() {
   const [pitchMessage, setPitchMessage] = useState(
     "Hi there! We saw your verified 98% ATS profile and high-throughput systems experience. We'd love to connect for a confidential conversation."
   );
+  const [sendingPitch, setSendingPitch] = useState(false);
 
-  const currentRecruiterId = "recruiter-current-session";
+  // Fetch live candidates, profile, and intros from Supabase on mount
+  useEffect(() => {
+    fetchMarketplaceData();
+  }, []);
 
-  const handleSendIntroRequest = (candidateId: string) => {
-    const req = createIntroRequest(candidateId, {
-      id: currentRecruiterId,
-      name: "David Sterling",
-      company: pitchCompany,
-      email: "david@scalesystems.ai",
-      jobRole: pitchRole,
-      salaryOffered: pitchSalary,
-      customPitch: pitchMessage,
-    });
-    setIntroRequests((prev) => [req, ...prev]);
-    setSelectedCandidateId(null);
+  const fetchMarketplaceData = async () => {
+    try {
+      // 1. Fetch Candidates
+      const candRes = await fetch("/api/marketplace/candidates");
+      if (candRes.ok) {
+        const candData = await candRes.json();
+        if (Array.isArray(candData) && candData.length > 0) {
+          setCandidates(candData);
+        }
+      }
+
+      // 2. Fetch User Profile
+      const profRes = await fetch("/api/marketplace/profile");
+      if (profRes.ok) {
+        const profData = await profRes.json();
+        if (profData.marketplace_active !== undefined) {
+          setIsMarketplaceActive(profData.marketplace_active);
+        }
+        if (profData.marketplace_headline) {
+          setMarketplaceHeadline(profData.marketplace_headline);
+        }
+        if (profData.marketplace_anonymous !== undefined) {
+          setIsAnonymous(profData.marketplace_anonymous);
+        }
+        if (profData.desired_salary_min) {
+          setDesiredSalaryMin(Number(profData.desired_salary_min));
+        }
+        if (profData.desired_salary_max) {
+          setDesiredSalaryMax(Number(profData.desired_salary_max));
+        }
+      }
+
+      // 3. Fetch Intro Requests
+      const introsRes = await fetch("/api/marketplace/intros");
+      if (introsRes.ok) {
+        const introsData = await introsRes.json();
+        if (Array.isArray(introsData)) {
+          setIntroRequests(introsData);
+        }
+      }
+    } catch (err) {
+      console.warn("[MARKETPLACE] Failed to load remote data, falling back to local:", err);
+    }
   };
 
-  const handleRespondToRequest = (requestId: string, decision: "approved" | "declined") => {
-    setIntroRequests((prev) =>
-      prev.map((r) => (r.id === requestId ? respondToIntroRequest(r, decision) : r))
-    );
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/marketplace/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          marketplace_active: isMarketplaceActive,
+          marketplace_headline: marketplaceHeadline,
+          marketplace_anonymous: isAnonymous,
+          desired_salary_min: desiredSalaryMin,
+          desired_salary_max: desiredSalaryMax,
+          marketplace_skills: ["TypeScript", "Next.js", "React", "PostgreSQL", "Node.js", "AI/LLM"],
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save marketplace profile");
+
+      toast.success("Reverse Job Board profile published and updated!");
+      // Refresh candidates list
+      fetchMarketplaceData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleSendIntroRequest = async (candidateId: string) => {
+    setSendingPitch(true);
+    try {
+      const res = await fetch("/api/marketplace/intros", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidateId,
+          recruiterCompany: pitchCompany,
+          jobRole: pitchRole,
+          salaryOffered: pitchSalary,
+          customPitch: pitchMessage,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to dispatch intro pitch");
+
+      toast.success(`Confidential intro pitch sent for ${pitchRole} at ${pitchCompany}!`);
+      setSelectedCandidateId(null);
+      fetchMarketplaceData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send intro pitch");
+    } finally {
+      setSendingPitch(false);
+    }
+  };
+
+  const handleRespondToRequest = async (requestId: string, decision: "approved" | "declined") => {
+    try {
+      const res = await fetch("/api/marketplace/intros", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId,
+          status: decision,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update intro status");
+
+      setIntroRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, status: decision } : r))
+      );
+      toast.success(
+        decision === "approved"
+          ? "Introduction approved! Recruiter notified with contact access."
+          : "Introduction declined."
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to respond");
+    }
   };
 
   return (
@@ -337,6 +455,40 @@ export function TalentMarketplaceView() {
                 </Button>
               </div>
 
+              {/* Headline input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground uppercase tracking-wide block">
+                  Public Talent Headline &amp; Pitch
+                </label>
+                <textarea
+                  rows={3}
+                  value={marketplaceHeadline}
+                  onChange={(e) => setMarketplaceHeadline(e.target.value)}
+                  placeholder="e.g. Senior Fullstack & Distributed Systems Engineer specializing in React, Next.js, and high-throughput systems."
+                  className="w-full px-3 py-2 rounded-xl border border-border bg-background text-xs leading-relaxed"
+                />
+              </div>
+
+              {/* Reverse Board Active Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-violet-500/10 border border-violet-500/30">
+                <div>
+                  <div className="text-xs font-bold text-violet-700 dark:text-violet-300">
+                    Live on Reverse Job Board
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Allow verified recruiters to pitch confidential offers to you
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant={isMarketplaceActive ? "default" : "outline"}
+                  onClick={() => setIsMarketplaceActive(!isMarketplaceActive)}
+                  className="text-xs bg-violet-600 hover:bg-violet-700 text-white"
+                >
+                  {isMarketplaceActive ? "Active" : "Paused"}
+                </Button>
+              </div>
+
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
                 <div className="flex items-center gap-2.5">
                   <ShieldCheck className="w-4 h-4 text-violet-600" />
@@ -383,8 +535,12 @@ export function TalentMarketplaceView() {
               </div>
             </div>
 
-            <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs">
-              Save Marketplace Preferences
+            <Button
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
+              className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs h-10 font-bold cursor-pointer"
+            >
+              {savingProfile ? "Saving Profile..." : "Save & Publish Reverse Job Board Profile"}
             </Button>
           </div>
         </div>
@@ -534,10 +690,19 @@ export function TalentMarketplaceView() {
               </Button>
               <Button
                 size="sm"
+                disabled={sendingPitch}
                 onClick={() => handleSendIntroRequest(selectedCandidateId)}
                 className="bg-violet-600 hover:bg-violet-700 text-white text-xs gap-1.5"
               >
-                <Send className="w-3.5 h-3.5" /> Dispatch Intro Request
+                {sendingPitch ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Dispatching...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" /> Dispatch Intro Request
+                  </>
+                )}
               </Button>
             </div>
           </div>
