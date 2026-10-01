@@ -17,6 +17,7 @@ import {
   executeSandboxedChallenge,
   getBadgeVerificationUrl,
 } from "@/lib/assessment/skill-sandbox-engine";
+import { QuickPracticeDrill } from "@/components/assessment/quick-practice-drill";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -541,6 +542,18 @@ export function MultiCareerAssessmentView() {
                 </div>
               </div>
             </div>
+
+            {/* Quick Practice Drill (powered by cached RapidAPI questions) */}
+            <QuickPracticeDrill
+              careerField={selectedTrack.careerField}
+              difficulty={
+                selectedTrack.experienceLevel === "Entry Level" ? "junior"
+                : selectedTrack.experienceLevel === "Mid Level" ? "mid"
+                : selectedTrack.experienceLevel === "Executive / Director" ? "executive"
+                : "senior"
+              }
+              numQuestions={5}
+            />
 
             {/* PART 1: Situational Judgment Dilemmas */}
             <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-6">
