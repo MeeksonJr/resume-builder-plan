@@ -51,77 +51,36 @@ export async function POST(req: Request) {
     const cleanOrigin = origin.replace(/\/$/, "");
     const verifyUrl = `${cleanOrigin}/dashboard/portal/verify?code=${code}&email=${encodeURIComponent(schoolEmail.trim().toLowerCase())}&slug=${universitySlug}`;
 
-    // Import dynamic HTML template generator
-    const { generateUniversityVerificationEmailHtml } = await import("@/lib/email/university-verification-template");
-    const emailHtml = generateUniversityVerificationEmailHtml({
+    // Dispatch email via Multi-Tier Dispatcher:
+    // Tier 1: Gmail SMTP (zero domain verification needed, delivers straight to Outlook/Exchange)
+    // Tier 2: Microsoft 365 / Outlook SMTP (fallback)
+    // Tier 3: Resend API (tertiary fallback)
+    const { sendAcademicVerificationEmail } = await import("@/lib/email/email-dispatcher");
+    const dispatchResult = await sendAcademicVerificationEmail({
       schoolName: universityName || "University Student",
       schoolSlug: universitySlug,
       code,
       recipientEmail: schoolEmail.trim().toLowerCase(),
       verifyUrl,
-      expiresInMinutes: 15,
+      fallbackEmail: user.email,
     });
 
-    // Try sending email via Resend
-    let emailSent = false;
-    let deliveredAddress = "";
-    let emailErrorMsg = "";
-
-    if (resend) {
-      const fromEmail = process.env.RESEND_FROM_EMAIL || "ResumeForge <onboarding@resend.dev>";
-      
-      // 1. Try sending directly to university email (.edu)
-      try {
-        const sendResult = await resend.emails.send({
-          from: fromEmail,
-          to: schoolEmail.trim().toLowerCase(),
-          subject: `Your ${universityName || "University"} Verification Code: ${code}`,
-          html: emailHtml,
-        });
-
-        if (sendResult.error) {
-          console.warn("[SCHOOL_VERIFICATION] Resend direct send rejected:", sendResult.error.message);
-          emailErrorMsg = sendResult.error.message;
-        } else {
-          emailSent = true;
-          deliveredAddress = schoolEmail.trim().toLowerCase();
-        }
-      } catch (err: any) {
-        console.warn("[SCHOOL_VERIFICATION] Direct send failed:", err?.message);
-        emailErrorMsg = err?.message;
-      }
-
-      // 2. If direct send failed due to Resend sandbox restriction (403), deliver to user's registered account email
-      if (!emailSent && user.email) {
-        try {
-          console.info(`[SCHOOL_VERIFICATION] Resend sandbox fallback: sending to account email ${user.email}`);
-          const fallbackResult = await resend.emails.send({
-            from: fromEmail,
-            to: user.email,
-            subject: `[Verification Fallback] Your ${universityName || "University"} Code: ${code}`,
-            html: emailHtml,
-          });
-
-          if (!fallbackResult.error) {
-            emailSent = true;
-            deliveredAddress = user.email;
-          }
-        } catch (fallbackErr: any) {
-          console.warn("[SCHOOL_VERIFICATION] Fallback send failed:", fallbackErr?.message);
-        }
-      }
-    }
+    const emailSent = dispatchResult.success;
+    const deliveredAddress = dispatchResult.deliveredTo || schoolEmail.trim().toLowerCase();
 
     return NextResponse.json({
       success: true,
       emailSent,
+      provider: dispatchResult.provider,
       deliveredAddress,
       code, // Instant sandbox code so testing is never blocked
       verifyUrl,
       message: emailSent
-        ? deliveredAddress === user.email
-          ? `Verification code delivered to your registered email (${user.email}) due to email provider sandbox testing. Check inbox or Spam!`
-          : `Verification code sent to ${schoolEmail}. Note for Outlook users: check 'Other' tab and Junk Email.`
+        ? dispatchResult.provider === "gmail_smtp"
+          ? `Verification code delivered directly to ${schoolEmail}! Check your inbox or Outlook 'Other' tab.`
+          : dispatchResult.deliveredTo === user.email
+          ? `Verification code delivered to your registered email (${user.email}). Check inbox or Spam!`
+          : `Verification code sent to ${schoolEmail}.`
         : `Verification code generated! (Sandbox code: ${code})`,
       devCode: code,
       note: "For Outlook / Microsoft 365: Check the 'Other' inbox tab and Junk Email folder. In development sandbox, you can also use the instant code above.",
