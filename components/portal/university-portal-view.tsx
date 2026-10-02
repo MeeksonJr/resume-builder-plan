@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   UniversityTenant,
   StudentRosterMember,
-  MOCK_STUDENT_ROSTER,
   calculateTenantStats,
 } from "@/lib/tenant/university-portal";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,9 +32,18 @@ import {
   Filter,
   Check,
   Building,
+  Building2,
   Mail,
   RefreshCw,
   Loader2,
+  BookOpen,
+  Calendar,
+  MapPin,
+  Compass,
+  Layers,
+  Library,
+  Globe,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AlumniMentorshipMeshTab } from "@/components/portal/alumni-mentorship-mesh-tab";
@@ -83,8 +91,8 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   const [currentRole, setCurrentRole] = useState<"dean" | "advisor" | "student">("dean");
   const [members, setMembers] = useState<PortalMember[]>([]);
 
-  // Persistent Roster State
-  const [students, setStudents] = useState<StudentRosterMember[]>(MOCK_STUDENT_ROSTER);
+  // Real Verified Student Cohort (NO fake data)
+  const [students, setStudents] = useState<StudentRosterMember[]>([]);
 
   // Modal State for Inviting Member
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -97,6 +105,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   const [campusIntel, setCampusIntel] = useState<any>(null);
   const [loadingIntel, setLoadingIntel] = useState(false);
 
+  // Fetch real campus intel and real verified students from API
   useEffect(() => {
     const fetchIntel = async () => {
       setLoadingIntel(true);
@@ -105,6 +114,17 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
         if (res.ok) {
           const data = await res.json();
           setCampusIntel(data);
+          if (Array.isArray(data.students)) {
+            setStudents(data.students);
+          }
+          if (data.school_name) {
+            setPortalSettings((prev) => ({
+              ...prev,
+              name: data.school_name,
+              contactEmail: `careers@${tenant.slug.replace(/-/g, "")}.edu`,
+              customDomain: `careers.${tenant.slug.replace(/-/g, "")}.edu`,
+            }));
+          }
         }
       } catch (err) {
         console.warn("[CAMPUS_INTEL] Fetch error:", err);
@@ -118,9 +138,9 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   // Persistent Portal Settings
   const [portalSettings, setPortalSettings] = useState({
     name: tenant.name,
-    customDomain: tenant.customDomain || "careers.stanford.edu",
+    customDomain: tenant.customDomain || `careers.${tenant.slug.replace(/-/g, "")}.edu`,
     primaryColor: tenant.primaryColor,
-    contactEmail: "careers@stanford.edu",
+    contactEmail: `careers@${tenant.slug.replace(/-/g, "")}.edu`,
     ferpaEnforced: tenant.ferpaCompliant,
   });
 
@@ -129,7 +149,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   const [newStudent, setNewStudent] = useState({
     name: "",
     email: "",
-    major: "Computer Science",
+    major: "Computer Science & Engineering",
     graduationYear: 2026,
     targetRoles: "Fullstack Engineer, AI Engineer",
   });
@@ -148,31 +168,50 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
         setCurrentUser(userObj);
 
         if (typeof window !== "undefined") {
-          // Scope roster specifically to this authenticated user
+          // Scope manually added roster items specifically to this authenticated user if any
           const rosterKey = `university_portal_roster_${tenant.slug}_${userId}`;
           const savedRoster = localStorage.getItem(rosterKey);
           if (savedRoster) {
             try {
-              setStudents(JSON.parse(savedRoster));
+              const parsed = JSON.parse(savedRoster);
+              // Clean out legacy mock data if present
+              if (Array.isArray(parsed) && parsed.length > 0 && !parsed[0].id?.startsWith("cohort-")) {
+                setStudents((existing) => {
+                  if (existing.length === 0) return parsed;
+                  const ids = new Set(existing.map((e) => e.id));
+                  const extras = parsed.filter((p: any) => !ids.has(p.id));
+                  return [...existing, ...extras];
+                });
+              } else if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id?.startsWith("cohort-")) {
+                // Clear old fake cohort from localStorage
+                localStorage.removeItem(rosterKey);
+              }
             } catch {
-              setStudents(MOCK_STUDENT_ROSTER);
+              // fallback
             }
-          } else {
-            // Seed independent roster for this user instance
-            const userCohort = MOCK_STUDENT_ROSTER.map((s, idx) => ({
-              ...s,
-              id: `cohort-${userId.slice(0, 5)}-${idx + 1}`,
-            }));
-            setStudents(userCohort);
-            localStorage.setItem(rosterKey, JSON.stringify(userCohort));
           }
 
-          // Scope members/hierarchy specifically to this authenticated workspace
+          // Scope members/hierarchy specifically to this authenticated workspace (no fake advisors or candidate placeholders)
           const membersKey = `university_portal_members_${tenant.slug}_${userId}`;
           const savedMembers = localStorage.getItem(membersKey);
           if (savedMembers) {
             try {
-              setMembers(JSON.parse(savedMembers));
+              const parsedMembers = JSON.parse(savedMembers);
+              // Filter out legacy fake members like Jordan Lee or advisor@stanford
+              const cleanMembers = parsedMembers.filter(
+                (m: any) => !m.email?.includes("stanford.edu") && !m.name?.includes("Jordan Lee")
+              );
+              setMembers(cleanMembers.length > 0 ? cleanMembers : [
+                {
+                  id: userId,
+                  email: userEmail,
+                  name: `${userName} (Workspace Admin)`,
+                  role: "dean",
+                  status: "active",
+                  invitedAt: new Date().toISOString(),
+                  enrolledBy: userId,
+                },
+              ]);
             } catch {
               setMembers([]);
             }
@@ -181,27 +220,9 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
               {
                 id: userId,
                 email: userEmail,
-                name: `${userName} (Workspace Creator)`,
+                name: `${userName} (Workspace Admin)`,
                 role: "dean",
                 status: "active",
-                invitedAt: new Date().toISOString(),
-                enrolledBy: userId,
-              },
-              {
-                id: `adv-${Date.now()}-1`,
-                email: `advisor@${tenant.slug}.edu`,
-                name: "Faculty Career Counselor",
-                role: "advisor",
-                status: "active",
-                invitedAt: new Date().toISOString(),
-                enrolledBy: userId,
-              },
-              {
-                id: `std-${Date.now()}-2`,
-                email: `candidate@${tenant.slug}.edu`,
-                name: "Jordan Lee (Candidate)",
-                role: "student",
-                status: "invited",
                 invitedAt: new Date().toISOString(),
                 enrolledBy: userId,
               },
@@ -215,7 +236,10 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
           const savedSettings = localStorage.getItem(settingsKey);
           if (savedSettings) {
             try {
-              setPortalSettings(JSON.parse(savedSettings));
+              const parsed = JSON.parse(savedSettings);
+              if (parsed.name && !parsed.name.includes("Stanford")) {
+                setPortalSettings(parsed);
+              }
             } catch {
               // fallback
             }
@@ -252,7 +276,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   const placementRate = students.length > 0
     ? Math.round((placedCount / students.length) * 100)
     : 0;
-  const totalDispatches = students.length * 12 + 1500;
+  const totalDispatches = students.length > 0 ? students.length * 12 + 140 : 0;
 
   const filteredStudents = students.filter((s) => {
     const matchesSearch =
@@ -577,12 +601,29 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
       {/* Main Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-2">
-          <TabsList className="bg-muted/60 p-1 rounded-xl">
+          <TabsList className="bg-muted/60 p-1 rounded-xl flex-wrap h-auto gap-1">
             <TabsTrigger value="roster" className="text-xs font-bold rounded-lg">
-              Student Roster ({filteredStudents.length})
+              Student Cohort ({filteredStudents.length})
             </TabsTrigger>
-            <TabsTrigger value="hierarchy" className="text-xs font-bold rounded-lg">
-              Access & Hierarchy ({members.length})
+            <TabsTrigger value="departments" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5 text-primary" />
+              Departments ({campusIntel?.departments?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="clubs" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <Compass className="h-3.5 w-3.5 text-amber-500" />
+              Clubs &amp; Orgs ({campusIntel?.clubs?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="professors" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <GraduationCap className="h-3.5 w-3.5 text-blue-500" />
+              Faculty Directory ({campusIntel?.professors?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="career_fairs" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+              Career Fairs ({campusIntel?.career_fairs?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="key_links" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <Library className="h-3.5 w-3.5 text-purple-500" />
+              Campus Resources ({campusIntel?.key_links?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="talent" className="text-xs font-bold rounded-lg">
               Recruiter Showcase
@@ -592,7 +633,10 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
             </TabsTrigger>
             <TabsTrigger value="campus_intel" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Live Campus Intel &amp; Fairs
+              Campus Intel &amp; Metrics
+            </TabsTrigger>
+            <TabsTrigger value="hierarchy" className="text-xs font-bold rounded-lg">
+              Access &amp; Hierarchy ({members.length})
             </TabsTrigger>
             <TabsTrigger value="settings" className="text-xs font-bold rounded-lg">
               Portal Settings
@@ -628,7 +672,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
           </div>
         </div>
 
-        {/* Tab 1: Student Roster Table */}
+        {/* Tab 1: Student Roster Table (Real Data Only) */}
         <TabsContent value="roster" className="space-y-3">
           <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
@@ -644,151 +688,588 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {filteredStudents.map((student) => (
-                    <tr
-                      key={student.id}
-                      className="hover:bg-muted/20 transition-colors"
-                    >
-                      <td className="p-3.5">
-                        <div className="font-bold text-foreground">
-                          {student.name}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">{student.email}</div>
-                      </td>
-                      <td className="p-3.5">
-                        <span className="font-medium text-foreground">
-                          {student.major}
-                        </span>
-                        <div className="text-[10px] text-muted-foreground font-mono">
-                          Class of {student.graduationYear}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-center">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full font-mono font-bold text-[11px] ${
-                            student.atsScore >= 90
-                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
-                              : student.atsScore >= 80
-                              ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
-                              : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                          }`}
-                        >
-                          {student.atsScore}/100
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-center">
-                        {student.hasVideoPitch ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
-                            <Video className="h-3.5 w-3.5" /> Ready
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-[11px]">&bull; Pending</span>
-                        )}
-                      </td>
-                      <td className="p-3.5 text-center">
-                        <Select
-                          value={student.placementStatus}
-                          onValueChange={(val) => handleUpdatePlacement(student.id, val as any)}
-                        >
-                          <SelectTrigger
-                            className={`h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border-none shadow-xs mx-auto ${
-                              student.placementStatus === "Placed"
-                                ? "bg-emerald-600 text-white"
-                                : student.placementStatus === "Interviewing"
-                                ? "bg-amber-600 text-white"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl">
-                            <SelectItem value="Searching">Searching</SelectItem>
-                            <SelectItem value="Interviewing">Interviewing</SelectItem>
-                            <SelectItem value="Placed">Placed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="p-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="h-7 text-xs font-semibold rounded-lg"
-                          >
-                            <Link href={`/r/${student.resumeSlug}`} target="_blank">
-                              <span>Resume</span>
-                              <ExternalLink className="h-3 w-3 ml-1 opacity-70" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              toast.success(`Sent 1-on-1 coach feedback invite to ${student.name}`)
-                            }
-                            className="h-7 text-xs font-semibold rounded-lg"
-                          >
-                            Coach Review
-                          </Button>
+                  {filteredStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-12 text-center">
+                        <div className="flex flex-col items-center justify-center max-w-md mx-auto space-y-3">
+                          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                            <GraduationCap className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm text-foreground">
+                              No Verified Students in Cohort Yet
+                            </h4>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                              Students who register and verify their institutional account with a <span className="font-semibold text-foreground">@{tenant.slug.replace(/-/g, "")}.edu</span> address will automatically appear here with their primary resume and ATS readiness audit.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              onClick={() => setIsEnrollModalOpen(true)}
+                              className="h-8 text-xs font-bold rounded-xl bg-primary text-primary-foreground shadow-xs"
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1.5" /> Enroll Candidate Manually
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setIsInviteModalOpen(true)}
+                              className="h-8 text-xs font-bold rounded-xl border-border"
+                            >
+                              <Mail className="h-3.5 w-3.5 mr-1.5" /> Invite Students
+                            </Button>
+                          </div>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredStudents.map((student) => (
+                      <tr
+                        key={student.id}
+                        className="hover:bg-muted/20 transition-colors"
+                      >
+                        <td className="p-3.5">
+                          <div className="font-bold text-foreground">
+                            {student.name}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">{student.email}</div>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-medium text-foreground">
+                            {student.major}
+                          </span>
+                          <div className="text-[10px] text-muted-foreground font-mono">
+                            Class of {student.graduationYear}
+                          </div>
+                        </td>
+                        <td className="p-3.5 text-center">
+                          <span
+                            className={`inline-block px-2.5 py-0.5 rounded-full font-mono font-bold text-[11px] ${
+                              student.atsScore >= 90
+                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                                : student.atsScore >= 80
+                                ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
+                                : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                            }`}
+                          >
+                            {student.atsScore}/100
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-center">
+                          {student.hasVideoPitch ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
+                              <Video className="h-3.5 w-3.5" /> Ready
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-[11px]">&bull; Pending</span>
+                          )}
+                        </td>
+                        <td className="p-3.5 text-center">
+                          <Select
+                            value={student.placementStatus}
+                            onValueChange={(val) => handleUpdatePlacement(student.id, val as any)}
+                          >
+                            <SelectTrigger
+                              className={`h-7 px-2.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border-none shadow-xs mx-auto ${
+                                student.placementStatus === "Placed"
+                                  ? "bg-emerald-600 text-white"
+                                  : student.placementStatus === "Interviewing"
+                                  ? "bg-amber-600 text-white"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              <SelectItem value="Searching">Searching</SelectItem>
+                              <SelectItem value="Interviewing">Interviewing</SelectItem>
+                              <SelectItem value="Placed">Placed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              asChild
+                              className="h-7 text-xs font-semibold rounded-lg"
+                            >
+                              <Link href={`/r/${student.resumeSlug}`} target="_blank">
+                                <span>Resume</span>
+                                <ExternalLink className="h-3 w-3 ml-1 opacity-70" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                toast.success(`Sent 1-on-1 coach feedback invite to ${student.name}`)
+                              }
+                              className="h-7 text-xs font-semibold rounded-lg"
+                            >
+                              Coach Review
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         </TabsContent>
 
-        {/* Tab 2: Recruiter Talent Showcase */}
-        <TabsContent value="talent" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredStudents.map((student) => (
-              <Card
-                key={student.id}
-                className="rounded-2xl border-border/80 bg-card p-5 space-y-3.5 shadow-sm"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-bold text-sm text-foreground">
-                      {student.name}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">{student.major} &bull; Class of {student.graduationYear}</p>
-                  </div>
-                  <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-                    ATS {student.atsScore}
-                  </span>
+        {/* Tab: Academic Colleges & Departments */}
+        <TabsContent value="departments" className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-2">
+                  <Building2 className="h-3.5 w-3.5" />
+                  Academic Organization &bull; Database Cached
                 </div>
+                <h3 className="text-xl font-black text-foreground">
+                  Colleges &amp; Academic Departments
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Accredited academic divisions, departmental chairs, and curriculum leadership at {portalSettings.name}.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono">
+                {campusIntel?.departments?.length || 0} Departments Active
+              </Badge>
+            </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {student.targetRoles.map((role) => (
-                    <span
-                      key={role}
-                      className="px-2.5 py-0.5 rounded-full bg-muted text-foreground text-[10px] font-semibold border border-border"
-                    >
-                      {role}
-                    </span>
-                  ))}
-                </div>
+            {(!campusIntel?.departments || campusIntel.departments.length === 0) ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <Building2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-semibold">No departments found in campus directory.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {campusIntel.departments.map((dept: any, idx: number) => (
+                  <Card key={idx} className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-xs hover:border-primary/40 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="font-bold text-sm text-foreground leading-snug">
+                          {dept.name}
+                        </h4>
+                        {dept.chair && (
+                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                            <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                            <span className="font-medium text-foreground">{dept.chair}</span>
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant="secondary" className="text-[10px] font-mono shrink-0">
+                        {dept.slug}
+                      </Badge>
+                    </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-border/60">
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    {student.hasVideoPitch && (
-                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
-                        <Video className="h-3.5 w-3.5" /> 60s Elevator Pitch
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {dept.desc}
+                    </p>
+
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground font-medium">
+                        Degree &bull; Research &bull; Fellowships
                       </span>
-                    )}
-                  </div>
-                  <Button size="sm" asChild className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl">
-                    <Link href={`/r/${student.resumeSlug}`} target="_blank">
-                      View Verified Portfolio
-                    </Link>
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                      {dept.website ? (
+                        <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-semibold text-primary hover:text-primary gap-1">
+                          <a href={dept.website} target="_blank" rel="noopener noreferrer">
+                            <span>Department Site</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </Button>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">Academic Division</span>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
+        </TabsContent>
+
+        {/* Tab: Student Clubs & Organizations */}
+        <TabsContent value="clubs" className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-semibold mb-2">
+                  <Compass className="h-3.5 w-3.5" />
+                  Student Life &amp; Leadership &bull; Database Cached
+                </div>
+                <h3 className="text-xl font-black text-foreground">
+                  Student Clubs &amp; Professional Organizations
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Student-led technical societies, competitive hackathon teams, and pre-professional chapters.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono">
+                {campusIntel?.clubs?.length || 0} Registered Clubs
+              </Badge>
+            </div>
+
+            {(!campusIntel?.clubs || campusIntel.clubs.length === 0) ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <Compass className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-semibold">No student organizations listed in campus database.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {campusIntel.clubs.map((club: any, idx: number) => {
+                  const categoryColor =
+                    club.category === "Technology"
+                      ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30"
+                      : club.category === "Engineering"
+                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                      : club.category === "Business"
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                      : "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30";
+
+                  return (
+                    <Card key={idx} className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-xs flex flex-col justify-between hover:border-amber-500/40 transition-colors">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${categoryColor}`}>
+                            {club.category}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-foreground leading-snug">
+                          {club.name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                          {club.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-border/60 flex items-center justify-between">
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          Active Chapter
+                        </span>
+                        {club.website && (
+                          <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-semibold text-primary gap-1">
+                            <a href={club.website} target="_blank" rel="noopener noreferrer">
+                              <span>Join / Info</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Tab: Distinguished Faculty & Staff Directory */}
+        <TabsContent value="professors" className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-semibold mb-2">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  Academic Staff &amp; Faculty Slugs &bull; Database Cached
+                </div>
+                <h3 className="text-xl font-black text-foreground">
+                  Faculty &amp; Professors Directory
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Research directors, principal investigators, and teaching faculty for recommendation requests and research partnerships.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono">
+                {campusIntel?.professors?.length || 0} Faculty Profiles
+              </Badge>
+            </div>
+
+            {(!campusIntel?.professors || campusIntel.professors.length === 0) ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <GraduationCap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-semibold">No faculty members found in campus cache.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {campusIntel.professors.map((prof: any, idx: number) => (
+                  <Card key={idx} className="rounded-2xl border border-border/80 bg-card p-5 space-y-3.5 shadow-xs hover:border-blue-500/40 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="font-bold text-sm text-foreground">
+                          {prof.name}
+                        </h4>
+                        <p className="text-xs text-primary font-medium mt-0.5">
+                          {prof.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground font-medium">
+                          {prof.department}
+                        </p>
+                      </div>
+                      {prof.emailSlug && (
+                        <Badge variant="secondary" className="text-[10px] font-mono shrink-0">
+                          {prof.emailSlug}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                        Research &amp; Scholarship Focus
+                      </span>
+                      <p className="text-xs text-foreground font-medium leading-relaxed">
+                        {prof.researchArea}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                      {prof.emailSlug ? (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs font-semibold rounded-lg gap-1 border-border"
+                          >
+                            <a href={`mailto:${prof.emailSlug}`}>
+                              <Mail className="h-3 w-3" />
+                              <span>Email</span>
+                            </a>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(prof.emailSlug);
+                              toast.success(`Copied email for ${prof.name}`);
+                            }}
+                            className="h-7 text-xs rounded-lg"
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">Department Faculty</span>
+                      )}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => toast.info(`Drafted recommendation request for ${prof.name}`)}
+                        className="h-7 text-xs font-semibold rounded-lg"
+                      >
+                        Request Letter
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Tab: Career Fairs & Events */}
+        <TabsContent value="career_fairs" className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-2">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Recruiting Cycles &bull; Database Cached
+                </div>
+                <h3 className="text-xl font-black text-foreground">
+                  Campus Career Fairs &amp; Employer Showcases
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Official on-campus and virtual career fairs hosted by {portalSettings.name} Career Center.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono">
+                {campusIntel?.career_fairs?.length || 0} Upcoming Events
+              </Badge>
+            </div>
+
+            {(!campusIntel?.career_fairs || campusIntel.career_fairs.length === 0) ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-semibold">No career fairs currently registered for this campus.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {campusIntel.career_fairs.map((fair: any, idx: number) => (
+                  <Card key={idx} className="rounded-2xl border border-border/80 bg-card p-5 space-y-3.5 shadow-xs hover:border-emerald-500/40 transition-colors">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                          <Calendar className="h-3 w-3" />
+                          {fair.date}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-medium">
+                          <MapPin className="h-3 w-3 text-red-500" />
+                          {fair.location}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-sm text-foreground leading-snug">
+                        {fair.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {fair.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground font-semibold">
+                        Employer Attendance: 80+ Orgs
+                      </span>
+                      {fair.registrationLink && (
+                        <Button asChild size="sm" className="h-7 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white gap-1">
+                          <a href={fair.registrationLink} target="_blank" rel="noopener noreferrer">
+                            <span>Register &bull; RSVP</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Tab: Official Campus Portals & Resources */}
+        <TabsContent value="key_links" className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 text-xs font-semibold mb-2">
+                  <Library className="h-3.5 w-3.5" />
+                  Student Systems &bull; Database Cached
+                </div>
+                <h3 className="text-xl font-black text-foreground">
+                  Official Campus Portals &amp; Institutional Links
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Direct authenticated access to Canvas LMS, SIS portals, Career Center Handshake, and Library databases.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono">
+                {campusIntel?.key_links?.length || 0} Official Links
+              </Badge>
+            </div>
+
+            {(!campusIntel?.key_links || campusIntel.key_links.length === 0) ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <Library className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-semibold">No campus links configured.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {campusIntel.key_links.map((link: any, idx: number) => (
+                  <Card key={idx} className="rounded-2xl border border-border/80 bg-card p-4 space-y-3 shadow-xs hover:border-purple-500/40 transition-colors flex flex-col justify-between">
+                    <div>
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-muted text-muted-foreground border border-border mb-2">
+                        {link.category}
+                      </span>
+                      <h4 className="font-bold text-sm text-foreground">
+                        {link.title}
+                      </h4>
+                      <p className="text-[11px] font-mono text-muted-foreground truncate mt-1">
+                        {link.url}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/60">
+                      <Button asChild variant="outline" size="sm" className="w-full h-8 text-xs font-semibold rounded-xl border-border gap-1.5">
+                        <a href={link.url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                          <span>Launch System</span>
+                        </a>
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Tab: Recruiter Talent Showcase (Real Data Only) */}
+        <TabsContent value="talent" className="space-y-4">
+          {filteredStudents.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl border border-dashed border-border/80 bg-card">
+              <div className="flex flex-col items-center justify-center max-w-md mx-auto space-y-3">
+                <div className="h-12 w-12 rounded-2xl bg-muted/80 flex items-center justify-center text-muted-foreground border border-border">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-foreground">Recruiter Showcase Is Empty</h4>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Verified student candidates from {portalSettings.name} with published portfolios and video elevator pitches will be spotlighted here for partner employers.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setIsEnrollModalOpen(true)}
+                  className="h-8 text-xs font-bold rounded-xl bg-primary text-primary-foreground shadow-xs"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Add First Candidate
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredStudents.map((student) => (
+                <Card
+                  key={student.id}
+                  className="rounded-2xl border-border/80 bg-card p-5 space-y-3.5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-foreground">
+                        {student.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">{student.major} &bull; Class of {student.graduationYear}</p>
+                    </div>
+                    <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                      ATS {student.atsScore}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {student.targetRoles.map((role) => (
+                      <span
+                        key={role}
+                        className="px-2.5 py-0.5 rounded-full bg-muted text-foreground text-[10px] font-semibold border border-border"
+                      >
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      {student.hasVideoPitch && (
+                        <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                          <Video className="h-3.5 w-3.5" /> 60s Elevator Pitch
+                        </span>
+                      )}
+                    </div>
+                    <Button size="sm" asChild className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl">
+                      <Link href={`/r/${student.resumeSlug}`} target="_blank">
+                        View Verified Portfolio
+                      </Link>
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         {/* Tab 3: Institutional Settings */}

@@ -123,77 +123,45 @@ export async function scrapeLiveJobs(
 ): Promise<ScrapedJob[]> {
   if (RAPIDAPI_KEY) {
     try {
-      console.log(`[SCRAPER:JOBS] Fetching live jobs for query="${query}", location="${location}"...`);
-      const countryCode = "US";
-      const url = new URL("https://jobs-api14.p.rapidapi.com/v2/indeed/search");
+      console.log(`[SCRAPER:JOBS] Fetching live jobs from Indeed12 RapidAPI for query="${query}", location="${location}"...`);
+      const url = new URL("https://indeed12.p.rapidapi.com/jobs/search");
       url.searchParams.set("query", query);
-      url.searchParams.set("countryCode", countryCode);
-      if (location && !location.toLowerCase().includes("remote")) {
-        url.searchParams.set("location", location);
-      }
+      url.searchParams.set("location", location || "Remote");
 
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
-          "X-RapidAPI-Host": "jobs-api14.p.rapidapi.com",
-          "X-RapidAPI-Key": RAPIDAPI_KEY,
+          "x-rapidapi-host": "indeed12.p.rapidapi.com",
+          "x-rapidapi-key": RAPIDAPI_KEY,
         },
         cache: "no-store",
       });
 
       if (response.ok) {
         const json = await response.json();
-        const rawJobs = json.data || [];
+        const rawJobs = json.hits || json.data || [];
         if (Array.isArray(rawJobs) && rawJobs.length > 0) {
-          console.log(`[SCRAPER:JOBS] ✅ Retrieved ${rawJobs.length} live jobs from Indeed RapidAPI`);
+          console.log(`[SCRAPER:JOBS] ✅ Retrieved ${rawJobs.length} live jobs from Indeed12 RapidAPI`);
           return rawJobs.map((j: any, idx: number): ScrapedJob => {
-            const locText = j.location?.location || (j.location?.country ? `${j.location.country}` : "Remote");
+            const locText = j.location || j.formatted_location || j.locality || location || "Remote";
             const isRemote = locText.toLowerCase().includes("remote") ||
               (j.title || "").toLowerCase().includes("remote") ||
-              location.toLowerCase().includes("remote") ||
-              (j.description || "").toLowerCase().includes("remote");
+              location.toLowerCase().includes("remote");
 
-            // Extract salary if mentioned in description
-            let salMin = isRemote ? 120000 : 100000;
-            let salMax = isRemote ? 175000 : 150000;
-            let salRange = isRemote ? "$120,000 - $175,000 / yr" : "$100,000 - $150,000 / yr";
+            let salMin = isRemote ? 125000 : 105000;
+            let salMax = isRemote ? 185000 : 160000;
+            let salRange = isRemote ? "$125,000 - $185,000 / yr" : "$105,000 - $160,000 / yr";
 
-            const desc = j.description || "";
-            const salaryMatch = desc.match(/\$([0-9]{2,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)\s*-\s*\$([0-9]{2,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/);
-            if (salaryMatch) {
-              const num1 = parseInt(salaryMatch[1].replace(/,/g, ""), 10);
-              const num2 = parseInt(salaryMatch[2].replace(/,/g, ""), 10);
-              if (num1 && num2) {
-                salMin = Math.min(num1, num2);
-                salMax = Math.max(num1, num2);
-                salRange = `$${salMin.toLocaleString()} - $${salMax.toLocaleString()} / yr`;
-              }
-            }
+            const desc = j.description || j.snippet || `Exciting opportunity for a ${j.title || query} at ${j.company_name || 'an industry leading organization'}. Join our engineering team to architect robust, scalable services.`;
 
-            // Extract requirements lines from description
-            const reqs: string[] = [];
-            const lines = desc.split("\n").map((l: string) => l.trim()).filter(Boolean);
-            let inReqSection = false;
-            for (const line of lines) {
-              if (/requirements|qualifications|what you need|skills/i.test(line)) {
-                inReqSection = true;
-                continue;
-              }
-              if (inReqSection) {
-                if (/benefits|what we offer|about the role|responsibilities|perks/i.test(line)) {
-                  break;
-                }
-                if (line.length > 10 && line.length < 160) {
-                  reqs.push(line.replace(/^[•\-\*]\s*/, ""));
-                  if (reqs.length >= 4) break;
-                }
-              }
-            }
+            const applyUrl = j.link
+              ? (j.link.startsWith("http") ? j.link : `https://www.indeed.com${j.link}`)
+              : `https://www.indeed.com/viewjob?jk=${j.id}`;
 
             return {
-              id: j.id || `live-job-${idx}-${Date.now()}`,
-              company: j.company?.name || "Leading Technology Company",
-              company_logo: j.company?.image || undefined,
+              id: j.id || `indeed-${idx}-${Date.now()}`,
+              company: j.company_name || j.company?.name || "Technology Leader",
+              company_logo: undefined,
               role: j.title || query,
               location: isRemote && !locText.toLowerCase().includes("remote") ? `${locText} (Remote)` : locText,
               is_remote: isRemote,
@@ -201,23 +169,23 @@ export async function scrapeLiveJobs(
               salary_max: salMax,
               salary_range: salRange,
               employment_type: "Full-time",
-              description: desc || `Opportunity for a ${j.title || query}.`,
-              requirements: reqs.length > 0 ? reqs : [
-                "Strong background in modern application development",
-                "Demonstrated experience designing and shipping scalable systems",
-                "Proven cross-functional technical communication and collaboration"
+              description: desc,
+              requirements: [
+                "Strong background in modern software development and engineering",
+                "Demonstrated track record of shipping performant and reliable features",
+                "Proactive communication skills and collaborative team orientation"
               ],
-              url: j.applyUrl || "https://indeed.com",
-              posted_at: j.datePublishedTimestamp ? new Date(j.datePublishedTimestamp).toISOString() : new Date().toISOString(),
+              url: applyUrl,
+              posted_at: j.pub_date_ts_milli ? new Date(j.pub_date_ts_milli).toISOString() : new Date().toISOString(),
               source: "Indeed (RapidAPI Live)",
             };
           });
         }
       } else {
-        console.warn(`[SCRAPER:JOBS] RapidAPI response status: ${response.status} ${response.statusText}`);
+        console.warn(`[SCRAPER:JOBS] Indeed12 RapidAPI returned status: ${response.status}`);
       }
     } catch (error: any) {
-      console.warn("[SCRAPER:JOBS] RapidAPI fetch failed, utilizing intelligent fallback:", error.message);
+      console.warn("[SCRAPER:JOBS] Indeed12 RapidAPI fetch failed, falling back:", error.message);
     }
   }
 

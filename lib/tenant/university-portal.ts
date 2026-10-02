@@ -115,60 +115,7 @@ export const PRESET_TENANTS: Record<string, UniversityTenant> = {
   },
 };
 
-export const MOCK_STUDENT_ROSTER: StudentRosterMember[] = [
-  {
-    id: "std-1",
-    name: "Elena Rostova",
-    email: "erostova@stanford.edu",
-    major: "Computer Science (AI Track)",
-    graduationYear: 2026,
-    resumeTitle: "Elena Rostova - Machine Learning Engineer",
-    resumeSlug: "elena-rostova-ml",
-    atsScore: 94,
-    hasVideoPitch: true,
-    placementStatus: "Interviewing",
-    targetRoles: ["Machine Learning Engineer", "AI Research Scientist"],
-  },
-  {
-    id: "std-2",
-    name: "Marcus Thorne",
-    email: "mthorne@stanford.edu",
-    major: "Computer Systems",
-    graduationYear: 2026,
-    resumeTitle: "Marcus Thorne - Distributed Systems",
-    resumeSlug: "marcus-thorne-systems",
-    atsScore: 89,
-    hasVideoPitch: true,
-    placementStatus: "Placed",
-    targetRoles: ["Cloud Systems Engineer", "Site Reliability Engineer"],
-  },
-  {
-    id: "std-3",
-    name: "Aaliyah Patel",
-    email: "apatel@stanford.edu",
-    major: "Human-Computer Interaction",
-    graduationYear: 2026,
-    resumeTitle: "Aaliyah Patel - Product Design & Frontend",
-    resumeSlug: "aaliyah-patel-design",
-    atsScore: 91,
-    hasVideoPitch: false,
-    placementStatus: "Searching",
-    targetRoles: ["Fullstack Engineer", "Product Engineer"],
-  },
-  {
-    id: "std-4",
-    name: "Devon Reed",
-    email: "dreed@stanford.edu",
-    major: "Data Science & Statistics",
-    graduationYear: 2026,
-    resumeTitle: "Devon Reed - Quantitative Analytics",
-    resumeSlug: "devon-reed-quant",
-    atsScore: 82,
-    hasVideoPitch: false,
-    placementStatus: "Searching",
-    targetRoles: ["Data Scientist", "Quantitative Analyst"],
-  },
-];
+export const MOCK_STUDENT_ROSTER: StudentRosterMember[] = [];
 
 /**
  * Resolves a university tenant by slug or domain, falling back to Stanford demo.
@@ -205,26 +152,7 @@ export function resolveUniversityTenant(slugOrDomain: string): UniversityTenant 
     customDomain: `careers.${normalized}.edu`,
     ssoEnabled: true,
     ferpaCompliant: true,
-    activeCohorts: [
-      {
-        id: `${normalized}-tech-2026`,
-        name: `Class of 2026 - Engineering & Technology`,
-        graduationYear: 2026,
-        totalStudents: 92,
-        averageAtsScore: 88.5,
-        placementRatePercent: 81.0,
-        applicationsDispatched: 1250,
-      },
-      {
-        id: `${normalized}-business-2026`,
-        name: `Class of 2026 - Business & Analytics`,
-        graduationYear: 2026,
-        totalStudents: 74,
-        averageAtsScore: 86.8,
-        placementRatePercent: 79.4,
-        applicationsDispatched: 880,
-      },
-    ],
+    activeCohorts: [],
   };
 }
 

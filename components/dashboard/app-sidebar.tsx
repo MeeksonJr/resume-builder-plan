@@ -293,12 +293,13 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
                 </SidebarMenu>
             </SidebarContent>
 
-            <SidebarFooter className="p-3 border-t border-primary/5">
-                <SidebarMenu>
-                    <SidebarMenuItem>
+            <SidebarFooter suppressHydrationWarning className="p-3 border-t border-primary/5">
+                <SidebarMenu suppressHydrationWarning>
+                    <SidebarMenuItem suppressHydrationWarning>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton
+                                    suppressHydrationWarning
                                     size="lg"
                                     className="h-14 md:h-14 rounded-2xl hover:bg-primary/5 data-[state=open]:bg-primary/5 transition-all"
                                 >

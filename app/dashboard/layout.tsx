@@ -35,16 +35,16 @@ export default async function DashboardLayout({
     profile?.subscription_status === "trialing";
 
   return (
-    <SidebarProvider>
+    <SidebarProvider suppressHydrationWarning>
       <div suppressHydrationWarning>
         <AppSidebar user={user} profile={profile} />
       </div>
-      <SidebarInset className="bg-background/50">
+      <SidebarInset suppressHydrationWarning className="bg-background/50">
         <TopNav isPro={isPro} />
         <CommandMenu />
         <OfflineIndicatorBanner />
         <UserOnboardingDialog />
-        <main className="flex-1 overflow-y-auto">
+        <main suppressHydrationWarning className="flex-1 overflow-y-auto">
           <div className="w-full px-4 py-8 md:px-8 lg:px-10">
             {children}
           </div>
