@@ -12,43 +12,32 @@ import {
   Award,
   Zap,
 } from "lucide-react";
+import { LiquidWaveBackground } from "./liquid-wave";
 
 export function AuthShowcasePanel() {
   return (
-    <div className="relative flex h-full min-h-[640px] w-full flex-col justify-between overflow-hidden rounded-3xl border border-[#183a34] bg-gradient-to-b from-[#0a1919] via-[#091515] to-[#050e0e] p-8 lg:p-12 text-[#f8faf8] shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+    <div className="relative flex h-full min-h-[660px] w-full flex-col justify-between overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-[#0a2722]/95 via-[#061c18]/95 to-[#03100e]/95 p-8 lg:p-12 text-white shadow-[0_24px_64px_rgba(0,0,0,0.8),inset_0_1px_2px_rgba(255,255,255,0.2)]">
       
-      {/* Background Radial Glow & Mesh Aura */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-20 -top-20 h-[480px] w-[480px] rounded-full bg-[#0d8274]/20 blur-[100px]" />
-        <div className="absolute -bottom-24 -right-24 h-[440px] w-[440px] rounded-full bg-[#d8f36b]/10 blur-[90px]" />
-        <div className="absolute left-1/2 top-1/3 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#085a50]/25 blur-[80px]" />
-        {/* Subtle grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-15"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(216,243,107,0.3) 1px, transparent 0)`,
-            backgroundSize: "28px 28px",
-          }}
-        />
-      </div>
+      {/* Liquid Caustics & Waves */}
+      <LiquidWaveBackground opacity={0.35} />
 
       {/* Top Header & Brand */}
       <div className="relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#20b2aa]/40 bg-gradient-to-br from-[#0d8274] to-[#084e45] shadow-[0_4px_16px_rgba(13,130,116,0.35)]">
-            <span className="font-sans text-xl font-black tracking-tight text-[#d8f36b]">RF</span>
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-teal-400/60 bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-950 shadow-[0_0_20px_rgba(13,130,116,0.6)]">
+            <span className="font-sans text-2xl font-black tracking-tight text-[#d8f36b]">RF</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-extrabold tracking-tight text-white">
+              <span className="text-2xl font-black tracking-tight text-white drop-shadow">
                 ResumeForge<span className="text-[#d8f36b]">.</span>
               </span>
-              <span className="rounded-full border border-[#d8f36b]/30 bg-[#d8f36b]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#d8f36b]">
+              <span className="rounded-full border border-[#d8f36b]/50 bg-[#d8f36b]/20 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#d8f36b]">
                 Enterprise AI
               </span>
             </div>
-            <p className="text-xs font-medium text-[#7ea89f]">
-              AI Career Studio & Campus Talent Network
+            <p className="text-xs font-bold text-emerald-200">
+              AI Career Studio &amp; Campus Talent Network
             </p>
           </div>
         </div>
@@ -59,127 +48,130 @@ export function AuthShowcasePanel() {
         
         {/* 3D Glowing Orb (Inspired by Image 5) */}
         <div className="relative flex items-center justify-center py-4">
-          {/* Outer Pulsing Aura */}
+          {/* Outer Pulsing Water Aura */}
           <motion.div
             animate={{
-              scale: [1, 1.08, 1],
-              opacity: [0.4, 0.7, 0.4],
+              scale: [1, 1.15, 1],
+              opacity: [0.5, 0.85, 0.5],
             }}
             transition={{
               duration: 4,
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="absolute h-48 w-48 rounded-full bg-gradient-to-tr from-[#0d8274]/50 to-[#d8f36b]/30 blur-2xl"
+            className="absolute h-52 w-52 rounded-full bg-gradient-to-tr from-emerald-500/70 via-teal-400/50 to-[#d8f36b]/35 blur-2xl"
           />
 
-          {/* Orbiting Ring */}
+          {/* Fluid Orbiting Rings */}
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute h-56 w-56 rounded-full border border-dashed border-[#0d8274]/40"
+            transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+            className="absolute h-60 w-60 rounded-full border border-dashed border-teal-400/50"
           />
           <motion.div
             animate={{ rotate: -360 }}
-            transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-            className="absolute h-64 w-64 rounded-full border border-[#d8f36b]/20"
+            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+            className="absolute h-68 w-68 rounded-full border border-[#d8f36b]/40"
           />
 
-          {/* The 3D Sphere */}
+          {/* 3D Sphere */}
           <motion.div
             animate={{
-              y: [-4, 4, -4],
+              y: [-5, 5, -5],
             }}
             transition={{
               duration: 5,
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="relative flex h-32 w-32 items-center justify-center rounded-full border border-[#20b2aa]/40 bg-gradient-to-br from-[#0d332e] via-[#081f1b] to-[#040f0d] shadow-[inset_0_10px_25px_rgba(216,243,107,0.3),0_15px_35px_rgba(0,0,0,0.8)]"
+            className="relative flex h-36 w-36 items-center justify-center rounded-full border border-teal-400/60 bg-gradient-to-br from-[#104840] via-[#0a2e28] to-[#041411] shadow-[inset_0_12px_30px_rgba(216,243,107,0.4),0_18px_45px_rgba(0,0,0,0.9)]"
           >
-            {/* Inner Glint & Reflection */}
-            <div className="absolute top-2 left-6 h-8 w-12 rounded-full bg-gradient-to-b from-white/30 to-transparent blur-[3px]" />
+            {/* Water Highlight Glint */}
+            <div className="absolute top-2.5 left-7 h-9 w-14 rounded-full bg-gradient-to-b from-white/40 to-transparent blur-[2px]" />
             <div className="flex flex-col items-center justify-center">
-              <Sparkles className="h-8 w-8 text-[#d8f36b] drop-shadow-[0_0_12px_rgba(216,243,107,0.8)]" />
-              <span className="mt-1 text-[10px] font-extrabold uppercase tracking-widest text-[#7ea89f]">
+              <Sparkles className="h-9 w-9 text-[#d8f36b] drop-shadow-[0_0_16px_rgba(216,243,107,0.9)]" />
+              <span className="mt-1 text-[11px] font-black uppercase tracking-widest text-[#d8f36b]">
                 AI CORE
               </span>
             </div>
           </motion.div>
         </div>
 
-        {/* Floating ATS Score Card (Inspired by Image 3) */}
+        {/* Floating ATS Score Card (High Contrast) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative mt-2 w-full max-w-sm rounded-2xl border border-[#1c4740] bg-[#0c201e]/85 p-4 backdrop-blur-xl shadow-[0_12px_32px_rgba(0,0,0,0.5)]"
+          className="relative mt-2 w-full max-w-sm rounded-2xl border border-emerald-500/40 bg-[#092c26]/95 p-4 backdrop-blur-xl shadow-[0_16px_36px_rgba(0,0,0,0.7)]"
         >
-          <div className="flex items-center justify-between pb-3 border-b border-[#183a34]">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0d8274]/30 text-[#d8f36b]">
-                <FileCheck className="h-4 w-4" />
+          <div className="flex items-center justify-between pb-3 border-b border-emerald-800/40">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600/40 text-[#d8f36b] border border-teal-400/40">
+                <FileCheck className="h-4.5 w-4.5" />
               </div>
               <div>
-                <div className="text-xs font-bold text-white">ATS Real-time Scanner</div>
-                <div className="text-[10px] text-[#7ea89f]">Software Engineer & Cloud Targets</div>
+                <div className="text-xs font-black text-white">ATS Real-time Scanner</div>
+                <div className="text-[11px] font-bold text-emerald-200">Software Engineer &amp; Cloud Targets</div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full border border-[#d8f36b]/30 bg-[#d8f36b]/10 px-2.5 py-1">
-              <Zap className="h-3 w-3 text-[#d8f36b]" />
+            <div className="flex items-center gap-1.5 rounded-full border border-[#d8f36b]/50 bg-[#d8f36b]/20 px-3 py-1">
+              <Zap className="h-3.5 w-3.5 text-[#d8f36b]" />
               <span className="text-xs font-black text-[#d8f36b]">96% Match</span>
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-[11px] text-[#8bbcb2]">
-            <span className="flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5 text-[#d8f36b]" /> 18 High-Impact Keywords
+          <div className="mt-3 flex items-center justify-between text-xs font-bold text-white">
+            <span className="flex items-center gap-1.5 text-white">
+              <CheckCircle2 className="h-4 w-4 text-[#d8f36b]" /> 18 High-Impact Keywords
             </span>
-            <span className="flex items-center gap-1">
-              <Award className="h-3.5 w-3.5 text-[#20b2aa]" /> Recruiter Verified
+            <span className="flex items-center gap-1.5 text-teal-200">
+              <Award className="h-4 w-4 text-teal-300" /> Recruiter Verified
             </span>
           </div>
         </motion.div>
 
-        {/* Progressive Onboarding Steps (Inspired by OnlyPipe Image 1 & 2) */}
+        {/* Progressive Onboarding Steps (High Contrast) */}
         <div className="mt-6 w-full max-w-sm space-y-2.5">
-          <div className="flex items-center gap-3 rounded-xl border border-[#20b2aa]/40 bg-[#0d2a26] px-4 py-2.5 shadow-sm">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#d8f36b] text-[10px] font-black text-[#081211]">
+          {/* Step 1 */}
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-400/60 bg-[#0e3b34] px-4 py-3 shadow-md">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#d8f36b] text-xs font-black text-[#041210]">
               1
             </span>
-            <span className="text-xs font-bold text-white">Create your workspace account</span>
-            <span className="ml-auto text-[10px] font-semibold text-[#d8f36b]">Active</span>
+            <span className="text-xs font-black text-white">Create your workspace account</span>
+            <span className="ml-auto rounded-full bg-[#d8f36b]/25 px-2.5 py-0.5 text-[10px] font-black uppercase text-[#d8f36b]">Active</span>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-[#163630] bg-[#091817]/70 px-4 py-2.5 opacity-75">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#163833] text-[10px] font-bold text-[#8bbcb2]">
+          {/* Step 2 */}
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-800/50 bg-[#07241f]/90 px-4 py-3">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-teal-400/50 bg-emerald-900 text-xs font-black text-[#d8f36b]">
               2
             </span>
-            <span className="text-xs font-medium text-[#8bbcb2]">Connect your campus cohort</span>
-            <GraduationCap className="ml-auto h-3.5 w-3.5 text-[#52716a]" />
+            <span className="text-xs font-bold text-emerald-100">Connect your campus cohort</span>
+            <GraduationCap className="ml-auto h-4 w-4 text-teal-300" />
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-[#163630] bg-[#091817]/70 px-4 py-2.5 opacity-75">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#163833] text-[10px] font-bold text-[#8bbcb2]">
+          {/* Step 3 */}
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-800/50 bg-[#07241f]/90 px-4 py-3">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-teal-400/50 bg-emerald-900 text-xs font-black text-[#d8f36b]">
               3
             </span>
-            <span className="text-xs font-medium text-[#8bbcb2]">Launch AI resume & mock interviews</span>
-            <TrendingUp className="ml-auto h-3.5 w-3.5 text-[#52716a]" />
+            <span className="text-xs font-bold text-emerald-100">Launch AI resume &amp; mock interviews</span>
+            <TrendingUp className="ml-auto h-4 w-4 text-teal-300" />
           </div>
         </div>
 
       </div>
 
-      {/* Bottom Footer Trust Badges */}
-      <div className="relative z-10 border-t border-[#163833] pt-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#7ea89f]">
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-[#d8f36b]" />
-            <span>FERPA & SOC-2 Student Data Privacy</span>
+      {/* Bottom Footer Trust Badges (High Contrast) */}
+      <div className="relative z-10 border-t border-emerald-800/40 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-emerald-200">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4.5 w-4.5 text-[#d8f36b]" />
+            <span className="text-white">FERPA &amp; SOC-2 Student Data Privacy</span>
           </div>
-          <div className="flex items-center gap-2 font-medium">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Campus Network Online</span>
+          <div className="flex items-center gap-2 text-white">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#d8f36b] shadow-[0_0_10px_#d8f36b] animate-pulse" />
+            <span className="text-white font-bold">Campus Network Online</span>
           </div>
         </div>
       </div>
