@@ -43,7 +43,7 @@ export function AuthSuccessCelebration({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="text-2xl font-black tracking-tight text-white sm:text-3xl"
+        className="text-2xl font-black tracking-tight text-emerald-950 dark:text-white sm:text-3xl"
       >
         {title}
       </motion.h3>
@@ -52,7 +52,7 @@ export function AuthSuccessCelebration({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
-        className="mt-2 max-w-sm text-sm leading-relaxed text-[#7ea89f]"
+        className="mt-2 max-w-sm text-sm leading-relaxed text-emerald-800 dark:text-[#7ea89f]"
       >
         {subtitle}
       </motion.p>
@@ -62,7 +62,7 @@ export function AuthSuccessCelebration({
         initial={{ opacity: 0, width: 0 }}
         animate={{ opacity: 1, width: "100%" }}
         transition={{ delay: 0.35, duration: 0.6 }}
-        className="mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-[#163833]"
+        className="mt-8 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-emerald-200 dark:bg-[#163833]"
       >
         <motion.div
           animate={{ x: ["-100%", "100%"] }}
@@ -75,7 +75,7 @@ export function AuthSuccessCelebration({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.45 }}
-        className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#d8f36b]"
+        className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#0d8274] dark:text-[#d8f36b]"
       >
         <Rocket className="h-3.5 w-3.5 animate-bounce" />
         <span>{destinationLabel}...</span>

@@ -32,6 +32,22 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 const POPULAR_UNIVERSITIES = [
+  {
+    name: "Old Dominion University",
+    slug: "old-dominion-university",
+    domain: "odu.edu",
+    emailDomains: ["odu.edu", "cs.odu.edu"],
+    emailFormat: "[mid]@odu.edu",
+    sampleEmail: "mdatt001@odu.edu",
+  },
+  {
+    name: "Tidewater Community College",
+    slug: "tidewater-community-college",
+    domain: "tcc.edu",
+    emailDomains: ["email.vccs.edu", "vccs.edu", "tcc.edu", "email.tcc.edu"],
+    emailFormat: "[username]@email.vccs.edu",
+    sampleEmail: "mld40112@email.vccs.edu",
+  },
   { name: "Stanford University", slug: "stanford", domain: "stanford.edu" },
   { name: "Massachusetts Institute of Technology", slug: "mit", domain: "mit.edu" },
   { name: "University of California, Berkeley", slug: "berkeley", domain: "berkeley.edu" },
@@ -82,7 +98,6 @@ export function UserOnboardingDialog() {
   // Email verification state
   const [schoolEmail, setSchoolEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
-  const [devCode, setDevCode] = useState<string | null>(null);
   const [codeSent, setCodeSent] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
@@ -177,17 +192,36 @@ export function UserOnboardingDialog() {
   };
 
   const activeSchoolName = selectedSchool || schoolSearch || "University Student";
-  const matchedCampus = campuses.find(
-    (c) =>
-      c.name.toLowerCase() === activeSchoolName.toLowerCase() ||
-      c.slug.toLowerCase() === activeSchoolName.toLowerCase()
-  );
+  const matchedCampus = campuses.find((c) => {
+    const sName = activeSchoolName.toLowerCase();
+    const cName = c.name.toLowerCase();
+    const cSlug = c.slug.toLowerCase();
+    if (cName === sName || cSlug === sName) return true;
+    if (sName.includes("tidewater") && (cSlug.includes("tidewater") || cSlug === "tcc")) return true;
+    if (sName === "tcc" && (cSlug.includes("tidewater") || cSlug === "tcc")) return true;
+    if (sName.includes("old dominion") && (cSlug.includes("old-dominion") || cSlug === "odu")) return true;
+    if (sName === "odu" && (cSlug.includes("old-dominion") || cSlug === "odu")) return true;
+    return false;
+  });
 
   const isEmailDomainValid = (() => {
     if (!schoolEmail || !schoolEmail.includes("@")) return true;
-    if (!matchedCampus) return true;
     const emailDomain = schoolEmail.split("@")[1]?.toLowerCase().trim();
     if (!emailDomain) return true;
+
+    // 1. Any accredited .edu address or academic consortium domain is universally accepted
+    if (
+      emailDomain.endsWith(".edu") ||
+      emailDomain.endsWith(".ac.uk") ||
+      emailDomain.endsWith(".edu.au") ||
+      emailDomain.endsWith(".edu.cn") ||
+      emailDomain.includes("vccs.edu")
+    ) {
+      return true;
+    }
+
+    if (!matchedCampus) return true;
+
     if (matchedCampus.emailDomains && matchedCampus.emailDomains.length > 0) {
       return matchedCampus.emailDomains.some(
         (d) => emailDomain === d.toLowerCase() || emailDomain.endsWith("." + d.toLowerCase())
@@ -199,7 +233,7 @@ export function UserOnboardingDialog() {
         emailDomain.endsWith("." + matchedCampus.domain.toLowerCase())
       );
     }
-    return true;
+    return false;
   })();
 
   const handleSendEmailCode = async () => {
@@ -208,8 +242,17 @@ export function UserOnboardingDialog() {
       return;
     }
 
-    if (!isEmailDomainValid && matchedCampus?.domain) {
-      toast.error(`Please use your official email ending in @${matchedCampus.domain} for ${matchedCampus.name}`);
+    const emailDomain = schoolEmail.split("@")[1]?.toLowerCase().trim();
+    const isAcademic = emailDomain && (
+      emailDomain.endsWith(".edu") ||
+      emailDomain.endsWith(".ac.uk") ||
+      emailDomain.endsWith(".edu.au") ||
+      emailDomain.includes("vccs.edu")
+    );
+
+    // Only alert if the email is neither an academic .edu address nor a matched school domain
+    if (!isAcademic && !isEmailDomainValid && matchedCampus?.domain) {
+      toast.error(`Please use an official academic email (.edu) or one ending in @${matchedCampus.domain}`);
       return;
     }
 
@@ -228,16 +271,7 @@ export function UserOnboardingDialog() {
       if (!res.ok) throw new Error(data.error || "Failed to send code");
 
       setCodeSent(true);
-      const quickCode = data.devCode || data.code;
-      if (quickCode) {
-        setDevCode(quickCode);
-        setVerificationCode(quickCode);
-        toast.success(`Verification code generated! (Sandbox code: ${quickCode})`, {
-          duration: 10000,
-        });
-      } else {
-        toast.success(data.message || "Verification code sent to your email!");
-      }
+      toast.success(data.message || "Verification code sent to your school email!");
     } catch (err: any) {
       toast.error(err.message || "Failed to send verification code");
     } finally {
@@ -738,53 +772,31 @@ export function UserOnboardingDialog() {
                         {sendingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Code"}
                       </Button>
                     </div>
-                    {!isEmailDomainValid && schoolEmail.includes("@") && (
-                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1">
-                        ⚠️ Domain mismatch: Please enter an official email ending in @{matchedCampus?.domain || ".edu"} for {matchedCampus?.name}.
-                      </p>
+                    {schoolEmail.includes("@") && (
+                      schoolEmail.toLowerCase().trim().endsWith(".edu") || schoolEmail.toLowerCase().includes("vccs.edu") ? (
+                        <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1.5">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>Academic institution email (.edu) verified format. Ready to receive verification code.</span>
+                        </p>
+                      ) : !isEmailDomainValid ? (
+                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1 flex items-center gap-1.5">
+                          <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>Tip: Academic emails end with .edu (e.g. {matchedCampus?.sampleEmail || `student@${matchedCampus?.domain || "school.edu"}`}).</span>
+                        </p>
+                      ) : null
                     )}
                   </div>
 
                   {codeSent && (
                     <div className="space-y-4 pt-4 border-t border-border">
-                      {/* Sandbox Quick Code Card */}
-                      {devCode && (
-                        <div className="p-4 bg-[#0d8274]/10 border border-[#0d8274]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <Sparkles className="h-4 w-4 text-[#0d8274]" />
-                              <span className="text-xs font-black uppercase tracking-wider text-[#0d8274]">
-                                Instant Verification Code
-                              </span>
-                            </div>
-                            <div className="mt-1 flex items-baseline gap-2">
-                              <span className="text-2xl font-mono font-black text-foreground tracking-widest">
-                                {devCode}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                (Sandbox mode code generated)
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            type="button"
-                            onClick={() => setVerificationCode(devCode)}
-                            className="bg-[#0d8274] text-white hover:bg-[#095e54] text-xs font-bold rounded-none h-8 px-4 shrink-0"
-                          >
-                            Auto-Fill Code
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* Outlook / Spam folder guidance */}
-                      <div className="p-3 bg-muted/60 border border-border text-xs text-muted-foreground space-y-1">
+                      {/* Inbox guidance */}
+                      <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-xs text-muted-foreground space-y-1">
                         <p className="font-semibold text-foreground flex items-center gap-1.5">
-                          <Info className="h-3.5 w-3.5 text-blue-500" />
-                          Checking your Outlook or university inbox?
+                          <Mail className="h-3.5 w-3.5 text-emerald-600" />
+                          Check your school inbox
                         </p>
                         <p className="text-[11px] leading-relaxed">
-                          Campus email filters frequently sort automated verification messages into the <strong>Other</strong> tab, <strong>Junk Email</strong> folder, or Quarantine. If your school blocks incoming messages from external development domains, you can use the instant code provided above.
+                          A 6-digit verification code was sent to <strong>{schoolEmail}</strong>. Check your <strong>Inbox</strong>, <strong>Junk</strong>, or <strong>Spam</strong> folder — campus email filters sometimes route automated messages there.
                         </p>
                       </div>
 

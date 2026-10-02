@@ -280,25 +280,42 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
     }
   };
 
-  // Instant Guest Demo Mode
-  const handleInstantDemo = () => {
+  // Instant Guest Demo Mode — signs in as demo user and stamps 24h trial
+  const handleInstantDemo = async () => {
     setIsLoading(true);
     setError(null);
-    setEmail("demo@resumeforge.ai");
-    setPassword("monarch-career-2026");
 
-    setSuccessMessage({
-      title: "Launching Demo Workspace 🚀",
-      subtitle: "Provisioning guest portfolio, mock interviews, and student cohort access...",
-      label: "Entering Workspace",
-    });
+    try {
+      const supabase = createClient();
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: "demo@resumeforge.ai",
+        password: "monarch-career-2026",
+      });
 
-    setTimeout(() => {
+      if (authError || !data.session) {
+        setError("Demo workspace is temporarily unavailable. Please create a free account instead.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Stamp the 24-hour trial start in the database
+      await fetch("/api/demo/activate", { method: "POST" });
+
+      setSuccessMessage({
+        title: "Launching Demo Workspace 🚀",
+        subtitle: "24-hour trial activated. Provisioning guest portfolio and career tools...",
+        label: "Entering Workspace",
+      });
       setIsSuccess(true);
+
       setTimeout(() => {
         router.push("/dashboard");
-      }, 1000);
-    }, 500);
+        router.refresh();
+      }, 1200);
+    } catch (err: any) {
+      setError("Failed to launch demo. Please try creating a free account.");
+      setIsLoading(false);
+    }
   };
 
   // Liquid motion variants for tab transitions
@@ -334,10 +351,10 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-[#092420]/95 via-[#061816]/95 to-[#030e0c]/95 p-6 shadow-[0_24px_64px_rgba(0,0,0,0.8),inset_0_1px_2px_rgba(255,255,255,0.2)] backdrop-blur-2xl sm:p-10">
+    <div className="relative w-full overflow-hidden rounded-3xl border border-emerald-600/25 dark:border-emerald-500/30 bg-gradient-to-b from-white/95 via-[#f8fcfa]/95 to-[#f0f7f5]/95 dark:from-[#092420]/95 dark:via-[#061816]/95 dark:to-[#030e0c]/95 p-6 shadow-[0_24px_64px_rgba(5,20,18,0.08),inset_0_1px_2px_rgba(255,255,255,0.9)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.8),inset_0_1px_2px_rgba(255,255,255,0.2)] backdrop-blur-2xl sm:p-10 transition-colors duration-300">
       
       {/* Background Liquid Waves Effect */}
-      <LiquidWaveBackground opacity={0.35} />
+      <LiquidWaveBackground opacity={0.3} />
 
       {/* Decorative Top Liquid Neon Border */}
       <div className="absolute left-0 right-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 via-[#d8f36b] to-teal-400 shadow-[0_0_15px_rgba(216,243,107,0.6)]" />
@@ -358,29 +375,29 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 flex items-center justify-between rounded-2xl border border-teal-400/40 bg-[#092a24]/90 p-2 shadow-inner"
+                className="mb-6 flex items-center justify-between rounded-2xl border border-emerald-600/30 dark:border-teal-400/40 bg-emerald-50/90 dark:bg-[#092a24]/90 p-2 shadow-inner transition-colors duration-300"
               >
                 <button
                   type="button"
                   onClick={() => handleSwitchTab("login")}
-                  className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black text-white transition-all hover:bg-white/10 hover:text-[#d8f36b]"
+                  className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black text-emerald-950 dark:text-white transition-all hover:bg-black/5 dark:hover:bg-white/10 hover:text-emerald-700 dark:hover:text-[#d8f36b]"
                 >
-                  <ChevronLeft className="h-4 w-4 text-[#d8f36b]" />
+                  <ChevronLeft className="h-4 w-4 text-[#0d8274] dark:text-[#d8f36b]" />
                   <span>Back to Sign In</span>
                 </button>
-                <div className="flex items-center gap-1.5 rounded-lg border border-[#d8f36b]/50 bg-[#d8f36b]/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#d8f36b]">
+                <div className="flex items-center gap-1.5 rounded-lg border border-emerald-600/40 dark:border-[#d8f36b]/50 bg-emerald-100/90 dark:bg-[#d8f36b]/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-[#d8f36b] transition-colors duration-300">
                   <KeyRound className="h-3.5 w-3.5" />
                   <span>Email Verification</span>
                 </div>
               </motion.div>
             ) : (
-              <div className="relative mb-6 flex w-full items-center rounded-2xl border border-emerald-500/40 bg-[#041210]/90 p-1.5 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
+              <div className="relative mb-6 flex w-full items-center rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-emerald-100/80 dark:bg-[#041210]/90 p-1.5 shadow-[inset_0_2px_6px_rgba(5,20,18,0.08)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] transition-colors duration-300">
                 {/* Sign In Tab */}
                 <button
                   type="button"
                   onClick={() => handleSwitchTab("login")}
                   className={`relative z-10 flex flex-1 items-center justify-center gap-2 py-3 text-sm font-black transition-colors duration-200 ${
-                    mode === "login" ? "text-[#051412]" : "text-emerald-100 hover:text-white"
+                    mode === "login" ? "text-[#051412]" : "text-emerald-900 dark:text-emerald-100 hover:text-emerald-950 dark:hover:text-white"
                   }`}
                 >
                   {mode === "login" && (
@@ -401,7 +418,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                   type="button"
                   onClick={() => handleSwitchTab("signup")}
                   className={`relative z-10 flex flex-1 items-center justify-center gap-2 py-3 text-sm font-black transition-colors duration-200 ${
-                    mode === "signup" ? "text-[#051412]" : "text-emerald-100 hover:text-white"
+                    mode === "signup" ? "text-[#051412]" : "text-emerald-900 dark:text-emerald-100 hover:text-emerald-950 dark:hover:text-white"
                   }`}
                 >
                   {mode === "signup" && (
@@ -445,8 +462,8 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-5"
               >
-                <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-400/50 bg-emerald-950/70 p-3.5 text-xs font-bold text-emerald-100 shadow-md">
-                  <CheckCircle2 className="h-4 w-4 text-[#d8f36b] shrink-0" />
+                <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-500/50 bg-emerald-50 dark:bg-emerald-950/70 p-3.5 text-xs font-bold text-emerald-900 dark:text-emerald-100 shadow-md">
+                  <CheckCircle2 className="h-4 w-4 text-[#0d8274] dark:text-[#d8f36b] shrink-0" />
                   <span>{resendStatus}</span>
                 </div>
               </motion.div>
@@ -471,17 +488,17 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                   {/* Title & High-Contrast Subtitle */}
                   <div className="mb-5 space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-[#d8f36b]/40 bg-[#d8f36b]/15 text-[#d8f36b]">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-emerald-600/40 dark:border-[#d8f36b]/40 bg-emerald-100 dark:bg-[#d8f36b]/15 text-[#0d8274] dark:text-[#d8f36b]">
                         <Sparkles className="h-3.5 w-3.5" />
                       </span>
-                      <span className="text-xs font-black uppercase tracking-wider text-[#d8f36b]">
+                      <span className="text-xs font-black uppercase tracking-wider text-[#0d8274] dark:text-[#d8f36b]">
                         Workspace Access
                       </span>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow">
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-950 dark:text-white drop-shadow-sm transition-colors duration-300">
                       Welcome Back
                     </h2>
-                    <p className="text-sm font-bold text-emerald-100">
+                    <p className="text-sm font-bold text-emerald-800 dark:text-emerald-100 transition-colors duration-300">
                       Sign in to customize resumes, review mock interview feedback, and access your campus portal.
                     </p>
                   </div>
@@ -489,11 +506,11 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                   <form onSubmit={handleLogin} className="space-y-4">
                     {/* Email Input */}
                     <div className="space-y-2">
-                      <Label htmlFor="auth-login-email" className="text-xs font-black text-white">
-                        Email address <span className="text-[#d8f36b]">*</span>
+                      <Label htmlFor="auth-login-email" className="text-xs font-black text-emerald-950 dark:text-white">
+                        Email address <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                         <Input
                           id="auth-login-email"
                           type="email"
@@ -502,7 +519,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           onChange={(e) => setEmail(e.target.value)}
                           required
                           disabled={isLoading}
-                          className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                          className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                       </div>
                     </div>
@@ -510,18 +527,18 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                     {/* Password Input */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="auth-login-pass" className="text-xs font-black text-white">
-                          Password <span className="text-[#d8f36b]">*</span>
+                        <Label htmlFor="auth-login-pass" className="text-xs font-black text-emerald-950 dark:text-white">
+                          Password <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                         </Label>
                         <Link
                           href="/auth/forgot-password"
-                          className="text-xs font-black text-[#d8f36b] transition-colors hover:underline drop-shadow"
+                          className="text-xs font-black text-[#0d8274] dark:text-[#d8f36b] transition-colors hover:underline"
                         >
                           Forgot password?
                         </Link>
                       </div>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                         <Input
                           id="auth-login-pass"
                           type={showPassword ? "text" : "password"}
@@ -530,13 +547,13 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           onChange={(e) => setPassword(e.target.value)}
                           required
                           disabled={isLoading}
-                          className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 pr-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                          className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 pr-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           tabIndex={-1}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-[#d8f36b] transition-colors"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-[#d8f36b] transition-colors"
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -550,9 +567,9 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                         id="auth-remember"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="h-4 w-4 rounded border-emerald-500/40 bg-[#041412] text-[#d8f36b] focus:ring-[#d8f36b]/40 cursor-pointer"
+                        className="h-4 w-4 rounded border-emerald-600/40 dark:border-emerald-500/40 bg-white dark:bg-[#041412] text-[#0d8274] dark:text-[#d8f36b] focus:ring-[#0d8274]/30 dark:focus:ring-[#d8f36b]/40 cursor-pointer"
                       />
-                      <label htmlFor="auth-remember" className="text-xs font-bold text-emerald-100 cursor-pointer">
+                      <label htmlFor="auth-remember" className="text-xs font-bold text-emerald-800 dark:text-emerald-100 cursor-pointer">
                         Remember this device for 30 days
                       </label>
                     </div>
@@ -577,29 +594,11 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                       )}
                     </Button>
 
-                    {/* Divider */}
-                    <div className="relative my-4 flex items-center justify-center">
-                      <div className="w-full border-t border-emerald-800/40" />
-                      <span className="bg-[#061816] px-3 text-[11px] font-black uppercase tracking-wider text-emerald-200">
-                        Quick Exploration
-                      </span>
-                    </div>
-
-                    {/* Instant Guest Demo Mode */}
-                    <button
-                      type="button"
-                      onClick={handleInstantDemo}
-                      disabled={isLoading}
-                      className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-emerald-500/50 bg-emerald-950/80 text-xs font-black text-white transition-all hover:border-[#d8f36b] hover:bg-[#0d3b34] hover:text-[#d8f36b] shadow-md"
-                    >
-                      <Compass className="h-4 w-4 text-[#d8f36b]" />
-                      <span>Launch Instant Demo Workspace (Skip Auth)</span>
-                    </button>
                   </form>
 
                   {/* Bottom Prompt */}
-                  <div className="mt-5 border-t border-emerald-800/40 pt-4 text-center">
-                    <p className="text-xs font-bold text-emerald-100">
+                  <div className="mt-5 border-t border-emerald-200 dark:border-emerald-800/40 pt-4 text-center">
+                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-100">
                       Have a 6-digit confirmation code?{" "}
                       <button
                         type="button"
@@ -607,7 +606,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           setDirection(1);
                           setMode("confirm");
                         }}
-                        className="font-black text-[#d8f36b] hover:underline"
+                        className="font-black text-[#0d8274] dark:text-[#d8f36b] hover:underline"
                       >
                         Enter code here &rarr;
                       </button>
@@ -632,17 +631,17 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                   {/* Title & High-Contrast Subtitle */}
                   <div className="mb-5 space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-[#d8f36b]/40 bg-[#d8f36b]/15 text-[#d8f36b]">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-emerald-600/40 dark:border-[#d8f36b]/40 bg-emerald-100 dark:bg-[#d8f36b]/15 text-[#0d8274] dark:text-[#d8f36b]">
                         <GraduationCap className="h-3.5 w-3.5" />
                       </span>
-                      <span className="text-xs font-black uppercase tracking-wider text-[#d8f36b]">
+                      <span className="text-xs font-black uppercase tracking-wider text-[#0d8274] dark:text-[#d8f36b]">
                         Student &amp; Career Network
                       </span>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow">
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-950 dark:text-white drop-shadow-sm transition-colors duration-300">
                       Create Workspace Account
                     </h2>
-                    <p className="text-sm font-bold text-emerald-100">
+                    <p className="text-sm font-bold text-emerald-800 dark:text-emerald-100 transition-colors duration-300">
                       Join 4,200+ students and recruiters crafting verified ATS resumes and AI pitch decks.
                     </p>
                   </div>
@@ -651,11 +650,11 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                     {/* Full Name & Campus */}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label htmlFor="auth-signup-name" className="text-xs font-black text-white">
-                          Full name <span className="text-[#d8f36b]">*</span>
+                        <Label htmlFor="auth-signup-name" className="text-xs font-black text-emerald-950 dark:text-white">
+                          Full name <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                         </Label>
                         <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                           <Input
                             id="auth-signup-name"
                             type="text"
@@ -664,17 +663,17 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                             onChange={(e) => setFullName(e.target.value)}
                             required
                             disabled={isLoading}
-                            className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                            className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="auth-signup-campus" className="text-xs font-black text-white">
+                        <Label htmlFor="auth-signup-campus" className="text-xs font-black text-emerald-950 dark:text-white">
                           Campus affiliation
                         </Label>
                         <div className="relative">
-                          <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                          <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                           <Input
                             id="auth-signup-campus"
                             type="text"
@@ -682,7 +681,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                             value={campusName}
                             onChange={(e) => setCampusName(e.target.value)}
                             disabled={isLoading}
-                            className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                            className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                           />
                         </div>
                       </div>
@@ -690,11 +689,11 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
 
                     {/* Email */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="auth-signup-email" className="text-xs font-black text-white">
-                        Email address <span className="text-[#d8f36b]">*</span>
+                      <Label htmlFor="auth-signup-email" className="text-xs font-black text-emerald-950 dark:text-white">
+                        Email address <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                         <Input
                           id="auth-signup-email"
                           type="email"
@@ -703,21 +702,21 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           onChange={(e) => setEmail(e.target.value)}
                           required
                           disabled={isLoading}
-                          className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                          className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                       </div>
-                      <p className="text-[11px] font-bold text-emerald-200">
+                      <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200">
                         🎓 Tip: Academic (.edu) emails automatically unlock your school&apos;s campus cohort directory.
                       </p>
                     </div>
 
                     {/* Password */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="auth-signup-pass" className="text-xs font-black text-white">
-                        Create password <span className="text-[#d8f36b]">*</span>
+                      <Label htmlFor="auth-signup-pass" className="text-xs font-black text-emerald-950 dark:text-white">
+                        Create password <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                       </Label>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                         <Input
                           id="auth-signup-pass"
                           type={showPassword ? "text" : "password"}
@@ -726,13 +725,13 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           onChange={(e) => setPassword(e.target.value)}
                           required
                           disabled={isLoading}
-                          className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 pr-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                          className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 pr-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           tabIndex={-1}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-300 hover:text-[#d8f36b] transition-colors"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-[#d8f36b] transition-colors"
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -747,9 +746,9 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                         checked={agreeTerms}
                         onChange={(e) => setAgreeTerms(e.target.checked)}
                         required
-                        className="mt-0.5 h-4 w-4 rounded border-emerald-500/40 bg-[#041412] text-[#d8f36b] focus:ring-[#d8f36b]/40 cursor-pointer"
+                        className="mt-0.5 h-4 w-4 rounded border-emerald-600/40 dark:border-emerald-500/40 bg-white dark:bg-[#041412] text-[#0d8274] dark:text-[#d8f36b] focus:ring-[#0d8274]/30 dark:focus:ring-[#d8f36b]/40 cursor-pointer"
                       />
-                      <label htmlFor="auth-signup-terms" className="text-xs font-bold leading-relaxed text-emerald-100 cursor-pointer">
+                      <label htmlFor="auth-signup-terms" className="text-xs font-bold leading-relaxed text-emerald-800 dark:text-emerald-100 cursor-pointer">
                         I agree to FERPA privacy terms. Your resume content is strictly protected.
                       </label>
                     </div>
@@ -773,6 +772,25 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                         </>
                       )}
                     </Button>
+
+                    {/* Divider */}
+                    <div className="relative my-4 flex items-center justify-center">
+                      <div className="w-full border-t border-emerald-300 dark:border-emerald-800/40" />
+                      <span className="bg-[#f0f7f5] dark:bg-[#061816] px-3 text-[11px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-200 transition-colors duration-300">
+                        Quick Exploration
+                      </span>
+                    </div>
+
+                    {/* Instant Guest Demo — Signup tab only, gives 24h trial */}
+                    <button
+                      type="button"
+                      onClick={handleInstantDemo}
+                      disabled={isLoading}
+                      className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/50 bg-emerald-50/90 dark:bg-emerald-950/80 text-xs font-black text-emerald-950 dark:text-white transition-all hover:border-[#0d8274] hover:bg-emerald-100 dark:hover:border-[#d8f36b] dark:hover:bg-[#0d3b34] hover:text-[#0d8274] dark:hover:text-[#d8f36b] shadow-sm"
+                    >
+                      <Compass className="h-4 w-4 text-[#0d8274] dark:text-[#d8f36b]" />
+                      <span>Launch Instant Demo Workspace (24-hour trial)</span>
+                    </button>
                   </form>
                 </motion.div>
               )}
@@ -792,29 +810,29 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                 >
                   <div className="mb-5 space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-[#d8f36b]/40 bg-[#d8f36b]/15 text-[#d8f36b]">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg border border-emerald-600/40 dark:border-[#d8f36b]/40 bg-emerald-100 dark:bg-[#d8f36b]/15 text-[#0d8274] dark:text-[#d8f36b]">
                         <KeyRound className="h-3.5 w-3.5" />
                       </span>
-                      <span className="text-xs font-black uppercase tracking-wider text-[#d8f36b]">
+                      <span className="text-xs font-black uppercase tracking-wider text-[#0d8274] dark:text-[#d8f36b]">
                         Activation Token
                       </span>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow">
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-950 dark:text-white drop-shadow-sm transition-colors duration-300">
                       Confirm Your Email
                     </h2>
-                    <p className="text-sm font-bold text-emerald-100">
-                      Enter the 6-digit confirmation code sent to <span className="font-black text-[#d8f36b] underline">{email || "your email"}</span>.
+                    <p className="text-sm font-bold text-emerald-800 dark:text-emerald-100 transition-colors duration-300">
+                      Enter the 6-digit confirmation code sent to <span className="font-black text-[#0d8274] dark:text-[#d8f36b] underline">{email || "your email"}</span>.
                     </p>
                   </div>
 
                   <form onSubmit={handleVerifyOtp} className="space-y-4">
                     {/* Account Email (Editable if needed) */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="auth-confirm-email" className="text-xs font-black text-white">
-                        Account email address <span className="text-[#d8f36b]">*</span>
+                      <Label htmlFor="auth-confirm-email" className="text-xs font-black text-emerald-950 dark:text-white">
+                        Account email address <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                         <Input
                           id="auth-confirm-email"
                           type="email"
@@ -823,18 +841,18 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           onChange={(e) => setEmail(e.target.value)}
                           required
                           disabled={isLoading}
-                          className="h-12 rounded-2xl border-emerald-500/40 bg-[#041412] pl-11 text-sm font-bold text-white placeholder:text-teal-300/60 focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                          className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                       </div>
                     </div>
 
                     {/* 6-Digit Code */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="auth-confirm-code" className="text-xs font-black text-white">
-                        6-Digit Verification Code <span className="text-[#d8f36b]">*</span>
+                      <Label htmlFor="auth-confirm-code" className="text-xs font-black text-emerald-950 dark:text-white">
+                        6-Digit Verification Code <span className="text-[#0d8274] dark:text-[#d8f36b]">*</span>
                       </Label>
                       <div className="relative">
-                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-300" />
+                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                         <Input
                           id="auth-confirm-code"
                           type="text"
@@ -846,7 +864,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           onChange={(e) => setToken(e.target.value)}
                           required
                           disabled={isLoading}
-                          className="h-14 tracking-[0.4em] font-mono text-center text-xl font-black rounded-2xl border-emerald-500/40 bg-[#041412] text-[#d8f36b] placeholder:text-teal-400/50 placeholder:tracking-normal focus:border-[#d8f36b] focus:ring-4 focus:ring-[#d8f36b]/30"
+                          className="h-14 tracking-[0.4em] font-mono text-center text-xl font-black rounded-2xl border border-emerald-600/40 dark:border-emerald-500/40 bg-white dark:bg-[#041412] text-[#0d8274] dark:text-[#d8f36b] placeholder:text-emerald-600/40 dark:placeholder:text-teal-400/50 placeholder:tracking-normal focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                       </div>
                     </div>
@@ -873,12 +891,12 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
 
                     {/* Resend Link */}
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs font-bold text-emerald-100">Didn&apos;t receive code?</span>
+                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-100">Didn&apos;t receive code?</span>
                       <button
                         type="button"
                         onClick={handleResend}
                         disabled={isResending || cooldown > 0}
-                        className="flex items-center gap-1.5 text-xs font-black text-[#d8f36b] hover:underline disabled:opacity-50"
+                        className="flex items-center gap-1.5 text-xs font-black text-[#0d8274] dark:text-[#d8f36b] hover:underline disabled:opacity-50"
                       >
                         <RefreshCw className={`h-3.5 w-3.5 ${isResending ? "animate-spin" : ""}`} />
                         <span>
@@ -890,11 +908,11 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                     </div>
 
                     {/* Outlook / Microsoft 365 Deliverability Helper */}
-                    <div className="mt-4 rounded-2xl border border-teal-400/30 bg-[#092c26]/90 p-4">
-                      <p className="text-xs font-black text-white mb-1">
+                    <div className="mt-4 rounded-2xl border border-emerald-600/30 dark:border-teal-400/30 bg-emerald-50/90 dark:bg-[#092c26]/90 p-4 transition-colors duration-300">
+                      <p className="text-xs font-black text-emerald-950 dark:text-white mb-1">
                         📬 Using University Outlook or Microsoft 365?
                       </p>
-                      <p className="text-[11px] font-medium leading-relaxed text-emerald-100">
+                      <p className="text-[11px] font-medium leading-relaxed text-emerald-800 dark:text-emerald-100">
                         University filters often place activation emails into the <strong>Other</strong> inbox tab or <strong>Junk Email</strong> folder. You can also click the direct confirmation button inside the email.
                       </p>
                     </div>
