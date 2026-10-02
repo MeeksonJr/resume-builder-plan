@@ -63,6 +63,9 @@ export interface UniversityInsightData {
     placementRate?: string;
     avgStartingSalary?: string;
     acceptanceRate?: string;
+    student_email_format?: string;
+    sample_student_email?: string;
+    email_domains?: string[];
   };
   news_and_events: Array<{
     title: string;
@@ -75,6 +78,10 @@ export interface UniversityInsightData {
   professors: ProfessorInfo[];
   key_links: KeyLinkInfo[];
   career_fairs: CareerFairInfo[];
+  email_domains?: string[];
+  student_email_format?: string;
+  sample_student_email?: string;
+  faculty_email_format?: string;
   daily_routine_date?: string;
   last_refreshed_at?: string;
   source: "cache" | "google_search_master_mega" | "preset";
@@ -98,7 +105,14 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
       placementRate: "88%",
       avgStartingSalary: "$78,500",
       acceptanceRate: "91%",
+      student_email_format: "[mid]@odu.edu (e.g. mdatt001@odu.edu)",
+      sample_student_email: "mdatt001@odu.edu",
+      email_domains: ["odu.edu", "cs.odu.edu"],
     },
+    email_domains: ["odu.edu", "cs.odu.edu"],
+    student_email_format: "[username]@odu.edu (e.g. mdatt001@odu.edu)",
+    sample_student_email: "mdatt001@odu.edu",
+    faculty_email_format: "[username]@odu.edu",
     news_and_events: [
       {
         title: "ODU Spring STEM & Computing Career Fair",
@@ -556,6 +570,19 @@ export async function getUniversityInsights(
             .eq("school_slug", normalizedSlug);
         }
 
+        let derivedDomain = `${cached.school_slug.replace(/-/g, "")}.edu`;
+        if (cached.website) {
+          try {
+            const u = new URL(cached.website.startsWith("http") ? cached.website : `https://${cached.website}`);
+            derivedDomain = u.hostname.replace(/^www\./, "");
+          } catch {}
+        }
+        const cachedKeyStats = (cached.key_stats as any) || {};
+        const emailDomains = cachedKeyStats.email_domains || [derivedDomain];
+        const studentEmailFormat = cachedKeyStats.student_email_format || `[username]@${derivedDomain}`;
+        const sampleStudentEmail = cachedKeyStats.sample_student_email || `student@${derivedDomain}`;
+        const facultyEmailFormat = cachedKeyStats.faculty_email_format || `[username]@${derivedDomain}`;
+
         return {
           school_slug: cached.school_slug,
           school_name: cached.school_name,
@@ -571,6 +598,10 @@ export async function getUniversityInsights(
           professors: cached.professors || [],
           key_links: cached.key_links || [],
           career_fairs: cached.career_fairs || [],
+          email_domains: emailDomains,
+          student_email_format: studentEmailFormat,
+          sample_student_email: sampleStudentEmail,
+          faculty_email_format: facultyEmailFormat,
           daily_routine_date: cached.daily_routine_date || today,
           last_refreshed_at: cached.last_refreshed_at || new Date().toISOString(),
           source: "cache",
@@ -843,6 +874,9 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
   location?: string;
   studentCount: number;
   hasPortal: boolean;
+  emailFormat?: string;
+  sampleEmail?: string;
+  emailDomains?: string[];
   dailyRoutineDate?: string;
   lastRefreshedAt?: string;
 }>> {
@@ -851,7 +885,7 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
   // 1. Fetch all cached schools
   const { data: cachedSchools } = await supabaseAdmin
     .from("university_insights_cache")
-    .select("school_slug, school_name, website, location, daily_routine_date, last_refreshed_at");
+    .select("school_slug, school_name, website, location, key_stats, daily_routine_date, last_refreshed_at");
 
   // 2. Fetch verified student count per university
   const { data: studentProfiles } = await supabaseAdmin
@@ -873,6 +907,9 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
     location?: string;
     studentCount: number;
     hasPortal: boolean;
+    emailFormat?: string;
+    sampleEmail?: string;
+    emailDomains?: string[];
     dailyRoutineDate?: string;
     lastRefreshedAt?: string;
   }>();
@@ -886,6 +923,7 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
         domain = u.hostname.replace(/^www\./, "");
       } catch {}
     }
+    const stats = (s.key_stats as any) || {};
     map.set(s.school_slug, {
       name: s.school_name,
       slug: s.school_slug,
@@ -893,6 +931,9 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
       location: s.location || "United States",
       studentCount: studentCountMap[s.school_slug] || 0,
       hasPortal: true,
+      emailFormat: stats.student_email_format || `[username]@${domain}`,
+      sampleEmail: stats.sample_student_email || `student@${domain}`,
+      emailDomains: stats.email_domains || [domain],
       dailyRoutineDate: s.daily_routine_date || today,
       lastRefreshedAt: s.last_refreshed_at || undefined,
     });
@@ -902,13 +943,17 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
   Object.keys(DEFAULT_UNIVERSITY_PRESETS).forEach((slug) => {
     if (!map.has(slug)) {
       const p = DEFAULT_UNIVERSITY_PRESETS[slug];
+      const domain = `${slug.replace(/-/g, "")}.edu`;
       map.set(slug, {
         name: p.school_name || slug,
         slug,
-        domain: `${slug.replace(/-/g, "")}.edu`,
+        domain,
         location: p.location || "United States",
         studentCount: studentCountMap[slug] || 0,
         hasPortal: true,
+        emailFormat: p.student_email_format || `[username]@${domain}`,
+        sampleEmail: p.sample_student_email || `student@${domain}`,
+        emailDomains: p.email_domains || [domain],
         dailyRoutineDate: today,
       });
     }

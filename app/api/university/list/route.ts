@@ -56,6 +56,9 @@ export async function POST(req: NextRequest) {
         location: insights.location || "United States",
         studentCount: 0,
         hasPortal: true,
+        emailFormat: insights.student_email_format || `[username]@${calculatedDomain}`,
+        sampleEmail: insights.sample_student_email || `student@${calculatedDomain}`,
+        emailDomains: insights.email_domains || [calculatedDomain],
       },
       insights,
     });

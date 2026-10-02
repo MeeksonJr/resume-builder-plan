@@ -26,15 +26,26 @@ export async function GET(
     const insights = await getUniversityInsights(normalizedSlug);
 
     // 2. Fetch REAL Verified Students enrolled in this university from Supabase
-    const { data: verifiedProfiles, error: profileErr } = await supabaseAdmin
+    const { data: verifiedProfilesRaw, error: profileErr } = await supabaseAdmin
       .from("profiles")
       .select("id, full_name, email, school_email, university_name, university_slug, experience_level, target_role, bio, updated_at")
       .eq("university_slug", normalizedSlug)
-      .eq("school_verified", true);
+      .eq("school_verified", true)
+      .order("updated_at", { ascending: false });
 
     if (profileErr) {
       console.warn("[UNIVERSITY_STUDENTS] Error reading profiles:", profileErr);
     }
+
+    // Deduplicate profiles by student institutional email (or account email)
+    const seenEmails = new Set<string>();
+    const verifiedProfiles = (verifiedProfilesRaw || []).filter((prof) => {
+      const emailKey = (prof.school_email || prof.email || "").toLowerCase().trim();
+      if (!emailKey) return false;
+      if (seenEmails.has(emailKey)) return false;
+      seenEmails.add(emailKey);
+      return true;
+    });
 
     const realStudents: StudentRosterMember[] = [];
 

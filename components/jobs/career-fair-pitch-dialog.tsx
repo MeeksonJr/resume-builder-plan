@@ -99,25 +99,26 @@ export function CareerFairPitchDialog({
       <DialogContent className="sm:max-w-3xl lg:max-w-4xl w-[96vw] max-h-[92vh] overflow-y-auto p-0 border border-emerald-500/25 bg-background shadow-2xl rounded-xl">
         {/* Header */}
         <div className="bg-[#102b2b] text-[#fbf8f1] p-5 sm:p-6 border-b border-white/10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d8f36b] text-[#102b2b] text-xs font-black uppercase tracking-wider mb-2">
-                <GraduationCap className="h-3.5 w-3.5" />
-                <span>Career Fair Quick Pitch Dossier</span>
+          <DialogHeader className="space-y-0 text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d8f36b] text-[#102b2b] text-xs font-black uppercase tracking-wider mb-2">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  <span>Career Fair Quick Pitch Dossier</span>
+                </div>
+                <DialogTitle className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  {job.company} &bull; {fairTitle}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-white/70 mt-1 flex items-center gap-2 flex-wrap">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3 text-[#d8f36b]" /> {fairDate}
+                  </span>
+                  <span>&bull;</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3 text-[#d8f36b]" /> {fairLocation}
+                  </span>
+                </DialogDescription>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                {job.company} &bull; {fairTitle}
-              </h2>
-              <p className="text-xs text-white/70 mt-1 flex items-center gap-2 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3 text-[#d8f36b]" /> {fairDate}
-                </span>
-                <span>&bull;</span>
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-[#d8f36b]" /> {fairLocation}
-                </span>
-              </p>
-            </div>
 
             <div className="flex items-center gap-2">
               <Button
@@ -131,7 +132,8 @@ export function CareerFairPitchDialog({
               </Button>
             </div>
           </div>
-        </div>
+        </DialogHeader>
+      </div>
 
         {/* Modal Body / Printable Handout Area */}
         <div className="p-5 sm:p-7 space-y-6">

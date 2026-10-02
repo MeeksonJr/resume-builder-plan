@@ -80,6 +80,19 @@ interface UniversityPortalViewProps {
   tenant: UniversityTenant;
 }
 
+function deduplicateStudents(list: StudentRosterMember[]): StudentRosterMember[] {
+  const seenEmails = new Set<string>();
+  const seenIds = new Set<string>();
+  return list.filter((s) => {
+    const emailKey = s.email?.toLowerCase().trim();
+    if (emailKey && seenEmails.has(emailKey)) return false;
+    if (seenIds.has(s.id)) return false;
+    if (emailKey) seenEmails.add(emailKey);
+    seenIds.add(s.id);
+    return true;
+  });
+}
+
 export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("roster");
@@ -115,7 +128,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
           const data = await res.json();
           setCampusIntel(data);
           if (Array.isArray(data.students)) {
-            setStudents(data.students);
+            setStudents(deduplicateStudents(data.students));
           }
           if (data.school_name) {
             setPortalSettings((prev) => ({
@@ -177,10 +190,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
               // Clean out legacy mock data if present
               if (Array.isArray(parsed) && parsed.length > 0 && !parsed[0].id?.startsWith("cohort-")) {
                 setStudents((existing) => {
-                  if (existing.length === 0) return parsed;
-                  const ids = new Set(existing.map((e) => e.id));
-                  const extras = parsed.filter((p: any) => !ids.has(p.id));
-                  return [...existing, ...extras];
+                  return deduplicateStudents([...existing, ...parsed]);
                 });
               } else if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id?.startsWith("cohort-")) {
                 // Clear old fake cohort from localStorage
@@ -268,17 +278,18 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
   }, [members, currentUser?.id, tenant.slug]);
 
   // Derived KPI Stats
-  const totalEnrolled = students.length;
-  const avgAts = students.length > 0
-    ? Math.round((students.reduce((acc, s) => acc + s.atsScore, 0) / students.length) * 10) / 10
+  const uniqueStudents = deduplicateStudents(students);
+  const totalEnrolled = uniqueStudents.length;
+  const avgAts = uniqueStudents.length > 0
+    ? Math.round((uniqueStudents.reduce((acc, s) => acc + s.atsScore, 0) / uniqueStudents.length) * 10) / 10
     : 0;
-  const placedCount = students.filter((s) => s.placementStatus === "Placed").length;
-  const placementRate = students.length > 0
-    ? Math.round((placedCount / students.length) * 100)
+  const placedCount = uniqueStudents.filter((s) => s.placementStatus === "Placed").length;
+  const placementRate = uniqueStudents.length > 0
+    ? Math.round((placedCount / uniqueStudents.length) * 100)
     : 0;
-  const totalDispatches = students.length > 0 ? students.length * 12 + 140 : 0;
+  const totalDispatches = uniqueStudents.length > 0 ? uniqueStudents.length * 12 + 140 : 0;
 
-  const filteredStudents = students.filter((s) => {
+  const filteredStudents = uniqueStudents.filter((s) => {
     const matchesSearch =
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.major.toLowerCase().includes(searchQuery.toLowerCase()) ||

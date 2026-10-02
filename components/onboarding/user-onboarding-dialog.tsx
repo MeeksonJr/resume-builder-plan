@@ -102,6 +102,9 @@ export function UserOnboardingDialog() {
     location?: string;
     studentCount?: number;
     hasPortal?: boolean;
+    emailFormat?: string;
+    sampleEmail?: string;
+    emailDomains?: string[];
   }>>(POPULAR_UNIVERSITIES);
   const [loadingCampuses, setLoadingCampuses] = useState(false);
   const [isDiscoveringSchool, setIsDiscoveringSchool] = useState(false);
@@ -173,9 +176,40 @@ export function UserOnboardingDialog() {
     }
   };
 
+  const activeSchoolName = selectedSchool || schoolSearch || "University Student";
+  const matchedCampus = campuses.find(
+    (c) =>
+      c.name.toLowerCase() === activeSchoolName.toLowerCase() ||
+      c.slug.toLowerCase() === activeSchoolName.toLowerCase()
+  );
+
+  const isEmailDomainValid = (() => {
+    if (!schoolEmail || !schoolEmail.includes("@")) return true;
+    if (!matchedCampus) return true;
+    const emailDomain = schoolEmail.split("@")[1]?.toLowerCase().trim();
+    if (!emailDomain) return true;
+    if (matchedCampus.emailDomains && matchedCampus.emailDomains.length > 0) {
+      return matchedCampus.emailDomains.some(
+        (d) => emailDomain === d.toLowerCase() || emailDomain.endsWith("." + d.toLowerCase())
+      );
+    }
+    if (matchedCampus.domain) {
+      return (
+        emailDomain === matchedCampus.domain.toLowerCase() ||
+        emailDomain.endsWith("." + matchedCampus.domain.toLowerCase())
+      );
+    }
+    return true;
+  })();
+
   const handleSendEmailCode = async () => {
     if (!schoolEmail || !schoolEmail.includes("@")) {
       toast.error("Please enter a valid university email address (.edu)");
+      return;
+    }
+
+    if (!isEmailDomainValid && matchedCampus?.domain) {
+      toast.error(`Please use your official email ending in @${matchedCampus.domain} for ${matchedCampus.name}`);
       return;
     }
 
@@ -186,7 +220,7 @@ export function UserOnboardingDialog() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           schoolEmail,
-          universityName: selectedSchool || schoolSearch || "University Student",
+          universityName: activeSchoolName,
         }),
       });
 
@@ -680,13 +714,20 @@ export function UserOnboardingDialog() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-foreground">University Email (.edu)</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold text-foreground">University Email (.edu)</Label>
+                      {matchedCampus?.emailFormat && (
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
+                          Format: <strong className="text-[#0d8274]">{matchedCampus.emailFormat}</strong>
+                        </span>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <Input
                         type="email"
                         value={schoolEmail}
                         onChange={(e) => setSchoolEmail(e.target.value)}
-                        placeholder="yourname@stanford.edu or student@school.edu"
+                        placeholder={matchedCampus?.sampleEmail || `student@${matchedCampus?.domain || "school.edu"}`}
                         className="rounded-none border-border h-11"
                       />
                       <Button
@@ -697,6 +738,11 @@ export function UserOnboardingDialog() {
                         {sendingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Code"}
                       </Button>
                     </div>
+                    {!isEmailDomainValid && schoolEmail.includes("@") && (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1">
+                        ⚠️ Domain mismatch: Please enter an official email ending in @{matchedCampus?.domain || ".edu"} for {matchedCampus?.name}.
+                      </p>
+                    )}
                   </div>
 
                   {codeSent && (

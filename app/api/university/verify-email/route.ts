@@ -46,52 +46,85 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to generate code" }, { status: 500 });
     }
 
+    // Build origin and 1-click verify URL
+    const origin = req.headers.get("origin") || req.headers.get("referer") || "http://localhost:3000";
+    const cleanOrigin = origin.replace(/\/$/, "");
+    const verifyUrl = `${cleanOrigin}/dashboard/portal/verify?code=${code}&email=${encodeURIComponent(schoolEmail.trim().toLowerCase())}&slug=${universitySlug}`;
+
+    // Import dynamic HTML template generator
+    const { generateUniversityVerificationEmailHtml } = await import("@/lib/email/university-verification-template");
+    const emailHtml = generateUniversityVerificationEmailHtml({
+      schoolName: universityName || "University Student",
+      schoolSlug: universitySlug,
+      code,
+      recipientEmail: schoolEmail.trim().toLowerCase(),
+      verifyUrl,
+      expiresInMinutes: 15,
+    });
+
     // Try sending email via Resend
     let emailSent = false;
+    let deliveredAddress = "";
     let emailErrorMsg = "";
+
     if (resend) {
+      const fromEmail = process.env.RESEND_FROM_EMAIL || "ResumeForge <onboarding@resend.dev>";
+      
+      // 1. Try sending directly to university email (.edu)
       try {
         const sendResult = await resend.emails.send({
-          from: "ResumeForge <onboarding@resend.dev>",
+          from: fromEmail,
           to: schoolEmail.trim().toLowerCase(),
           subject: `Your ${universityName || "University"} Verification Code: ${code}`,
-          html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <h2 style="color: #102b2b; margin-top: 0;">University Portal Verification</h2>
-              <p style="color: #4a5568; font-size: 15px;">You requested to verify your student status for <strong>${universityName}</strong> on ResumeForge.</p>
-              <div style="margin: 24px 0; padding: 16px; background-color: #f7fafc; border-radius: 6px; text-align: center;">
-                <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #0d8274; font-family: monospace;">${code}</span>
-              </div>
-              <p style="color: #718096; font-size: 13px;">This code expires in 15 minutes. If you did not request this, you can safely ignore this email.</p>
-            </div>
-          `,
+          html: emailHtml,
         });
 
         if (sendResult.error) {
-          console.warn("[SCHOOL_VERIFICATION] Resend API error:", sendResult.error);
-          emailErrorMsg = sendResult.error.message || "Email provider rejected send";
-          emailSent = false;
+          console.warn("[SCHOOL_VERIFICATION] Resend direct send rejected:", sendResult.error.message);
+          emailErrorMsg = sendResult.error.message;
         } else {
           emailSent = true;
+          deliveredAddress = schoolEmail.trim().toLowerCase();
         }
-      } catch (emailErr: any) {
-        console.warn("[SCHOOL_VERIFICATION] Resend email failed:", emailErr);
-        emailErrorMsg = emailErr?.message || "Failed to reach email provider";
-        emailSent = false;
+      } catch (err: any) {
+        console.warn("[SCHOOL_VERIFICATION] Direct send failed:", err?.message);
+        emailErrorMsg = err?.message;
+      }
+
+      // 2. If direct send failed due to Resend sandbox restriction (403), deliver to user's registered account email
+      if (!emailSent && user.email) {
+        try {
+          console.info(`[SCHOOL_VERIFICATION] Resend sandbox fallback: sending to account email ${user.email}`);
+          const fallbackResult = await resend.emails.send({
+            from: fromEmail,
+            to: user.email,
+            subject: `[Verification Fallback] Your ${universityName || "University"} Code: ${code}`,
+            html: emailHtml,
+          });
+
+          if (!fallbackResult.error) {
+            emailSent = true;
+            deliveredAddress = user.email;
+          }
+        } catch (fallbackErr: any) {
+          console.warn("[SCHOOL_VERIFICATION] Fallback send failed:", fallbackErr?.message);
+        }
       }
     }
 
     return NextResponse.json({
       success: true,
       emailSent,
-      code, // Include generated code so users can verify even without domain setup
+      deliveredAddress,
+      code, // Instant sandbox code so testing is never blocked
+      verifyUrl,
       message: emailSent
-        ? `Verification code sent to ${schoolEmail}. Check your inbox or Junk/Spam folder.`
-        : `Verification code generated! (Sandbox mode: code is ${code})`,
+        ? deliveredAddress === user.email
+          ? `Verification code delivered to your registered email (${user.email}) due to email provider sandbox testing. Check inbox or Spam!`
+          : `Verification code sent to ${schoolEmail}. Note for Outlook users: check 'Other' tab and Junk Email.`
+        : `Verification code generated! (Sandbox code: ${code})`,
       devCode: code,
-      note: !emailSent
-        ? "Resend test domain only sends to registered developer email. Use the instant code above to verify immediately."
-        : "Check Outlook 'Focused' and 'Other' tabs as well as 'Junk Email'.",
+      note: "For Outlook / Microsoft 365: Check the 'Other' inbox tab and Junk Email folder. In development sandbox, you can also use the instant code above.",
     });
   } catch (err: any) {
     console.error("[SCHOOL_VERIFY_EMAIL_ERROR]", err);
