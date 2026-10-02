@@ -55,6 +55,7 @@ import {
     SlidersHorizontal,
     RotateCcw,
     ShieldCheck,
+    GraduationCap,
     ChevronUp,
     ChevronDown,
 } from "lucide-react";
@@ -476,6 +477,22 @@ export function PublicShareHub({
                                 </DropdownMenu>
                             )}
 
+                            {/* University Campus Portal Badge */}
+                            {profile?.school_verified && profile?.university_slug && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    asChild
+                                    className="h-7 sm:h-8 px-2 sm:px-3 text-xs gap-1.5 rounded-full border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 hidden sm:inline-flex"
+                                    title={`Verified Student at ${profile.university_name || profile.university_slug}`}
+                                >
+                                    <Link href={`/dashboard/portal/${profile.university_slug}`} target="_blank">
+                                        <GraduationCap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                        <span className="font-semibold">{profile.university_name || "Campus Portal"}</span>
+                                    </Link>
+                                </Button>
+                            )}
+
                             {/* Verified Resume Quick Link (if available) */}
                             {resumeUrl && (
                                 <Button
@@ -662,6 +679,17 @@ export function PublicShareHub({
 
             {/* Verified Footer Credit (Print-hidden) */}
             <footer className="py-8 border-t border-border/60 text-center space-y-2 bg-background/50 print:hidden">
+                {profile?.school_verified && profile?.university_slug && (
+                    <div className="mb-2">
+                        <Link
+                            href={`/dashboard/portal/${profile.university_slug}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+                        >
+                            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span>Verified Member &bull; {profile.university_name || "University"} Talent Cohort</span>
+                        </Link>
+                    </div>
+                )}
                 <p className="text-xs text-muted-foreground">
                     Verified candidate portfolio hosted on{" "}
                     <span className="font-semibold text-foreground">ResumeForge</span>

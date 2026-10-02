@@ -92,12 +92,70 @@ export function UserOnboardingDialog() {
   const [canvasUrl, setCanvasUrl] = useState("https://canvas.instructure.com");
   const [canvasToken, setCanvasToken] = useState("");
   const [verifyingCanvas, setVerifyingCanvas] = useState(false);
-
   const [savingOnboarding, setSavingOnboarding] = useState(false);
+
+  // Campus Catalog state
+  const [campuses, setCampuses] = useState<Array<{
+    name: string;
+    slug: string;
+    domain: string;
+    location?: string;
+    studentCount?: number;
+    hasPortal?: boolean;
+  }>>(POPULAR_UNIVERSITIES);
+  const [loadingCampuses, setLoadingCampuses] = useState(false);
+  const [isDiscoveringSchool, setIsDiscoveringSchool] = useState(false);
 
   useEffect(() => {
     checkOnboardingStatus();
+    fetchCampuses();
   }, []);
+
+  const fetchCampuses = async () => {
+    setLoadingCampuses(true);
+    try {
+      const res = await fetch("/api/university/list");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.campuses) && data.campuses.length > 0) {
+          setCampuses(data.campuses);
+        }
+      }
+    } catch (err) {
+      console.warn("[CAMPUS_CATALOG] Fetch failed:", err);
+    } finally {
+      setLoadingCampuses(false);
+    }
+  };
+
+  const handleAddNewCampus = async (schoolName: string) => {
+    if (!schoolName || schoolName.trim().length === 0) return;
+    setIsDiscoveringSchool(true);
+    try {
+      const res = await fetch("/api/university/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: schoolName.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.campus) {
+          setCampuses((prev) => {
+            const exists = prev.some((c) => c.slug === data.campus.slug);
+            return exists ? prev : [data.campus, ...prev];
+          });
+          setSelectedSchool(data.campus.name);
+          setSchoolSearch(data.campus.name);
+          toast.success(`Discovered ${data.campus.name}! Campus directory and portal ready.`);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to discover school:", err);
+      setSelectedSchool(schoolName);
+    } finally {
+      setIsDiscoveringSchool(false);
+    }
+  };
 
   const checkOnboardingStatus = async () => {
     try {
@@ -250,11 +308,17 @@ export function UserOnboardingDialog() {
     }
   };
 
-  if (checking || !open) return null;
-
-  const filteredSchools = POPULAR_UNIVERSITIES.filter((u) =>
-    u.name.toLowerCase().includes(schoolSearch.toLowerCase())
+  const filteredSchools = campuses.filter((u) =>
+    u.name.toLowerCase().includes(schoolSearch.toLowerCase()) ||
+    u.slug.toLowerCase().includes(schoolSearch.toLowerCase()) ||
+    u.domain.toLowerCase().includes(schoolSearch.toLowerCase())
   );
+
+  const exactMatchExists = campuses.some(
+    (u) => u.name.toLowerCase().trim() === schoolSearch.toLowerCase().trim()
+  );
+
+  if (checking || !open) return null;
 
   return (
     <Dialog open={open} onOpenChange={(val) => !savingOnboarding && setOpen(val)}>
@@ -456,30 +520,91 @@ export function UserOnboardingDialog() {
                     />
                   </div>
 
+                  {/* Discover New University Banner if search has no exact match */}
+                  {schoolSearch.trim().length > 2 && !exactMatchExists && (
+                    <div className="p-3.5 bg-[#0d8274]/10 border border-[#0d8274]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-[#0d8274]" />
+                          Don&apos;t see your campus listed?
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Add <span className="font-semibold text-foreground">&quot;{schoolSearch}&quot;</span> &mdash; our AI will index your campus departments, faculty, and launch your dedicated portal.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={isDiscoveringSchool}
+                        onClick={() => handleAddNewCampus(schoolSearch)}
+                        className="h-8 text-xs font-bold bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743] shrink-0 rounded-none cursor-pointer"
+                      >
+                        {isDiscoveringSchool ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                            Indexing Campus...
+                          </>
+                        ) : (
+                          <>+ Add &amp; Discover Campus</>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
                   {/* University Grid */}
                   <div>
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-2">
-                      Popular Campuses
-                    </span>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 max-h-48 overflow-y-auto pr-1">
-                      {filteredSchools.map((u) => (
-                        <button
-                          key={u.slug}
-                          type="button"
-                          onClick={() => {
-                            setSelectedSchool(u.name);
-                            setSchoolSearch(u.name);
-                          }}
-                          className={`text-left p-3 text-xs border transition-all ${
-                            selectedSchool === u.name
-                              ? "border-[#0d8274] bg-[#0d8274]/15 font-bold text-foreground"
-                              : "border-border hover:border-foreground/30 bg-card text-muted-foreground"
-                          }`}
-                        >
-                          <div className="truncate font-semibold">{u.name}</div>
-                          <span className="text-[10px] text-muted-foreground font-mono">{u.domain}</span>
-                        </button>
-                      ))}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                        {loadingCampuses ? "Loading Campuses..." : `Registered Institutions (${filteredSchools.length})`}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        Saved colleges from student network
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1">
+                      {filteredSchools.map((u) => {
+                        const isSelected = selectedSchool === u.name;
+                        const hasActiveCohort = (u.studentCount || 0) > 0;
+
+                        return (
+                          <button
+                            key={u.slug}
+                            type="button"
+                            onClick={() => {
+                              setSelectedSchool(u.name);
+                              setSchoolSearch(u.name);
+                            }}
+                            className={`text-left p-3 border transition-all cursor-pointer flex flex-col justify-between ${
+                              isSelected
+                                ? "border-[#0d8274] bg-[#0d8274]/15 font-bold text-foreground ring-1 ring-[#0d8274]"
+                                : "border-border hover:border-foreground/30 bg-card text-muted-foreground"
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-start justify-between gap-1">
+                                <span className="text-xs font-bold text-foreground leading-snug truncate">
+                                  {u.name}
+                                </span>
+                                {hasActiveCohort && (
+                                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0 shrink-0 font-mono">
+                                    {u.studentCount} Verified
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-muted-foreground font-mono block mt-0.5">
+                                {u.domain}
+                              </span>
+                            </div>
+
+                            {u.location && (
+                              <span className="text-[10px] text-muted-foreground/80 mt-1 truncate">
+                                📍 {u.location}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

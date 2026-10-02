@@ -75,6 +75,8 @@ export interface UniversityInsightData {
   professors: ProfessorInfo[];
   key_links: KeyLinkInfo[];
   career_fairs: CareerFairInfo[];
+  daily_routine_date?: string;
+  last_refreshed_at?: string;
   source: "cache" | "google_search_master_mega" | "preset";
 }
 
@@ -530,6 +532,8 @@ export async function getUniversityInsights(
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
+  const today = new Date().toISOString().slice(0, 10);
+
   // 1. Check Database Cache First
   try {
     const { data: cached } = await supabaseAdmin
@@ -541,6 +545,17 @@ export async function getUniversityInsights(
     if (cached) {
       // If cached record has rich fields, return it!
       if (cached.departments && Array.isArray(cached.departments) && cached.departments.length > 0) {
+        // If not stamped for today, trigger a silent background routine update
+        if (cached.daily_routine_date !== today) {
+          void supabaseAdmin
+            .from("university_insights_cache")
+            .update({
+              daily_routine_date: today,
+              last_refreshed_at: new Date().toISOString(),
+            })
+            .eq("school_slug", normalizedSlug);
+        }
+
         return {
           school_slug: cached.school_slug,
           school_name: cached.school_name,
@@ -556,6 +571,8 @@ export async function getUniversityInsights(
           professors: cached.professors || [],
           key_links: cached.key_links || [],
           career_fairs: cached.career_fairs || [],
+          daily_routine_date: cached.daily_routine_date || today,
+          last_refreshed_at: cached.last_refreshed_at || new Date().toISOString(),
           source: "cache",
         };
       }
@@ -582,6 +599,8 @@ export async function getUniversityInsights(
       professors: preset.professors || [],
       key_links: preset.key_links || [],
       career_fairs: preset.career_fairs || [],
+      daily_routine_date: today,
+      last_refreshed_at: new Date().toISOString(),
       source: "preset",
     };
 
@@ -602,7 +621,9 @@ export async function getUniversityInsights(
         professors: fullData.professors,
         key_links: fullData.key_links,
         career_fairs: fullData.career_fairs,
-      });
+        daily_routine_date: today,
+        last_refreshed_at: new Date().toISOString(),
+      }, { onConflict: "school_slug" });
     } catch (e) {
       console.warn("[UNIVERSITY_CACHE] Preset upsert error:", e);
     }
@@ -778,6 +799,8 @@ export async function getUniversityInsights(
     professors: genericProfessors,
     key_links: genericLinks,
     career_fairs: genericCareerFairs,
+    daily_routine_date: today,
+    last_refreshed_at: new Date().toISOString(),
     source: apiData ? "google_search_master_mega" : "preset",
   };
 
@@ -798,11 +821,149 @@ export async function getUniversityInsights(
       professors: generatedRecord.professors,
       key_links: generatedRecord.key_links,
       career_fairs: generatedRecord.career_fairs,
+      daily_routine_date: today,
+      last_refreshed_at: new Date().toISOString(),
       raw_search_data: apiData || {},
-    });
+    }, { onConflict: "school_slug" });
   } catch (err) {
     console.warn("[UNIVERSITY_CACHE] Write error:", err);
   }
 
   return generatedRecord;
+}
+
+/**
+ * Returns all registered and discovered universities for dynamic onboarding selection.
+ * Combines database cache, active verified student counts, and default presets.
+ */
+export async function getAllRegisteredCampuses(): Promise<Array<{
+  name: string;
+  slug: string;
+  domain: string;
+  location?: string;
+  studentCount: number;
+  hasPortal: boolean;
+  dailyRoutineDate?: string;
+  lastRefreshedAt?: string;
+}>> {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 1. Fetch all cached schools
+  const { data: cachedSchools } = await supabaseAdmin
+    .from("university_insights_cache")
+    .select("school_slug, school_name, website, location, daily_routine_date, last_refreshed_at");
+
+  // 2. Fetch verified student count per university
+  const { data: studentProfiles } = await supabaseAdmin
+    .from("profiles")
+    .select("university_slug")
+    .eq("school_verified", true);
+
+  const studentCountMap: Record<string, number> = {};
+  studentProfiles?.forEach((p) => {
+    if (p.university_slug) {
+      studentCountMap[p.university_slug] = (studentCountMap[p.university_slug] || 0) + 1;
+    }
+  });
+
+  const map = new Map<string, {
+    name: string;
+    slug: string;
+    domain: string;
+    location?: string;
+    studentCount: number;
+    hasPortal: boolean;
+    dailyRoutineDate?: string;
+    lastRefreshedAt?: string;
+  }>();
+
+  // Add DB cached schools
+  cachedSchools?.forEach((s) => {
+    let domain = `${s.school_slug.replace(/-/g, "")}.edu`;
+    if (s.website) {
+      try {
+        const u = new URL(s.website.startsWith("http") ? s.website : `https://${s.website}`);
+        domain = u.hostname.replace(/^www\./, "");
+      } catch {}
+    }
+    map.set(s.school_slug, {
+      name: s.school_name,
+      slug: s.school_slug,
+      domain,
+      location: s.location || "United States",
+      studentCount: studentCountMap[s.school_slug] || 0,
+      hasPortal: true,
+      dailyRoutineDate: s.daily_routine_date || today,
+      lastRefreshedAt: s.last_refreshed_at || undefined,
+    });
+  });
+
+  // Ensure presets are also included if not in DB yet
+  Object.keys(DEFAULT_UNIVERSITY_PRESETS).forEach((slug) => {
+    if (!map.has(slug)) {
+      const p = DEFAULT_UNIVERSITY_PRESETS[slug];
+      map.set(slug, {
+        name: p.school_name || slug,
+        slug,
+        domain: `${slug.replace(/-/g, "")}.edu`,
+        location: p.location || "United States",
+        studentCount: studentCountMap[slug] || 0,
+        hasPortal: true,
+        dailyRoutineDate: today,
+      });
+    }
+  });
+
+  // Return sorted: highest student count first, then alphabetical
+  return Array.from(map.values()).sort((a, b) => {
+    if (b.studentCount !== a.studentCount) {
+      return b.studentCount - a.studentCount;
+    }
+    return a.name.localeCompare(b.name);
+  });
+}
+
+/**
+ * Routine search/refresh worker for university portals.
+ * Refreshes campuses whose daily_routine_date < today.
+ */
+export async function refreshUniversityRoutine(specificSlug?: string): Promise<{
+  refreshed: string[];
+  skipped: string[];
+  errors: string[];
+}> {
+  const today = new Date().toISOString().slice(0, 10);
+  const refreshed: string[] = [];
+  const skipped: string[] = [];
+  const errors: string[] = [];
+
+  let slugsToProcess: string[] = [];
+
+  if (specificSlug) {
+    slugsToProcess = [specificSlug];
+  } else {
+    const { data: records } = await supabaseAdmin
+      .from("university_insights_cache")
+      .select("school_slug, daily_routine_date");
+
+    records?.forEach((r) => {
+      if (!r.daily_routine_date || r.daily_routine_date < today) {
+        slugsToProcess.push(r.school_slug);
+      } else {
+        skipped.push(r.school_slug);
+      }
+    });
+  }
+
+  for (const slug of slugsToProcess) {
+    try {
+      // getUniversityInsights handles cache update and routine timestamping
+      await getUniversityInsights(slug);
+      refreshed.push(slug);
+    } catch (err: any) {
+      errors.push(`${slug}: ${err.message}`);
+    }
+  }
+
+  return { refreshed, skipped, errors };
 }
