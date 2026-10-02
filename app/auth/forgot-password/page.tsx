@@ -6,17 +6,19 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, Mail, ArrowRight, CheckCircle2, KeyRound } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Loader2,
+  AlertCircle,
+  Mail,
+  ArrowRight,
+  CheckCircle2,
+  KeyRound,
+  Sparkles,
+  ChevronLeft,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AuthTabBar } from "@/components/auth/auth-tab-bar";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -31,12 +33,12 @@ export default function ForgotPasswordPage() {
 
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
 
-      if (error) {
-        setError(error.message);
+      if (resetError) {
+        setError(resetError.message);
         setIsLoading(false);
         return;
       }
@@ -49,109 +51,153 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  if (isSuccess) {
-    return (
-      <Card className="relative w-full overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec]/95 shadow-[18px_20px_0_rgba(16,43,43,.12)]">
-        <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
-        <CardHeader className="space-y-3 pb-6 pt-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-          <CardTitle className="text-3xl font-semibold tracking-[-.05em] text-[#102b2b]">Check your email</CardTitle>
-          <CardDescription className="mx-auto max-w-xs text-xs leading-relaxed text-[#52716a] sm:text-sm">
-            We&apos;ve sent a password reset link to <span className="text-white font-medium">{email}</span>
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="flex flex-col gap-4 pb-8 px-6 sm:px-8">
-          <Button variant="outline" className="h-12 w-full cursor-pointer rounded-none border-[#102b2b]/20 bg-transparent text-[#102b2b] hover:bg-[#102b2b]/5" asChild>
-            <Link href="/auth/login">Return to login</Link>
-          </Button>
-            <p className="text-center text-[11px] text-[#78928a]">
-            Didn&apos;t receive the email? Check your spam or promotions folder.
-          </p>
-        </CardFooter>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="relative w-full overflow-hidden border-[#102b2b]/15 bg-[#f8f4ec]/95 shadow-[18px_20px_0_rgba(16,43,43,.12)]">
-      <div className="absolute left-0 right-0 top-0 h-1 bg-[#d8f36b]" />
+    <div className="relative w-full overflow-hidden rounded-3xl border border-[#163833] bg-[#081515]/95 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl sm:p-10">
+      
+      {/* Decorative Top Accent Glow */}
+      <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-[#0d8274] via-[#d8f36b] to-[#0d8274]" />
 
-      <CardHeader className="space-y-2 pb-6 pt-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2">
-          <KeyRound className="w-6 h-6 text-amber-300" />
-        </div>
-        <CardTitle className="text-3xl font-semibold tracking-[-.05em] text-[#102b2b]">Reset your password</CardTitle>
-        <CardDescription className="text-slate-400 text-xs sm:text-sm max-w-xs mx-auto">
-          Enter your account email and we&apos;ll send a secure recovery link.
-        </CardDescription>
-      </CardHeader>
-
-      <form onSubmit={handleResetRequest}>
-        <CardContent className="space-y-4 px-6 sm:px-8">
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Alert variant="destructive" className="rounded-none border-red-700/20 bg-red-50 text-red-800">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-
-          <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium text-[#365950]">
-              Account email
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-                className="h-11 rounded-none border-[#102b2b]/15 bg-white/60 pl-10 text-sm text-[#102b2b] placeholder:text-[#9bb5aa] focus:border-[#0d8274] focus:ring-[#0d8274]/20"
-              />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="mt-2 h-12 w-full cursor-pointer rounded-none bg-[#102b2b] font-semibold text-[#f8f4ec] shadow-lg shadow-[#102b2b]/15 transition-all hover:bg-[#164743]"
+      <AnimatePresence mode="wait">
+        {isSuccess ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-6 text-center py-6"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending link...
-              </>
-            ) : (
-              <>
-                Email me a reset link
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
-        </CardContent>
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/40 bg-emerald-950/60 text-[#d8f36b] shadow-[0_4px_20px_rgba(13,130,116,0.3)]">
+              <CheckCircle2 className="h-8 w-8" />
+            </div>
 
-        <CardFooter className="px-6 sm:px-8 pb-8 pt-2 flex flex-col gap-4 text-center">
-          <p className="text-xs text-[#52716a]">
-            Remembered your password?{" "}
-            <Link
-              href="/auth/login"
-              className="font-semibold text-[#0d8274] transition-colors hover:text-[#102b2b]"
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black tracking-tight text-white">
+                Check Your Email
+              </h2>
+              <p className="mx-auto max-w-sm text-sm text-[#7ea89f]">
+                We dispatched a secure password recovery link to{" "}
+                <span className="font-bold text-[#d8f36b]">{email}</span>.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-[#163833] bg-[#050e0e]/80 p-4 text-xs text-[#7ea89f]">
+              <p>
+                Link valid for 24 hours. University students: please remember to check your Outlook <strong>Other</strong> or <strong>Junk Email</strong> folder if not visible immediately.
+              </p>
+            </div>
+
+            <Button
+              asChild
+              className="h-12 w-full rounded-xl bg-gradient-to-r from-[#d8f36b] to-[#c7e955] text-sm font-extrabold text-[#081211] shadow-[0_4px_20px_rgba(216,243,107,0.3)] transition-all hover:brightness-105"
             >
-              Back to sign in
-            </Link>
-          </p>
-        </CardFooter>
-      </form>
-    </Card>
+              <Link href="/auth/login" className="flex items-center justify-center gap-2">
+                Return to Sign In
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Header Tabs */}
+            <AuthTabBar activeTab="login" />
+
+            {/* Title & Subtitle */}
+            <div className="mb-6 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#d8f36b]/30 bg-[#d8f36b]/10 text-[#d8f36b]">
+                  <KeyRound className="h-4 w-4" />
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#d8f36b]">
+                  Password Recovery
+                </span>
+              </div>
+              <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+                Reset Your Password
+              </h1>
+              <p className="text-sm text-[#7ea89f]">
+                Enter the email address tied to your account and we&apos;ll send you a recovery link.
+              </p>
+            </div>
+
+            {/* Error Notification */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-5"
+              >
+                <Alert
+                  variant="destructive"
+                  className="rounded-xl border border-rose-500/30 bg-rose-950/40 text-rose-200"
+                >
+                  <AlertCircle className="h-4 w-4 text-rose-400" />
+                  <AlertDescription className="text-xs leading-relaxed">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+
+            <form onSubmit={handleResetRequest} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="forgot-email" className="text-xs font-semibold text-[#8bbcb2]">
+                  Account email address <span className="text-[#d8f36b]">*</span>
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#52716a]" />
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="name@university.edu or you@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-[#163833] bg-[#050e0e]/80 pl-10 text-sm text-white placeholder:text-[#425d57] focus:border-[#d8f36b] focus:ring-2 focus:ring-[#d8f36b]/20"
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="mt-3 h-12 w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#d8f36b] to-[#c7e955] text-sm font-extrabold text-[#081211] shadow-[0_4px_20px_rgba(216,243,107,0.35)] transition-all hover:brightness-105 active:scale-[0.99] disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-[#081211]" />
+                    Sending link...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4 text-[#081211]" />
+                    Email Me Reset Link
+                    <ArrowRight className="ml-2 h-4 w-4 text-[#081211]" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 border-t border-[#163833] pt-4 text-center">
+              <p className="text-xs text-[#7ea89f]">
+                Remembered your password?{" "}
+                <Link
+                  href="/auth/login"
+                  className="font-bold text-[#d8f36b] transition-colors hover:underline"
+                >
+                  Back to Sign In &rarr;
+                </Link>
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 }

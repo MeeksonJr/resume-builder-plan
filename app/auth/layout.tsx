@@ -2,8 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, ChevronLeft, ShieldCheck, ArrowUpRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
+import { AuthShowcasePanel } from "@/components/auth/auth-showcase-panel";
 
 export default function AuthLayout({
   children,
@@ -11,62 +11,56 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-[#e9eee8] text-[#102b2b] selection:bg-[#d8f36b] selection:text-[#102b2b]">
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,#e9eee8_0%,#f8f4ec_55%,#dbe8df_100%)]" />
-        <div className="absolute -right-40 top-20 h-[520px] w-[520px] rounded-full border border-[#0d8274]/10" />
-        <div className="absolute -right-16 top-44 h-[360px] w-[360px] rounded-full border border-[#0d8274]/10" />
+    <div className="relative min-h-screen w-full bg-[#061010] text-[#f8faf8] selection:bg-[#d8f36b] selection:text-[#081211]">
+      
+      {/* Background Ambient Glows */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-40 top-0 h-[600px] w-[600px] rounded-full bg-[#0d8274]/15 blur-[120px]" />
+        <div className="absolute right-0 top-1/4 h-[500px] w-[500px] rounded-full bg-[#d8f36b]/8 blur-[130px]" />
+        <div className="absolute bottom-0 left-1/3 h-[450px] w-[450px] rounded-full bg-[#093d36]/20 blur-[110px]" />
       </div>
 
-      {/* Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-[#102b2b]/10 bg-[#f8f4ec]/80 px-6 py-4 backdrop-blur-xl">
-        <div className="container mx-auto flex max-w-6xl items-center justify-between">
-          <Link href="/" className="group flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center bg-[#102b2b] text-sm font-bold text-[#d8f36b] transition-transform group-hover:-rotate-6">R</span>
-            <span className="text-lg font-extrabold tracking-[-.04em]">ResumeForge<span className="text-[#0d8274]">.</span></span>
+      {/* Top Header Bar */}
+      <header className="sticky top-0 z-50 w-full border-b border-[#163833]/80 bg-[#061010]/80 px-4 py-3.5 backdrop-blur-xl sm:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <Link href="/" className="group flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#20b2aa]/40 bg-gradient-to-br from-[#0d8274] to-[#0a4840] font-bold text-[#d8f36b] shadow-sm transition-transform group-hover:-rotate-6">
+              R
+            </span>
+            <span className="text-lg font-extrabold tracking-tight text-white">
+              ResumeForge<span className="text-[#d8f36b]">.</span>
+            </span>
           </Link>
 
           <Link
             href="/"
-            className="group flex items-center gap-1 text-xs font-medium text-[#52716a] transition-colors hover:text-[#102b2b] sm:text-sm"
+            className="group flex items-center gap-1.5 rounded-full border border-[#163833] bg-[#0c201e]/80 px-3.5 py-1.5 text-xs font-semibold text-[#8bbcb2] transition-all hover:border-[#d8f36b]/40 hover:bg-[#0d2a26] hover:text-[#d8f36b]"
           >
-            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Home
+            <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Home</span>
           </Link>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 pb-16 pt-28">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          className="flex w-full max-w-md justify-center"
-        >
-          {children}
-        </motion.div>
+      {/* Main Full-Width Split Container */}
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+        <div className="grid min-h-[calc(100vh-130px)] w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-12 lg:gap-10">
+          
+          {/* Left Column: Visual Showcase (Visible on Large Screens) */}
+          <div className="hidden lg:col-span-6 lg:flex xl:col-span-6">
+            <AuthShowcasePanel />
+          </div>
+
+          {/* Right Column: Interactive Form Center */}
+          <div className="flex w-full flex-col justify-center lg:col-span-6 xl:col-span-6">
+            <div className="w-full">
+              {children}
+            </div>
+          </div>
+
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#102b2b]/10 py-6 text-center text-xs font-medium text-[#52716a]">
-        <div className="container mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-4 px-4 text-[11px]">
-          <div className="flex items-center gap-1 text-[#0d8274]">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Your work stays yours</span>
-          </div>
-          <span className="text-[#9bb5aa]">/</span>
-          <div className="flex items-center gap-1 text-[#0d8274]">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Build, tailor, move forward</span>
-          </div>
-          <span className="text-[#9bb5aa]">/</span>
-          <div className="flex items-center gap-1 text-[#0d8274]">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI suggestions, human voice</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
