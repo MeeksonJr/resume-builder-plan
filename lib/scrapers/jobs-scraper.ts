@@ -7,6 +7,15 @@
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 
+export interface CampusFairAttending {
+  school_name: string;
+  school_slug: string;
+  fair_title: string;
+  fair_date: string;
+  fair_location: string;
+  fair_link?: string;
+}
+
 export interface ScrapedJob {
   id: string;
   company: string;
@@ -26,6 +35,10 @@ export interface ScrapedJob {
   match_score?: number;
   matching_skills?: string[];
   missing_skills?: string[];
+  is_tracked?: boolean;
+  tracked_id?: string;
+  campus_fair_attending?: CampusFairAttending;
+  is_campus_partner?: boolean;
 }
 
 /**

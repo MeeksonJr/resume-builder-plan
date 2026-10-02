@@ -1124,18 +1124,26 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between flex-wrap gap-2">
                       <span className="text-[11px] text-muted-foreground font-semibold">
                         Employer Attendance: 80+ Orgs
                       </span>
-                      {fair.registrationLink && (
-                        <Button asChild size="sm" className="h-7 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white gap-1">
-                          <a href={fair.registrationLink} target="_blank" rel="noopener noreferrer">
-                            <span>Register &bull; RSVP</span>
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
+                      <div className="flex items-center gap-2">
+                        <Button asChild size="sm" variant="outline" className="h-7 text-xs font-bold rounded-lg border-emerald-600/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 gap-1">
+                          <Link href="/dashboard/jobs?tab=campus-fair">
+                            <span>Matched Jobs &amp; Pitch</span>
+                            <Briefcase className="h-3 w-3" />
+                          </Link>
                         </Button>
-                      )}
+                        {fair.registrationLink && (
+                          <Button asChild size="sm" className="h-7 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white gap-1">
+                            <a href={fair.registrationLink} target="_blank" rel="noopener noreferrer">
+                              <span>Register &bull; RSVP</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </Card>
                 ))}

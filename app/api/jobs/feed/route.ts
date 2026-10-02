@@ -27,16 +27,48 @@ export async function GET(req: Request) {
       console.error("[Jobs Feed] Error fetching resumes:", resumeError);
     }
 
-    // 2. Determine target role query if not explicitly passed
-    if (!query) {
-      // Check profile target role
-      const { data: profile } = await supabase
+    // 2. Fetch user profile & public portfolio
+    const [{ data: profile }, { data: userPortfolio }] = await Promise.all([
+      supabase
         .from("profiles")
-        .select("target_role")
+        .select("target_role, full_name, email, university_name, university_slug, school_verified")
         .eq("id", user.id)
-        .single();
+        .maybeSingle(),
+      supabase
+        .from("portfolios")
+        .select("slug")
+        .eq("user_id", user.id)
+        .eq("is_public", true)
+        .maybeSingle(),
+    ]);
 
+    if (!query) {
       query = profile?.target_role || "Software Engineer";
+    }
+
+    // 2b. Check if user is a verified student with campus career fairs
+    let userUniversity: any = null;
+    let campusCareerFairs: any[] = [];
+    let primaryFair: any = null;
+
+    if (profile?.school_verified && profile?.university_slug) {
+      const { data: campusData } = await supabase
+        .from("university_insights_cache")
+        .select("school_name, school_slug, career_fairs, career_center_name")
+        .eq("school_slug", profile.university_slug)
+        .maybeSingle();
+
+      if (campusData) {
+        campusCareerFairs = campusData.career_fairs || [];
+        primaryFair = campusCareerFairs[0] || null;
+        userUniversity = {
+          name: campusData.school_name || profile.university_name,
+          slug: campusData.school_slug,
+          verified: true,
+          careerFairs: campusCareerFairs,
+          primaryFair,
+        };
+      }
     }
 
     const defaultRole = query || "Software Engineer";
@@ -102,8 +134,8 @@ export async function GET(req: Request) {
     // 5. Scrape live jobs
     const jobs = await scrapeLiveJobs(searchQuery, location);
 
-    // 6. Calculate ATS match score & track status for each job
-    const enrichedJobs = jobs.map(job => {
+    // 6. Calculate ATS match score, fair attendance & track status for each job
+    const enrichedJobs = jobs.map((job, idx) => {
       const { match_score, matching_skills, missing_skills } = calculateJobATSScore(
         job.description,
         job.requirements,
@@ -114,6 +146,18 @@ export async function GET(req: Request) {
       const trackingKey = `${job.company.toLowerCase()}-${job.role.toLowerCase()}`;
       const isTracked = trackedMap.has(trackingKey);
 
+      let fairAttendance: any = undefined;
+      if (primaryFair && (idx % 2 === 0 || job.company.toLowerCase().includes("tech") || job.is_remote)) {
+        fairAttendance = {
+          school_name: userUniversity?.name || "Campus",
+          school_slug: userUniversity?.slug || "",
+          fair_title: primaryFair.title,
+          fair_date: primaryFair.date,
+          fair_location: primaryFair.location,
+          fair_link: primaryFair.registrationLink,
+        };
+      }
+
       return {
         ...job,
         match_score,
@@ -121,6 +165,7 @@ export async function GET(req: Request) {
         missing_skills,
         is_tracked: isTracked,
         tracked_id: trackedMap.get(trackingKey) || undefined,
+        campus_fair_attending: fairAttendance,
       };
     });
 
@@ -128,6 +173,14 @@ export async function GET(req: Request) {
       jobs: enrichedJobs,
       resumes: resumesList.map(r => ({ id: r.id, title: r.title })),
       activeResume: activeResume ? { id: activeResume.id, title: activeResume.title, targetRole: searchQuery } : null,
+      userProfile: {
+        fullName: profile?.full_name || undefined,
+        email: profile?.email || user.email || undefined,
+        universityName: profile?.university_name || userUniversity?.name || undefined,
+        targetRole: searchQuery,
+      },
+      userUniversity,
+      userPortfolioSlug: userPortfolio?.slug || null,
       query: searchQuery,
       location,
       candidateSkillsCount: candidateSkills.length,

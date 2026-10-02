@@ -31,7 +31,9 @@ import {
   Mail,
   Rocket,
   Mic,
-  Bot
+  Bot,
+  GraduationCap,
+  QrCode,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -56,6 +58,7 @@ import {
 import { AutoApplyPayloadDialog } from "@/components/jobs/auto-apply-payload-dialog";
 import { DeepTailorModal } from "@/components/jobs/deep-tailor-modal";
 import { UpgradeModal } from "@/components/ui/upgrade-modal";
+import { CareerFairPitchDialog } from "@/components/jobs/career-fair-pitch-dialog";
 
 export default function DashboardJobsPage() {
   const router = useRouter();
@@ -66,6 +69,13 @@ export default function DashboardJobsPage() {
   // Deep AI Tailoring Modal States
   const [isDeepTailorOpen, setIsDeepTailorOpen] = useState(false);
   const [deepTailorJob, setDeepTailorJob] = useState<ScrapedJob | null>(null);
+
+  // University & Career Fair Pitch Sheet States
+  const [userUniversity, setUserUniversity] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userPortfolioSlug, setUserPortfolioSlug] = useState<string | null>(null);
+  const [pitchSheetJob, setPitchSheetJob] = useState<ScrapedJob | null>(null);
+  const [isPitchSheetOpen, setIsPitchSheetOpen] = useState(false);
 
   const openDeepTailor = (job: ScrapedJob) => {
     setDeepTailorJob(job);
@@ -125,6 +135,17 @@ export default function DashboardJobsPage() {
     fetchAutopilotPackets();
   }, []);
 
+  // Read initial tab parameter from URL
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get("tab");
+      if (tabParam) {
+        setSelectedTab(tabParam);
+      }
+    }
+  }, []);
+
   // Load Saved jobs from localStorage
   useEffect(() => {
     try {
@@ -169,6 +190,10 @@ export default function DashboardJobsPage() {
       setJobs(fetchedJobs);
       const fetchedResumes = data.resumes || [];
       setResumes(fetchedResumes);
+      if (data.userUniversity) setUserUniversity(data.userUniversity);
+      if (data.userProfile) setUserProfile(data.userProfile);
+      if (data.userPortfolioSlug) setUserPortfolioSlug(data.userPortfolioSlug);
+
       if (data.activeResume) {
         setSelectedResumeId(data.activeResume.id);
         setActiveResumeTitle(data.activeResume.title);
@@ -371,6 +396,9 @@ export default function DashboardJobsPage() {
       }
 
       // Tabs
+      if (selectedTab === "campus-fair") {
+        return matchesSearch && !!job.campus_fair_attending;
+      }
       if (selectedTab === "high-match") {
         return matchesSearch && (job.match_score || 0) >= 85;
       }
@@ -577,6 +605,12 @@ export default function DashboardJobsPage() {
               <TabsTrigger value="all" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 All Matches ({jobs.length})
               </TabsTrigger>
+              {userUniversity && (
+                <TabsTrigger value="campus-fair" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#0d8274] data-[state=active]:text-white font-bold gap-1.5">
+                  <GraduationCap className="w-3.5 h-3.5 text-[#d8f36b]" />
+                  Campus Fair ({jobs.filter(j => !!j.campus_fair_attending).length})
+                </TabsTrigger>
+              )}
               <TabsTrigger value="high-match" className="rounded-sm text-xs px-3 text-[#c5d7d1] hover:text-[#f8f4ec] data-[state=active]:bg-[#d8f36b] data-[state=active]:text-[#102b2b] font-medium">
                 85%+ ATS Fit ({highMatchCount})
               </TabsTrigger>
@@ -888,6 +922,13 @@ export default function DashboardJobsPage() {
                   <CardTitle className="text-base font-bold text-[#102b2b] group-hover:text-[#0d8274] transition-colors line-clamp-1 mt-2.5">
                     {job.role}
                   </CardTitle>
+
+                  {job.campus_fair_attending && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold mt-2">
+                      <GraduationCap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate">Attending {job.campus_fair_attending.school_name} Fair &bull; {job.campus_fair_attending.fair_date}</span>
+                    </div>
+                  )}
                 </CardHeader>
 
                 <CardContent className="p-5 pt-0 pb-4 space-y-3 flex-1">
@@ -935,6 +976,20 @@ export default function DashboardJobsPage() {
                 </CardContent>
 
                 <CardFooter className="p-5 pt-3 border-t border-[#b8c8b9] mt-auto flex flex-col gap-2">
+                  {job.campus_fair_attending && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setPitchSheetJob(job);
+                        setIsPitchSheetOpen(true);
+                      }}
+                      className="w-full h-8 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 text-xs font-bold gap-1.5 rounded-sm"
+                    >
+                      <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                      1-Page Career Fair Pitch &bull; Mobile QR
+                    </Button>
+                  )}
                   <div className="flex flex-col gap-1.5 w-full">
                     <div className="flex items-center gap-1.5 w-full">
                       {/* Deep AI Job Tailor Action */}
@@ -1429,6 +1484,16 @@ export default function DashboardJobsPage() {
         title="AI Tailoring Quota Reached"
         description="Free plans include limited daily AI tailoring runs. Upgrade to ResumeForge Pro for unlimited deep tailoring, cover letters, and dedicated employer microsites."
         featureName="Unlimited AI Tailoring"
+      />
+
+      {/* 1-Page Campus Career Fair Pitch Sheet & QR Code Handout Dialog */}
+      <CareerFairPitchDialog
+        open={isPitchSheetOpen}
+        onOpenChange={setIsPitchSheetOpen}
+        job={pitchSheetJob}
+        userProfile={userProfile}
+        portfolioSlug={userPortfolioSlug}
+        resumeTitle={activeResumeTitle}
       />
     </div>
   );
