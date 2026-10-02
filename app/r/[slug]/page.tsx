@@ -12,13 +12,22 @@ export async function generateMetadata({ params }: PublicResumePageProps): Promi
     const { slug } = await params;
     const supabase = await createServerClient();
 
-    // Query resume directly by slug without invalid foreign joins
-    const { data: resume } = await supabase
+    // Query resume directly by slug, or by id if UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    let { data: resume } = await supabase
         .from("resumes")
-        .select("id, title, user_id, updated_at")
-        .eq("slug", slug)
-        .eq("is_public", true)
+        .select("id, title, user_id, updated_at, is_public")
+        .eq(isUuid ? "id" : "slug", slug)
         .maybeSingle();
+
+    if (!resume && !isUuid) {
+        const { data: byId } = await supabase
+            .from("resumes")
+            .select("id, title, user_id, updated_at, is_public")
+            .eq("id", slug)
+            .maybeSingle();
+        resume = byId;
+    }
 
     if (!resume) {
         return {
@@ -74,16 +83,34 @@ export default async function PublicResumePage({ params }: PublicResumePageProps
     const { slug } = await params;
     const supabase = await createServerClient();
 
-    // 1. Fetch Resume
-    const { data: resume } = await supabase
+    // 1. Fetch Resume by slug or id
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    let { data: resume } = await supabase
         .from("resumes")
         .select("*")
-        .eq("slug", slug)
-        .eq("is_public", true)
+        .eq(isUuid ? "id" : "slug", slug)
         .maybeSingle();
+
+    if (!resume && !isUuid) {
+        const { data: byId } = await supabase
+            .from("resumes")
+            .select("*")
+            .eq("id", slug)
+            .maybeSingle();
+        resume = byId;
+    }
 
     if (!resume) {
         notFound();
+    }
+
+    // Check visibility: public or authorized viewer
+    if (!resume.is_public) {
+        const { data: { user } } = await supabase.auth.getUser();
+        // Allow owner or logged-in portal users/deans
+        if (!user) {
+            notFound();
+        }
     }
 
     const resumeId = resume.id;

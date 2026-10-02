@@ -21,7 +21,7 @@ export default async function UniversityPortalPage({ params }: PortalPageProps) 
   const tenant = resolveUniversityTenant(orgSlug);
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <div className="w-full mx-auto py-2 transition-all duration-300">
       <UniversityPortalView tenant={tenant} />
     </div>
   );
