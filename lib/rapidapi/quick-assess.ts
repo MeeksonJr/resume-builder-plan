@@ -22,7 +22,7 @@ export interface GetQuestionsParams {
 const RAPIDAPI_KEY =
   process.env.RAPIDAPI_KEY ||
   process.env.RAPID_API_KEY ||
-  "39cb654435mshc1cc78be702b2b2p105133jsn0f527c017fb6";
+  "";
 
 const RAPIDAPI_HOST = "generate-job-interview-questions-ai-quick-assess.p.rapidapi.com";
 

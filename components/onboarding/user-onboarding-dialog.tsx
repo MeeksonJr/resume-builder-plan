@@ -33,34 +33,35 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { VIRGINIA_INSTITUTIONS } from "@/lib/university/virginia-institutions";
 
 const POPULAR_UNIVERSITIES = [
-  {
-    name: "Old Dominion University",
-    slug: "old-dominion-university",
-    domain: "odu.edu",
-    emailDomains: ["odu.edu", "cs.odu.edu"],
-    emailFormat: "[mid]@odu.edu",
-    sampleEmail: "mdatt001@odu.edu",
-  },
-  {
-    name: "Tidewater Community College",
-    slug: "tidewater-community-college",
-    domain: "tcc.edu",
-    emailDomains: ["email.vccs.edu", "vccs.edu", "tcc.edu", "email.tcc.edu"],
-    emailFormat: "[username]@email.vccs.edu",
-    sampleEmail: "mld40112@email.vccs.edu",
-  },
-  { name: "Stanford University", slug: "stanford", domain: "stanford.edu" },
-  { name: "Massachusetts Institute of Technology", slug: "mit", domain: "mit.edu" },
-  { name: "University of California, Berkeley", slug: "berkeley", domain: "berkeley.edu" },
-  { name: "Harvard University", slug: "harvard", domain: "harvard.edu" },
-  { name: "Carnegie Mellon University", slug: "cmu", domain: "cmu.edu" },
-  { name: "New York University", slug: "nyu", domain: "nyu.edu" },
-  { name: "University of Michigan", slug: "umich", domain: "umich.edu" },
-  { name: "Georgia Institute of Technology", slug: "gatech", domain: "gatech.edu" },
-  { name: "University of Washington", slug: "uw", domain: "uw.edu" },
-  { name: "Columbia University", slug: "columbia", domain: "columbia.edu" },
+  ...VIRGINIA_INSTITUTIONS.map((vi) => ({
+    name: vi.name,
+    slug: vi.slug,
+    domain: vi.domain,
+    emailDomains: vi.emailDomains,
+    emailFormat: vi.emailFormat,
+    sampleEmail: vi.sampleEmail,
+    location: vi.location,
+    region: vi.region,
+    category: vi.category,
+    shortName: vi.shortName,
+    state: "VA",
+    canvasUrl: vi.canvasUrl,
+    topMajors: vi.topMajors,
+    hasPortal: true,
+  })),
+  { name: "Stanford University", slug: "stanford", domain: "stanford.edu", location: "Stanford, CA", category: "national" as const },
+  { name: "Massachusetts Institute of Technology", slug: "mit", domain: "mit.edu", location: "Cambridge, MA", category: "national" as const },
+  { name: "University of California, Berkeley", slug: "berkeley", domain: "berkeley.edu", location: "Berkeley, CA", category: "national" as const },
+  { name: "Harvard University", slug: "harvard", domain: "harvard.edu", location: "Cambridge, MA", category: "national" as const },
+  { name: "Carnegie Mellon University", slug: "cmu", domain: "cmu.edu", location: "Pittsburgh, PA", category: "national" as const },
+  { name: "New York University", slug: "nyu", domain: "nyu.edu", location: "New York, NY", category: "national" as const },
+  { name: "University of Michigan", slug: "umich", domain: "umich.edu", location: "Ann Arbor, MI", category: "national" as const },
+  { name: "Georgia Institute of Technology", slug: "gatech", domain: "gatech.edu", location: "Atlanta, GA", category: "national" as const },
+  { name: "University of Washington", slug: "uw", domain: "uw.edu", location: "Seattle, WA", category: "national" as const },
+  { name: "Columbia University", slug: "columbia", domain: "columbia.edu", location: "New York, NY", category: "national" as const },
 ];
 
 const ROLES = [
@@ -139,9 +140,47 @@ export function UserOnboardingDialog() {
     emailFormat?: string;
     sampleEmail?: string;
     emailDomains?: string[];
+    category?: string;
+    shortName?: string;
+    state?: string;
+    canvasUrl?: string;
+    topMajors?: string[];
   }>>(POPULAR_UNIVERSITIES);
   const [loadingCampuses, setLoadingCampuses] = useState(false);
   const [isDiscoveringSchool, setIsDiscoveringSchool] = useState(false);
+  const [campusFilter, setCampusFilter] = useState<"all_va" | "vccs" | "va_4yr" | "all">("all_va");
+
+  // School email format from RapidAPI + AI
+  const [schoolFormatData, setSchoolFormatData] = useState<{
+    school_name: string;
+    domain: string;
+    allowed_domains: string[];
+    formats: Array<{ pattern: string; example: string; percentage: string }>;
+    student_format?: string;
+    sample_email?: string;
+    found: boolean;
+    source?: string;
+  } | null>(null);
+  const [fetchingFormat, setFetchingFormat] = useState(false);
+
+  const lookupSchoolFormat = async (schoolName: string) => {
+    if (!schoolName || schoolName.trim().length < 2) return;
+    setFetchingFormat(true);
+    try {
+      const res = await fetch(`/api/university/format?schoolName=${encodeURIComponent(schoolName.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSchoolFormatData(data);
+        if (data.found && data.sample_email && !schoolEmail) {
+          setSchoolEmail(data.sample_email);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to lookup school format:", err);
+    } finally {
+      setFetchingFormat(false);
+    }
+  };
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -156,6 +195,18 @@ export function UserOnboardingDialog() {
         const data = await res.json();
         if (Array.isArray(data.campuses) && data.campuses.length > 0) {
           setCampuses(data.campuses);
+          // Auto-seed to Supabase database if cached count in DB is low
+          if (data.campuses.length < 25) {
+            fetch("/api/university/seed-virginia", { method: "POST" })
+              .then(() => fetch("/api/university/list"))
+              .then((r) => r.json())
+              .then((fresh) => {
+                if (Array.isArray(fresh.campuses) && fresh.campuses.length > 0) {
+                  setCampuses(fresh.campuses);
+                }
+              })
+              .catch(() => {});
+          }
         }
       }
     } catch (err) {
@@ -288,17 +339,25 @@ export function UserOnboardingDialog() {
       emailDomain.endsWith(".ac.uk") ||
       emailDomain.endsWith(".edu.au") ||
       emailDomain.endsWith(".edu.cn") ||
-      emailDomain.includes("vccs.edu")
+      emailDomain.endsWith(".edu.ca") ||
+      emailDomain.includes("vccs.edu") ||
+      emailDomain.includes("tcc.edu")
     ) {
       return true;
     }
-    if (!effectiveCampus) return true;
-    if (effectiveCampus.emailDomains && effectiveCampus.emailDomains.length > 0) {
+    if (schoolFormatData?.allowed_domains && schoolFormatData.allowed_domains.length > 0) {
+      if (schoolFormatData.allowed_domains.some(
+        (d) => emailDomain === d.toLowerCase() || emailDomain.endsWith("." + d.toLowerCase())
+      )) {
+        return true;
+      }
+    }
+    if (effectiveCampus?.emailDomains && effectiveCampus.emailDomains.length > 0) {
       return effectiveCampus.emailDomains.some(
         (d) => emailDomain === d.toLowerCase() || emailDomain.endsWith("." + d.toLowerCase())
       );
     }
-    if (effectiveCampus.domain) {
+    if (effectiveCampus?.domain) {
       return (
         emailDomain === effectiveCampus.domain.toLowerCase() ||
         emailDomain.endsWith("." + effectiveCampus.domain.toLowerCase())
@@ -306,6 +365,16 @@ export function UserOnboardingDialog() {
     }
     return false;
   })();
+
+  // Auto-lookup school email format when active school changes
+  useEffect(() => {
+    if (step === 3 && activeSchoolName && activeSchoolName !== "University Student" && activeSchoolName.trim().length >= 2) {
+      const timer = setTimeout(() => {
+        lookupSchoolFormat(activeSchoolName);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [step, activeSchoolName]);
 
   const handleConfirmDetectedSchool = async () => {
     if (!detectedSchool) return;
@@ -357,11 +426,13 @@ export function UserOnboardingDialog() {
       emailDomain.endsWith(".edu") ||
       emailDomain.endsWith(".ac.uk") ||
       emailDomain.endsWith(".edu.au") ||
-      emailDomain.includes("vccs.edu")
+      emailDomain.endsWith(".edu.ca") ||
+      emailDomain.includes("vccs.edu") ||
+      emailDomain.includes("tcc.edu")
     );
 
-    if (!isAcademic && !isEmailDomainValid && effectiveCampus?.domain) {
-      toast.error(`Please use an official academic email (.edu) or one ending in @${effectiveCampus.domain}`);
+    if (!isAcademic && !isEmailDomainValid) {
+      toast.error("Please enter an official academic email ending in .edu");
       return;
     }
 
@@ -507,11 +578,44 @@ export function UserOnboardingDialog() {
     }
   };
 
-  const filteredSchools = campuses.filter((u) =>
-    u.name.toLowerCase().includes(schoolSearch.toLowerCase()) ||
-    u.slug.toLowerCase().includes(schoolSearch.toLowerCase()) ||
-    u.domain.toLowerCase().includes(schoolSearch.toLowerCase())
-  );
+  const filteredSchools = campuses.filter((u) => {
+    const q = schoolSearch.toLowerCase().trim();
+    const uAny = u as any;
+    const matchesQuery =
+      !q ||
+      u.name.toLowerCase().includes(q) ||
+      u.slug.toLowerCase().includes(q) ||
+      u.domain.toLowerCase().includes(q) ||
+      (uAny.shortName && uAny.shortName.toLowerCase().includes(q)) ||
+      (u.location && u.location.toLowerCase().includes(q));
+
+    if (!matchesQuery) return false;
+
+    // Filter by Tab
+    if (campusFilter === "vccs") {
+      return (
+        uAny.category === "vccs_community_college" ||
+        u.slug.includes("community-college") ||
+        u.domain.includes("vccs")
+      );
+    }
+    if (campusFilter === "va_4yr") {
+      return (
+        uAny.category === "public_university" ||
+        uAny.category === "private_university" ||
+        (uAny.state === "VA" && !uAny.category?.includes("community"))
+      );
+    }
+    if (campusFilter === "all_va") {
+      return (
+        uAny.state === "VA" ||
+        u.location?.includes("VA") ||
+        u.domain.includes("vccs") ||
+        uAny.category?.includes("vccs")
+      );
+    }
+    return true;
+  });
 
   const exactMatchExists = campuses.some(
     (u) => u.name.toLowerCase().trim() === schoolSearch.toLowerCase().trim()
@@ -883,21 +987,69 @@ export function UserOnboardingDialog() {
                     </div>
                   )}
 
-                  {/* University Grid */}
+                  {/* Filter Tabs for Virginia & National Colleges */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 border-b border-border pb-2.5 overflow-x-auto no-scrollbar">
+                      <button
+                        type="button"
+                        onClick={() => setCampusFilter("all_va")}
+                        className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          campusFilter === "all_va"
+                            ? "bg-[#102b2b] text-[#d8f36b] dark:bg-[#d8f36b] dark:text-[#102b2b]"
+                            : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        🏛️ Virginia Campuses ({campuses.filter((c: any) => c.state === "VA" || c.location?.includes("VA")).length || 50})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCampusFilter("vccs")}
+                        className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          campusFilter === "vccs"
+                            ? "bg-[#102b2b] text-[#d8f36b] dark:bg-[#d8f36b] dark:text-[#102b2b]"
+                            : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        🎓 VCCS Community Colleges (23)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCampusFilter("va_4yr")}
+                        className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          campusFilter === "va_4yr"
+                            ? "bg-[#102b2b] text-[#d8f36b] dark:bg-[#d8f36b] dark:text-[#102b2b]"
+                            : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        🦅 4-Year Universities (27)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCampusFilter("all")}
+                        className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          campusFilter === "all"
+                            ? "bg-[#102b2b] text-[#d8f36b] dark:bg-[#d8f36b] dark:text-[#102b2b]"
+                            : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        🌎 All Institutions ({campuses.length})
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between my-2.5">
                       <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                        {loadingCampuses ? "Loading Campuses..." : `Registered Institutions (${filteredSchools.length})`}
+                        {loadingCampuses ? "Loading Campuses..." : `Institutions Found (${filteredSchools.length})`}
                       </span>
                       <span className="text-[10px] text-muted-foreground font-mono">
-                        Saved colleges from student network
+                        Instant enrollment &amp; LMS verification
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
                       {filteredSchools.map((u) => {
                         const isSelected = selectedSchool === u.name;
                         const hasActiveCohort = (u.studentCount || 0) > 0;
+                        const uAny = u as any;
 
                         return (
                           <button
@@ -906,6 +1058,9 @@ export function UserOnboardingDialog() {
                             onClick={() => {
                               setSelectedSchool(u.name);
                               setSchoolSearch(u.name);
+                              if (uAny.canvasUrl) {
+                                setCanvasUrl(uAny.canvasUrl);
+                              }
                             }}
                             className={`text-left p-3 border transition-all cursor-pointer flex flex-col justify-between ${
                               isSelected
@@ -915,21 +1070,37 @@ export function UserOnboardingDialog() {
                           >
                             <div>
                               <div className="flex items-start justify-between gap-1">
-                                <span className="text-xs font-bold text-foreground leading-snug truncate">
+                                <span className="text-xs font-bold text-foreground leading-snug line-clamp-2">
                                   {u.name}
+                                  {uAny.shortName && <span className="text-muted-foreground font-normal ml-1">({uAny.shortName})</span>}
                                 </span>
                                 {hasActiveCohort && (
-                                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0 shrink-0 font-mono">
+                                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[9px] px-1 py-0 shrink-0 font-mono">
                                     {u.studentCount} Verified
                                   </Badge>
                                 )}
                               </div>
-                              <span className="text-[10px] text-muted-foreground font-mono block mt-0.5">
-                                {u.domain}
-                              </span>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-[10px] text-muted-foreground font-mono">
+                                  {u.domain}
+                                </span>
+                                {uAny.category === "vccs_community_college" ? (
+                                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 text-[8px] px-1 py-0 font-bold">
+                                    VCCS
+                                  </Badge>
+                                ) : uAny.category === "public_university" ? (
+                                  <Badge className="bg-sky-500/15 text-sky-700 dark:text-sky-300 border-0 text-[8px] px-1 py-0 font-bold">
+                                    VA Public
+                                  </Badge>
+                                ) : uAny.category === "private_university" ? (
+                                  <Badge className="bg-violet-500/15 text-violet-700 dark:text-violet-300 border-0 text-[8px] px-1 py-0 font-bold">
+                                    VA Private
+                                  </Badge>
+                                ) : null}
+                              </div>
                             </div>
                             {u.location && (
-                              <span className="text-[10px] text-muted-foreground/80 mt-1 truncate">
+                              <span className="text-[10px] text-muted-foreground/80 mt-1.5 truncate">
                                 📍 {u.location}
                               </span>
                             )}
@@ -938,6 +1109,153 @@ export function UserOnboardingDialog() {
                       })}
                     </div>
                   </div>
+
+                  {/* RapidAPI & AI Email Format Detection Card / Fallback Card */}
+                  {activeSchoolName && activeSchoolName !== "University Student" && (
+                    <div className="pt-2">
+                      {fetchingFormat ? (
+                        <div className="p-4 bg-muted/30 border border-border flex items-center gap-3">
+                          <Loader2 className="h-4 w-4 animate-spin text-[#0d8274]" />
+                          <div>
+                            <p className="text-xs font-bold text-foreground">
+                              Looking up email format for &quot;{activeSchoolName}&quot;...
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              Searching academic registries &amp; RocketReach formats via RapidAPI &amp; AI
+                            </p>
+                          </div>
+                        </div>
+                      ) : schoolFormatData?.found ? (
+                        <div className="p-5 border-2 border-[#0d8274]/40 bg-[#0d8274]/5 space-y-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-[#0d8274]/20 border border-[#0d8274]/30 flex items-center justify-center font-black text-sm text-[#0d8274] shrink-0">
+                                {schoolFormatData.school_name.slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-sm font-black text-foreground">
+                                    {schoolFormatData.school_name} Email Formats
+                                  </h4>
+                                  <Badge className="bg-[#d8f36b] text-[#102b2b] text-[9px] font-black border-0">
+                                    FORMAT DETECTED
+                                  </Badge>
+                                </div>
+                                {schoolFormatData.formats[0] && (
+                                  <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                                    The most common format is <strong className="text-foreground font-mono">{schoolFormatData.formats[0].pattern}</strong> (ex. <span className="font-mono text-foreground font-medium">{schoolFormatData.formats[0].example}</span>), used by <span className="font-bold text-[#0d8274]">{schoolFormatData.formats[0].percentage}</span> of addresses.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* RocketReach Email Formats Breakdown Table */}
+                          <div className="border border-border/80 overflow-hidden bg-card/60">
+                            <table className="w-full text-left text-xs">
+                              <thead className="bg-muted/80 border-b border-border text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                                <tr>
+                                  <th className="p-2.5">Email Format</th>
+                                  <th className="p-2.5">Example</th>
+                                  <th className="p-2.5 text-right">Percentage</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/50 text-[11px]">
+                                {schoolFormatData.formats.slice(0, 5).map((fmt, idx) => (
+                                  <tr key={idx} className="hover:bg-muted/30">
+                                    <td className="p-2.5 font-mono font-bold text-[#0d8274]">{fmt.pattern}</td>
+                                    <td className="p-2.5 font-mono text-muted-foreground">{fmt.example}</td>
+                                    <td className="p-2.5 text-right font-bold text-foreground">
+                                      <span className="inline-flex items-center gap-1.5 justify-end">
+                                        <span>{fmt.percentage}</span>
+                                        <span className="h-1.5 w-12 bg-muted rounded-none overflow-hidden inline-block">
+                                          <span
+                                            className="h-full bg-[#0d8274] block"
+                                            style={{ width: fmt.percentage.includes("%") ? fmt.percentage : "40%" }}
+                                          />
+                                        </span>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {schoolFormatData.student_format && (
+                            <div className="p-2.5 bg-muted/50 border border-border text-[11px] font-mono text-muted-foreground flex items-center justify-between">
+                              <span>Student Format: <strong className="text-[#0d8274]">{schoolFormatData.student_format}</strong></span>
+                              {schoolFormatData.sample_email && (
+                                <span className="text-[10px] text-muted-foreground">Ex: {schoolFormatData.sample_email}</span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="pt-1 flex items-center justify-between gap-3">
+                            <p className="text-xs text-muted-foreground">
+                              Verify your enrollment with your official university email
+                            </p>
+                            <Button
+                              type="button"
+                              onClick={() => setVerificationMethod("email")}
+                              className="bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743] font-bold text-xs h-9 px-4 rounded-none cursor-pointer shrink-0"
+                            >
+                              <Mail className="h-3.5 w-3.5 mr-1.5" />
+                              Verify with School Email
+                            </Button>
+                          </div>
+                        </div>
+                      ) : schoolFormatData && !schoolFormatData.found ? (
+                        <div className="p-5 border-2 border-amber-500/30 bg-amber-500/5 space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-amber-500/10 text-amber-600 rounded-none shrink-0 mt-0.5">
+                              <Info className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-black text-foreground">
+                                Could not automatically find email pattern for &quot;{activeSchoolName}&quot;
+                              </h4>
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                We could not retrieve verified email formats for this institution. You can connect your Canvas LMS token to verify student status, or skip to continue as a professional for now.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <div
+                              onClick={() => setVerificationMethod("canvas")}
+                              className="p-4 border border-violet-500/30 hover:border-violet-600 bg-card/80 hover:bg-violet-500/5 cursor-pointer transition-all space-y-1.5"
+                            >
+                              <div className="flex items-center gap-2 text-violet-700 dark:text-violet-300 font-bold text-xs">
+                                <KeyRound className="h-4 w-4" />
+                                Enter Canvas LMS Token
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Instant verification. Connect courses &amp; verified GPA directly to your resume bullet points.
+                              </p>
+                            </div>
+
+                            <div
+                              onClick={() => {
+                                setIsStudent(false);
+                                setStep(4);
+                                toast.info("Continuing as professional. You can update to student status in Settings anytime to access your school portal.");
+                              }}
+                              className="p-4 border border-border hover:border-foreground/40 bg-card/80 hover:bg-muted/40 cursor-pointer transition-all space-y-1.5"
+                            >
+                              <div className="flex items-center gap-2 text-foreground font-bold text-xs">
+                                <Briefcase className="h-4 w-4" />
+                                Skip as Professional for now
+                              </div>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Continue with professional tools. You can upgrade to student status anytime in Settings.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
 
                   {/* Choose verification method */}
                   <div className="pt-2">
@@ -1012,12 +1330,50 @@ export function UserOnboardingDialog() {
                     </Button>
                   </div>
 
+                  {schoolFormatData?.found && schoolFormatData.formats && schoolFormatData.formats.length > 0 && (
+                    <div className="p-3.5 bg-muted/40 border border-border/80 text-xs space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
+                          <Sparkles className="h-3.5 w-3.5 text-[#0d8274]" />
+                          Institutional Email Patterns ({schoolFormatData.domain || effectiveCampus?.domain || "academic domain"})
+                        </span>
+                        <Badge className="bg-[#d8f36b] text-[#102b2b] text-[9px] font-black border-0">
+                          RocketReach Patterns
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {schoolFormatData.formats.slice(0, 4).map((fmt, idx) => (
+                          <div key={idx} className="p-2 bg-background border border-border/60 text-[11px] font-mono flex items-center justify-between">
+                            <span className="text-[#0d8274] font-semibold">{fmt.pattern}</span>
+                            <span className="text-muted-foreground text-[10px] font-sans font-bold">{fmt.percentage}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {schoolFormatData.sample_email && (
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+                          <span>
+                            Sample: <span className="font-mono text-foreground font-semibold">{schoolFormatData.sample_email}</span>
+                          </span>
+                          {!schoolEmail && (
+                            <button
+                              type="button"
+                              onClick={() => setSchoolEmail(schoolFormatData.sample_email || "")}
+                              className="text-[10px] text-[#0d8274] hover:underline font-semibold"
+                            >
+                              Use Sample Template
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-bold text-foreground">University Email (.edu)</Label>
-                      {effectiveCampus?.emailFormat && (
+                      {(schoolFormatData?.student_format || effectiveCampus?.emailFormat) && (
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-                          Format: <strong className="text-[#0d8274]">{effectiveCampus.emailFormat}</strong>
+                          Format: <strong className="text-[#0d8274]">{schoolFormatData?.student_format || effectiveCampus?.emailFormat}</strong>
                         </span>
                       )}
                     </div>
@@ -1026,7 +1382,7 @@ export function UserOnboardingDialog() {
                         type="email"
                         value={schoolEmail}
                         onChange={(e) => setSchoolEmail(e.target.value)}
-                        placeholder={effectiveCampus?.sampleEmail || `student@${effectiveCampus?.domain || "school.edu"}`}
+                        placeholder={schoolFormatData?.sample_email || effectiveCampus?.sampleEmail || `student@${effectiveCampus?.domain || "school.edu"}`}
                         className="rounded-none border-border h-11"
                       />
                       <Button
@@ -1128,27 +1484,58 @@ export function UserOnboardingDialog() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-foreground">Canvas Instance URL</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold text-foreground">Canvas Instance URL</Label>
+                      {activeSchoolName && activeSchoolName !== "University Student" && (
+                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Configured for {activeSchoolName}
+                        </span>
+                      )}
+                    </div>
                     <Input
                       value={canvasUrl}
                       onChange={(e) => setCanvasUrl(e.target.value)}
-                      placeholder="https://canvas.stanford.edu or https://canvas.instructure.com"
+                      placeholder="https://vccs.instructure.com or https://canvas.instructure.com"
                       className="rounded-none border-border h-11"
                     />
+                    {canvasUrl && canvasUrl.startsWith("http") && (
+                      <div className="pt-0.5 flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Shortcut to generate token:</span>
+                        <a
+                          href={`${canvasUrl.replace(/\/$/, "")}/profile/settings`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-violet-600 dark:text-violet-400 hover:underline font-semibold flex items-center gap-1"
+                        >
+                          Open {activeSchoolName !== "University Student" ? activeSchoolName : "Canvas"} Account Settings <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Detailed Step-by-Step Instructions */}
+                  <div className="p-4 bg-muted/60 border border-border text-xs text-muted-foreground space-y-2">
+                    <p className="font-bold text-foreground flex items-center gap-1.5">
+                      <Info className="h-4 w-4 text-violet-600" />
+                      Where to find your Canvas LMS Access Token:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed">
+                      <li>Log in to your institution&apos;s Canvas LMS portal (e.g. <code>https://canvas.instructure.com</code> or your campus Canvas URL)</li>
+                      <li>Click <strong>Account</strong> in the left sidebar menu &rarr; select <strong>Settings</strong></li>
+                      <li>Scroll down to the <strong>Approved Integrations</strong> section</li>
+                      <li>Click <strong>+ New Access Token</strong>, enter Purpose: &quot;ResumeForge&quot;, then click <strong>Generate Token</strong></li>
+                      <li>Copy the generated token string and paste it into the field below</li>
+                    </ol>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-bold text-foreground">Canvas Access Token</Label>
-                      <span className="text-[11px] text-muted-foreground">
-                        Canvas &gt; Account &gt; Settings &gt; Approved Integrations &gt; New Access Token
-                      </span>
-                    </div>
+                    <Label className="text-xs font-bold text-foreground">Canvas Access Token</Label>
                     <Input
                       type="password"
                       value={canvasToken}
                       onChange={(e) => setCanvasToken(e.target.value)}
-                      placeholder="Paste Canvas token..."
+                      placeholder="Paste Canvas access token here..."
                       className="rounded-none border-border h-11 font-mono"
                     />
                   </div>

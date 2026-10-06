@@ -1,4 +1,5 @@
 // Centralized University / Campus Domain Knowledge & Auto-Detection
+import { VIRGINIA_INSTITUTIONS } from "@/lib/university/virginia-institutions";
 
 export interface SchoolInfo {
   name: string;
@@ -14,10 +15,11 @@ export const KNOWN_EDU_DOMAINS: Record<string, { name: string; slug: string; loc
   // Virginia Universities & Community Colleges
   "odu.edu": { name: "Old Dominion University", slug: "old-dominion-university", location: "Norfolk, VA" },
   "cs.odu.edu": { name: "Old Dominion University", slug: "old-dominion-university", location: "Norfolk, VA" },
+  "tcc.edu": { name: "Tidewater Community College", slug: "tidewater-community-college", location: "Norfolk, VA" },
   "email.vccs.edu": { name: "Tidewater Community College", slug: "tidewater-community-college", location: "Norfolk, VA" },
   "vccs.edu": { name: "Virginia Community College System", slug: "vccs", location: "Virginia" },
-  "tcc.edu": { name: "Tidewater Community College", slug: "tidewater-community-college", location: "Norfolk, VA" },
   "email.tcc.edu": { name: "Tidewater Community College", slug: "tidewater-community-college", location: "Norfolk, VA" },
+  "tidewater-community-college.edu": { name: "Tidewater Community College", slug: "tidewater-community-college", location: "Norfolk, VA" },
   "virginia.edu": { name: "University of Virginia", slug: "uva", location: "Charlottesville, VA" },
   "vt.edu": { name: "Virginia Tech", slug: "virginia-tech", location: "Blacksburg, VA" },
   "vcu.edu": { name: "Virginia Commonwealth University", slug: "vcu", location: "Richmond, VA" },
@@ -26,8 +28,27 @@ export const KNOWN_EDU_DOMAINS: Record<string, { name: string; slug: string; loc
   "wm.edu": { name: "William & Mary", slug: "william-and-mary", location: "Williamsburg, VA" },
   "nsu.edu": { name: "Norfolk State University", slug: "norfolk-state", location: "Norfolk, VA" },
   "hamptonu.edu": { name: "Hampton University", slug: "hampton-university", location: "Hampton, VA" },
-  "cnup.edu": { name: "Christopher Newport University", slug: "cnu", location: "Newport News, VA" },
   "cnu.edu": { name: "Christopher Newport University", slug: "cnu", location: "Newport News, VA" },
+  "nvcc.edu": { name: "Northern Virginia Community College", slug: "northern-virginia-community-college", location: "Annandale, VA" },
+  "vpcc.edu": { name: "Virginia Peninsula Community College", slug: "virginia-peninsula-community-college", location: "Hampton, VA" },
+  "tncc.edu": { name: "Virginia Peninsula Community College", slug: "virginia-peninsula-community-college", location: "Hampton, VA" },
+  "reynolds.edu": { name: "J. Sargeant Reynolds Community College", slug: "reynolds-community-college", location: "Richmond, VA" },
+  "brightpoint.edu": { name: "Brightpoint Community College", slug: "brightpoint-community-college", location: "Chester, VA" },
+  "germanna.edu": { name: "Germanna Community College", slug: "germanna-community-college", location: "Fredericksburg, VA" },
+  "pvcc.edu": { name: "Piedmont Virginia Community College", slug: "piedmont-virginia-community-college", location: "Charlottesville, VA" },
+  "brcc.edu": { name: "Blue Ridge Community College", slug: "blue-ridge-community-college", location: "Weyers Cave, VA" },
+  "centralvirginia.edu": { name: "Central Virginia Community College", slug: "central-virginia-community-college", location: "Lynchburg, VA" },
+  "danville.edu": { name: "Danville Community College", slug: "danville-community-college", location: "Danville, VA" },
+  "laurelridge.edu": { name: "Laurel Ridge Community College", slug: "laurel-ridge-community-college", location: "Middletown, VA" },
+  "nr.edu": { name: "New River Community College", slug: "new-river-community-college", location: "Dublin, VA" },
+  "virginiawestern.edu": { name: "Virginia Western Community College", slug: "virginia-western-community-college", location: "Roanoke, VA" },
+  "richmond.edu": { name: "University of Richmond", slug: "university-of-richmond", location: "Richmond, VA" },
+  "liberty.edu": { name: "Liberty University", slug: "liberty-university", location: "Lynchburg, VA" },
+  "radford.edu": { name: "Radford University", slug: "radford-university", location: "Radford, VA" },
+  "longwood.edu": { name: "Longwood University", slug: "longwood-university", location: "Farmville, VA" },
+  "vsu.edu": { name: "Virginia State University", slug: "virginia-state-university", location: "Petersburg, VA" },
+  "vmi.edu": { name: "Virginia Military Institute", slug: "virginia-military-institute", location: "Lexington, VA" },
+  "umw.edu": { name: "University of Mary Washington", slug: "university-of-mary-washington", location: "Fredericksburg, VA" },
 
   // Top National Universities
   "stanford.edu": { name: "Stanford University", slug: "stanford", location: "Stanford, CA" },

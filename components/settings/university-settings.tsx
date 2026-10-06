@@ -22,21 +22,25 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 
+import { VIRGINIA_INSTITUTIONS, findVirginiaInstitution } from "@/lib/university/virginia-institutions";
+
 interface UniversitySettingsProps {
   profile: any;
 }
 
 const POPULAR_SCHOOLS = [
+  "Tidewater Community College",
+  "Old Dominion University",
+  "Virginia Tech",
+  "University of Virginia",
+  "George Mason University",
+  "Virginia Commonwealth University",
+  "Northern Virginia Community College",
+  "William & Mary",
+  "James Madison University",
+  "Virginia Peninsula Community College",
   "Stanford University",
   "Massachusetts Institute of Technology",
-  "University of California, Berkeley",
-  "Harvard University",
-  "Carnegie Mellon University",
-  "New York University",
-  "University of Michigan",
-  "Georgia Institute of Technology",
-  "University of Washington",
-  "Columbia University",
 ];
 
 export function UniversitySettings({ profile }: UniversitySettingsProps) {
@@ -273,11 +277,17 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
 
                 {/* Popular School Suggestions */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {POPULAR_SCHOOLS.slice(0, 5).map((sch) => (
+                  {POPULAR_SCHOOLS.slice(0, 8).map((sch) => (
                     <button
                       key={sch}
                       type="button"
-                      onClick={() => setUniversityName(sch)}
+                      onClick={() => {
+                        setUniversityName(sch);
+                        const match = findVirginiaInstitution(sch);
+                        if (match?.canvasUrl && !canvasUrl) {
+                          setCanvasUrl(match.canvasUrl);
+                        }
+                      }}
                       className="text-[11px] font-medium px-2.5 py-1 border border-border bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-all"
                     >
                       {sch}

@@ -1,8 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { VIRGINIA_INSTITUTIONS } from "@/lib/university/virginia-institutions";
 
 const RAPIDAPI_KEY =
   process.env.RAPIDAPI_KEY ||
-  "39cb654435mshc1cc78be702b2b2p105133jsn0f527c017fb6";
+  process.env.RAPID_API_KEY ||
+  "";
 
 const RAPIDAPI_HOST = "google-search-master-mega.p.rapidapi.com";
 
@@ -105,13 +107,13 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
       placementRate: "88%",
       avgStartingSalary: "$78,500",
       acceptanceRate: "91%",
-      student_email_format: "[mid]@odu.edu (e.g. mdatt001@odu.edu)",
-      sample_student_email: "mdatt001@odu.edu",
+      student_email_format: "[username]@odu.edu",
+      sample_student_email: "[username]@odu.edu",
       email_domains: ["odu.edu", "cs.odu.edu"],
     },
     email_domains: ["odu.edu", "cs.odu.edu"],
-    student_email_format: "[username]@odu.edu (e.g. mdatt001@odu.edu)",
-    sample_student_email: "mdatt001@odu.edu",
+    student_email_format: "[username]@odu.edu",
+    sample_student_email: "[username]@odu.edu",
     faculty_email_format: "[username]@odu.edu",
     news_and_events: [
       {
@@ -279,13 +281,13 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
       placementRate: "86%",
       avgStartingSalary: "$62,000",
       acceptanceRate: "100%",
-      student_email_format: "[username]@email.vccs.edu (e.g. mld40112@email.vccs.edu)",
-      sample_student_email: "mld40112@email.vccs.edu",
+      student_email_format: "[username]@email.vccs.edu",
+      sample_student_email: "[username]@email.vccs.edu",
       email_domains: ["email.vccs.edu", "vccs.edu", "tcc.edu", "email.tcc.edu"],
     },
     email_domains: ["email.vccs.edu", "vccs.edu", "tcc.edu", "email.tcc.edu"],
-    student_email_format: "[username]@email.vccs.edu (e.g. mld40112@email.vccs.edu)",
-    sample_student_email: "mld40112@email.vccs.edu",
+    student_email_format: "[username]@email.vccs.edu",
+    sample_student_email: "[username]@email.vccs.edu",
     faculty_email_format: "[username]@tcc.edu",
     news_and_events: [
       {
@@ -372,13 +374,13 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
       placementRate: "86%",
       avgStartingSalary: "$62,000",
       acceptanceRate: "100%",
-      student_email_format: "[username]@email.vccs.edu (e.g. mld40112@email.vccs.edu)",
-      sample_student_email: "mld40112@email.vccs.edu",
+      student_email_format: "[username]@email.vccs.edu",
+      sample_student_email: "[username]@email.vccs.edu",
       email_domains: ["email.vccs.edu", "vccs.edu", "tcc.edu"],
     },
     email_domains: ["email.vccs.edu", "vccs.edu", "tcc.edu"],
-    student_email_format: "[username]@email.vccs.edu (e.g. mld40112@email.vccs.edu)",
-    sample_student_email: "mld40112@email.vccs.edu",
+    student_email_format: "[username]@email.vccs.edu",
+    sample_student_email: "[username]@email.vccs.edu",
     faculty_email_format: "[username]@tcc.edu",
     news_and_events: [],
     departments: [],
@@ -1001,6 +1003,10 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
   emailDomains?: string[];
   dailyRoutineDate?: string;
   lastRefreshedAt?: string;
+  category?: "vccs_community_college" | "public_university" | "private_university" | "national";
+  shortName?: string;
+  state?: string;
+  canvasUrl?: string;
 }>> {
   const today = new Date().toISOString().slice(0, 10);
 
@@ -1034,18 +1040,33 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
     emailDomains?: string[];
     dailyRoutineDate?: string;
     lastRefreshedAt?: string;
+    category?: "vccs_community_college" | "public_university" | "private_university" | "national";
+    shortName?: string;
+    state?: string;
+    canvasUrl?: string;
   }>();
 
   // Add DB cached schools
   cachedSchools?.forEach((s) => {
-    let domain = `${s.school_slug.replace(/-/g, "")}.edu`;
-    if (s.website) {
+    const preset = DEFAULT_UNIVERSITY_PRESETS[s.school_slug];
+    let domain = preset?.website
+      ? new URL(preset.website).hostname.replace(/^www\./, "")
+      : `${s.school_slug.replace(/-/g, "")}.edu`;
+    if (s.school_slug === "tidewater-community-college" || s.school_slug === "tcc") {
+      domain = "tcc.edu";
+    } else if (s.website) {
       try {
         const u = new URL(s.website.startsWith("http") ? s.website : `https://${s.website}`);
         domain = u.hostname.replace(/^www\./, "");
       } catch {}
     }
     const stats = (s.key_stats as any) || {};
+    const emailDomains = stats.email_domains || preset?.email_domains || [domain];
+    if (s.school_slug === "tidewater-community-college" || s.school_slug === "tcc") {
+      if (!emailDomains.includes("email.vccs.edu")) emailDomains.unshift("email.vccs.edu");
+      if (!emailDomains.includes("tcc.edu")) emailDomains.unshift("tcc.edu");
+    }
+
     map.set(s.school_slug, {
       name: s.school_name,
       slug: s.school_slug,
@@ -1053,19 +1074,31 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
       location: s.location || "United States",
       studentCount: studentCountMap[s.school_slug] || 0,
       hasPortal: true,
-      emailFormat: stats.student_email_format || `[username]@${domain}`,
-      sampleEmail: stats.sample_student_email || `student@${domain}`,
-      emailDomains: stats.email_domains || [domain],
+      emailFormat: stats.student_email_format || preset?.student_email_format || `[username]@${domain}`,
+      sampleEmail: stats.sample_student_email || preset?.sample_student_email || `student@${domain}`,
+      emailDomains,
       dailyRoutineDate: s.daily_routine_date || today,
       lastRefreshedAt: s.last_refreshed_at || undefined,
+      category: stats.category || (s.location?.includes("VA") ? "public_university" : "national"),
+      shortName: stats.short_name,
+      state: stats.state || (s.location?.includes("VA") ? "VA" : undefined),
+      canvasUrl: stats.canvas_url,
     });
   });
 
-  // Ensure presets are also included if not in DB yet
+  // Ensure default presets are also included if not in DB yet
   Object.keys(DEFAULT_UNIVERSITY_PRESETS).forEach((slug) => {
     if (!map.has(slug)) {
       const p = DEFAULT_UNIVERSITY_PRESETS[slug];
-      const domain = `${slug.replace(/-/g, "")}.edu`;
+      let domain = `${slug.replace(/-/g, "")}.edu`;
+      if (slug === "tidewater-community-college" || slug === "tcc") {
+        domain = "tcc.edu";
+      } else if (p.website) {
+        try {
+          const u = new URL(p.website.startsWith("http") ? p.website : `https://${p.website}`);
+          domain = u.hostname.replace(/^www\./, "");
+        } catch {}
+      }
       map.set(slug, {
         name: p.school_name || slug,
         slug,
@@ -1077,15 +1110,54 @@ export async function getAllRegisteredCampuses(): Promise<Array<{
         sampleEmail: p.sample_student_email || `student@${domain}`,
         emailDomains: p.email_domains || [domain],
         dailyRoutineDate: today,
+        state: p.location?.includes("Virginia") ? "VA" : undefined,
       });
     }
   });
 
-  // Return sorted: highest student count first, then alphabetical
+  // Ensure ALL 50 Virginia Universities and VCCS Community Colleges are present!
+  VIRGINIA_INSTITUTIONS.forEach((vi) => {
+    const existing = map.get(vi.slug);
+    if (!existing) {
+      map.set(vi.slug, {
+        name: vi.name,
+        slug: vi.slug,
+        domain: vi.domain,
+        location: vi.location,
+        studentCount: studentCountMap[vi.slug] || 0,
+        hasPortal: true,
+        emailFormat: vi.emailFormat,
+        sampleEmail: vi.sampleEmail,
+        emailDomains: vi.emailDomains,
+        dailyRoutineDate: today,
+        category: vi.category,
+        shortName: vi.shortName,
+        state: "VA",
+        canvasUrl: vi.canvasUrl,
+      });
+    } else {
+      // Augment existing entry with precise Virginia metadata
+      if (!existing.location || existing.location === "United States") existing.location = vi.location;
+      existing.category = vi.category;
+      existing.shortName = vi.shortName;
+      existing.state = "VA";
+      existing.canvasUrl = vi.canvasUrl;
+      if (!existing.emailDomains || existing.emailDomains.length <= 1) {
+        existing.emailDomains = vi.emailDomains;
+      }
+    }
+  });
+
+  // Return sorted: highest student count first, Virginia colleges highlighted, then alphabetical
   return Array.from(map.values()).sort((a, b) => {
     if (b.studentCount !== a.studentCount) {
       return b.studentCount - a.studentCount;
     }
+    // Prioritize Virginia institutions
+    const aIsVa = a.state === "VA" || a.location?.includes("VA");
+    const bIsVa = b.state === "VA" || b.location?.includes("VA");
+    if (aIsVa && !bIsVa) return -1;
+    if (!aIsVa && bIsVa) return 1;
     return a.name.localeCompare(b.name);
   });
 }

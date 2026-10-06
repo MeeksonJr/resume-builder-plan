@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { Search, Plus, Bell, Command, Sidebar as SidebarIcon, Sparkles } from "lucide-react"
+import { Search, Plus, Sparkles, Sun, Moon } from "lucide-react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Kbd } from "@/components/ui/kbd"
+import { NotificationPopover } from "@/components/dashboard/notification-popover"
 import { cn } from "@/lib/utils"
 
 interface TopNavProps {
@@ -12,6 +14,13 @@ interface TopNavProps {
 }
 
 export function TopNav({ isPro }: TopNavProps) {
+    const { resolvedTheme, setTheme } = useTheme();
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     return (
         <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-xl transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
@@ -59,15 +68,27 @@ export function TopNav({ isPro }: TopNavProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Theme Toggle (Light / Dark) */}
                     <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Notifications"
-                        className="h-10 w-10 text-muted-foreground relative"
+                        aria-label="Toggle theme"
+                        className="h-10 w-10 text-muted-foreground hover:text-foreground rounded-none transition-colors"
+                        onClick={() => {
+                            if (mounted) {
+                                setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                            }
+                        }}
                     >
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary border-2 border-background" />
+                        {mounted && resolvedTheme === "dark" ? (
+                            <Sun className="h-5 w-5 text-amber-400 transition-transform hover:rotate-45" />
+                        ) : (
+                            <Moon className="h-5 w-5 text-slate-700 dark:text-slate-300 transition-transform hover:-rotate-12" />
+                        )}
                     </Button>
+
+                    {/* Functional Notification Center */}
+                    <NotificationPopover />
 
                     {!isPro && (
                         <Button
