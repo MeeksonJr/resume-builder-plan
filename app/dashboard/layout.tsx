@@ -100,11 +100,11 @@ export default async function DashboardLayout({
         <CommandMenu />
         <OfflineIndicatorBanner />
         <UserOnboardingDialog />
-        <main suppressHydrationWarning className="flex-1 overflow-y-auto">
+        <div suppressHydrationWarning className="flex-1 overflow-y-auto">
           <div className="w-full px-4 py-8 md:px-8 lg:px-10">
             {children}
           </div>
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

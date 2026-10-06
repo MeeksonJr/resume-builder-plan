@@ -94,10 +94,15 @@ function deduplicateStudents(list: StudentRosterMember[]): StudentRosterMember[]
 }
 
 export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("roster");
   const [placementFilter, setPlacementFilter] = useState<string>("all");
   const [isAuditing, setIsAuditing] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // User Authentication & Scoped Tenancy
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string; name: string } | null>(null);
@@ -449,8 +454,21 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
     toast.success("Institutional white-label settings updated!");
   };
 
+  if (!mounted) {
+    return (
+      <div className="flex h-96 w-full items-center justify-center" suppressHydrationWarning>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#0d8274]" />
+          <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+            Loading Campus Portal...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" suppressHydrationWarning>
       {/* Institutional White-Label Header Banner */}
       <div
         style={{ borderTopColor: portalSettings.primaryColor }}
@@ -610,7 +628,7 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
       </div>
 
       {/* Main Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4" suppressHydrationWarning>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-2">
           <TabsList className="bg-muted/60 p-1 rounded-xl flex-wrap h-auto gap-1">
             <TabsTrigger value="roster" className="text-xs font-bold rounded-lg">

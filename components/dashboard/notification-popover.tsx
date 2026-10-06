@@ -35,6 +35,7 @@ interface NotificationItem {
 }
 
 export function NotificationPopover() {
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
@@ -98,6 +99,7 @@ export function NotificationPopover() {
   };
 
   useEffect(() => {
+    setMounted(true);
     fetchNotifications();
   }, []);
 
@@ -145,6 +147,24 @@ export function NotificationPopover() {
         return <ShieldCheck className="h-4 w-4 text-primary" />;
     }
   };
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Notifications"
+        className="h-10 w-10 text-muted-foreground hover:text-foreground relative rounded-none transition-colors"
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute top-2 right-2 flex h-2 w-2">
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+        )}
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -73,6 +73,7 @@ export function TopNav({ isPro }: TopNavProps) {
                         variant="ghost"
                         size="icon"
                         aria-label="Toggle theme"
+                        suppressHydrationWarning
                         className="h-10 w-10 text-muted-foreground hover:text-foreground rounded-none transition-colors"
                         onClick={() => {
                             if (mounted) {

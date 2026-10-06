@@ -44,6 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
 
 export function CommandMenu() {
+    const [mounted, setMounted] = React.useState(false)
     const [open, setOpen] = React.useState(false)
     const [query, setQuery] = React.useState("")
     const [results, setResults] = React.useState<any[]>([])
@@ -51,6 +52,10 @@ export function CommandMenu() {
     const router = useRouter()
     const { setTheme } = useTheme()
     const supabase = createClient()
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Key listener for Ctrl+K / Cmd+K
     React.useEffect(() => {
@@ -94,6 +99,8 @@ export function CommandMenu() {
         setOpen(false)
         command()
     }, [])
+
+    if (!mounted) return null;
 
     return (
         <CommandDialog
