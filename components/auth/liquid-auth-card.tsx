@@ -29,6 +29,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthSuccessCelebration } from "./auth-success-celebration";
 import { LiquidWaveBackground } from "./liquid-wave";
+import { detectSchoolFromEmail } from "@/lib/university/detect";
 
 interface LiquidAuthCardProps {
   initialMode?: "login" | "signup" | "confirm";
@@ -140,9 +141,14 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
     }
 
     try {
+      const cleanEmail = email.trim();
+      const detectedSchool = detectSchoolFromEmail(cleanEmail);
+      const schoolAffiliation = detectedSchool?.name || campusName || null;
+      const schoolSlug = detectedSchool?.slug || null;
+
       const supabase = createClient();
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: cleanEmail,
         password,
         options: {
           emailRedirectTo:
@@ -150,7 +156,10 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
             `${window.location.origin}/dashboard`,
           data: {
             full_name: fullName.trim(),
-            campus_affiliation: campusName,
+            campus_affiliation: schoolAffiliation,
+            university_name: schoolAffiliation,
+            university_slug: schoolSlug,
+            is_student: !!detectedSchool,
           },
         },
       });
@@ -235,6 +244,10 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
         label: "Entering Dashboard",
       });
       setIsSuccess(true);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
 
       setTimeout(() => {
         router.push("/dashboard");
@@ -705,9 +718,27 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
                           className="h-12 rounded-2xl border border-emerald-600/30 dark:border-emerald-500/40 bg-white dark:bg-[#041412] pl-11 text-sm font-bold text-emerald-950 dark:text-white placeholder:text-emerald-700/50 dark:placeholder:text-teal-300/60 focus:border-[#0d8274] dark:focus:border-[#d8f36b] focus:ring-4 focus:ring-[#0d8274]/20 dark:focus:ring-[#d8f36b]/30 shadow-sm"
                         />
                       </div>
-                      <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200">
-                        🎓 Tip: Academic (.edu) emails automatically unlock your school&apos;s campus cohort directory.
-                      </p>
+                      {(() => {
+                        const detected = email.includes("@") ? detectSchoolFromEmail(email) : null;
+                        if (detected) {
+                          return (
+                            <div className="flex items-start gap-2.5 rounded-2xl border border-[#0d8274]/30 bg-[#0d8274]/10 dark:bg-[#d8f36b]/10 p-2.5">
+                              <GraduationCap className="h-4 w-4 text-[#0d8274] dark:text-[#d8f36b] shrink-0 mt-0.5" />
+                              <div className="text-[11px] leading-tight text-emerald-950 dark:text-emerald-100">
+                                <span className="font-extrabold text-[#0d8274] dark:text-[#d8f36b] block">
+                                  ✨ School Detected: {detected.name}
+                                </span>
+                                <span>{detected.location} • Campus Portal will automatically unlock upon email verification!</span>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200">
+                            🎓 Tip: Academic (.edu) emails automatically unlock your school&apos;s campus cohort directory.
+                          </p>
+                        );
+                      })()}
                     </div>
 
                     {/* Password */}

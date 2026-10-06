@@ -27,6 +27,9 @@ import {
   ChevronRight,
   ExternalLink,
   Info,
+  MapPin,
+  X,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -79,6 +82,16 @@ const EXPERIENCE_LEVELS = [
   { id: "senior", label: "Senior / Lead (5+ yrs)", desc: "Specialist or engineering leadership" },
 ];
 
+type DetectedSchool = {
+  name: string;
+  slug: string;
+  domain: string;
+  location: string;
+  emailFormat: string;
+  sampleEmail: string;
+  emailDomains: string[];
+};
+
 export function UserOnboardingDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -90,7 +103,13 @@ export function UserOnboardingDialog() {
   const [experienceLevel, setExperienceLevel] = useState("student");
   const [isStudent, setIsStudent] = useState<boolean | null>(null);
 
-  // School state
+  // School auto-detection state (from signup email)
+  const [detectedSchool, setDetectedSchool] = useState<DetectedSchool | null>(null);
+  const [detectingSchool, setDetectingSchool] = useState(false);
+  // "confirmed" = user said yes | "rejected" = user said no, show manual form | null = not yet decided
+  const [schoolConfirmation, setSchoolConfirmation] = useState<"confirmed" | "rejected" | null>(null);
+
+  // Manual school selection state (used when auto-detect is rejected)
   const [selectedSchool, setSelectedSchool] = useState("");
   const [schoolSearch, setSchoolSearch] = useState("");
   const [verificationMethod, setVerificationMethod] = useState<"email" | "canvas" | null>(null);
@@ -146,6 +165,29 @@ export function UserOnboardingDialog() {
     }
   };
 
+  /**
+   * Detects university from the user's signup email.
+   * Called in background after onboarding opens for student users.
+   */
+  const detectSchoolFromEmail = async () => {
+    setDetectingSchool(true);
+    try {
+      const res = await fetch("/api/user/detect-school");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.detected && data.school) {
+          setDetectedSchool(data.school);
+          // Pre-fill the school email as the signup email
+          if (data.email) setSchoolEmail(data.email);
+        }
+      }
+    } catch (err) {
+      console.warn("[DETECT_SCHOOL] Failed:", err);
+    } finally {
+      setDetectingSchool(false);
+    }
+  };
+
   const handleAddNewCampus = async (schoolName: string) => {
     if (!schoolName || schoolName.trim().length === 0) return;
     setIsDiscoveringSchool(true);
@@ -182,6 +224,17 @@ export function UserOnboardingDialog() {
         const data = await res.json();
         if (!data.onboardingCompleted) {
           setOpen(true);
+          // Pre-fill any existing profile data
+          if (data.targetRole) setTargetRole(data.targetRole);
+          if (data.experienceLevel) setExperienceLevel(data.experienceLevel);
+          if (data.isStudent !== undefined) setIsStudent(data.isStudent);
+          if (data.universityName) {
+            setSelectedSchool(data.universityName);
+            setSchoolSearch(data.universityName);
+          }
+          if (data.schoolVerified) {
+            setIsSchoolVerified(true);
+          }
         }
       }
     } catch (err) {
@@ -191,7 +244,18 @@ export function UserOnboardingDialog() {
     }
   };
 
-  const activeSchoolName = selectedSchool || schoolSearch || "University Student";
+  // Trigger school detection when user hits step 3
+  useEffect(() => {
+    if (step === 3 && !detectedSchool && !detectingSchool) {
+      detectSchoolFromEmail();
+    }
+  }, [step]);
+
+  const activeSchoolName =
+    schoolConfirmation === "confirmed" && detectedSchool
+      ? detectedSchool.name
+      : selectedSchool || schoolSearch || "University Student";
+
   const matchedCampus = campuses.find((c) => {
     const sName = activeSchoolName.toLowerCase();
     const cName = c.name.toLowerCase();
@@ -204,12 +268,21 @@ export function UserOnboardingDialog() {
     return false;
   });
 
+  const effectiveCampus = schoolConfirmation === "confirmed" && detectedSchool
+    ? {
+        name: detectedSchool.name,
+        slug: detectedSchool.slug,
+        domain: detectedSchool.domain,
+        emailFormat: detectedSchool.emailFormat,
+        sampleEmail: detectedSchool.sampleEmail,
+        emailDomains: detectedSchool.emailDomains,
+      }
+    : matchedCampus;
+
   const isEmailDomainValid = (() => {
     if (!schoolEmail || !schoolEmail.includes("@")) return true;
     const emailDomain = schoolEmail.split("@")[1]?.toLowerCase().trim();
     if (!emailDomain) return true;
-
-    // 1. Any accredited .edu address or academic consortium domain is universally accepted
     if (
       emailDomain.endsWith(".edu") ||
       emailDomain.endsWith(".ac.uk") ||
@@ -219,22 +292,59 @@ export function UserOnboardingDialog() {
     ) {
       return true;
     }
-
-    if (!matchedCampus) return true;
-
-    if (matchedCampus.emailDomains && matchedCampus.emailDomains.length > 0) {
-      return matchedCampus.emailDomains.some(
+    if (!effectiveCampus) return true;
+    if (effectiveCampus.emailDomains && effectiveCampus.emailDomains.length > 0) {
+      return effectiveCampus.emailDomains.some(
         (d) => emailDomain === d.toLowerCase() || emailDomain.endsWith("." + d.toLowerCase())
       );
     }
-    if (matchedCampus.domain) {
+    if (effectiveCampus.domain) {
       return (
-        emailDomain === matchedCampus.domain.toLowerCase() ||
-        emailDomain.endsWith("." + matchedCampus.domain.toLowerCase())
+        emailDomain === effectiveCampus.domain.toLowerCase() ||
+        emailDomain.endsWith("." + effectiveCampus.domain.toLowerCase())
       );
     }
     return false;
   })();
+
+  const handleConfirmDetectedSchool = async () => {
+    if (!detectedSchool) return;
+
+    // User confirmed their auto-detected school
+    setSchoolConfirmation("confirmed");
+    setIsStudent(true);
+    setIsSchoolVerified(true);
+    setSelectedSchool(detectedSchool.name);
+    setSchoolSearch(detectedSchool.name);
+
+    // Instantly save to profile in background so school_verified is locked in
+    try {
+      await fetch("/api/user/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetRole,
+          experienceLevel,
+          isStudent: true,
+          universityName: detectedSchool.name,
+          universitySlug: detectedSchool.slug,
+          schoolVerified: true,
+          schoolEmail: schoolEmail || detectedSchool.sampleEmail || null,
+        }),
+      });
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
+      router.refresh();
+    } catch (err) {
+      console.warn("Failed to auto-save confirmed school:", err);
+    }
+
+    toast.success(`Institutional status confirmed for ${detectedSchool.name}! 🎓`);
+    // Flow directly to summary step — school part is automatically checked out!
+    setStep(4);
+  };
 
   const handleSendEmailCode = async () => {
     if (!schoolEmail || !schoolEmail.includes("@")) {
@@ -250,9 +360,8 @@ export function UserOnboardingDialog() {
       emailDomain.includes("vccs.edu")
     );
 
-    // Only alert if the email is neither an academic .edu address nor a matched school domain
-    if (!isAcademic && !isEmailDomainValid && matchedCampus?.domain) {
-      toast.error(`Please use an official academic email (.edu) or one ending in @${matchedCampus.domain}`);
+    if (!isAcademic && !isEmailDomainValid && effectiveCampus?.domain) {
+      toast.error(`Please use an official academic email (.edu) or one ending in @${effectiveCampus.domain}`);
       return;
     }
 
@@ -300,7 +409,13 @@ export function UserOnboardingDialog() {
       if (!res.ok) throw new Error(data.error || "Invalid code");
 
       setIsSchoolVerified(true);
-      toast.success("University verified successfully!");
+      toast.success("University verified successfully! 🎓");
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
+      router.refresh();
+
       setStep(4);
     } catch (err: any) {
       toast.error(err.message || "Failed to verify code");
@@ -323,7 +438,7 @@ export function UserOnboardingDialog() {
         body: JSON.stringify({
           canvasInstanceUrl: canvasUrl,
           canvasAccessToken: canvasToken,
-          schoolName: selectedSchool || schoolSearch,
+          schoolName: activeSchoolName,
         }),
       });
 
@@ -332,6 +447,12 @@ export function UserOnboardingDialog() {
 
       setIsSchoolVerified(true);
       toast.success(`Verified via Canvas! Welcome ${data.studentName || ""}`);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
+      router.refresh();
+
       setStep(4);
     } catch (err: any) {
       toast.error(err.message || "Canvas token verification failed");
@@ -343,7 +464,13 @@ export function UserOnboardingDialog() {
   const handleCompleteOnboarding = async (skipSchool: boolean = false) => {
     setSavingOnboarding(true);
     try {
-      const schoolName = skipSchool ? null : (selectedSchool || schoolSearch || null);
+      // Use confirmed detected school, or manually selected school
+      const schoolName = skipSchool
+        ? null
+        : (schoolConfirmation === "confirmed" && detectedSchool
+            ? detectedSchool.name
+            : selectedSchool || schoolSearch || null);
+
       const schoolSlug = schoolName
         ? schoolName.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
         : null;
@@ -368,6 +495,10 @@ export function UserOnboardingDialog() {
 
       toast.success("Welcome aboard! Your career workspace is ready.");
       setOpen(false);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to finalize onboarding");
@@ -385,6 +516,19 @@ export function UserOnboardingDialog() {
   const exactMatchExists = campuses.some(
     (u) => u.name.toLowerCase().trim() === schoolSearch.toLowerCase().trim()
   );
+
+  // Whether we're in the "school detected — confirm?" sub-state
+  const showDetectedSchoolConfirm =
+    step === 3 &&
+    !verificationMethod &&
+    schoolConfirmation === null &&
+    (detectedSchool !== null || detectingSchool);
+
+  // Whether we're in the manual school selection view
+  const showManualSchoolSearch =
+    step === 3 &&
+    !verificationMethod &&
+    !showDetectedSchoolConfirm;
 
   if (checking || !open) return null;
 
@@ -405,13 +549,19 @@ export function UserOnboardingDialog() {
           <DialogTitle className="text-2xl sm:text-3xl font-black mt-4 text-white tracking-tight">
             {step === 1 && "Customize Your Career Trajectory"}
             {step === 2 && "Are You Currently a Student?"}
-            {step === 3 && "Select & Verify Your University"}
+            {step === 3 && showDetectedSchoolConfirm && "We Found Your School"}
+            {step === 3 && !showDetectedSchoolConfirm && !verificationMethod && "Select & Verify Your University"}
+            {step === 3 && verificationMethod === "email" && "Verify with School Email"}
+            {step === 3 && verificationMethod === "canvas" && "Verify via Canvas LMS"}
             {step === 4 && "You're All Set!"}
           </DialogTitle>
           <DialogDescription className="text-sm text-white/80 mt-1.5 leading-relaxed max-w-2xl">
             {step === 1 && "Specify your target role and seniority so our AI engine tailors your resumes, job matching, and interview sandboxes."}
             {step === 2 && "Students unlock dedicated campus career portals, cohort analytics, campus fair trackers, and verified badges."}
-            {step === 3 && "Connect your university via school email or Canvas LMS. (You can also skip and configure anytime in Settings)."}
+            {step === 3 && showDetectedSchoolConfirm && "We detected your institution from your sign-up email. Confirm if this is correct, or search manually."}
+            {step === 3 && !showDetectedSchoolConfirm && !verificationMethod && "Connect your university via school email or Canvas LMS. You can also skip and configure anytime in Settings."}
+            {step === 3 && verificationMethod === "email" && "A 6-digit code will be sent to your school inbox. Check Spam or Junk if you don't see it."}
+            {step === 3 && verificationMethod === "canvas" && "Connect your Canvas LMS to instantly verify enrollment and pull course data to your resume."}
             {step === 4 && "Your personalized workspace is configured and ready for lift-off."}
           </DialogDescription>
 
@@ -430,7 +580,8 @@ export function UserOnboardingDialog() {
 
         {/* Modal Body */}
         <div className="p-6 sm:p-8 space-y-8">
-          {/* STEP 1: CAREER TARGET */}
+
+          {/* ─── STEP 1: CAREER TARGET ─────────────────────────────── */}
           {step === 1 && (
             <div className="space-y-6">
               <div>
@@ -503,7 +654,7 @@ export function UserOnboardingDialog() {
             </div>
           )}
 
-          {/* STEP 2: STUDENT STATUS */}
+          {/* ─── STEP 2: STUDENT STATUS ────────────────────────────── */}
           {step === 2 && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -556,6 +707,7 @@ export function UserOnboardingDialog() {
                     if (isStudent === true) {
                       setStep(3);
                     } else {
+                      // Non-students skip school step
                       setStep(4);
                     }
                   }}
@@ -568,10 +720,122 @@ export function UserOnboardingDialog() {
             </div>
           )}
 
-          {/* STEP 3: UNIVERSITY SELECTION & VERIFICATION */}
+          {/* ─── STEP 3: UNIVERSITY DETECTION & VERIFICATION ────────── */}
           {step === 3 && (
             <div className="space-y-6">
-              {!verificationMethod ? (
+
+              {/* SUB-STATE A: Detecting / Confirm detected school */}
+              {showDetectedSchoolConfirm && (
+                <div className="space-y-5">
+                  {detectingSchool ? (
+                    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                      <div className="relative">
+                        <div className="h-16 w-16 rounded-full bg-[#0d8274]/10 flex items-center justify-center">
+                          <GraduationCap className="h-8 w-8 text-[#0d8274]" />
+                        </div>
+                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#d8f36b] flex items-center justify-center">
+                          <Loader2 className="h-3 w-3 text-[#102b2b] animate-spin" />
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-foreground">Looking up your institution...</p>
+                        <p className="text-xs text-muted-foreground mt-1">Checking your sign-up email domain</p>
+                      </div>
+                    </div>
+                  ) : detectedSchool ? (
+                    <>
+                      {/* Auto-detected school card */}
+                      <div className="p-6 border-2 border-[#0d8274] bg-[#0d8274]/5 space-y-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-12 w-12 bg-[#0d8274]/15 flex items-center justify-center shrink-0">
+                              <GraduationCap className="h-6 w-6 text-[#0d8274]" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-foreground">{detectedSchool.name}</span>
+                                <Badge className="bg-[#d8f36b] text-[#102b2b] text-[9px] px-1.5 py-0 font-black border-0">
+                                  AUTO-DETECTED
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                                {detectedSchool.domain}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {detectedSchool.location && (
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {detectedSchool.location}
+                          </div>
+                        )}
+
+                        <div className="p-3 bg-background/60 border border-[#0d8274]/20 text-xs">
+                          <p className="font-semibold text-foreground mb-1">Email format for {detectedSchool.name}:</p>
+                          <p className="font-mono text-[#0d8274]">{detectedSchool.emailFormat}</p>
+                          <p className="text-muted-foreground mt-0.5">Example: {detectedSchool.sampleEmail}</p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                          <Button
+                            onClick={handleConfirmDetectedSchool}
+                            className="flex-1 bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743] font-bold rounded-none h-11"
+                          >
+                            <Check className="h-4 w-4 mr-2" />
+                            Yes, this is my school
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setSchoolConfirmation("rejected");
+                              setDetectedSchool(null);
+                            }}
+                            className="flex-1 rounded-none border-border h-11 font-semibold"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            No, search manually
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Info about what happens after confirming */}
+                      <div className="p-3 bg-muted/60 border border-border text-xs text-muted-foreground space-y-1.5">
+                        <p className="font-semibold text-foreground flex items-center gap-1.5">
+                          <Info className="h-3.5 w-3.5 text-blue-500" />
+                          What happens next?
+                        </p>
+                        <ul className="space-y-1 list-disc list-inside text-[11px] leading-relaxed">
+                          <li>We'll send a 6-digit code to your school inbox (or you can verify via Canvas)</li>
+                          <li>Once verified, your campus portal appears in the sidebar</li>
+                          <li>You won't need to verify again — it's permanent</li>
+                        </ul>
+                      </div>
+                    </>
+                  ) : null}
+
+                  <div className="flex items-center justify-between pt-4 border-t border-border">
+                    <Button
+                      variant="outline"
+                      onClick={() => setStep(2)}
+                      className="rounded-none border-border px-6 h-11"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleCompleteOnboarding(true)}
+                      className="text-xs text-muted-foreground hover:text-foreground font-semibold"
+                    >
+                      Skip University for Now →
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* SUB-STATE B: Manual school search (no auto-detect or user rejected) */}
+              {showManualSchoolSearch && (
                 <div className="space-y-5">
                   <div>
                     <Label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
@@ -588,7 +852,7 @@ export function UserOnboardingDialog() {
                     />
                   </div>
 
-                  {/* Discover New University Banner if search has no exact match */}
+                  {/* Discover New University Banner */}
                   {schoolSearch.trim().length > 2 && !exactMatchExists && (
                     <div className="p-3.5 bg-[#0d8274]/10 border border-[#0d8274]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
@@ -664,7 +928,6 @@ export function UserOnboardingDialog() {
                                 {u.domain}
                               </span>
                             </div>
-
                             {u.location && (
                               <span className="text-[10px] text-muted-foreground/80 mt-1 truncate">
                                 📍 {u.location}
@@ -727,13 +990,15 @@ export function UserOnboardingDialog() {
                     </Button>
                   </div>
                 </div>
-              ) : verificationMethod === "email" ? (
-                /* Email Verification Form */
+              )}
+
+              {/* SUB-STATE C: Email Verification Form */}
+              {verificationMethod === "email" && (
                 <div className="space-y-5">
                   <div className="p-4 bg-[#0d8274]/10 border border-[#0d8274]/20 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-bold text-[#0d8274]">
-                        Selected School: {selectedSchool || schoolSearch || "University"}
+                        Selected School: {activeSchoolName !== "University Student" ? activeSchoolName : "University"}
                       </p>
                       <p className="text-xs text-muted-foreground">Verify via official student email</p>
                     </div>
@@ -750,9 +1015,9 @@ export function UserOnboardingDialog() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-bold text-foreground">University Email (.edu)</Label>
-                      {matchedCampus?.emailFormat && (
+                      {effectiveCampus?.emailFormat && (
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-                          Format: <strong className="text-[#0d8274]">{matchedCampus.emailFormat}</strong>
+                          Format: <strong className="text-[#0d8274]">{effectiveCampus.emailFormat}</strong>
                         </span>
                       )}
                     </div>
@@ -761,7 +1026,7 @@ export function UserOnboardingDialog() {
                         type="email"
                         value={schoolEmail}
                         onChange={(e) => setSchoolEmail(e.target.value)}
-                        placeholder={matchedCampus?.sampleEmail || `student@${matchedCampus?.domain || "school.edu"}`}
+                        placeholder={effectiveCampus?.sampleEmail || `student@${effectiveCampus?.domain || "school.edu"}`}
                         className="rounded-none border-border h-11"
                       />
                       <Button
@@ -775,13 +1040,13 @@ export function UserOnboardingDialog() {
                     {schoolEmail.includes("@") && (
                       schoolEmail.toLowerCase().trim().endsWith(".edu") || schoolEmail.toLowerCase().includes("vccs.edu") ? (
                         <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1.5">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <span>Academic institution email (.edu) verified format. Ready to receive verification code.</span>
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                          <span>Academic institution email (.edu) verified format. Ready to receive code.</span>
                         </p>
                       ) : !isEmailDomainValid ? (
                         <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1 flex items-center gap-1.5">
-                          <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                          <span>Tip: Academic emails end with .edu (e.g. {matchedCampus?.sampleEmail || `student@${matchedCampus?.domain || "school.edu"}`}).</span>
+                          <Info className="h-3.5 w-3.5 shrink-0" />
+                          <span>Tip: Academic emails end with .edu (e.g. {effectiveCampus?.sampleEmail || `student@${effectiveCampus?.domain || "school.edu"}`}).</span>
                         </p>
                       ) : null
                     )}
@@ -789,14 +1054,13 @@ export function UserOnboardingDialog() {
 
                   {codeSent && (
                     <div className="space-y-4 pt-4 border-t border-border">
-                      {/* Inbox guidance */}
                       <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-xs text-muted-foreground space-y-1">
                         <p className="font-semibold text-foreground flex items-center gap-1.5">
                           <Mail className="h-3.5 w-3.5 text-emerald-600" />
                           Check your school inbox
                         </p>
                         <p className="text-[11px] leading-relaxed">
-                          A 6-digit verification code was sent to <strong>{schoolEmail}</strong>. Check your <strong>Inbox</strong>, <strong>Junk</strong>, or <strong>Spam</strong> folder — campus email filters sometimes route automated messages there.
+                          A 6-digit verification code was sent to <strong>{schoolEmail}</strong>. Check your <strong>Inbox</strong>, <strong>Junk</strong>, or <strong>Spam</strong> folder — campus filters sometimes route automated messages there.
                         </p>
                       </div>
 
@@ -839,8 +1103,10 @@ export function UserOnboardingDialog() {
                     </Button>
                   </div>
                 </div>
-              ) : (
-                /* Canvas LMS Token Verification */
+              )}
+
+              {/* SUB-STATE D: Canvas Verification */}
+              {verificationMethod === "canvas" && (
                 <div className="space-y-5">
                   <div className="p-4 bg-violet-500/10 border border-violet-500/20 flex items-center justify-between">
                     <div>
@@ -926,7 +1192,7 @@ export function UserOnboardingDialog() {
             </div>
           )}
 
-          {/* STEP 4: CONFIRMATION */}
+          {/* ─── STEP 4: CONFIRMATION ──────────────────────────────── */}
           {step === 4 && (
             <div className="space-y-6 text-center py-6">
               <div className="h-20 w-20 bg-[#d8f36b] text-[#102b2b] flex items-center justify-center mx-auto rounded-none shadow-[4px_6px_0_rgba(16,43,43,.1)]">
@@ -956,7 +1222,16 @@ export function UserOnboardingDialog() {
                     <span className="text-muted-foreground font-bold">University Status:</span>
                     <span className="font-bold text-[#0d8274] flex items-center gap-1.5 bg-[#0d8274]/10 px-2.5 py-1">
                       <ShieldCheck className="h-4 w-4" />
-                      {selectedSchool || schoolSearch} (Verified)
+                      {activeSchoolName !== "University Student" ? activeSchoolName : selectedSchool} (Verified)
+                    </span>
+                  </div>
+                )}
+                {!isSchoolVerified && isStudent && (
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-muted-foreground font-bold">University:</span>
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5">
+                      <Info className="h-3.5 w-3.5 shrink-0" />
+                      Verify in Settings to unlock campus portal
                     </span>
                   </div>
                 )}

@@ -57,12 +57,40 @@ interface AppSidebarProps {
 }
 
 const getNavItems = (isAdmin: boolean, profile?: any) => {
+    const isSchoolVerified = Boolean(
+        profile?.school_verified === true ||
+        profile?.school_verified === "true" ||
+        (profile?.is_student && profile?.university_name && (profile?.school_verified || profile?.school_email))
+    );
+
+    const schoolSlug = profile?.university_slug ||
+        (profile?.university_name
+            ? profile.university_name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+            : "campus");
+
+    const schoolName = profile?.university_name || "Campus Portal";
+
     const items = [
         {
             title: "Dashboard",
             href: "/dashboard",
             icon: LayoutDashboard,
         },
+        ...(isSchoolVerified
+            ? [
+                {
+                    title: schoolName,
+                    href: `/dashboard/portal/${schoolSlug}`,
+                    icon: GraduationCap,
+                    badge: "Verified",
+                    items: [
+                        { title: "Campus Directory", href: `/dashboard/portal/${schoolSlug}` },
+                        { title: "Cohort Portfolios", href: `/dashboard/portal/${schoolSlug}#cohort` },
+                        { title: "Campus Verified", href: `/dashboard/portal/${schoolSlug}#verified` },
+                    ],
+                },
+              ]
+            : []),
         {
             title: "Funding & aid",
             href: "/dashboard/scholarships",
@@ -117,14 +145,12 @@ const getNavItems = (isAdmin: boolean, profile?: any) => {
             items: [
                 { title: "My Portfolio", href: "/dashboard/portfolio" },
                 { title: "Discovery", href: "/dashboard/portfolios" },
-                ...(profile?.school_verified && profile?.university_slug
-                    ? [
-                        {
-                            title: profile.university_name || "Campus Portal",
-                            href: `/dashboard/portal/${profile.university_slug}`,
-                            icon: GraduationCap,
-                        },
-                      ]
+                ...(isSchoolVerified
+                    ? [{
+                        title: schoolName,
+                        href: `/dashboard/portal/${schoolSlug}`,
+                        icon: GraduationCap,
+                    }]
                     : []),
             ],
         },
@@ -156,6 +182,13 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
     const router = useRouter()
     const [profile, setProfile] = React.useState(initialProfile)
 
+    // Synchronize local profile whenever parent re-renders with fresh profile
+    React.useEffect(() => {
+        if (initialProfile) {
+            setProfile(initialProfile)
+        }
+    }, [initialProfile])
+
     // Fetch fresh profile data on mount and set up listener
     React.useEffect(() => {
         const supabase = createClient()
@@ -174,6 +207,12 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
         }
 
         fetchProfile()
+
+        // Listen for internal profile updates across components
+        const handleProfileUpdate = () => {
+            fetchProfile()
+        }
+        window.addEventListener("rf-profile-updated", handleProfileUpdate)
 
         // Subscribe to profile changes
         const channel = supabase
@@ -195,6 +234,7 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
             .subscribe()
 
         return () => {
+            window.removeEventListener("rf-profile-updated", handleProfileUpdate)
             supabase.removeChannel(channel)
         }
     }, [user.id])
@@ -216,7 +256,7 @@ export function AppSidebar({ user, profile: initialProfile }: AppSidebarProps) {
 
     const navItems = React.useMemo(
         () => getNavItems(profile?.role === 'admin', profile),
-        [profile?.role, profile?.school_verified, profile?.university_slug, profile?.university_name]
+        [profile?.role, profile?.school_verified, profile?.university_name, profile?.university_slug]
     );
 
     return (

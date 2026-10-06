@@ -81,16 +81,7 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
       if (!res.ok) throw new Error(data.error || "Failed to send code");
 
       setCodeSent(true);
-      const quickCode = data.devCode || data.code;
-      if (quickCode) {
-        setDevCode(quickCode);
-        setCode(quickCode);
-        toast.success(`Verification code generated! (Sandbox code: ${quickCode})`, {
-          duration: 10000,
-        });
-      } else {
-        toast.success(data.message || "Code sent to your university email!");
-      }
+      toast.success(data.message || "Verification code sent to your university email!");
     } catch (err: any) {
       toast.error(err.message || "Failed to send code");
     } finally {
@@ -122,6 +113,9 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
       setIsStudent(true);
       setUniversitySlug(data.university_slug);
       toast.success("School verified! University portal link added to your sidebar.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Invalid or expired code");
@@ -156,6 +150,9 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
       setUniversitySlug(data.university_slug);
       setUniversityName(data.university_name);
       toast.success("Verified via Canvas! University portal link unlocked on sidebar.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to verify Canvas token");
@@ -185,6 +182,9 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
       setSchoolEmail("");
       setUniversitySlug("");
       toast.info("University status unlinked.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Error updating settings");
@@ -315,29 +315,8 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
 
                 {codeSent && (
                   <div className="space-y-3 pt-3 border-t border-border">
-                    {devCode && (
-                      <div className="p-3 bg-[#0d8274]/10 border border-[#0d8274]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <div>
-                          <p className="text-xs font-bold text-[#0d8274]">
-                            Sandbox Mode: Instant Verification Code
-                          </p>
-                          <p className="text-sm font-mono font-black text-foreground tracking-widest mt-0.5">
-                            {devCode}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          type="button"
-                          onClick={() => setCode(devCode)}
-                          className="bg-[#0d8274] text-white hover:bg-[#095e54] text-xs font-bold rounded-none h-7 px-3"
-                        >
-                          Auto-Fill Code
-                        </Button>
-                      </div>
-                    )}
-
                     <div className="p-2.5 bg-muted/60 border border-border text-[11px] text-muted-foreground">
-                      <strong className="text-foreground">📬 Note on Outlook / School Email:</strong> If your university blocks incoming automated developer emails from Resend, check your Outlook <em>Other</em> tab or <em>Junk Email</em> folder, or use the pre-filled instant code above.
+                      <strong className="text-foreground">📬 Note on Outlook / School Email:</strong> Check your inbox or Junk/Clutter folder for your 6-digit ResumeForge verification code.
                     </div>
 
                     <div className="flex gap-3">

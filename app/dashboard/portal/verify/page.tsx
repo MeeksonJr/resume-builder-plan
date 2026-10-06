@@ -48,6 +48,11 @@ function VerifyPortalContent() {
         setVerifiedSlug(targetSlug);
         toast.success(`Institutional status verified for ${data.university_name || "your university"}!`);
 
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+        }
+        router.refresh();
+
         // Automatically forward to the campus portal after 2 seconds
         setTimeout(() => {
           router.push(`/dashboard/portal/${targetSlug}`);
