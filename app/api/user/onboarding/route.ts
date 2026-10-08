@@ -86,6 +86,8 @@ export async function POST(req: Request) {
       universitySlug,
       schoolVerified,
       schoolEmail,
+      major,
+      preferredRegion,
     } = await req.json();
 
     const updatePayload: Record<string, any> = {
@@ -115,6 +117,28 @@ export async function POST(req: Request) {
     } else if (schoolVerified && user.email) {
       updatePayload.school_email = user.email;
     }
+
+    // Merge academic track and preferred region into user preferences settings
+    const { data: currentProfile } = await supabase
+      .from("profiles")
+      .select("settings")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const currentSettings = (currentProfile?.settings as Record<string, any>) || {};
+    updatePayload.settings = {
+      ...currentSettings,
+      academicTrack: {
+        ...(currentSettings.academicTrack || {}),
+        major: major || currentSettings.academicTrack?.major || null,
+        institution: universityName || currentSettings.academicTrack?.institution || null,
+      },
+      jobSearch: {
+        ...(currentSettings.jobSearch || {}),
+        targetRole: targetRole || currentSettings.jobSearch?.targetRole || null,
+        targetRegion: preferredRegion || currentSettings.jobSearch?.targetRegion || null,
+      },
+    };
 
     const { error: updateError } = await supabase
       .from("profiles")

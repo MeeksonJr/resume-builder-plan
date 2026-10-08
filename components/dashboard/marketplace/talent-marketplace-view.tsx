@@ -28,7 +28,12 @@ import {
   Filter,
   Bot,
   Loader2,
+  GraduationCap,
+  Building2,
+  ExternalLink,
+  Search,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RecruiterSourcingAgentView } from "@/components/dashboard/marketplace/recruiter-sourcing-agent-view";
@@ -38,6 +43,12 @@ export function TalentMarketplaceView() {
   const [introRequests, setIntroRequests] = useState<RecruiterIntroRequest[]>([]);
   const [activeTab, setActiveTab] = useState<"browse" | "my_profile" | "inbox" | "sourcing_agent">("browse");
   const [currentRecruiterId, setCurrentRecruiterId] = useState("recruiter-me");
+
+  // Collegiate & Virginia Recruiter Filters
+  const [selectedUniversityFilter, setSelectedUniversityFilter] = useState<string>("all");
+  const [minAtsScore, setMinAtsScore] = useState<number>(0);
+  const [majorFilter, setMajorFilter] = useState<string>("");
+  const [studentsOnly, setStudentsOnly] = useState<boolean>(false);
 
   // User's own marketplace profile state
   const [isMarketplaceActive, setIsMarketplaceActive] = useState(true);
@@ -261,138 +272,297 @@ export function TalentMarketplaceView() {
       </div>
 
       {/* TAB 1: BROWSE REVERSE JOB BOARD */}
-      {activeTab === "browse" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Showing verified candidates ready for confidential introduction</span>
-            <div className="flex items-center gap-2">
-              <Filter className="w-3.5 h-3.5" />
-              <span>All Specialties • Active Hiring • Remote</span>
-            </div>
-          </div>
+      {activeTab === "browse" && (() => {
+        const filteredCandidates = candidates.filter((c) => {
+          if (minAtsScore > 0 && c.atsScore < minAtsScore) return false;
+          if (studentsOnly && !c.isStudent && !c.schoolVerified) return false;
+          if (selectedUniversityFilter !== "all") {
+            if (selectedUniversityFilter === "students_only" && !c.isStudent && !c.schoolVerified) return false;
+            if (selectedUniversityFilter === "virginia_all") {
+              if (!c.universitySlug && !c.universityName) return false;
+            } else {
+              const uSlug = c.universitySlug?.toLowerCase() || "";
+              const uName = c.universityName?.toLowerCase() || "";
+              if (!uSlug.includes(selectedUniversityFilter.toLowerCase()) && !uName.includes(selectedUniversityFilter.toLowerCase())) {
+                return false;
+              }
+            }
+          }
+          if (majorFilter) {
+            const q = majorFilter.toLowerCase().trim();
+            const m = c.major?.toLowerCase() || "";
+            const s = c.primarySkills.map((sk) => sk.toLowerCase()).join(" ");
+            const hl = c.headline.toLowerCase();
+            if (!m.includes(q) && !s.includes(q) && !hl.includes(q)) return false;
+          }
+          return true;
+        });
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {candidates.map((candidate) => {
-              const maskedView = getMaskedCandidateView(candidate, introRequests, currentRecruiterId);
-              const hasRequested = introRequests.some(
-                (r) => r.candidateId === candidate.id && r.recruiterId === currentRecruiterId
-              );
+        const collegiateCount = candidates.filter((c) => !!c.universityName).length;
 
-              return (
-                <div
-                  key={candidate.id}
-                  className="bg-card border border-border rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-violet-500/40 transition-all group"
-                >
-                  <div className="space-y-3">
-                    {/* Header Tags */}
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                        <Sparkles className="w-3 h-3" />
-                        {maskedView.atsScore}% ATS Verified
-                      </span>
-
-                      {maskedView.isUnlocked ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
-                          <Unlock className="w-3.5 h-3.5" /> Identity Unlocked
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-semibold">
-                          <Lock className="w-3.5 h-3.5" /> Masked Anonymity
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Masked Headline / Unlocked Name */}
-                    <div>
-                      {maskedView.isUnlocked ? (
-                        <>
-                          <h3 className="text-lg font-bold text-foreground">{maskedView.revealedInfo?.realName}</h3>
-                          <p className="text-xs text-violet-600 dark:text-violet-400 font-medium">
-                            {candidate.headline}
-                          </p>
-                        </>
-                      ) : (
-                        <h3 className="text-base font-semibold text-foreground leading-snug">
-                          {maskedView.maskedHeadline}
-                        </h3>
-                      )}
-                    </div>
-
-                    {/* Meta stats */}
-                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-1 border-t border-border/60">
-                      <div className="flex items-center gap-1.5">
-                        <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{maskedView.displayCompany}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{maskedView.yearsExperience} yrs experience</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{maskedView.salaryRange}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{maskedView.remotePreference}</span>
-                      </div>
-                    </div>
-
-                    {/* Bio Snippet */}
-                    <p className="text-xs text-muted-foreground italic line-clamp-2">
-                      "{maskedView.bioSnippet}"
-                    </p>
-
-                    {/* Skill Tags */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {maskedView.primarySkills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-foreground/80"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Revealed info block if unlocked */}
-                    {maskedView.isUnlocked && maskedView.revealedInfo && (
-                      <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
-                        <div className="font-semibold text-emerald-700 dark:text-emerald-300">
-                          Direct Contact Access:
-                        </div>
-                        <div className="text-muted-foreground">Email: {maskedView.revealedInfo.email}</div>
-                        <div className="text-muted-foreground">Current Company: {maskedView.revealedInfo.currentCompany}</div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="pt-4 mt-3 border-t border-border/60">
-                    {maskedView.isUnlocked ? (
-                      <Button variant="outline" size="sm" className="w-full text-xs gap-1.5">
-                        <Mail className="w-3.5 h-3.5" /> Send Direct Calendar Invite
-                      </Button>
-                    ) : hasRequested ? (
-                      <Button variant="secondary" size="sm" disabled className="w-full text-xs">
-                        Introduction Requested (Pending)
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => setSelectedCandidateId(candidate.id)}
-                        className="w-full text-xs bg-violet-600 hover:bg-violet-700 text-white gap-1.5"
-                      >
-                        <Lock className="w-3.5 h-3.5" /> Request Confidential Intro
-                      </Button>
-                    )}
-                  </div>
+        return (
+          <div className="space-y-5">
+            {/* Collegiate & Regional Campus Filter Bar */}
+            <div className="p-4 bg-muted/40 border border-border rounded-xl space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <GraduationCap className="w-4 h-4 text-emerald-600" />
+                    Collegiate &amp; Virginia Recruiter Sourcing Showcase
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Filter verified candidates by Virginia research universities, community college transfer tracks, and ATS benchmarks.
+                  </p>
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setStudentsOnly(!studentsOnly)}
+                    className={`px-2.5 py-1 text-xs rounded-md font-medium border transition-all cursor-pointer ${
+                      studentsOnly
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                        : "bg-background text-muted-foreground border-border hover:border-foreground"
+                    }`}
+                  >
+                    🎓 Students &amp; New Grads Only
+                  </button>
+                  <select
+                    value={minAtsScore}
+                    onChange={(e) => setMinAtsScore(Number(e.target.value))}
+                    className="h-7 text-xs bg-background border border-border rounded-md px-2 text-foreground font-medium"
+                  >
+                    <option value={0}>All ATS Scores</option>
+                    <option value={95}>95%+ ATS Score</option>
+                    <option value={97}>97%+ ATS Score</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* University Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {[
+                  { id: "all", label: `All Candidates (${candidates.length})` },
+                  { id: "virginia_all", label: `🎓 Virginia Collegiate Network (${collegiateCount})` },
+                  { id: "odu", label: "Old Dominion (ODU)" },
+                  { id: "virginia-tech", label: "Virginia Tech (VT)" },
+                  { id: "virginia.edu", label: "Univ of Virginia (UVA)" },
+                  { id: "tidewater", label: "Tidewater CC (TCC)" },
+                  { id: "northern-virginia", label: "Northern Virginia CC (NOVA)" },
+                ].map((chip) => {
+                  const isActive = selectedUniversityFilter === chip.id;
+                  return (
+                    <button
+                      key={chip.id}
+                      onClick={() => setSelectedUniversityFilter(chip.id)}
+                      className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-violet-600 text-white shadow-xs"
+                          : "bg-background text-muted-foreground hover:text-foreground border border-border"
+                      }`}
+                    >
+                      {chip.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Major / Keyword Search */}
+              <div className="relative pt-1">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={majorFilter}
+                  onChange={(e) => setMajorFilter(e.target.value)}
+                  placeholder="Filter by major or engineering domain (e.g. Cybersecurity, Robotics, Cloud, Data Science)..."
+                  className="w-full h-8 pl-8 pr-3 text-xs bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground/60"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Showing {filteredCandidates.length} of {candidates.length} verified candidate profiles</span>
+              <div className="flex items-center gap-2">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Confidential Anonymity Protected</span>
+              </div>
+            </div>
+
+            {filteredCandidates.length === 0 ? (
+              <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-card space-y-3">
+                <GraduationCap className="w-10 h-10 text-muted-foreground mx-auto" />
+                <h3 className="text-sm font-bold text-foreground">No candidates match this filter criteria</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Try clearing the university filter or broadening the major search query.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedUniversityFilter("all");
+                    setMajorFilter("");
+                    setMinAtsScore(0);
+                    setStudentsOnly(false);
+                  }}
+                  className="text-xs"
+                >
+                  Reset All Filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {filteredCandidates.map((candidate) => {
+                  const maskedView = getMaskedCandidateView(candidate, introRequests, currentRecruiterId);
+                  const hasRequested = introRequests.some(
+                    (r) => r.candidateId === candidate.id && r.recruiterId === currentRecruiterId
+                  );
+
+                  return (
+                    <div
+                      key={candidate.id}
+                      className="bg-card border border-border rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-violet-500/40 transition-all group"
+                    >
+                      <div className="space-y-3">
+                        {/* Header Tags */}
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <Sparkles className="w-3 h-3" />
+                            {maskedView.atsScore}% ATS Verified
+                          </span>
+
+                          {maskedView.isUnlocked ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+                              <Unlock className="w-3.5 h-3.5" /> Identity Unlocked
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-semibold">
+                              <Lock className="w-3.5 h-3.5" /> Masked Anonymity
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Collegiate Affiliation Badge */}
+                        {maskedView.universityName && (
+                          <div className="p-2 bg-muted/60 border border-border/80 rounded-lg space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                                <GraduationCap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span className="truncate max-w-[170px]">{maskedView.universityName}</span>
+                                {maskedView.schoolVerified && (
+                                  <span className="text-[9px] bg-emerald-500/15 text-emerald-600 px-1.5 py-0.2 rounded font-bold shrink-0">
+                                    Verified
+                                  </span>
+                                )}
+                              </div>
+                              {candidate.universitySlug && (
+                                <Link
+                                  href={`/dashboard/portal/${candidate.universitySlug}`}
+                                  className="text-[10px] text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-0.5 font-medium shrink-0"
+                                >
+                                  Portal <ExternalLink className="w-2.5 h-2.5" />
+                                </Link>
+                              )}
+                            </div>
+                            {maskedView.major && (
+                              <p className="text-[11px] text-muted-foreground leading-tight">
+                                {maskedView.major} {maskedView.graduationYear ? `• Class of '${maskedView.graduationYear.slice(-2)}` : ""}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Masked Headline / Unlocked Name */}
+                        <div>
+                          {maskedView.isUnlocked ? (
+                            <>
+                              <h3 className="text-lg font-bold text-foreground">{maskedView.revealedInfo?.realName}</h3>
+                              <p className="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                                {candidate.headline}
+                              </p>
+                            </>
+                          ) : (
+                            <h3 className="text-base font-semibold text-foreground leading-snug">
+                              {maskedView.maskedHeadline}
+                            </h3>
+                          )}
+                        </div>
+
+                        {/* Meta stats */}
+                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-1 border-t border-border/60">
+                          <div className="flex items-center gap-1.5">
+                            <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{maskedView.displayCompany}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{maskedView.yearsExperience} yrs experience</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{maskedView.salaryRange}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>{maskedView.remotePreference}</span>
+                          </div>
+                        </div>
+
+                        {/* Bio Snippet */}
+                        <p className="text-xs text-muted-foreground italic line-clamp-2">
+                          "{maskedView.bioSnippet}"
+                        </p>
+
+                        {/* Skill Tags */}
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {maskedView.primarySkills.map((skill) => (
+                            <span
+                              key={skill}
+                              className="px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-foreground/80"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Revealed info block if unlocked */}
+                        {maskedView.isUnlocked && maskedView.revealedInfo && (
+                          <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
+                            <div className="font-semibold text-emerald-700 dark:text-emerald-300">
+                              Direct Contact Access:
+                            </div>
+                            <div className="text-muted-foreground">Email: {maskedView.revealedInfo.email}</div>
+                            <div className="text-muted-foreground">Current Company: {maskedView.revealedInfo.currentCompany}</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="pt-4 mt-3 border-t border-border/60">
+                        {maskedView.isUnlocked ? (
+                          <Button variant="outline" size="sm" className="w-full text-xs gap-1.5">
+                            <Mail className="w-3.5 h-3.5" /> Send Direct Calendar Invite
+                          </Button>
+                        ) : hasRequested ? (
+                          <Button variant="secondary" size="sm" disabled className="w-full text-xs">
+                            Introduction Requested (Pending)
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => setSelectedCandidateId(candidate.id)}
+                            className="w-full text-xs bg-violet-600 hover:bg-violet-700 text-white gap-1.5"
+                          >
+                            <Lock className="w-3.5 h-3.5" /> Request Confidential Intro
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
+
 
       {/* TAB 2: MY AVAILABILITY & PRIVACY CONTROLS */}
       {activeTab === "my_profile" && (

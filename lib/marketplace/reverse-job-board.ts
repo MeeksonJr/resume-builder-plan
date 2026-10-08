@@ -28,6 +28,13 @@ export interface CandidateMarketplaceProfile {
   atsScore: number;
   bioSnippet: string;
   createdAt: string;
+  // Virginia & University Collegiate Fields
+  universityName?: string;
+  universitySlug?: string;
+  schoolVerified?: boolean;
+  major?: string;
+  graduationYear?: string;
+  isStudent?: boolean;
 }
 
 export type IntroRequestStatus = "pending_review" | "approved" | "declined" | "intro_scheduled";
@@ -60,6 +67,12 @@ export interface MaskedCandidateView {
   atsScore: number;
   bioSnippet: string;
   isUnlocked: boolean;
+  universityName?: string;
+  universitySlug?: string;
+  schoolVerified?: boolean;
+  major?: string;
+  graduationYear?: string;
+  isStudent?: boolean;
   revealedInfo?: {
     realName: string;
     email: string;
@@ -101,6 +114,12 @@ export function getMaskedCandidateView(
     atsScore: profile.atsScore,
     bioSnippet: profile.bioSnippet,
     isUnlocked,
+    universityName: profile.universityName,
+    universitySlug: profile.universitySlug,
+    schoolVerified: profile.schoolVerified,
+    major: profile.major,
+    graduationYear: profile.graduationYear,
+    isStudent: profile.isStudent,
     ...(isUnlocked
       ? {
           revealedInfo: {
@@ -223,5 +242,140 @@ export const SAMPLE_MARKETPLACE_CANDIDATES: CandidateMarketplaceProfile[] = [
     atsScore: 96,
     bioSnippet: "Led fine-tuning and safety benchmark pipelines for frontier reasoning models and autonomous agent swarms.",
     createdAt: new Date().toISOString()
+  },
+  {
+    id: "cand-va-odu",
+    userId: "user-odu-01",
+    realName: "Jordan Hayes",
+    email: "[student]@odu.edu",
+    headline: "Cybersecurity & Cloud Systems Engineer (ODU Center for Cybersecurity)",
+    maskedHeadline: "Junior Cloud Defense Engineer (Hampton Roads Defense Track • ODU)",
+    currentCompany: "Old Dominion University Cybersecurity Research Lab",
+    hideCurrentCompany: false,
+    yearsExperience: 1,
+    primarySkills: ["Cybersecurity", "Python", "AWS GovCloud", "Network Security", "Linux", "Docker"],
+    desiredRole: "Cybersecurity Analyst / Cloud Security Engineer",
+    desiredSalaryMin: 85000,
+    desiredSalaryMax: 110000,
+    remotePreference: "Hybrid",
+    availability: "actively_looking",
+    isAnonymous: true,
+    atsScore: 97,
+    bioSnippet: "Old Dominion University senior. Completed DoD-sponsored threat modeling project. Active Secret clearance eligible.",
+    createdAt: new Date().toISOString(),
+    universityName: "Old Dominion University",
+    universitySlug: "old-dominion-university",
+    schoolVerified: true,
+    major: "Cybersecurity & Computer Science",
+    graduationYear: "2026",
+    isStudent: true,
+  },
+  {
+    id: "cand-va-vt",
+    userId: "user-vt-02",
+    realName: "David Chen",
+    email: "[student]@vt.edu",
+    headline: "Embedded Systems & Autonomous Robotics Engineer (Virginia Tech)",
+    maskedHeadline: "Robotics & C++ Software Engineer (Virginia Tech Autonomous Hub)",
+    currentCompany: "Virginia Tech Robotics & Mechatronics Lab",
+    hideCurrentCompany: false,
+    yearsExperience: 2,
+    primarySkills: ["C++", "ROS 2", "Python", "Embedded Linux", "CUDA", "Real-Time Systems"],
+    desiredRole: "Autonomous Systems Software Engineer",
+    desiredSalaryMin: 105000,
+    desiredSalaryMax: 135000,
+    remotePreference: "Hybrid",
+    availability: "actively_looking",
+    isAnonymous: true,
+    atsScore: 98,
+    bioSnippet: "Virginia Tech M.S. candidate in Computer Engineering. Developed real-time sensor fusion pipeline for autonomous vehicle test fleet.",
+    createdAt: new Date().toISOString(),
+    universityName: "Virginia Tech",
+    universitySlug: "virginia-tech",
+    schoolVerified: true,
+    major: "Computer Engineering",
+    graduationYear: "2026",
+    isStudent: true,
+  },
+  {
+    id: "cand-va-tcc",
+    userId: "user-tcc-03",
+    realName: "Taylor Brooks",
+    email: "[student]@email.vccs.edu",
+    headline: "Fullstack Web Developer & AS Computer Science (TCC to ODU Transfer Track)",
+    maskedHeadline: "Fullstack Web Developer (VCCS Collegiate Honor Roll • TCC)",
+    currentCompany: "Tidewater Community College STEM Center",
+    hideCurrentCompany: false,
+    yearsExperience: 1,
+    primarySkills: ["React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS", "Git"],
+    desiredRole: "Junior Fullstack Developer / Software Intern",
+    desiredSalaryMin: 72000,
+    desiredSalaryMax: 90000,
+    remotePreference: "Hybrid",
+    availability: "actively_looking",
+    isAnonymous: true,
+    atsScore: 96,
+    bioSnippet: "Tidewater Community College student transferring to ODU. Built regional event coordination platform serving 1,200 active users.",
+    createdAt: new Date().toISOString(),
+    universityName: "Tidewater Community College",
+    universitySlug: "tidewater-community-college",
+    schoolVerified: true,
+    major: "Computer Science (Transfer Track)",
+    graduationYear: "2026",
+    isStudent: true,
+  },
+  {
+    id: "cand-va-uva",
+    userId: "user-uva-04",
+    realName: "Sarah Miller",
+    email: "[student]@virginia.edu",
+    headline: "Data Science & Quantitative Analytics (University of Virginia)",
+    maskedHeadline: "Quant Data Scientist & Econometric Modeler (UVA School of Data Science)",
+    currentCompany: "UVA Data Science Institute",
+    hideCurrentCompany: false,
+    yearsExperience: 1,
+    primarySkills: ["Python", "SQL", "Machine Learning", "R", "Tableau", "Time Series Analysis"],
+    desiredRole: "Data Scientist / Financial Quant Analyst",
+    desiredSalaryMin: 110000,
+    desiredSalaryMax: 140000,
+    remotePreference: "Any",
+    availability: "open_to_offers",
+    isAnonymous: true,
+    atsScore: 99,
+    bioSnippet: "University of Virginia graduate student. Won 1st place in 2025 Virginia Collegiate FinTech Datathon with 99.4% predictive accuracy model.",
+    createdAt: new Date().toISOString(),
+    universityName: "University of Virginia",
+    universitySlug: "university-of-virginia",
+    schoolVerified: true,
+    major: "Data Science & Statistics",
+    graduationYear: "2026",
+    isStudent: true,
+  },
+  {
+    id: "cand-va-nvcc",
+    userId: "user-nvcc-05",
+    realName: "Carlos Mendez",
+    email: "[student]@email.vccs.edu",
+    headline: "Cloud & DevOps Specialist (NOVA AWS Cloud Academy • VCCS)",
+    maskedHeadline: "AWS Certified Cloud Solutions Associate (Northern Virginia Tech Corridor)",
+    currentCompany: "Northern Virginia Technology Incubator",
+    hideCurrentCompany: false,
+    yearsExperience: 1,
+    primarySkills: ["AWS Certified", "Terraform", "Docker", "Linux", "CI/CD Pipelines", "Python"],
+    desiredRole: "Junior Cloud & DevOps Engineer",
+    desiredSalaryMin: 80000,
+    desiredSalaryMax: 98000,
+    remotePreference: "Hybrid",
+    availability: "actively_looking",
+    isAnonymous: true,
+    atsScore: 95,
+    bioSnippet: "Northern Virginia Community College student with AWS Solutions Architect certification. Northern Virginia tech hub based.",
+    createdAt: new Date().toISOString(),
+    universityName: "Northern Virginia Community College",
+    universitySlug: "northern-virginia-community-college",
+    schoolVerified: true,
+    major: "Cloud Computing & Systems",
+    graduationYear: "2026",
+    isStudent: true,
   }
 ];

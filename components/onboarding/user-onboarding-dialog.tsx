@@ -80,7 +80,15 @@ const EXPERIENCE_LEVELS = [
   { id: "student", label: "Student / Intern", desc: "Currently studying or seeking first internship" },
   { id: "entry", label: "Early Career (0-2 yrs)", desc: "Graduated or starting professional journey" },
   { id: "mid", label: "Mid-Level (3-5 yrs)", desc: "Hands-on experience with track record" },
-  { id: "senior", label: "Senior / Lead (5+ yrs)", desc: "Specialist or engineering leadership" },
+];
+
+const VIRGINIA_REGIONS = [
+  { id: "Hampton Roads", label: "Hampton Roads", sub: "Norfolk / VA Beach / Newport News (Shipbuilding, Defense, NASA)" },
+  { id: "Northern Virginia", label: "Northern Virginia", sub: "NOVA / Tysons / Reston / Arlington (Defense Tech, Cloud, AWS HQ2)" },
+  { id: "Richmond", label: "Richmond / Central VA", sub: "Richmond / Henrico (FinTech, Capital One, State Capitol)" },
+  { id: "Blacksburg / New River Valley", label: "Blacksburg & Roanoke", sub: "New River Valley (Robotics, Autonomous Systems, VT Hub)" },
+  { id: "Charlottesville", label: "Charlottesville & Shenandoah", sub: "Central VA (BioTech, UVA Research, Clean Tech)" },
+  { id: "Remote / Open", label: "Remote / Open to Relocation", sub: "Nationwide & East Coast distributed engineering" },
 ];
 
 type DetectedSchool = {
@@ -129,6 +137,10 @@ export function UserOnboardingDialog() {
   const [verifyingCanvas, setVerifyingCanvas] = useState(false);
   const [savingOnboarding, setSavingOnboarding] = useState(false);
 
+  // Academic track & Virginia region preferences
+  const [selectedMajor, setSelectedMajor] = useState("Computer Science");
+  const [selectedRegion, setSelectedRegion] = useState("Hampton Roads");
+
   // Campus Catalog state
   const [campuses, setCampuses] = useState<Array<{
     name: string;
@@ -145,6 +157,7 @@ export function UserOnboardingDialog() {
     state?: string;
     canvasUrl?: string;
     topMajors?: string[];
+    region?: string;
   }>>(POPULAR_UNIVERSITIES);
   const [loadingCampuses, setLoadingCampuses] = useState(false);
   const [isDiscoveringSchool, setIsDiscoveringSchool] = useState(false);
@@ -327,8 +340,32 @@ export function UserOnboardingDialog() {
         emailFormat: detectedSchool.emailFormat,
         sampleEmail: detectedSchool.sampleEmail,
         emailDomains: detectedSchool.emailDomains,
+        topMajors: matchedCampus?.topMajors || VIRGINIA_INSTITUTIONS.find(v => v.slug === detectedSchool.slug)?.topMajors || [],
+        region: matchedCampus?.region || VIRGINIA_INSTITUTIONS.find(v => v.slug === detectedSchool.slug)?.region,
       }
     : matchedCampus;
+
+  // Auto-sync preferred Virginia region when institution is detected or selected
+  useEffect(() => {
+    if (effectiveCampus?.region) {
+      const reg = effectiveCampus.region.toLowerCase();
+      if (reg.includes("hampton") || reg.includes("coastal") || reg.includes("norfolk")) {
+        setSelectedRegion("Hampton Roads");
+      } else if (reg.includes("north") || reg.includes("nova") || reg.includes("arlington") || reg.includes("fairfax")) {
+        setSelectedRegion("Northern Virginia");
+      } else if (reg.includes("richmond") || reg.includes("central")) {
+        setSelectedRegion("Richmond");
+      } else if (reg.includes("blacksburg") || reg.includes("roanoke") || reg.includes("new river")) {
+        setSelectedRegion("Blacksburg / New River Valley");
+      } else if (reg.includes("charlottesville") || reg.includes("shenandoah")) {
+        setSelectedRegion("Charlottesville");
+      }
+    }
+    if (effectiveCampus?.topMajors && effectiveCampus.topMajors.length > 0 && selectedMajor === "Computer Science") {
+      // Keep or preselect top major if relevant
+      setSelectedMajor(effectiveCampus.topMajors[0]);
+    }
+  }, [effectiveCampus?.slug]);
 
   const isEmailDomainValid = (() => {
     if (!schoolEmail || !schoolEmail.includes("@")) return true;
@@ -399,6 +436,8 @@ export function UserOnboardingDialog() {
           universitySlug: detectedSchool.slug,
           schoolVerified: true,
           schoolEmail: schoolEmail || detectedSchool.sampleEmail || null,
+          major: selectedMajor || null,
+          preferredRegion: selectedRegion || null,
         }),
       });
 
@@ -556,6 +595,8 @@ export function UserOnboardingDialog() {
           universityName: schoolName,
           universitySlug: schoolSlug,
           schoolVerified: skipSchool ? false : isSchoolVerified,
+          major: selectedMajor || null,
+          preferredRegion: selectedRegion || null,
         }),
       });
 
@@ -1622,6 +1663,89 @@ export function UserOnboardingDialog() {
                     </span>
                   </div>
                 )}
+
+                {/* Academic Major & Field of Study Selection */}
+                {(isStudent || isSchoolVerified) && (
+                  <div className="pt-3 border-t border-border/50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                        <GraduationCap className="h-3.5 w-3.5 text-[#0d8274]" />
+                        Major / Field of Study
+                      </label>
+                      <span className="text-[10px] text-muted-foreground">Tailors ATS keywords</span>
+                    </div>
+                    <Input
+                      value={selectedMajor}
+                      onChange={(e) => setSelectedMajor(e.target.value)}
+                      placeholder="e.g. Computer Science, Cybersecurity, Information Systems"
+                      className="h-9 text-xs rounded-none border-border"
+                    />
+                    {effectiveCampus?.topMajors && effectiveCampus.topMajors.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {effectiveCampus.topMajors.slice(0, 5).map((m: string) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => setSelectedMajor(m)}
+                            className={`text-[10px] px-2 py-0.5 border transition-all cursor-pointer ${
+                              selectedMajor.toLowerCase() === m.toLowerCase()
+                                ? "bg-[#102b2b] text-[#d8f36b] border-[#102b2b] font-bold"
+                                : "bg-background text-muted-foreground border-border hover:border-foreground"
+                            }`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Target Virginia Tech Hub / Career Region */}
+                <div className="pt-3 border-t border-border/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-[#0d8274]" />
+                      Target Virginia Tech Hub &amp; Region
+                    </label>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                      Campus Fairs Matched
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                    {VIRGINIA_REGIONS.map((r) => {
+                      const isSelected = selectedRegion === r.id;
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => setSelectedRegion(r.id)}
+                          className={`text-left p-2 border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#102b2b] text-white border-[#102b2b] shadow-xs"
+                              : "bg-background border-border hover:border-foreground text-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold leading-tight">{r.label}</span>
+                            {isSelected && <Check className="h-3.5 w-3.5 text-[#d8f36b]" />}
+                          </div>
+                          <p className={`text-[10px] mt-0.5 leading-snug ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>
+                            {r.sub}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Campus Fair & Recruiter Match Callout */}
+                <div className="p-2.5 bg-[#d8f36b]/15 border border-[#d8f36b]/40 flex items-center gap-2.5 mt-2">
+                  <Sparkles className="h-4 w-4 text-[#102b2b] dark:text-[#d8f36b] shrink-0" />
+                  <p className="text-[11px] text-[#102b2b] dark:text-foreground leading-snug">
+                    <strong>Virginia Collegiate Network Active:</strong> Your resume will be formatted to pass ATS screens for regional Virginia tech leaders, defense contractors, and campus career fairs.
+                  </p>
+                </div>
               </div>
 
               <div className="max-w-lg mx-auto pt-2">
