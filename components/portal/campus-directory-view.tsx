@@ -17,6 +17,8 @@ import {
   Building2, 
   BookOpen, 
   ShieldCheck, 
+  ShieldAlert,
+  Lock,
   Sparkles, 
   ArrowRight, 
   MapPin, 
@@ -26,17 +28,54 @@ import {
   CheckCircle2,
   School
 } from "lucide-react";
+import { normalizeInstitutionSlug } from "@/lib/university/access-control";
 
 interface CampusDirectoryViewProps {
   userSchoolSlug?: string | null;
   userSchoolName?: string | null;
   isVerified?: boolean;
+  profileSettings?: Record<string, any> | null;
 }
+
+export const VIRGINIA_REGION_HUBS = [
+  { id: "all", label: "All Virginia Regions" },
+  { 
+    id: "hampton_roads", 
+    label: "Hampton Roads / Coastal", 
+    keywords: ["hampton", "coastal", "norfolk", "virginia beach", "newport news", "portsmouth", "chesapeake", "suffolk", "historic triangle", "williamsburg"] 
+  },
+  { 
+    id: "nova", 
+    label: "Northern Virginia (NOVA / DC)", 
+    keywords: ["northern", "nova", "fairfax", "arlington", "alexandria", "loudoun", "prince william", "metro", "rappahannock"] 
+  },
+  { 
+    id: "central", 
+    label: "Richmond / Central Virginia", 
+    keywords: ["central", "richmond", "charlottesville", "petersburg", "farmville"] 
+  },
+  { 
+    id: "valley", 
+    label: "Shenandoah Valley / Blue Ridge", 
+    keywords: ["valley", "shenandoah", "harrisonburg", "staunton", "waynesboro", "winchester", "blue ridge", "lord fairfax", "highlands"] 
+  },
+  { 
+    id: "southwest", 
+    label: "Southwest / New River Valley", 
+    keywords: ["southwest", "new river", "blacksburg", "roanoke", "radford", "abingdon", "wise", "clinch", "mountain empire"] 
+  },
+  { 
+    id: "southside", 
+    label: "Southside / Piedmont", 
+    keywords: ["southside", "piedmont", "danville", "martinsville", "lynchburg", "halifax", "patrick henry"] 
+  },
+];
 
 export function CampusDirectoryView({ 
   userSchoolSlug, 
   userSchoolName, 
-  isVerified 
+  isVerified,
+  profileSettings 
 }: CampusDirectoryViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -49,15 +88,22 @@ export function CampusDirectoryView({
     { id: "private_university", label: "Private Universities (12)" },
   ];
 
-  const regions = [
-    "all",
-    "Hampton Roads / Coastal Virginia",
-    "Northern Virginia / Washington D.C. Metro",
-    "Richmond / Central Virginia",
-    "Shenandoah Valley / Blue Ridge",
-    "Southwest Virginia / New River Valley",
-    "Piedmont / Southside Virginia",
-  ];
+  // Set of all normalized slugs verified for this user
+  const verifiedSlugs = useMemo(() => {
+    const set = new Set<string>();
+    if (isVerified && userSchoolSlug) {
+      set.add(normalizeInstitutionSlug(userSchoolSlug));
+    }
+    const settingsSchools = profileSettings?.verified_schools;
+    if (Array.isArray(settingsSchools)) {
+      for (const s of settingsSchools) {
+        if (s?.slug) {
+          set.add(normalizeInstitutionSlug(s.slug));
+        }
+      }
+    }
+    return set;
+  }, [isVerified, userSchoolSlug, profileSettings]);
 
   const filteredInstitutions = useMemo(() => {
     return VIRGINIA_INSTITUTIONS.filter((inst) => {
@@ -74,8 +120,14 @@ export function CampusDirectoryView({
       const matchesCategory =
         selectedCategory === "all" || inst.category === selectedCategory;
 
-      const matchesRegion =
-        selectedRegion === "all" || inst.region === selectedRegion;
+      let matchesRegion = true;
+      if (selectedRegion !== "all") {
+        const hub = VIRGINIA_REGION_HUBS.find((h) => h.id === selectedRegion);
+        if (hub && hub.keywords) {
+          const haystack = `${inst.region} ${inst.location}`.toLowerCase();
+          matchesRegion = hub.keywords.some((kw) => haystack.includes(kw.toLowerCase()));
+        }
+      }
 
       return matchesSearch && matchesCategory && matchesRegion;
     });
@@ -133,7 +185,7 @@ export function CampusDirectoryView({
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/settings/university">
+          <Link href="/dashboard/settings?tab=university">
             <Button variant="outline" className="h-10 text-xs font-bold rounded-xl gap-2">
               <ShieldCheck className="h-4 w-4 text-primary" />
               Verify My Enrollment
@@ -163,10 +215,9 @@ export function CampusDirectoryView({
               aria-label="Filter institutions by Virginia region"
               className="w-full h-11 px-3 text-xs font-bold rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="all">All Virginia Regions</option>
-              {regions.filter((r) => r !== "all").map((region) => (
-                <option key={region} value={region}>
-                  {region}
+              {VIRGINIA_REGION_HUBS.map((hub) => (
+                <option key={hub.id} value={hub.id}>
+                  {hub.label}
                 </option>
               ))}
             </select>
@@ -207,6 +258,7 @@ export function CampusDirectoryView({
       {/* Institution Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredInstitutions.map((inst) => {
+          const isVerifiedForThisSchool = verifiedSlugs.has(normalizeInstitutionSlug(inst.slug));
           const isUserSchool = userSchoolSlug === inst.slug;
           const isVccs = inst.category === "vccs_community_college";
 
@@ -214,13 +266,17 @@ export function CampusDirectoryView({
             <Card 
               key={inst.slug} 
               className={`rounded-2xl transition-all duration-200 border bg-card hover:shadow-lg hover:border-primary/40 flex flex-col justify-between ${
-                isUserSchool ? "border-primary/60 ring-2 ring-primary/20" : "border-border/80"
+                isVerifiedForThisSchool 
+                  ? "border-emerald-500/40 ring-1 ring-emerald-500/20" 
+                  : "border-border/80"
               }`}
             >
               <CardHeader className="p-5 pb-3 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm shrink-0">
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 ${
+                      isVerifiedForThisSchool ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-primary/10 text-primary"
+                    }`}>
                       {inst.shortName.slice(0, 3)}
                     </div>
                     <div>
@@ -228,9 +284,15 @@ export function CampusDirectoryView({
                         <span className="text-xs font-bold text-muted-foreground font-mono">
                           {inst.shortName}
                         </span>
-                        {isUserSchool && (
-                          <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold">
-                            Enrolled
+                        {isVerifiedForThisSchool ? (
+                          <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                            <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                            Verified Access
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-bold flex items-center gap-1">
+                            <Lock className="h-3 w-3 text-amber-500/80" />
+                            FERPA Gate
                           </Badge>
                         )}
                       </div>
@@ -309,10 +371,24 @@ export function CampusDirectoryView({
                 <div className="pt-3 border-t border-border/60 flex items-center gap-2">
                   <Link href={`/dashboard/portal/${inst.slug}`} className="flex-1">
                     <Button 
-                      className="w-full h-9 text-xs font-bold bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743] rounded-xl gap-1.5 shadow-sm"
+                      className={`w-full h-9 text-xs font-bold rounded-xl gap-1.5 shadow-sm ${
+                        isVerifiedForThisSchool 
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                          : "bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743]"
+                      }`}
                     >
-                      <span>Explore Portal</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
+                      {isVerifiedForThisSchool ? (
+                        <>
+                          <span>Launch Portal</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="h-3 w-3 opacity-70" />
+                          <span>Enter Gate</span>
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </>
+                      )}
                     </Button>
                   </Link>
                   <a 

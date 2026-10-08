@@ -34,7 +34,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid or expired verification code" }, { status: 400 });
     }
 
-    // Update profile
+    // Read current profile to preserve multi-school verification history
+    const { data: currentProfile } = await supabase
+      .from("profiles")
+      .select("settings, university_slug, university_name, school_email")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const currentSettings = (currentProfile?.settings as Record<string, any>) || {};
+    const verifiedSchools: Array<{ slug: string; name: string; email: string; verified_at: string }> =
+      Array.isArray(currentSettings.verified_schools) ? [...currentSettings.verified_schools] : [];
+
+    // Ensure any previously verified school is retained
+    if (
+      currentProfile?.university_slug &&
+      !verifiedSchools.some((s) => s.slug === currentProfile.university_slug)
+    ) {
+      verifiedSchools.push({
+        slug: currentProfile.university_slug,
+        name: currentProfile.university_name || currentProfile.university_slug,
+        email: currentProfile.school_email || "",
+        verified_at: new Date().toISOString(),
+      });
+    }
+
+    // Append / update the new verified school
+    const newSchoolEntry = {
+      slug: record.university_slug,
+      name: record.university_name,
+      email: record.school_email,
+      verified_at: new Date().toISOString(),
+    };
+    const existingIndex = verifiedSchools.findIndex((s) => s.slug === record.university_slug);
+    if (existingIndex >= 0) {
+      verifiedSchools[existingIndex] = newSchoolEntry;
+    } else {
+      verifiedSchools.push(newSchoolEntry);
+    }
+
+    // Update profile with primary and multi-school verified settings
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
@@ -43,6 +81,10 @@ export async function POST(req: Request) {
         school_email: record.school_email,
         university_name: record.university_name,
         university_slug: record.university_slug,
+        settings: {
+          ...currentSettings,
+          verified_schools: verifiedSchools,
+        },
       })
       .eq("id", user.id);
 

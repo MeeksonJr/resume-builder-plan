@@ -66,6 +66,8 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { UserCheck, ShieldAlert, Key, Copy, CheckCheck } from "lucide-react";
 
+import { VerifiedSchoolRecord } from "@/lib/university/access-control";
+
 export interface PortalMember {
   id: string;
   email: string;
@@ -78,6 +80,7 @@ export interface PortalMember {
 
 interface UniversityPortalViewProps {
   tenant: UniversityTenant;
+  verifiedSchools?: VerifiedSchoolRecord[];
 }
 
 function deduplicateStudents(list: StudentRosterMember[]): StudentRosterMember[] {
@@ -93,7 +96,7 @@ function deduplicateStudents(list: StudentRosterMember[]): StudentRosterMember[]
   });
 }
 
-export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
+export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPortalViewProps) {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("roster");
@@ -469,6 +472,50 @@ export function UniversityPortalView({ tenant }: UniversityPortalViewProps) {
 
   return (
     <div className="space-y-6" suppressHydrationWarning>
+      {/* Top Campus Hub Navigation Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/80 text-xs">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/portal?browse=true"
+            className="inline-flex items-center gap-1.5 text-primary hover:underline font-bold"
+          >
+            &larr; Back to Virginia Campus Directory
+          </Link>
+          <span className="text-muted-foreground/60 hidden sm:inline">&bull;</span>
+          <span className="text-muted-foreground hidden sm:inline">
+            Active Portal: <strong className="text-foreground">{tenant.name}</strong>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {verifiedSchools && verifiedSchools.length > 1 && (
+            <div className="flex items-center gap-1.5 bg-muted/60 px-2 py-1 rounded-lg border border-border">
+              <span className="text-[11px] font-bold text-muted-foreground">My Verified Portals:</span>
+              {verifiedSchools.map((s) => (
+                <Link
+                  key={s.slug}
+                  href={`/dashboard/portal/${s.slug}`}
+                  className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
+                    s.slug === tenant.slug
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-background"
+                  }`}
+                >
+                  {s.name.split(" ")[0]}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <Link href="/dashboard/portal?browse=true">
+            <Button variant="outline" size="sm" className="h-7 text-[11px] font-bold rounded-lg gap-1">
+              <Plus className="h-3 w-3" />
+              Add Another School
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* Institutional White-Label Header Banner */}
       <div
         style={{ borderTopColor: portalSettings.primaryColor }}

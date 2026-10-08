@@ -27,7 +27,7 @@ export default async function CampusPortalHubPage({ searchParams }: CampusPortal
   // Fetch profile to check school verification status
   const { data: profile } = await supabase
     .from("profiles")
-    .select("university_name, university_slug, school_verified, is_student")
+    .select("university_name, university_slug, school_verified, is_student, settings, school_email")
     .eq("id", user.id)
     .single();
 
@@ -47,7 +47,8 @@ export default async function CampusPortalHubPage({ searchParams }: CampusPortal
       <CampusDirectoryView 
         userSchoolSlug={schoolSlug} 
         userSchoolName={schoolName} 
-        isVerified={isVerified} 
+        isVerified={isVerified}
+        profileSettings={profile?.settings}
       />
     </div>
   );
