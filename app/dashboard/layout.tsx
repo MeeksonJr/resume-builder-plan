@@ -10,6 +10,8 @@ import { UserOnboardingDialog } from "@/components/onboarding/user-onboarding-di
 import { VerificationGateModal } from "@/components/auth/verification-gate-modal";
 import { isAcademicDomain, detectSchoolFromEmail } from "@/lib/university/detect";
 
+import { MobileNavDock } from "@/components/dashboard/mobile-nav-dock";
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -101,10 +103,11 @@ export default async function DashboardLayout({
         <OfflineIndicatorBanner />
         <UserOnboardingDialog />
         <div suppressHydrationWarning className="flex-1 overflow-y-auto">
-          <div className="w-full px-4 py-8 md:px-8 lg:px-10">
+          <div className="w-full px-4 pt-6 pb-24 md:py-8 md:px-8 lg:px-10">
             {children}
           </div>
         </div>
+        <MobileNavDock />
       </SidebarInset>
     </SidebarProvider>
   );

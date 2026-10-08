@@ -57,7 +57,7 @@ export function CommandMenu() {
         setMounted(true)
     }, [])
 
-    // Key listener for Ctrl+K / Cmd+K
+    // Key listener for Ctrl+K / Cmd+K and custom trigger events
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
             if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -66,8 +66,14 @@ export function CommandMenu() {
             }
         }
 
+        const handleCustomOpen = () => setOpen(true)
+        window.addEventListener("open-command-palette", handleCustomOpen)
         document.addEventListener("keydown", down)
-        return () => document.removeEventListener("keydown", down)
+
+        return () => {
+            window.removeEventListener("open-command-palette", handleCustomOpen)
+            document.removeEventListener("keydown", down)
+        }
     }, [])
 
     React.useEffect(() => {
