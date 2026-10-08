@@ -465,33 +465,33 @@ export default function NewResumePage() {
     // Free tier limit reached screen
     if (!isSubLoading && !isPro && resumeCount !== null && resumeCount >= 1) {
         return (
-            <div className="mx-auto max-w-3xl space-y-7 py-8">
-                <Button asChild variant="ghost" size="icon" className="rounded-none">
+            <div className="mx-auto max-w-3xl space-y-7 py-8 px-4">
+                <Button asChild variant="ghost" size="icon" className="rounded-xl">
                     <Link href="/dashboard/resumes">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                 </Button>
-                <Card className="rounded-none border-[#102b2b]/20 bg-[#f5f7f1] shadow-none p-6 text-center">
+                <Card className="rounded-2xl border border-border bg-card shadow-lg p-6 sm:p-8 text-center">
                     <CardHeader className="space-y-3 pb-2">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center bg-[#d8f36b]">
-                            <Sparkles className="h-6 w-6 text-[#102b2b]" />
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500">
+                            <Sparkles className="h-7 w-7" />
                         </div>
-                        <CardTitle className="text-2xl font-black uppercase tracking-tight text-[#102b2b]">
+                        <CardTitle className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
                             Free Plan Limit Reached
                         </CardTitle>
-                        <CardDescription className="text-base text-[#52716a]">
+                        <CardDescription className="text-base text-muted-foreground">
                             You have reached the limit of 1 active resume on the Free tier.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 max-w-md mx-auto pt-2">
-                        <p className="text-sm text-[#102b2b]/70">
-                            Upgrade to <strong>Pro</strong> to unlock unlimited resumes, all 8 ATS-optimized templates, AI bullet optimization, and export formats.
+                        <p className="text-sm text-muted-foreground">
+                            Upgrade to <strong className="text-foreground">Pro</strong> to unlock unlimited resumes, all ATS-optimized templates, AI bullet optimization, and export formats.
                         </p>
                     </CardContent>
                     <CardFooter className="flex justify-center pb-4">
                         <Button
                             size="lg"
-                            className="h-12 rounded-none bg-[#d8f36b] px-8 font-bold text-[#102b2b] hover:bg-[#c9e95c] shadow-sm"
+                            className="h-12 rounded-xl bg-primary px-8 font-bold text-primary-foreground hover:bg-primary/90 shadow-md"
                             onClick={() => router.push("/dashboard/subscription")}
                         >
                             Upgrade to Pro
@@ -503,25 +503,25 @@ export default function NewResumePage() {
     }
 
     return (
-        <div className="mx-auto max-w-7xl space-y-8 px-2 py-4 sm:px-4">
+        <div className="mx-auto max-w-7xl space-y-8 px-2 py-4 sm:px-4 min-w-0 max-w-full overflow-hidden">
             {/* Header & Step Progress Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#102b2b]/15 pb-6">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <Button
                         asChild
                         variant="ghost"
                         size="icon"
-                        className="rounded-none border border-[#102b2b]/15 bg-white text-[#102b2b] hover:bg-[#d8f36b]"
+                        className="rounded-xl border border-border bg-card text-foreground hover:bg-muted shrink-0"
                     >
                         <Link href="/dashboard/resumes">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">
+                    <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
                             New Resume Creation
                         </p>
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#102b2b]">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground truncate">
                             {currentStep === "template" && "1. Select a Resume Template"}
                             {currentStep === "content" && "2. Choose Content Setup"}
                             {currentStep === "finalize" && "3. Review & Launch"}
@@ -530,41 +530,41 @@ export default function NewResumePage() {
                 </div>
 
                 {/* Stepper Indicators */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                     <button
                         type="button"
                         onClick={() => setCurrentStep("template")}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-none border transition-colors",
+                            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl border transition-colors",
                             currentStep === "template"
-                                ? "bg-[#102b2b] text-white border-[#102b2b]"
-                                : "bg-white/80 text-[#52716a] border-[#102b2b]/15 hover:bg-white"
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-muted-foreground border-border hover:bg-muted"
                         )}
                     >
                         <span>1. Template</span>
                     </button>
-                    <span className="text-[#102b2b]/30">/</span>
+                    <span className="text-muted-foreground/40">/</span>
                     <button
                         type="button"
                         onClick={() => setCurrentStep("content")}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-none border transition-colors",
+                            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl border transition-colors",
                             currentStep === "content"
-                                ? "bg-[#102b2b] text-white border-[#102b2b]"
-                                : "bg-white/80 text-[#52716a] border-[#102b2b]/15 hover:bg-white"
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-muted-foreground border-border hover:bg-muted"
                         )}
                     >
                         <span>2. Content</span>
                     </button>
-                    <span className="text-[#102b2b]/30">/</span>
+                    <span className="text-muted-foreground/40">/</span>
                     <button
                         type="button"
                         onClick={() => setCurrentStep("finalize")}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-none border transition-colors",
+                            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl border transition-colors",
                             currentStep === "finalize"
-                                ? "bg-[#102b2b] text-white border-[#102b2b]"
-                                : "bg-white/80 text-[#52716a] border-[#102b2b]/15 hover:bg-white"
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-muted-foreground border-border hover:bg-muted"
                         )}
                     >
                         <span>3. Launch</span>
@@ -574,21 +574,21 @@ export default function NewResumePage() {
 
             {/* STEP 1: TEMPLATE SHOWCASE */}
             {currentStep === "template" && (
-                <div className="space-y-8">
+                <div className="space-y-8 min-w-0">
                     {/* Intro Note */}
-                    <div className="bg-[#102b2b] text-[#f8f4ec] p-6 rounded-none shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                            <h2 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                                <Sparkles className="h-4 w-4 text-white" />
-                                Explore 8 Professionally Crafted Templates
+                    <div className="bg-card border border-border text-card-foreground p-6 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1 min-w-0">
+                            <h2 className="text-base sm:text-lg font-black uppercase tracking-tight flex items-center gap-2 text-foreground">
+                                <Sparkles className="h-4 w-4 text-emerald-500 shrink-0" />
+                                <span>Explore 8 Professionally Crafted Templates</span>
                             </h2>
-                            <p className="text-xs text-[#a6c0b8] max-w-2xl">
+                            <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
                                 Scroll directly through each preview card to inspect sections. Click &quot;Inspect Fullscreen&quot; to test different sample roles and color palettes. All templates are 100% interchangeable anytime in the editor.
                             </p>
                         </div>
                         <Button
                             onClick={handleContinueToContent}
-                            className="rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c9e95c] font-black uppercase tracking-wider text-xs px-6 h-11 shrink-0 gap-2 shadow-sm"
+                            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider text-xs px-6 h-11 shrink-0 gap-2 shadow-sm w-full sm:w-auto"
                         >
                             <span>Continue with {selectedTemplate.name}</span>
                             <ArrowRight className="h-4 w-4" />
@@ -605,19 +605,20 @@ export default function NewResumePage() {
                     />
 
                     {/* Sticky Bottom Bar */}
-                    <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md border border-[#102b2b]/20 p-4 shadow-xl flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-none border border-black/20" style={{ backgroundColor: accentColor }} />
-                            <div>
-                                <p className="text-xs text-[#52716a] font-bold uppercase tracking-wider">Active Choice</p>
-                                <p className="text-sm font-black text-[#102b2b]">{selectedTemplate.name} ({selectedTemplate.subtitle})</p>
+                    <div className="sticky bottom-4 z-20 bg-card/95 backdrop-blur-md border border-border p-4 rounded-2xl shadow-xl flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-lg border border-border shrink-0 shadow-inner" style={{ backgroundColor: accentColor }} />
+                            <div className="min-w-0">
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Active Choice</p>
+                                <p className="text-sm font-black text-foreground truncate">{selectedTemplate.name} ({selectedTemplate.subtitle})</p>
                             </div>
                         </div>
                         <Button
                             onClick={handleContinueToContent}
-                            className="rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c9e95c] font-bold px-6 h-10 gap-2 shadow-sm"
+                            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6 h-10 gap-2 shadow-sm shrink-0"
                         >
-                            <span>Next: Choose Content</span>
+                            <span className="hidden sm:inline">Next: Choose Content</span>
+                            <span className="sm:hidden">Next</span>
                             <ArrowRight className="h-4 w-4" />
                         </Button>
                     </div>
@@ -626,50 +627,50 @@ export default function NewResumePage() {
 
             {/* STEP 2: CONTENT ONBOARDING */}
             {currentStep === "content" && (
-                <div className="max-w-4xl mx-auto space-y-8">
+                <div className="max-w-4xl mx-auto space-y-8 min-w-0">
                     <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-black uppercase tracking-tight text-[#102b2b]">
+                        <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
                             How would you like to start?
                         </h2>
-                        <p className="text-sm text-[#52716a] max-w-xl mx-auto">
-                            Using template: <strong className="text-[#102b2b]">{selectedTemplate.name}</strong>. Choose whether to import your existing documents, start with realistic industry samples, or begin fresh.
+                        <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                            Using template: <strong className="text-foreground">{selectedTemplate.name}</strong>. Choose whether to import your existing documents, start with realistic industry samples, or begin fresh.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                         {/* Option 0: Career Memory */}
-                        <Card className="rounded-none border-2 border-[#0d8274] bg-gradient-to-b from-[#f5fbf9] to-white shadow-md flex flex-col justify-between hover:shadow-lg transition-all relative overflow-hidden">
-                            <div className="absolute top-0 right-0 bg-[#0d8274] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5">
+                        <Card className="rounded-2xl border-2 border-emerald-500/50 bg-card shadow-md flex flex-col justify-between hover:shadow-lg transition-all relative overflow-hidden">
+                            <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-bl-lg">
                                 Recommended
                             </div>
                             <CardHeader className="space-y-3">
-                                <div className="h-10 w-10 bg-[#0d8274]/15 flex items-center justify-center text-[#0d8274]">
+                                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                                     <Brain className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-[#102b2b]">
+                                    <CardTitle className="text-base font-bold text-foreground">
                                         Your Career Memory
                                     </CardTitle>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <div className="h-1.5 flex-1 bg-slate-200 overflow-hidden">
+                                        <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
                                              <div
-                                                className="h-full bg-[#0d8274] transition-all"
+                                                className="h-full bg-emerald-500 rounded-full transition-all"
                                                 style={{ width: `${memoryCompleteness.score}%` }}
                                             />
                                         </div>
-                                        <span className="text-[10px] font-mono font-bold text-[#0d8274]">
+                                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                             {memoryCompleteness.score}%
                                         </span>
                                     </div>
                                 </div>
-                                <CardDescription className="text-xs text-[#52716a] leading-relaxed">
+                                <CardDescription className="text-xs text-muted-foreground leading-relaxed">
                                     Instant load from your synced memory: {memory.experiences?.length || 0} jobs, {memory.education?.length || 0} degrees, {memory.skills?.length || 0} skills, and social handles.
                                 </CardDescription>
                             </CardHeader>
                             <CardFooter className="pt-2 flex flex-col gap-2">
                                 <Button
                                     onClick={handleImportFromMemory}
-                                    className="w-full rounded-none bg-[#0d8274] text-white hover:bg-[#0a685d] text-xs font-bold h-10 gap-1.5 shadow-sm"
+                                    className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold h-10 gap-1.5 shadow-sm"
                                 >
                                     <Brain className="h-3.5 w-3.5" />
                                     <span>Use Career Memory</span>
@@ -678,7 +679,7 @@ export default function NewResumePage() {
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="w-full rounded-none text-[11px] font-semibold text-[#52716a] hover:text-[#102b2b] h-7"
+                                    className="w-full rounded-xl text-[11px] font-semibold text-muted-foreground hover:text-foreground h-7"
                                 >
                                     <Link href="/dashboard/memory">
                                         Manage Memory Details
@@ -688,15 +689,15 @@ export default function NewResumePage() {
                         </Card>
 
                         {/* Option 1: Import Existing Resume */}
-                        <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm flex flex-col justify-between hover:border-[#102b2b]/40 transition-all">
+                        <Card className="rounded-2xl border border-border bg-card shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all">
                             <CardHeader className="space-y-3">
-                                <div className="h-10 w-10 bg-[#0d8274]/10 flex items-center justify-center text-[#0d8274]">
+                                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
                                     <Upload className="h-5 w-5" />
                                 </div>
-                                <CardTitle className="text-lg font-bold text-[#102b2b]">
+                                <CardTitle className="text-base font-bold text-foreground">
                                     Import Existing Resume
                                 </CardTitle>
-                                <CardDescription className="text-xs text-[#52716a] leading-relaxed">
+                                <CardDescription className="text-xs text-muted-foreground leading-relaxed">
                                     Upload a JSON Resume file, paste JSON text, or import an existing PDF/Word resume.
                                 </CardDescription>
                             </CardHeader>
@@ -704,7 +705,7 @@ export default function NewResumePage() {
                                 <JsonImportDialog onImport={handleJSONImported}>
                                     <Button
                                         variant="outline"
-                                        className="w-full rounded-none border-[#102b2b]/20 text-xs font-bold text-[#102b2b] hover:bg-[#e9eee8] h-10 gap-1.5"
+                                        className="w-full rounded-xl border-border text-xs font-bold text-foreground hover:bg-muted h-10 gap-1.5"
                                     >
                                         <Code className="h-3.5 w-3.5" />
                                         Import JSON Resume
@@ -713,7 +714,7 @@ export default function NewResumePage() {
                                 <ImportDialog>
                                     <Button
                                         variant="outline"
-                                        className="w-full rounded-none border-[#102b2b]/20 text-xs font-bold text-[#102b2b] hover:bg-[#e9eee8] h-10 gap-1.5"
+                                        className="w-full rounded-xl border-border text-xs font-bold text-foreground hover:bg-muted h-10 gap-1.5"
                                     >
                                         <Upload className="h-3.5 w-3.5" />
                                         Upload PDF / Word
@@ -723,15 +724,15 @@ export default function NewResumePage() {
                         </Card>
 
                         {/* Option 2: Start from Scratch */}
-                        <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm flex flex-col justify-between hover:border-[#102b2b]/40 transition-all">
+                        <Card className="rounded-2xl border border-border bg-card shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all">
                             <CardHeader className="space-y-3">
-                                <div className="h-10 w-10 bg-[#d8f36b] flex items-center justify-center text-[#102b2b]">
+                                <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
                                     <FileText className="h-5 w-5" />
                                 </div>
-                                <CardTitle className="text-lg font-bold text-[#102b2b]">
+                                <CardTitle className="text-base font-bold text-foreground">
                                     Start from Scratch
                                 </CardTitle>
-                                <CardDescription className="text-xs text-[#52716a] leading-relaxed">
+                                <CardDescription className="text-xs text-muted-foreground leading-relaxed">
                                     Begin with a blank slate. Your basic profile information (name, email, location) is pre-filled automatically.
                                 </CardDescription>
                             </CardHeader>
@@ -741,7 +742,7 @@ export default function NewResumePage() {
                                         setContentSource("blank");
                                         setCurrentStep("finalize");
                                     }}
-                                    className="w-full rounded-none bg-[#102b2b] text-[#f8f4ec] hover:bg-[#1a3d3d] text-xs font-bold h-10 gap-1.5"
+                                    className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold h-10 gap-1.5 shadow-sm"
                                 >
                                     <span>Create Blank Resume</span>
                                     <ArrowRight className="h-3.5 w-3.5" />
@@ -750,15 +751,15 @@ export default function NewResumePage() {
                         </Card>
 
                         {/* Option 3: Role Demo Persona */}
-                        <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm flex flex-col justify-between hover:border-[#102b2b]/40 transition-all">
+                        <Card className="rounded-2xl border border-border bg-card shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all">
                             <CardHeader className="space-y-3">
-                                <div className="h-10 w-10 bg-[#0d8274]/10 flex items-center justify-center text-[#0d8274]">
+                                <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
                                     <Sparkles className="h-5 w-5" />
                                 </div>
-                                <CardTitle className="text-lg font-bold text-[#102b2b]">
+                                <CardTitle className="text-base font-bold text-foreground">
                                     Start with Role Demo
                                 </CardTitle>
-                                <CardDescription className="text-xs text-[#52716a] leading-relaxed">
+                                <CardDescription className="text-xs text-muted-foreground leading-relaxed">
                                     Load quantifiable bullet points and industry skills for your role so you can edit rather than write from zero.
                                 </CardDescription>
                             </CardHeader>
@@ -771,9 +772,9 @@ export default function NewResumePage() {
                                         setTitle("Software Engineer Resume");
                                         setCurrentStep("finalize");
                                     }}
-                                    className="w-full justify-start rounded-none text-xs font-semibold h-8 gap-1.5"
+                                    className="w-full justify-start rounded-xl text-xs font-semibold h-8 gap-1.5 border-border text-foreground hover:bg-muted"
                                 >
-                                    <Code className="h-3.5 w-3.5 text-[#0d8274]" />
+                                    <Code className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                                     <span>Software Engineer</span>
                                 </Button>
                                 <Button
@@ -784,9 +785,9 @@ export default function NewResumePage() {
                                         setTitle("Executive Product Leader Resume");
                                         setCurrentStep("finalize");
                                     }}
-                                    className="w-full justify-start rounded-none text-xs font-semibold h-8 gap-1.5"
+                                    className="w-full justify-start rounded-xl text-xs font-semibold h-8 gap-1.5 border-border text-foreground hover:bg-muted"
                                 >
-                                    <Briefcase className="h-3.5 w-3.5 text-[#0d8274]" />
+                                    <Briefcase className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                                     <span>Executive / Director</span>
                                 </Button>
                                 <Button
@@ -797,9 +798,9 @@ export default function NewResumePage() {
                                         setTitle("Growth Marketing Resume");
                                         setCurrentStep("finalize");
                                     }}
-                                    className="w-full justify-start rounded-none text-xs font-semibold h-8 gap-1.5"
+                                    className="w-full justify-start rounded-xl text-xs font-semibold h-8 gap-1.5 border-border text-foreground hover:bg-muted"
                                 >
-                                    <TrendingUp className="h-3.5 w-3.5 text-[#0d8274]" />
+                                    <TrendingUp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                                     <span>Marketing & Growth</span>
                                 </Button>
                             </CardFooter>
@@ -810,7 +811,7 @@ export default function NewResumePage() {
                         <Button
                             variant="ghost"
                             onClick={() => setCurrentStep("template")}
-                            className="rounded-none text-xs font-bold text-[#52716a] gap-1.5"
+                            className="rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground gap-1.5"
                         >
                             <ArrowLeft className="h-3.5 w-3.5" />
                             Back to Templates
@@ -821,60 +822,60 @@ export default function NewResumePage() {
 
             {/* STEP 3: FINALIZE & LAUNCH */}
             {currentStep === "finalize" && (
-                <div className="max-w-2xl mx-auto space-y-6">
-                    <Card className="rounded-none border-[#102b2b]/15 bg-white shadow-sm p-6 space-y-6">
-                        <div className="border-b border-[#102b2b]/10 pb-4">
-                            <h2 className="text-xl font-black uppercase tracking-tight text-[#102b2b]">
+                <div className="max-w-2xl mx-auto space-y-6 min-w-0">
+                    <Card className="rounded-2xl border border-border bg-card shadow-sm p-6 sm:p-8 space-y-6">
+                        <div className="border-b border-border pb-4">
+                            <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
                                 Finalize Your Resume Setup
                             </h2>
-                            <p className="text-xs text-[#52716a] mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Review your title and accent color before launching the interactive builder.
                             </p>
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+                            <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold">
                                 {error}
                             </div>
                         )}
 
                         {/* Title Input */}
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-[#52716a]">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                 Resume Title
                             </Label>
                             <Input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="e.g. Senior Software Engineer - 2026"
-                                className="h-11 rounded-none border-[#102b2b]/20 text-sm font-medium"
+                                className="h-11 rounded-xl border-border bg-background text-foreground text-sm font-medium"
                             />
-                            <p className="text-[11px] text-[#52716a]">
+                            <p className="text-[11px] text-muted-foreground">
                                 Internal title for your dashboard library. Recruiters will not see this.
                             </p>
                         </div>
 
                         {/* Template & Color Summary Box */}
-                        <div className="grid grid-cols-2 gap-4 p-4 bg-[#f8f4ec] border border-[#102b2b]/10">
+                        <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/40 border border-border">
                             <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#52716a] block">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
                                     Selected Template
                                 </span>
-                                <span className="text-sm font-black text-[#102b2b]">
+                                <span className="text-sm font-black text-foreground">
                                     {selectedTemplate.name}
                                 </span>
-                                <p className="text-[11px] text-[#52716a]">{selectedTemplate.subtitle}</p>
+                                <p className="text-[11px] text-muted-foreground">{selectedTemplate.subtitle}</p>
                             </div>
                             <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#52716a] block">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
                                     Accent Color
                                 </span>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div
-                                        className="w-5 h-5 rounded-none border border-black/20"
+                                        className="w-5 h-5 rounded-md border border-border shadow-sm"
                                         style={{ backgroundColor: accentColor }}
                                     />
-                                    <span className="text-xs font-mono font-bold text-[#102b2b] uppercase">
+                                    <span className="text-xs font-mono font-bold text-foreground uppercase">
                                         {accentColor}
                                     </span>
                                 </div>
@@ -882,11 +883,11 @@ export default function NewResumePage() {
                         </div>
 
                         {/* Content Source Summary */}
-                        <div className="flex items-center gap-2 text-xs text-[#52716a]">
-                            <Layers className="h-4 w-4 text-[#0d8274]" />
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                            <Layers className="h-4 w-4 text-emerald-500 shrink-0" />
                             <span>
                                 Content mode:{" "}
-                                <strong className="text-[#102b2b]">
+                                <strong className="text-foreground">
                                     {contentSource === "imported" && "Imported Resume Data"}
                                     {contentSource === "blank" && "Blank Template (Clean Slate)"}
                                     {contentSource === "demo_software" && "Software Engineer Benchmark Data"}
@@ -900,7 +901,7 @@ export default function NewResumePage() {
                             <Button
                                 variant="ghost"
                                 onClick={() => setCurrentStep("content")}
-                                className="rounded-none text-xs font-bold text-[#52716a] gap-1.5"
+                                className="w-full sm:w-auto rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground gap-1.5"
                             >
                                 <ArrowLeft className="h-3.5 w-3.5" />
                                 Back
@@ -908,7 +909,7 @@ export default function NewResumePage() {
                             <Button
                                 onClick={handleCreateResume}
                                 disabled={isLoading}
-                                className="w-full sm:w-auto rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c9e95c] font-black uppercase tracking-wider px-8 h-11 text-xs shadow-md gap-2"
+                                className="w-full sm:w-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-8 h-11 text-xs shadow-md gap-2"
                             >
                                 {isLoading ? (
                                     <>

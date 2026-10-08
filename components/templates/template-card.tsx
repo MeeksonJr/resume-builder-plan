@@ -49,37 +49,37 @@ export function TemplateCard({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className={cn(
-                "group relative flex flex-col overflow-hidden border bg-white transition-all duration-300 rounded-none shadow-sm hover:shadow-xl",
+                "group relative flex flex-col overflow-hidden border bg-card transition-all duration-300 rounded-2xl shadow-sm hover:shadow-xl",
                 isSelected
-                    ? "border-2 border-[#102b2b] ring-4 ring-[#d8f36b]/40"
-                    : "border-[#102b2b]/15 hover:border-[#102b2b]/40"
+                    ? "border-2 border-primary ring-4 ring-primary/20"
+                    : "border-border hover:border-primary/50"
             )}
         >
             {/* Top Bar / Header of Card */}
-            <div className="flex items-center justify-between border-b border-[#102b2b]/10 bg-[#f8f4ec] px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase tracking-tight text-[#102b2b]">
+            <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs font-black uppercase tracking-tight text-foreground truncate">
                         {template.name}
                     </span>
                     {template.badge && (
                         <Badge
                             variant="secondary"
-                            className="rounded-none bg-[#d8f36b] text-[#102b2b] text-[9.5px] font-extrabold uppercase px-1.5 py-0 border-none shadow-none"
+                            className="rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[9.5px] font-extrabold uppercase px-1.5 py-0 border-none shadow-none"
                         >
                             {template.badge}
                         </Badge>
                     )}
                 </div>
-                <div className="flex items-center gap-1.5 text-[#0d8274]">
+                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 shrink-0">
                     <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                     <span className="text-[10px] font-mono font-bold">{template.atsScore}% ATS</span>
                 </div>
             </div>
 
             {/* Scrollable Live Interactive Preview Box */}
-            <div className="relative h-[480px] w-full overflow-hidden bg-gray-100 cursor-pointer" onClick={() => onInspect(template)}>
+            <div className="relative h-[480px] w-full overflow-hidden bg-muted/20 cursor-pointer" onClick={() => onInspect(template)}>
                 {/* Scrollable viewport */}
-                <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#102b2b]/20 hover:scrollbar-thumb-[#102b2b]/40">
+                <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/40">
                     <div className="flex justify-center p-3">
                         <div
                             className="origin-top scale-[0.46] sm:scale-[0.52] w-[800px] min-h-[1056px] shadow-lg pointer-events-none transition-transform duration-200 group-hover:scale-[0.48] sm:group-hover:scale-[0.54]"
@@ -91,7 +91,7 @@ export function TemplateCard({
 
                 {/* Floating "Scrollable Preview" hint */}
                 <div className="absolute top-2 right-2 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
-                    <span className="bg-[#102b2b]/80 backdrop-blur-xs text-[#f8f4ec] text-[9.5px] font-mono px-2 py-0.5 rounded-none shadow-xs">
+                    <span className="bg-background/80 backdrop-blur-xs text-foreground text-[9.5px] font-mono px-2 py-0.5 rounded-md border border-border shadow-xs">
                         Scroll to view full page
                     </span>
                 </div>
@@ -99,7 +99,7 @@ export function TemplateCard({
                 {/* Action Hover Overlay */}
                 <div
                     className={cn(
-                        "absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-[#102b2b]/90 via-[#102b2b]/60 to-transparent flex items-center justify-center gap-3 transition-opacity duration-200",
+                        "absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-background/95 via-background/70 to-transparent flex items-center justify-center gap-3 transition-opacity duration-200",
                         isHovered || isSelected ? "opacity-100" : "opacity-0 pointer-events-none"
                     )}
                     onClick={(e) => e.stopPropagation()}
@@ -108,7 +108,7 @@ export function TemplateCard({
                         size="sm"
                         variant="secondary"
                         onClick={() => onInspect(template)}
-                        className="rounded-none bg-white/95 text-[#102b2b] hover:bg-white text-xs font-bold gap-1.5 shadow-md h-9"
+                        className="rounded-xl bg-card text-foreground border border-border hover:bg-muted text-xs font-bold gap-1.5 shadow-md h-9"
                     >
                         <Eye className="h-3.5 w-3.5" />
                         Inspect Fullscreen
@@ -117,10 +117,10 @@ export function TemplateCard({
                         size="sm"
                         onClick={() => onSelect(template)}
                         className={cn(
-                            "rounded-none text-xs font-bold gap-1.5 shadow-md h-9",
+                            "rounded-xl text-xs font-bold gap-1.5 shadow-md h-9",
                             isSelected
-                                ? "bg-[#d8f36b] text-[#102b2b] hover:bg-[#c9e95c]"
-                                : "bg-[#102b2b] text-[#f8f4ec] hover:bg-[#1a3d3d]"
+                                ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                                : "bg-primary text-primary-foreground hover:bg-primary/90"
                         )}
                     >
                         {isSelected ? (
@@ -130,7 +130,7 @@ export function TemplateCard({
                             </>
                         ) : (
                             <>
-                                <Sparkles className="h-3.5 w-3.5 text-[#0d8274]" />
+                                <Sparkles className="h-3.5 w-3.5" />
                                 Use Template
                             </>
                         )}
@@ -139,15 +139,15 @@ export function TemplateCard({
             </div>
 
             {/* Bottom Details Footer */}
-            <div className="flex flex-col gap-2 p-4 border-t border-[#102b2b]/10 bg-white">
-                <p className="text-xs text-[#52716a] line-clamp-2 leading-relaxed">
+            <div className="flex flex-col gap-2 p-4 border-t border-border bg-card">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                     {template.description}
                 </p>
                 <div className="flex flex-wrap gap-1 pt-1">
                     {template.recommendedFor.slice(0, 3).map((role) => (
                         <span
                             key={role}
-                            className="text-[9.5px] font-semibold text-[#102b2b]/70 bg-[#f8f4ec] px-2 py-0.5 border border-[#102b2b]/10"
+                            className="text-[9.5px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md border border-border"
                         >
                             {role}
                         </span>

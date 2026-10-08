@@ -76,18 +76,18 @@ export function TemplateInspectModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="!max-w-[95vw] sm:!max-w-[92vw] lg:!max-w-[88vw] xl:!max-w-6xl w-[95vw] h-[92vh] p-0 rounded-none bg-[#f5f7f1] border-[#102b2b]/20 flex flex-col overflow-hidden shadow-2xl">
+            <DialogContent className="!max-w-[95vw] sm:!max-w-[92vw] lg:!max-w-[88vw] xl:!max-w-6xl w-[95vw] h-[92vh] p-0 rounded-2xl bg-card border-border flex flex-col overflow-hidden shadow-2xl">
                 {/* Modal Top Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] px-6 py-3.5 shrink-0">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card text-foreground px-6 py-3.5 shrink-0">
                     <div className="flex items-center gap-3">
-                        <DialogTitle className="text-base font-black uppercase tracking-tight text-[#f8f4ec] flex items-center gap-2">
+                        <DialogTitle className="text-base font-black uppercase tracking-tight text-foreground flex items-center gap-2">
                             <span>{template.name}</span>
-                            <Badge className="bg-[#d8f36b] text-[#102b2b] rounded-none text-[10px] font-black uppercase border-none">
+                            <Badge className="bg-primary text-primary-foreground rounded-lg text-[10px] font-black uppercase border-none">
                                 {template.subtitle}
                             </Badge>
                         </DialogTitle>
-                        <div className="hidden sm:flex items-center gap-1.5 text-[#f8f4ec] text-xs font-mono">
-                            <ShieldCheck className="h-4 w-4 text-[#0d8274]" />
+                        <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground text-xs font-mono">
+                            <ShieldCheck className="h-4 w-4 text-emerald-500" />
                             <span>{template.atsScore}% ATS Ready</span>
                         </div>
                     </div>
@@ -96,7 +96,7 @@ export function TemplateInspectModal({
                     <div className="flex items-center gap-3">
                         <Button
                             onClick={handleConfirm}
-                            className="rounded-none bg-[#d8f36b] text-[#102b2b] hover:bg-[#c9e95c] font-black uppercase text-xs tracking-wider gap-1.5 h-9 px-5 shadow-sm"
+                            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase text-xs tracking-wider gap-1.5 h-9 px-5 shadow-sm"
                         >
                             <Sparkles className="h-3.5 w-3.5" />
                             Use This Template
@@ -105,24 +105,24 @@ export function TemplateInspectModal({
                 </div>
 
                 {/* Sub-toolbar Controls: Persona Switcher, Color Swatches, Zoom */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#102b2b]/10 bg-white/90 px-6 py-2.5 shrink-0 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 px-6 py-2.5 shrink-0 text-xs">
                     {/* Persona Toggle */}
-                    <div className="flex items-center gap-2">
-                        <span className="font-bold uppercase text-[#52716a] text-[10px] tracking-wider flex items-center gap-1">
-                            <UserCheck className="h-3.5 w-3.5 text-[#0d8274]" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold uppercase text-muted-foreground text-[10px] tracking-wider flex items-center gap-1">
+                            <UserCheck className="h-3.5 w-3.5 text-emerald-500" />
                             Sample Industry:
                         </span>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 flex-wrap">
                             {Object.values(SAMPLE_PERSONAS).map((p) => (
                                 <button
                                     key={p.id}
                                     type="button"
                                     onClick={() => setSelectedPersonaKey(p.id)}
                                     className={cn(
-                                        "px-2.5 py-1 text-xs font-medium transition-all rounded-none border",
+                                        "px-2.5 py-1 text-xs font-medium transition-all rounded-lg border",
                                         selectedPersonaKey === p.id
-                                            ? "bg-[#102b2b] text-white border-[#102b2b] font-bold"
-                                            : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                                            ? "bg-primary text-primary-foreground border-primary font-bold"
+                                            : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                                     )}
                                 >
                                     {p.label}
@@ -133,8 +133,8 @@ export function TemplateInspectModal({
 
                     {/* Color Swatches */}
                     <div className="flex items-center gap-2">
-                        <span className="font-bold uppercase text-[#52716a] text-[10px] tracking-wider flex items-center gap-1">
-                            <Palette className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <span className="font-bold uppercase text-muted-foreground text-[10px] tracking-wider flex items-center gap-1">
+                            <Palette className="h-3.5 w-3.5 text-emerald-500" />
                             Color Theme:
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -145,8 +145,8 @@ export function TemplateInspectModal({
                                     title={c.name}
                                     onClick={() => setCustomColor(c.value)}
                                     className={cn(
-                                        "h-6 w-6 rounded-none border border-black/20 transition-transform hover:scale-110 flex items-center justify-center",
-                                        customColor === c.value && "ring-2 ring-[#102b2b] ring-offset-1 font-bold"
+                                        "h-6 w-6 rounded-md border border-border transition-transform hover:scale-110 flex items-center justify-center shadow-xs",
+                                        customColor === c.value && "ring-2 ring-primary ring-offset-1 font-bold"
                                     )}
                                     style={{ backgroundColor: c.value }}
                                 >
@@ -163,11 +163,11 @@ export function TemplateInspectModal({
                             size="icon"
                             onClick={handleZoomOut}
                             disabled={zoomLevel <= 0.5}
-                            className="h-7 w-7 rounded-none border-gray-300"
+                            className="h-7 w-7 rounded-lg border-border bg-card"
                         >
                             <ZoomOut className="h-3.5 w-3.5" />
                         </Button>
-                        <span className="min-w-[42px] text-center font-bold text-gray-700">
+                        <span className="min-w-[42px] text-center font-bold text-foreground">
                             {Math.round(zoomLevel * 100)}%
                         </span>
                         <Button
@@ -175,7 +175,7 @@ export function TemplateInspectModal({
                             size="icon"
                             onClick={handleZoomIn}
                             disabled={zoomLevel >= 1.25}
-                            className="h-7 w-7 rounded-none border-gray-300"
+                            className="h-7 w-7 rounded-lg border-border bg-card"
                         >
                             <ZoomIn className="h-3.5 w-3.5" />
                         </Button>
@@ -183,7 +183,7 @@ export function TemplateInspectModal({
                 </div>
 
                 {/* Main Scrollable High-Res Document Preview Area */}
-                <div className="relative grow overflow-y-auto overflow-x-auto bg-gray-200/80 p-8 flex justify-center items-start">
+                <div className="relative grow overflow-y-auto overflow-x-auto bg-muted/40 p-4 sm:p-8 flex justify-center items-start">
                     <div
                         style={{
                             transform: `scale(${zoomLevel})`,
@@ -191,7 +191,7 @@ export function TemplateInspectModal({
                             transition: "transform 0.15s ease-out",
                             width: "820px",
                         }}
-                        className="bg-white shadow-2xl mb-16 border border-gray-300 min-h-[1056px] h-auto shrink-0"
+                        className="bg-white text-black shadow-2xl mb-16 border border-border min-h-[1056px] h-auto shrink-0"
                     >
                         <ResumePreview data={previewData} readOnly />
                     </div>

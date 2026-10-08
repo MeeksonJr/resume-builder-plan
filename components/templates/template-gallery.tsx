@@ -56,9 +56,9 @@ export function TemplateGallery({
     return (
         <div className="space-y-6">
             {/* Filter and Search Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#102b2b]/15 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 min-w-0">
                 {/* Category Pills */}
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1.5 min-w-0">
                     {CATEGORIES.map((cat) => {
                         const isActive = activeCategory === cat.id;
                         return (
@@ -67,10 +67,10 @@ export function TemplateGallery({
                                 type="button"
                                 onClick={() => setActiveCategory(cat.id)}
                                 className={cn(
-                                    "px-3.5 py-1.5 text-xs font-bold transition-all rounded-none border",
+                                    "px-3.5 py-1.5 text-xs font-bold transition-all rounded-xl border",
                                     isActive
-                                        ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-xs"
-                                        : "bg-white/80 text-[#52716a] border-[#102b2b]/15 hover:bg-white hover:text-[#102b2b]"
+                                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                                 )}
                             >
                                 {cat.label}
@@ -81,25 +81,25 @@ export function TemplateGallery({
 
                 {/* Search Input */}
                 <div className="relative w-full sm:w-64">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#52716a]" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search templates or roles..."
-                        className="pl-9 h-9 rounded-none border-[#102b2b]/15 bg-white/90 text-xs focus-visible:ring-[#102b2b]"
+                        className="pl-9 h-9 rounded-xl border-border bg-card text-foreground text-xs focus-visible:ring-primary"
                     />
                 </div>
             </div>
 
             {/* Template Cards Grid */}
             {filteredTemplates.length === 0 ? (
-                <div className="text-center py-16 bg-white border border-[#102b2b]/15 p-8 rounded-none">
-                    <SlidersHorizontal className="h-8 w-8 text-[#52716a] mx-auto mb-2 opacity-50" />
-                    <p className="font-bold text-[#102b2b] text-base">No templates found</p>
-                    <p className="text-xs text-[#52716a] mt-1">Try selecting a different category or clearing your search.</p>
+                <div className="text-center py-16 bg-card border border-border p-8 rounded-2xl">
+                    <SlidersHorizontal className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="font-bold text-foreground text-base">No templates found</p>
+                    <p className="text-xs text-muted-foreground mt-1">Try selecting a different category or clearing your search.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-0">
                     {filteredTemplates.map((template) => (
                         <TemplateCard
                             key={template.id}
