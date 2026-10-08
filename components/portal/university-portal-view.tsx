@@ -471,7 +471,7 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
   }
 
   return (
-    <div className="space-y-6" suppressHydrationWarning>
+    <div className="space-y-6 min-w-0 max-w-full overflow-hidden" suppressHydrationWarning>
       {/* Top Campus Hub Navigation Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/80 text-xs">
         <div className="flex items-center gap-3">
@@ -603,7 +603,7 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
       </div>
 
       {/* KPI Overview Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 min-w-0">
         <Card className="rounded-2xl border-border/80 bg-card shadow-sm">
           <CardHeader className="p-4 pb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">

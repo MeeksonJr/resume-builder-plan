@@ -134,7 +134,7 @@ export function CampusDirectoryView({
   }, [searchQuery, selectedCategory, selectedRegion]);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-2">
+    <div className="space-y-8 max-w-7xl mx-auto py-2 min-w-0 max-w-full overflow-hidden">
       {/* Verified Student Banner if applicable */}
       {isVerified && userSchoolSlug && (
         <div className="bg-[#102b2b] text-[#fbf8f1] rounded-2xl p-6 sm:p-7 shadow-xl border border-[#102b2b]/30 flex flex-col md:flex-row md:items-center justify-between gap-5">
@@ -256,7 +256,7 @@ export function CampusDirectoryView({
       </div>
 
       {/* Institution Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-w-0">
         {filteredInstitutions.map((inst) => {
           const isVerifiedForThisSchool = verifiedSlugs.has(normalizeInstitutionSlug(inst.slug));
           const isUserSchool = userSchoolSlug === inst.slug;
