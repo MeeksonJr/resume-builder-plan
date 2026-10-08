@@ -307,12 +307,12 @@ export function ResumeList({ resumes }: ResumeListProps) {
 
       <Tabs defaultValue="all" className="w-full">
         <div className="px-1 md:px-0">
-          <TabsList className="mb-7 inline-flex h-11 gap-0 rounded-none border border-[#102b2b]/15 bg-[#f5f7f1] p-0">
-            <TabsTrigger value="all" className="flex h-full items-center gap-2 rounded-none px-5 font-bold text-[#102b2b]/60 transition-colors data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f5f7f1]">
+          <TabsList className="mb-7 inline-flex h-11 gap-0 rounded-xl border border-border bg-muted/60 p-0">
+            <TabsTrigger value="all" className="flex h-full items-center gap-2 rounded-lg px-5 font-bold text-muted-foreground transition-colors data-[state=active]:bg-card data-[state=active]:text-foreground">
               <FileText className="h-4.5 w-4.5" />
               Active Resumes
             </TabsTrigger>
-            <TabsTrigger value="archived" className="flex h-full items-center gap-2 rounded-none px-5 font-bold text-[#102b2b]/60 transition-colors data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f5f7f1]">
+            <TabsTrigger value="archived" className="flex h-full items-center gap-2 rounded-lg px-5 font-bold text-muted-foreground transition-colors data-[state=active]:bg-card data-[state=active]:text-foreground">
               <Archive className="h-4.5 w-4.5" />
               Archived
             </TabsTrigger>
@@ -325,20 +325,20 @@ export function ResumeList({ resumes }: ResumeListProps) {
               resumes.filter(r => !r.is_archived).map((resume) => (
                 <Card
                   key={resume.id}
-                  className="group relative overflow-hidden rounded-none border-[#102b2b]/15 bg-[#f5f7f1] shadow-none transition-colors hover:border-[#0d8274]"
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                   <CardHeader className="relative flex flex-row items-start justify-between space-y-0 pb-4">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-none bg-[#d8f36b] text-[#102b2b]">
-                        <FileText className="h-7 w-7" aria-hidden="true" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                        <FileText className="h-6 w-6" aria-hidden="true" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <CardTitle className="line-clamp-2 break-words text-xl font-heading font-black tracking-tight leading-tight mb-2">
+                        <CardTitle className="line-clamp-2 break-words text-lg font-heading font-black tracking-tight leading-tight mb-2 text-foreground">
                           {resume.title}
                         </CardTitle>
                         {resume.is_primary && (
-                          <Badge className="rounded-none bg-[#0d8274] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                          <Badge className="rounded-md bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
                             PRIMARY
                           </Badge>
                         )}
@@ -350,7 +350,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                           variant="ghost"
                           size="icon"
                           aria-label={`More actions for ${resume.title}`}
-                          className="h-10 w-10 rounded-none border border-[#102b2b]/15 bg-transparent text-[#102b2b] opacity-100 transition-colors hover:bg-[#d8f36b]"
+                          className="h-9 w-9 rounded-lg border border-border bg-transparent text-muted-foreground opacity-100 transition-colors hover:text-foreground hover:bg-muted"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </Button>
@@ -399,15 +399,15 @@ export function ResumeList({ resumes }: ResumeListProps) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </CardHeader>
-                  <CardContent className="relative pt-6">
-                    <div className="flex items-center justify-between text-muted-foreground/80">
+                  <CardContent className="relative pt-4">
+                    <div className="flex items-center justify-between text-muted-foreground">
                       <p className="text-xs font-bold uppercase tracking-wider">
                         MODIFIED{" "}
                         {formatDistanceToNow(new Date(resume.updated_at), {
                           addSuffix: true,
                         })}
                       </p>
-                      <div className="flex items-center gap-2 border border-[#102b2b]/15 bg-[#102b2b]/5 px-3 py-1.5 text-xs font-bold text-[#102b2b]/70">
+                      <div className="flex items-center gap-1.5 border border-border bg-muted/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground rounded-lg">
                         <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                         <span>{resume.view_count || 0} VIEWS</span>
                       </div>
@@ -416,28 +416,28 @@ export function ResumeList({ resumes }: ResumeListProps) {
                       asChild
                       variant="secondary"
                       size="sm"
-                      className="mt-7 min-h-11 w-full rounded-none border border-[#102b2b]/20 bg-transparent text-[#102b2b] transition-colors hover:bg-[#102b2b] hover:text-[#f5f7f1] group/btn"
+                      className="mt-6 min-h-11 w-full rounded-xl border border-border bg-muted/40 text-foreground transition-all hover:bg-primary hover:text-primary-foreground group/btn"
                     >
-                      <Link href={`/dashboard/resume/${resume.id}`} className="flex items-center justify-center gap-3">
+                      <Link href={`/dashboard/resume/${resume.id}`} className="flex items-center justify-center gap-2">
                         <span className="font-black text-sm tracking-widest">OPEN EDITOR</span>
-                        <Pencil className="h-4.5 w-4.5 transition-transform group-hover/btn:scale-125" />
+                        <Pencil className="h-4 w-4 transition-transform group-hover/btn:scale-125" />
                       </Link>
                     </Button>
                   </CardContent>
                 </Card>
               ))
             ) : (
-              <div className="col-span-full flex flex-col items-center justify-center border border-dashed border-[#102b2b]/20 bg-[#f5f7f1] py-20 text-center">
-                <div className="mb-7 flex h-20 w-20 items-center justify-center rounded-none bg-[#d8f36b]">
-                  <FileText className="h-10 w-10 text-[#102b2b]" aria-hidden="true" />
+              <div className="col-span-full flex flex-col items-center justify-center border border-dashed border-border bg-card/60 py-16 px-4 text-center rounded-2xl">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <FileText className="h-8 w-8" aria-hidden="true" />
                 </div>
-                <h3 className="text-3xl font-heading font-black tracking-tighter text-[#102b2b]">No active resumes</h3>
-                <p className="max-w-[400px] mt-4 text-muted-foreground text-lg font-medium leading-relaxed px-6">
+                <h3 className="text-2xl font-heading font-black tracking-tighter text-foreground">No active resumes</h3>
+                <p className="max-w-[400px] mt-2 text-muted-foreground text-sm font-medium leading-relaxed">
                   Ready to stand out? Build an AI-powered resume in minutes and land your next role.
                 </p>
-                <Button asChild className="mt-9 min-h-11 rounded-none bg-[#d8f36b] px-7 font-bold text-[#102b2b] shadow-none hover:bg-[#c9e95c]">
+                <Button asChild className="mt-6 min-h-11 rounded-xl bg-primary px-7 font-bold text-primary-foreground shadow-sm hover:opacity-90">
                   <Link href="/dashboard/resume/new" className="flex items-center">
-                    <Plus className="h-6 w-6 mr-3 transition-transform group-hover:rotate-90" />
+                    <Plus className="h-5 w-5 mr-2 transition-transform group-hover:rotate-90" />
                     CREATE FIRST RESUME
                   </Link>
                 </Button>
@@ -452,7 +452,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
               resumes.filter(r => r.is_archived).map((resume) => (
                 <Card
                   key={resume.id}
-                  className="group relative overflow-hidden rounded-none border-dashed border-[#102b2b]/20 bg-[#102b2b]/5 opacity-75 transition-opacity hover:opacity-100"
+                  className="group relative overflow-hidden rounded-2xl border-dashed border-border bg-muted/20 opacity-75 transition-opacity hover:opacity-100"
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                     <div className="flex items-center gap-4">
@@ -460,7 +460,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                         <Archive className="h-6 w-6" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <CardTitle className="truncate text-lg font-heading font-bold text-muted-foreground">
+                        <CardTitle className="truncate text-lg font-heading font-bold text-foreground">
                           {resume.title}
                         </CardTitle>
                       </div>
@@ -471,7 +471,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                           variant="ghost"
                           size="icon"
                           aria-label={`More actions for archived resume ${resume.title}`}
-                          className="h-10 w-10 rounded-none border border-[#102b2b]/15 bg-transparent opacity-100 hover:bg-[#d8f36b]"
+                          className="h-9 w-9 rounded-lg border border-border bg-transparent text-muted-foreground opacity-100 hover:text-foreground hover:bg-muted"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </Button>
@@ -486,7 +486,7 @@ export function ResumeList({ resumes }: ResumeListProps) {
                           <Upload className="mr-3 h-4.5 w-4.5" />
                           Restore Resume
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuSeparator className="bg-border my-1" />
                         <DropdownMenuItem
                           className="rounded-lg cursor-pointer text-destructive focus:text-destructive font-black"
                           onClick={() => {
@@ -500,8 +500,8 @@ export function ResumeList({ resumes }: ResumeListProps) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between text-muted-foreground/50">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center justify-between text-muted-foreground">
                       <p className="text-xs font-bold uppercase tracking-widest">
                         ARCHIVED{" "}
                         {formatDistanceToNow(new Date(resume.updated_at), {
@@ -513,12 +513,12 @@ export function ResumeList({ resumes }: ResumeListProps) {
                 </Card>
               ))
             ) : (
-              <div className="col-span-full flex flex-col items-center justify-center border border-dashed border-[#102b2b]/20 bg-[#f5f7f1] py-20 text-center opacity-70">
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-none bg-[#102b2b]/5">
-                  <Archive className="h-10 w-10 text-[#102b2b]/35" aria-hidden="true" />
+              <div className="col-span-full flex flex-col items-center justify-center border border-dashed border-border bg-card/60 py-16 px-4 text-center rounded-2xl opacity-70">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                  <Archive className="h-8 w-8" aria-hidden="true" />
                 </div>
-                <h3 className="text-2xl font-heading font-black text-muted-foreground tracking-tight">Empty Archive</h3>
-                <p className="text-base text-muted-foreground font-medium mt-2">Any resumes you archive will safely rest here.</p>
+                <h3 className="text-2xl font-heading font-black text-foreground tracking-tight">Empty Archive</h3>
+                <p className="text-sm text-muted-foreground font-medium mt-2">Any resumes you archive will safely rest here.</p>
               </div>
             )}
           </div>
@@ -526,29 +526,29 @@ export function ResumeList({ resumes }: ResumeListProps) {
       </Tabs>
 
       <Dialog open={!!renameId} onOpenChange={(open) => !open && setRenameId(null)}>
-        <DialogContent className="rounded-none border-[#102b2b]/20 bg-[#f5f7f1] shadow-xl sm:max-w-[425px]">
+        <DialogContent className="rounded-2xl border-border bg-card shadow-xl sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-heading font-black text-[#102b2b]">Rename resume</DialogTitle>
+            <DialogTitle className="text-2xl font-heading font-black text-foreground">Rename resume</DialogTitle>
             <DialogDescription className="font-medium text-muted-foreground">
               Give your resume a name that represents your ambition.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-6 py-6 font-heading">
+          <div className="grid gap-6 py-4 font-heading">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-black uppercase tracking-widest text-primary/60">
+              <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 New Title
               </Label>
               <Input
                 id="name"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="h-12 rounded-none border-[#102b2b]/20 bg-white/50 px-4 text-lg font-bold focus-visible:ring-[#0d8274]"
+                className="h-11 rounded-xl border-border bg-background px-4 text-base font-bold focus-visible:ring-primary"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setRenameId(null)} className="h-11 rounded-none px-6 font-bold text-[#102b2b] hover:bg-[#d8f36b]">Cancel</Button>
-            <Button onClick={handleRename} disabled={isRenaming} className="h-11 rounded-none bg-[#d8f36b] px-8 font-bold text-[#102b2b] shadow-none hover:bg-[#c9e95c]">
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setRenameId(null)} className="h-10 rounded-xl px-5 font-bold">Cancel</Button>
+            <Button onClick={handleRename} disabled={isRenaming} className="h-10 rounded-xl bg-primary px-7 font-bold text-primary-foreground shadow-sm">
               {isRenaming ? "Saving..." : "APPLY CHANGES"}
             </Button>
           </DialogFooter>
@@ -556,18 +556,18 @@ export function ResumeList({ resumes }: ResumeListProps) {
       </Dialog>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-none border-destructive/25 bg-[#f5f7f1] shadow-xl">
+        <AlertDialogContent className="rounded-2xl border-destructive/25 bg-card shadow-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl font-heading font-black tracking-tighter text-destructive">Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-base font-medium leading-relaxed">
+            <AlertDialogTitle className="text-2xl font-heading font-black tracking-tight text-destructive">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
               This action is permanent and cannot be reversed. You will lose this resume and all the data within it forever.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-8">
-            <AlertDialogCancel className="h-11 rounded-none border-[#102b2b]/20 px-6 font-bold hover:bg-[#d8f36b]">Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="mt-6 gap-2">
+            <AlertDialogCancel className="h-10 rounded-xl border-border px-5 font-bold">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="h-11 rounded-none bg-destructive px-10 font-bold text-destructive-foreground shadow-none hover:bg-destructive/90"
+              className="h-10 rounded-xl bg-destructive px-8 font-bold text-destructive-foreground shadow-sm hover:bg-destructive/90"
             >
               CONFIRM DELETE
             </AlertDialogAction>
@@ -576,19 +576,19 @@ export function ResumeList({ resumes }: ResumeListProps) {
       </AlertDialog>
 
       <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
-        <AlertDialogContent className="rounded-none border-[#102b2b]/20 bg-[#f5f7f1] shadow-xl">
+        <AlertDialogContent className="rounded-2xl border-border bg-card shadow-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="inline-flex items-center gap-3 text-3xl font-heading font-black tracking-tighter text-[#102b2b]">
-              <Archive className="h-8 w-8 text-[#0d8274]" aria-hidden="true" />
+            <AlertDialogTitle className="inline-flex items-center gap-3 text-2xl font-heading font-black tracking-tight text-foreground">
+              <Archive className="h-7 w-7 text-primary" aria-hidden="true" />
               Archive resume?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-base font-medium leading-relaxed">
+            <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
               Archiving hides this resume from your main list. You can restore it anytime from the archive tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-8">
-            <AlertDialogCancel className="h-11 rounded-none border-[#102b2b]/20 px-6 font-bold hover:bg-[#d8f36b]">Keep active</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive} className="h-11 rounded-none bg-[#d8f36b] px-10 font-bold text-[#102b2b] shadow-none hover:bg-[#c9e95c]">
+          <AlertDialogFooter className="mt-6 gap-2">
+            <AlertDialogCancel className="h-10 rounded-xl border-border px-5 font-bold">Keep active</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive} className="h-10 rounded-xl bg-primary px-8 font-bold text-primary-foreground shadow-sm">
               ARCHIVE NOW
             </AlertDialogAction>
           </AlertDialogFooter>

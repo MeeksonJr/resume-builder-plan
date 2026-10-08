@@ -31,21 +31,21 @@ export function ResumesHeaderActions({
         {canCreate ? (
           <Button
             asChild
-            className="min-h-11 rounded-none bg-[#102b2b] px-5 font-bold text-white shadow-xs hover:bg-[#164743] transition-all"
+            className="min-h-11 rounded-xl bg-primary px-5 font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-all"
           >
             <Link href="/dashboard/resume/new">
-              <Plus className="mr-2 h-4 w-4 text-white" />
+              <Plus className="mr-2 h-4 w-4" />
               Create New Resume
             </Link>
           </Button>
         ) : (
           <Button
             onClick={() => setShowUpgradeModal(true)}
-            className="min-h-11 rounded-none bg-[#102b2b] px-5 font-bold text-white shadow-xs hover:bg-[#164743] transition-all flex items-center gap-2"
+            className="min-h-11 rounded-xl bg-primary px-5 font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-all flex items-center gap-2"
           >
-            <Lock className="h-4 w-4 text-white" />
+            <Lock className="h-4 w-4" />
             <span>Create New Resume</span>
-            <span className="text-[10px] bg-[#d8f36b] text-[#102b2b] px-1.5 py-0.2 font-black uppercase tracking-wider ml-1">
+            <span className="text-[10px] bg-background text-foreground px-1.5 py-0.5 rounded font-black uppercase tracking-wider ml-1">
               Pro
             </span>
           </Button>
@@ -76,21 +76,21 @@ export function ResumesPlanBanner({
 
   return (
     <>
-      <div className="border border-[#102b2b]/15 bg-white p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div className="rounded-2xl border border-border bg-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#0d8274]/10 border border-[#0d8274]/30 flex items-center justify-center shrink-0">
-            <Lock className="w-4 h-4 text-[#0d8274]" />
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+            <Lock className="w-4 h-4 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-[#102b2b]">
+              <span className="text-xs font-black uppercase tracking-wider text-foreground">
                 Free Plan Quota
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#102b2b]/5 border border-[#102b2b]/10 text-[#102b2b]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
                 {totalCount} / 1 Resume Used
               </span>
             </div>
-            <p className="text-xs text-[#102b2b]/70 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Upgrade to Pro for unlimited resumes, deep job tailoring, and AI generation.
             </p>
           </div>
@@ -99,7 +99,7 @@ export function ResumesPlanBanner({
         <Button
           onClick={() => setShowUpgradeModal(true)}
           size="sm"
-          className="rounded-none bg-[#0d8274] hover:bg-[#102b2b] text-[#d8f36b] font-bold text-xs shrink-0 flex items-center gap-1.5"
+          className="rounded-xl bg-primary text-primary-foreground font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-sm"
         >
           <Sparkles className="w-3.5 h-3.5" />
           <span>Unlock Unlimited</span>

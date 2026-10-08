@@ -237,7 +237,7 @@ export interface DashboardDataContext {
  */
 export function HeroWidget({ data }: { data: DashboardDataContext }) {
   return (
-    <section className="dashboard-hero-section relative overflow-hidden border border-[#102b2b]/15 bg-[#102b2b] p-6 text-[#f8f4ec] shadow-[14px_16px_0_rgba(16,43,43,.12)] sm:p-8 lg:p-10 rounded-2xl transition-all">
+    <section className="dashboard-hero-section relative overflow-hidden border border-[#102b2b]/15 bg-[#102b2b] p-5 sm:p-8 lg:p-10 text-[#f8f4ec] shadow-md sm:shadow-[14px_16px_0_rgba(16,43,43,.12)] rounded-2xl transition-all">
       <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full border border-[#d8f36b]/20 pointer-events-none opacity-40" />
       <div className="absolute -right-8 top-0 h-52 w-52 rounded-full border border-[#d8f36b]/15 pointer-events-none opacity-40" />
       <div className="relative z-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
@@ -245,20 +245,20 @@ export function HeroWidget({ data }: { data: DashboardDataContext }) {
           <div className="hero-badge inline-flex items-center gap-2 border border-[#d8f36b]/25 bg-[#d8f36b]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#d8f36b] rounded-full">
             <Sparkles className="h-3.5 w-3.5" /> ResumeForge workspace
           </div>
-          <h1 className="text-3xl font-semibold leading-[.98] tracking-[-.06em] sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-semibold leading-[.98] tracking-[-.06em] sm:text-5xl lg:text-6xl break-words">
             Good to see you, {data.displayName || "there"}.
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-[#c5d7d1] sm:text-base">
             Keep your career materials moving. Build a resume, tailor it to a role, or check what needs your attention next.
           </p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row shrink-0">
-          <Button asChild className="hero-primary-btn h-11 rounded-xl bg-[#d8f36b] px-5 font-semibold text-[#102b2b] hover:bg-[#e5ff8b] shadow-md">
+        <div className="flex flex-col gap-3 sm:flex-row shrink-0 w-full sm:w-auto">
+          <Button asChild className="hero-primary-btn h-11 rounded-xl bg-[#d8f36b] px-5 font-semibold text-[#102b2b] hover:bg-[#e5ff8b] shadow-md w-full sm:w-auto">
             <Link href="/dashboard/resume/new">
               <Plus className="h-4 w-4 mr-1.5" /> New resume
             </Link>
           </Button>
-          <Button asChild variant="outline" className="hero-secondary-btn h-11 rounded-xl border-[#c5d7d1]/30 bg-transparent px-5 text-[#f8f4ec] hover:bg-white/10">
+          <Button asChild variant="outline" className="hero-secondary-btn h-11 rounded-xl border-[#c5d7d1]/30 bg-transparent px-5 text-[#f8f4ec] hover:bg-white/10 w-full sm:w-auto">
             <Link href="/dashboard/upload">
               <Upload className="h-4 w-4 mr-1.5" /> Import existing
             </Link>
@@ -381,7 +381,7 @@ export function ResumesWidget({ data }: { data: DashboardDataContext }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 resumes-header-actions">
+        <div className="flex flex-wrap items-center gap-2 resumes-header-actions">
           <Link href="/dashboard/resume/new">
             <Button size="sm" className="resume-new-btn h-8 rounded-lg text-xs font-semibold">
               <Plus className="h-3.5 w-3.5 mr-1" /> New Resume
@@ -392,7 +392,7 @@ export function ResumesWidget({ data }: { data: DashboardDataContext }) {
               Cover Letters
             </Button>
           </Link>
-          <Link href="/dashboard/my-portfolios">
+          <Link href="/dashboard/portfolio">
             <Button size="sm" variant="ghost" className="resume-portfolio-btn h-8 rounded-lg text-xs">
               Portfolios
             </Button>
@@ -472,7 +472,7 @@ export function CareerSwarmWidget() {
               </CardDescription>
             </div>
           </div>
-          <Link href="/dashboard/agent">
+          <Link href="/dashboard/swarm">
             <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs gap-1">
               Control Center <ArrowUpRight className="h-3.5 w-3.5" />
             </Button>
@@ -522,7 +522,7 @@ export function CareerSwarmWidget() {
           <span className="flex items-center gap-1.5 font-mono text-[11px]">
             <Clock className="h-3.5 w-3.5" /> Next scheduled sweep in 42m
           </span>
-          <Link href="/dashboard/agent" className="text-primary font-medium hover:underline flex items-center gap-1">
+          <Link href="/dashboard/swarm" className="text-primary font-medium hover:underline flex items-center gap-1">
             Inspect Agent Logs <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
@@ -579,7 +579,7 @@ export function ApplicationsPipelineWidget({ data }: { data: DashboardDataContex
           <div className="bg-emerald-500 h-full transition-all" style={{ width: "10%" }} />
         </div>
 
-        <div className="grid grid-cols-5 gap-2 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
           {stages.map((st) => (
             <div key={st.label} className="p-2 rounded-xl bg-muted/40 border border-border">
               <span className={`inline-block h-2 w-2 rounded-full ${st.color} mb-1`} />
@@ -619,7 +619,7 @@ export function SalaryBenchmarksWidget({ data }: { data: DashboardDataContext })
               </CardDescription>
             </div>
           </div>
-          <Link href="/dashboard/salary-insights">
+          <Link href="/dashboard/salary">
             <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs gap-1">
               Explore Rates <ArrowUpRight className="h-3.5 w-3.5" />
             </Button>
@@ -638,7 +638,7 @@ export function SalaryBenchmarksWidget({ data }: { data: DashboardDataContext })
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground font-mono">
+          <div className="flex flex-wrap justify-between gap-1 text-[11px] sm:text-xs text-muted-foreground font-mono">
             <span>25th: $105k</span>
             <span className="font-bold text-foreground">50th: $135k</span>
             <span>75th: $165k</span>
@@ -652,7 +652,7 @@ export function SalaryBenchmarksWidget({ data }: { data: DashboardDataContext })
 
         <div className="flex items-center justify-between text-xs pt-1 border-t border-border text-muted-foreground">
           <span>{data.savedSalary?.length || 3} verified market data points</span>
-          <Link href="/dashboard/salary-insights" className="text-primary font-medium hover:underline">
+          <Link href="/dashboard/salary" className="text-primary font-medium hover:underline">
             View Role Benchmarks →
           </Link>
         </div>

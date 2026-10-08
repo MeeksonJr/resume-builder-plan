@@ -82,18 +82,18 @@ export default async function AllResumesPage({
             <ResumesPlanBanner isPro={isPro} totalCount={totalCount} />
 
             {/* Editorial Header */}
-            <div className="flex flex-col gap-6 border-b border-[#102b2b]/15 pb-8 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-6 border-b border-border pb-8 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="h-2 w-2 rounded-full bg-[#0d8274]" />
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">
+                        <span className="h-2 w-2 rounded-full bg-primary" />
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                             Document Hub
                         </p>
                     </div>
-                    <h1 className="text-4xl font-black tracking-tight text-[#102b2b] sm:text-5xl">
+                    <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
                         All Resumes
                     </h1>
-                    <p className="mt-2 max-w-xl text-sm text-[#102b2b]/70 sm:text-base">
+                    <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
                         Organize, rename, tailor, and track each specialized version of your resume.
                     </p>
                 </div>
@@ -108,51 +108,51 @@ export default async function AllResumesPage({
 
             {/* Quick KPI Summary Strip */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-0">
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
-                    <div className="h-10 w-10 rounded-none bg-[#102b2b] text-white flex items-center justify-center shrink-0">
-                        <FileText className="h-5 w-5 text-white" />
+                <div className="border border-border bg-card rounded-2xl p-4 flex items-center gap-3.5 min-w-0 overflow-hidden shadow-xs">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <FileText className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
                             Total Resumes
                         </p>
-                        <p className="text-2xl font-black text-[#102b2b]">{totalCount}</p>
+                        <p className="text-2xl font-black text-foreground">{totalCount}</p>
                     </div>
                 </div>
 
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
-                    <div className="h-10 w-10 rounded-none bg-emerald-700 text-white flex items-center justify-center shrink-0">
-                        <Globe className="h-5 w-5 text-emerald-200" />
+                <div className="border border-border bg-card rounded-2xl p-4 flex items-center gap-3.5 min-w-0 overflow-hidden shadow-xs">
+                    <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <Globe className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
                             Public Links Live
                         </p>
-                        <p className="text-2xl font-black text-[#102b2b]">{publicCount}</p>
+                        <p className="text-2xl font-black text-foreground">{publicCount}</p>
                     </div>
                 </div>
 
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
-                    <div className="h-10 w-10 rounded-none bg-[#0d8274] text-white flex items-center justify-center shrink-0">
-                        <Sparkles className="h-5 w-5 text-[#f8f4ec]" />
+                <div className="border border-border bg-card rounded-2xl p-4 flex items-center gap-3.5 min-w-0 overflow-hidden shadow-xs">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Sparkles className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
                             Cumulative Views
                         </p>
-                        <p className="text-2xl font-black text-[#102b2b]">{totalViews}</p>
+                        <p className="text-2xl font-black text-foreground">{totalViews}</p>
                     </div>
                 </div>
 
-                <div className="border border-[#102b2b]/10 bg-[#f9faf6] p-4 flex items-center gap-3.5 min-w-0 overflow-hidden">
-                    <div className="h-10 w-10 rounded-none bg-neutral-800 text-white flex items-center justify-center shrink-0">
-                        <Clock className="h-5 w-5 text-neutral-300" />
+                <div className="border border-border bg-card rounded-2xl p-4 flex items-center gap-3.5 min-w-0 overflow-hidden shadow-xs">
+                    <div className="h-10 w-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+                        <Clock className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate">
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
                             Latest Activity
                         </p>
-                        <p className="text-sm font-bold text-[#102b2b] truncate">
+                        <p className="text-sm font-bold text-foreground truncate">
                             {mostRecent
                                 ? formatDistanceToNow(new Date(mostRecent.updated_at), { addSuffix: true })
                                 : "None"}
@@ -165,15 +165,15 @@ export default async function AllResumesPage({
             <ResumesFilterBar templates={templates} />
 
             {/* Resume Results Counter */}
-            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 pt-1">
+            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground pt-1">
                 <div className="flex items-center gap-2">
-                    <FileText className="h-3.5 w-3.5 text-[#0d8274]" />
+                    <FileText className="h-3.5 w-3.5 text-primary" />
                     <span>
                         Showing {filteredResumes.length} of {totalCount} resume
                         {totalCount !== 1 ? "s" : ""}
                     </span>
                     {params.search && (
-                        <span className="text-neutral-900 font-bold">
+                        <span className="text-foreground font-bold">
                             matching &ldquo;{params.search}&rdquo;
                         </span>
                     )}
@@ -190,16 +190,16 @@ export default async function AllResumesPage({
                     ))}
                 </div>
             ) : (
-                <div className="border border-dashed border-neutral-300 p-12 text-center bg-neutral-50">
-                    <p className="text-sm font-bold text-neutral-700">No matching resumes found</p>
-                    <p className="text-xs text-neutral-500 mt-1">
+                <div className="border border-dashed border-border p-12 text-center bg-card/60 rounded-2xl">
+                    <p className="text-sm font-bold text-foreground">No matching resumes found</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                         Try adjusting your search query or template filters.
                     </p>
                     <Button
                         variant="outline"
                         size="sm"
                         asChild
-                        className="mt-4 rounded-none border-neutral-300"
+                        className="mt-4 rounded-xl border-border"
                     >
                         <Link href="/dashboard/resumes">Clear Filters</Link>
                     </Button>

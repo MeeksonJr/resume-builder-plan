@@ -49,9 +49,9 @@ export function MobileNavDock() {
     },
     {
       label: "Track",
-      href: "/dashboard/applications",
+      href: "/dashboard/tracker",
       icon: CheckSquare,
-      isActive: pathname.startsWith("/dashboard/applications"),
+      isActive: pathname.startsWith("/dashboard/tracker") || pathname.startsWith("/dashboard/applications"),
     },
   ];
 

@@ -81,7 +81,7 @@ export function ResumeLibraryCard({ resume }: ResumeLibraryCardProps) {
     };
 
     return (
-        <Card className="group relative overflow-hidden rounded-none border border-[#102b2b]/15 bg-white shadow-xs transition-all duration-200 hover:shadow-md hover:border-[#0d8274] flex flex-col justify-between min-w-0 w-full">
+        <Card className="group relative overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs transition-all duration-200 hover:shadow-md hover:border-primary/50 flex flex-col justify-between min-w-0 w-full">
             {/* Top Accent Strip reflecting template theme */}
             <div className={`h-1.5 w-full ${accent.bar} shrink-0`} />
 
@@ -93,7 +93,7 @@ export function ResumeLibraryCard({ resume }: ResumeLibraryCardProps) {
                             <div className="flex items-center gap-1.5 min-w-0">
                                 <Link
                                     href={`/dashboard/resume/${resume.id}`}
-                                    className="font-bold text-base text-[#102b2b] hover:text-[#0d8274] transition-colors truncate block max-w-full"
+                                    className="font-bold text-base text-foreground hover:text-primary transition-colors truncate block max-w-full"
                                     title={title}
                                 >
                                     {title}
@@ -202,10 +202,10 @@ export function ResumeLibraryCard({ resume }: ResumeLibraryCardProps) {
             </div>
 
             {/* Quick Action Footer with guaranteed overflow containment */}
-            <div className="border-t border-neutral-100 bg-[#f9faf6] px-4 py-2.5 flex items-center justify-between gap-2 min-w-0 shrink-0">
+            <div className="border-t border-border bg-muted/30 px-4 py-2.5 flex items-center justify-between gap-2 min-w-0 shrink-0">
                 <Link
                     href={`/dashboard/resume/${resume.id}`}
-                    className="text-xs font-bold text-[#102b2b] hover:text-[#0d8274] transition-colors inline-flex items-center gap-1 truncate"
+                    className="text-xs font-bold text-foreground hover:text-primary transition-colors inline-flex items-center gap-1 truncate"
                 >
                     Edit Resume <span aria-hidden="true">&rarr;</span>
                 </Link>
@@ -213,10 +213,10 @@ export function ResumeLibraryCard({ resume }: ResumeLibraryCardProps) {
                 <div className="flex items-center gap-2 shrink-0">
                     <Link
                         href={`/dashboard/resume/${resume.id}/analytics`}
-                        className="text-xs font-semibold text-neutral-600 hover:text-[#102b2b] transition-colors inline-flex items-center gap-1 bg-white border border-neutral-200 px-2 py-1 hover:bg-neutral-50"
+                        className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 bg-background border border-border px-2 py-1 rounded-md hover:bg-muted"
                         title="View resume telemetry & performance"
                     >
-                        <BarChart3 className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <BarChart3 className="h-3.5 w-3.5 text-primary" />
                         <span>Analytics</span>
                     </Link>
                 </div>

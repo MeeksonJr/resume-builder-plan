@@ -45,6 +45,12 @@
     --sidebar-ring: 72 84% 54%;
   }
 
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   .dark {
     /* Premium Slate-950 Base */
     --background: 222.2 84% 4.9%;
@@ -334,6 +340,55 @@ html:not(.dark) [class*="bg-neutral-900"] .text-emerald-400 {
 html:not(.dark) [data-active="true"] {
   color: #102b2b;
 }
+
+/* ========================================================
+   GLOBAL DARK MODE CONTRAST & LEGIBILITY SAFEGUARDS
+   Ensures text and containers utilizing the Swiss heritage
+   palette (#102b2b, #52716a, #f8f4ec, #f5f7f1) automatically
+   render with high contrast (WCAG AAA) when dark mode is ON.
+   ======================================================== */
+.dark [class*="text-[#102b2b]"]:not(.hero-primary-btn):not([class*="bg-[#d8f36b]"]):not([class*="bg-amber-400"]):not([class*="bg-emerald-400"]),
+html.dark [class*="text-[#102b2b]"]:not(.hero-primary-btn):not([class*="bg-[#d8f36b]"]):not([class*="bg-amber-400"]):not([class*="bg-emerald-400"]) {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark [class*="text-[#52716a]"],
+html.dark [class*="text-[#52716a]"],
+.dark [class*="text-[#365950]"],
+html.dark [class*="text-[#365950]"] {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Adapt light card backgrounds to dark mode cards */
+.dark [class*="bg-[#f8f4ec]"],
+html.dark [class*="bg-[#f8f4ec]"],
+.dark [class*="bg-[#f5f7f1]"],
+html.dark [class*="bg-[#f5f7f1]"],
+.dark [class*="bg-[#e9eee8]"],
+html.dark [class*="bg-[#e9eee8]"],
+.dark [class*="bg-[#f2efe6]"],
+html.dark [class*="bg-[#f2efe6]"] {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Adapt light borders in dark mode */
+.dark [class*="border-[#102b2b]"],
+html.dark [class*="border-[#102b2b]"] {
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Ensure inner white surfaces adapt cleanly to dark theme */
+.dark [class*="bg-white/60"],
+.dark [class*="bg-white/50"],
+html.dark [class*="bg-white/60"],
+html.dark [class*="bg-white/50"] {
+  background-color: hsl(var(--muted) / 0.5) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
 
 
 /* ========================================================

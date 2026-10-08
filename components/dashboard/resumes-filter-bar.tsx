@@ -64,13 +64,13 @@ export function ResumesFilterBar({ templates }: ResumesFilterBarProps) {
                     placeholder="Search by resume title or role..."
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
-                    className="pl-9 pr-8 h-10 rounded-none border-neutral-300 bg-white font-medium text-neutral-900 focus-visible:ring-1 focus-visible:ring-[#102b2b]"
+                    className="pl-9 pr-8 h-10 rounded-xl border-border bg-background font-medium text-foreground focus-visible:ring-1 focus-visible:ring-primary"
                 />
                 {searchValue && (
                     <button
                         type="button"
                         onClick={handleClearSearch}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 p-0.5"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
                         title="Clear search"
                     >
                         <X className="h-3.5 w-3.5" />
@@ -85,11 +85,11 @@ export function ResumesFilterBar({ templates }: ResumesFilterBarProps) {
                     value={currentTemplate}
                     onValueChange={(v) => updateParams({ template: v })}
                 >
-                    <SelectTrigger className="w-[150px] h-10 rounded-none border-neutral-300 bg-white text-xs font-bold text-neutral-800 focus:ring-1 focus:ring-[#102b2b]">
-                        <Filter className="h-3.5 w-3.5 mr-1.5 text-[#0d8274]" />
+                    <SelectTrigger className="w-[150px] h-10 rounded-xl border-border bg-background text-xs font-bold text-foreground focus:ring-1 focus:ring-primary">
+                        <Filter className="h-3.5 w-3.5 mr-1.5 text-primary" />
                         <SelectValue placeholder="All Templates" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-none border-neutral-200">
+                    <SelectContent className="rounded-xl border-border bg-card text-card-foreground">
                         <SelectItem value="all" className="text-xs font-bold">
                             All Templates
                         </SelectItem>
@@ -110,11 +110,11 @@ export function ResumesFilterBar({ templates }: ResumesFilterBarProps) {
                     value={currentSort}
                     onValueChange={(v) => updateParams({ sort: v })}
                 >
-                    <SelectTrigger className="w-[140px] h-10 rounded-none border-neutral-300 bg-white text-xs font-bold text-neutral-800 focus:ring-1 focus:ring-[#102b2b]">
-                        <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-neutral-500" />
+                    <SelectTrigger className="w-[140px] h-10 rounded-xl border-border bg-background text-xs font-bold text-foreground focus:ring-1 focus:ring-primary">
+                        <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
                         <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-none border-neutral-200">
+                    <SelectContent className="rounded-xl border-border bg-card text-card-foreground">
                         <SelectItem value="newest" className="text-xs font-bold">
                             Newest First
                         </SelectItem>
@@ -133,7 +133,7 @@ export function ResumesFilterBar({ templates }: ResumesFilterBarProps) {
                             setSearchValue("");
                             router.push(pathname);
                         }}
-                        className="h-10 px-2.5 text-xs text-neutral-500 hover:text-neutral-900 rounded-none"
+                        className="h-10 px-2.5 text-xs text-muted-foreground hover:text-foreground rounded-xl"
                     >
                         Reset
                     </Button>

@@ -247,7 +247,7 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
       data-dashboard-style={currentStyle}
     >
       {/* Top Customizable Control Bar */}
-      <div className="sticky top-16 z-30 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-background/80 p-3 backdrop-blur-md shadow-sm">
+      <div className="sticky top-16 z-30 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-background/80 p-3 backdrop-blur-md shadow-sm w-full max-w-full min-w-0">
         {/* Left: Style Switcher & Real-time Indicator */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Style Selector Dropdown */}
@@ -387,7 +387,7 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
       )}
 
       {/* Grid Canvas for Widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start w-full max-w-full min-w-0">
         {layout.map((item, index) => {
           if (!item.visible && !isEditing) return null;
 
@@ -407,7 +407,7 @@ export function CustomizableDashboardView(props: DashboardDataContext) {
               onDragLeave={onDragLeave}
               onDrop={(e) => onDrop(e, index)}
               onDragEnd={onDragEnd}
-              className={`transition-all duration-200 relative group/widget ${colSpanClass} ${
+              className={`transition-all duration-200 relative group/widget min-w-0 max-w-full overflow-hidden ${colSpanClass} ${
                 !item.visible && isEditing ? "opacity-50 border-2 border-dashed border-muted-foreground/30 p-2 rounded-2xl" : ""
               } ${isDragging ? "opacity-30 scale-[0.98]" : ""} ${
                 isOver ? "ring-2 ring-primary ring-offset-2 scale-[1.01]" : ""
