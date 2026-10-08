@@ -35,7 +35,7 @@ export default async function CareerCoachPage() {
         .order("updated_at", { ascending: false });
 
     return (
-        <div className="w-full space-y-8">
+        <div className="w-full space-y-8 min-w-0 max-w-full overflow-hidden">
             <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
                 <div>
                     <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-2 border border-primary/20">

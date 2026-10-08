@@ -30,17 +30,17 @@ export default async function AnalyticsPage() {
     profile?.subscription_status === "trialing";
 
   return (
-    <div className="min-h-full bg-[#f8f4ec] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <div className="flex flex-col gap-5 border-b border-[#102b2b]/15 pb-6 md:flex-row md:items-end md:justify-between">
+    <div className="min-h-full px-4 py-6 sm:px-6 lg:px-8 text-foreground min-w-0 max-w-full overflow-hidden">
+      <div className="mx-auto max-w-7xl space-y-8 min-w-0">
+        <div className="flex flex-col gap-5 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#0d8274]">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
               Enterprise intelligence
             </p>
-            <h1 className="text-3xl font-bold tracking-tight text-[#102b2b] sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Career Analytics
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-[#102b2b]/65 sm:text-base">
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
               Your unified command center — every data stream, every metric,
               every insight, in one place.
             </p>

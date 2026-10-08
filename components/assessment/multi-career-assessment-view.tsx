@@ -290,7 +290,7 @@ export function MultiCareerAssessmentView() {
   const totalBadgesCount = savedCareerBadges.length + savedCodeBadges.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full overflow-hidden">
       {/* Top Banner / Mode Switcher */}
       <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -344,7 +344,7 @@ export function MultiCareerAssessmentView() {
       {/* MODE 1: ALL CAREERS & SKILLS ASSESSMENT                                  */}
       {/* ========================================================================= */}
       {activeTab === "careers" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-w-0">
           {/* Left Column: Role Selector & Custom Role Generator (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             {/* Custom Role AI Generator Box */}
