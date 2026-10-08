@@ -104,13 +104,13 @@ export function ApiSettings() {
                             value={keyName}
                             onChange={(e) => setKeyName(e.target.value)}
                             placeholder="e.g. My Website Integration"
-                            className="rounded-none border-[#102b2b]/15 bg-white text-[#102b2b]"
+                            className="rounded-none border-input bg-background text-foreground"
                             disabled={loading}
                         />
                     </div>
                     <Button 
                         type="submit" 
-                        className="rounded-none bg-[#102b2b] text-[#f8f4ec] hover:text-white hover:bg-[#0d8274]"
+                        className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                         disabled={loading || !keyName.trim()}
                     >
                         {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
@@ -121,15 +121,15 @@ export function ApiSettings() {
 
             {/* Newly Created Key Alert Box */}
             {newKey && (
-                <div className="border-2 border-yellow-300 bg-yellow-50 p-5 space-y-3 max-w-2xl rounded-none animate-in fade-in duration-300">
-                    <div className="flex gap-2 text-yellow-800">
+                <div className="border border-amber-500/30 bg-amber-500/10 p-5 space-y-3 max-w-2xl rounded-none animate-in fade-in duration-300">
+                    <div className="flex gap-2 text-amber-600 dark:text-amber-400">
                         <AlertTriangle className="h-5 w-5 shrink-0" />
                         <h4 className="font-bold text-sm">Save your developer key now!</h4>
                     </div>
-                    <p className="text-xs text-yellow-800/80">
+                    <p className="text-xs text-muted-foreground">
                         For security reasons, this key will only be shown once. Copy it now and store it in a safe place.
                     </p>
-                    <div className="flex items-center gap-2 border border-yellow-200 bg-white p-2 text-sm font-mono text-gray-700">
+                    <div className="flex items-center gap-2 border border-border bg-background p-2 text-sm font-mono text-foreground">
                         <span className="flex-1 truncate">{newKey.rawToken}</span>
                         <Button 
                             variant="ghost" 
@@ -137,7 +137,7 @@ export function ApiSettings() {
                             onClick={() => handleCopy(newKey.rawToken)}
                             className="h-8 w-8 p-0"
                         >
-                            {copiedToken ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                            {copiedToken ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                         </Button>
                     </div>
                     <Button 
@@ -157,27 +157,27 @@ export function ApiSettings() {
 
                 {fetching ? (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin text-[#0d8274]" />
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
                         Loading API keys...
                     </div>
                 ) : keys.length === 0 ? (
-                    <div className="text-sm text-muted-foreground border border-dashed border-[#102b2b]/15 bg-[#f5f7f2] p-8 text-center">
-                        <Key className="h-8 w-8 text-[#0d8274]/55 mx-auto mb-3" />
+                    <div className="text-sm text-muted-foreground border border-dashed border-border bg-muted/20 p-8 text-center">
+                        <Key className="h-8 w-8 text-primary/70 mx-auto mb-3" />
                         No active developer tokens. Create one above to begin programmatically accessing your profiles.
                     </div>
                 ) : (
-                    <div className="border border-[#102b2b]/15 bg-white divide-y divide-[#102b2b]/10 rounded-none overflow-hidden max-w-3xl">
+                    <div className="border border-border bg-card divide-y divide-border rounded-none overflow-hidden max-w-3xl">
                         {keys.map((key) => (
-                            <div key={key.id} className="flex items-center justify-between p-4 hover:bg-[#e9eee8]/35 transition-colors">
+                            <div key={key.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-bold text-sm">{key.name}</span>
-                                        <code className="text-xs bg-[#f5f7f2] text-gray-600 px-1.5 py-0.5 rounded font-mono">{key.token_preview}</code>
+                                        <span className="font-bold text-sm text-foreground">{key.name}</span>
+                                        <code className="text-xs bg-muted text-foreground px-1.5 py-0.5 rounded font-mono">{key.token_preview}</code>
                                     </div>
                                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                                         <span>Created: {new Date(key.created_at).toLocaleDateString()}</span>
                                         <span>
-                                            Last Used: {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : "Never"}
+                                             Last Used: {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : "Never"}
                                         </span>
                                     </div>
                                 </div>
@@ -185,7 +185,7 @@ export function ApiSettings() {
                                     variant="ghost" 
                                     size="sm" 
                                     onClick={() => handleDeleteKey(key.id)}
-                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
                                 >
                                     <Trash className="h-4 w-4" />
                                 </Button>
@@ -196,9 +196,9 @@ export function ApiSettings() {
             </div>
 
             {/* Developer Documentation */}
-            <div className="space-y-4 max-w-3xl border-t border-[#102b2b]/15 pt-6">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                    <Code className="h-5 w-5 text-[#0d8274]" />
+            <div className="space-y-4 max-w-3xl border-t border-border pt-6">
+                <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                    <Code className="h-5 w-5 text-primary" />
                     Developer API Quickstart
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -212,7 +212,7 @@ export function ApiSettings() {
                             <Terminal className="h-3.5 w-3.5" />
                             List Resumes
                         </span>
-                        <div className="bg-[#102b2b] text-white p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
+                        <div className="bg-slate-900 text-slate-100 dark:bg-slate-950 border border-border/50 p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
                             curl -H "Authorization: Bearer YOUR_API_KEY" https://resumeforge.app/api/v1/resumes
                         </div>
                     </div>
@@ -223,7 +223,7 @@ export function ApiSettings() {
                             <Terminal className="h-3.5 w-3.5" />
                             Get Specific Resume Details (JSON Resume format)
                         </span>
-                        <div className="bg-[#102b2b] text-white p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
+                        <div className="bg-slate-900 text-slate-100 dark:bg-slate-950 border border-border/50 p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
                             curl -H "Authorization: Bearer YOUR_API_KEY" "https://resumeforge.app/api/v1/resumes?id=YOUR_RESUME_UUID"
                         </div>
                     </div>
@@ -234,7 +234,7 @@ export function ApiSettings() {
                             <Terminal className="h-3.5 w-3.5" />
                             Browser Extension Autofill Context (Flat format for form filling)
                         </span>
-                        <div className="bg-[#102b2b] text-white p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
+                        <div className="bg-slate-900 text-slate-100 dark:bg-slate-950 border border-border/50 p-3 rounded-none text-xs font-mono select-all overflow-x-auto">
                             curl -H "Authorization: Bearer YOUR_API_KEY" https://resumeforge.app/api/v1/autofill
                         </div>
                     </div>

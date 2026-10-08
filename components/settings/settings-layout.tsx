@@ -30,7 +30,7 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
     }
 
     return (
-        <div className="space-y-7">
+        <div className="space-y-7 min-w-0 max-w-full overflow-hidden">
             <div className="border-b border-border pb-6">
                 <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">Account workspace</p>
                 <h1 className="text-3xl font-heading font-black tracking-tight text-foreground sm:text-4xl">
@@ -41,8 +41,8 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
                 </p>
             </div>
 
-            <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-7">
-                <TabsList aria-label="Settings sections" className="h-auto w-full justify-start gap-0 overflow-x-auto border-b border-border bg-transparent p-0">
+            <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-7 min-w-0 max-w-full">
+                <TabsList aria-label="Settings sections" className="h-auto w-full justify-start gap-0 overflow-x-auto scrollbar-none border-b border-border bg-transparent p-0 flex-nowrap">
                     <TabsTrigger value="general" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
                         <SettingsIcon className="h-4 w-4" />
                         <span className="hidden sm:inline">General</span>
@@ -60,7 +60,7 @@ export function SettingsLayout({ children, defaultTab = "general" }: SettingsLay
                         <span className="hidden sm:inline">Canvas</span>
                     </TabsTrigger>
                     <TabsTrigger value="university" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
-                        <GraduationCap className="h-4 w-4 text-[#0d8274]" />
+                        <GraduationCap className="h-4 w-4 text-primary" />
                         <span className="hidden sm:inline">University</span>
                     </TabsTrigger>
                     <TabsTrigger value="appearance" className="min-h-11 shrink-0 gap-2 rounded-none border-b-2 border-transparent px-3 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground sm:px-4">
@@ -96,12 +96,12 @@ interface SettingsTabProps {
 
 export function SettingsTab({ value, title, description, children }: SettingsTabProps) {
     return (
-        <TabsContent value={value} className="space-y-5">
+        <TabsContent value={value} className="space-y-5 min-w-0 max-w-full">
             <div className="max-w-2xl">
                 <h2 className="text-xl font-heading font-black tracking-tight text-foreground">{title}</h2>
                 <p className="text-sm text-muted-foreground">{description}</p>
             </div>
-            <div className="border border-border bg-card p-4 shadow-[4px_4px_0_rgba(16,43,43,0.06)] sm:p-6">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6 min-w-0 max-w-full">
                 {children}
             </div>
         </TabsContent>

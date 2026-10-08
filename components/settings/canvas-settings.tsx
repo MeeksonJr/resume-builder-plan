@@ -136,7 +136,7 @@ export function CanvasSettings({ profile }: CanvasSettingsProps) {
 
         {/* Sync Toggles */}
         <div className="border border-border bg-muted/20 p-4 space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#0d8274] flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
             <GraduationCap className="w-4 h-4" />
             Synchronization Preferences
           </h4>
@@ -199,7 +199,7 @@ export function CanvasSettings({ profile }: CanvasSettingsProps) {
         <Button
           onClick={handleSaveConfig}
           disabled={loading}
-          className="h-11 rounded-none bg-[#0d8274] hover:bg-[#102b2b] text-white px-6 font-bold"
+          className="h-11 rounded-none bg-primary hover:bg-primary/90 text-primary-foreground px-6 font-bold"
         >
           {loading ? (
             <>
@@ -216,7 +216,7 @@ export function CanvasSettings({ profile }: CanvasSettingsProps) {
             onClick={handleSyncNow}
             disabled={syncing}
             variant="outline"
-            className="h-11 rounded-none border-[#102b2b]/15 text-[#102b2b] hover:bg-muted font-bold gap-2"
+            className="h-11 rounded-none border-border text-foreground hover:bg-muted font-bold gap-2"
           >
             {syncing ? (
               <>

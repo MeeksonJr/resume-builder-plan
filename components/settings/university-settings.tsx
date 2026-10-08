@@ -202,7 +202,7 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-9 w-9 bg-[#102b2b] text-[#d8f36b] flex items-center justify-center font-bold">
+              <div className="h-9 w-9 bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold">
                 <GraduationCap className="h-5 w-5" />
               </div>
               <div>
@@ -242,7 +242,7 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
                   </p>
                 </div>
                 {universitySlug && (
-                  <Button asChild size="sm" className="bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743] font-bold rounded-none">
+                  <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-none">
                     <Link href={`/dashboard/portal/${universitySlug}`}>
                       View Campus Portal
                       <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
@@ -299,7 +299,7 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
               {/* Method 1: Email Code */}
               <div className="p-5 border border-border bg-card space-y-4">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-[#0d8274]" />
+                  <Mail className="h-4 w-4 text-primary" />
                   <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
                     Method 1: Verify with Official Student Email (.edu)
                   </h4>
@@ -317,7 +317,7 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
                   <Button
                     onClick={handleSendCode}
                     disabled={sendingCode || !schoolEmail}
-                    className="bg-[#102b2b] text-[#d8f36b] hover:bg-[#164743] font-bold rounded-none"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-none"
                   >
                     {sendingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Code"}
                   </Button>
@@ -340,7 +340,7 @@ export function UniversitySettings({ profile }: UniversitySettingsProps) {
                       <Button
                         onClick={handleVerifyCode}
                         disabled={verifyingCode || code.length < 4}
-                        className="bg-[#0d8274] text-white hover:bg-[#095e54] font-bold rounded-none"
+                        className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold rounded-none"
                       >
                         {verifyingCode ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <ShieldCheck className="h-4 w-4 mr-1" />}
                         Verify Code

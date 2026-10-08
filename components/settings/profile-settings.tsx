@@ -123,7 +123,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
 
             <div className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="full_name" className="text-xs font-bold uppercase tracking-wider text-[#52716a]">
+                    <Label htmlFor="full_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         Full Name
                     </Label>
                     <Input
@@ -137,7 +137,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-[#52716a]">
+                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         Email Address
                     </Label>
                     <Input
@@ -154,8 +154,8 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-[#52716a] flex items-center gap-1.5">
-                            <Phone className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5 text-primary" />
                             Phone Number
                         </Label>
                         <Input
@@ -169,8 +169,8 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="location" className="text-xs font-bold uppercase tracking-wider text-[#52716a] flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <Label htmlFor="location" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 text-primary" />
                             Location
                         </Label>
                         <Input
@@ -186,8 +186,8 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                     <div className="space-y-2">
-                        <Label htmlFor="linkedin_url" className="text-xs font-bold uppercase tracking-wider text-[#52716a] flex items-center gap-1.5">
-                            <Linkedin className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <Label htmlFor="linkedin_url" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Linkedin className="h-3.5 w-3.5 text-primary" />
                             LinkedIn URL
                         </Label>
                         <Input
@@ -201,8 +201,8 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="github_url" className="text-xs font-bold uppercase tracking-wider text-[#52716a] flex items-center gap-1.5">
-                            <Github className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <Label htmlFor="github_url" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Github className="h-3.5 w-3.5 text-primary" />
                             GitHub URL
                         </Label>
                         <Input
@@ -216,8 +216,8 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="website_url" className="text-xs font-bold uppercase tracking-wider text-[#52716a] flex items-center gap-1.5">
-                            <Globe className="h-3.5 w-3.5 text-[#0d8274]" />
+                        <Label htmlFor="website_url" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Globe className="h-3.5 w-3.5 text-primary" />
                             Website / Portfolio
                         </Label>
                         <Input
@@ -233,7 +233,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-xs font-bold uppercase tracking-wider text-[#52716a]">
+                    <Label htmlFor="bio" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         Professional Bio / Summary
                     </Label>
                     <Textarea
@@ -256,7 +256,7 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                 <Button
                     onClick={handleSave}
                     disabled={loading}
-                    className="min-h-11 rounded-none bg-[#102b2b] font-black text-[#f8f4ec] hover:bg-[#1a3d3d] px-8"
+                    className="min-h-11 rounded-none bg-primary font-bold text-primary-foreground hover:bg-primary/90 px-8"
                 >
                     {loading ? (
                         <>
@@ -274,33 +274,33 @@ export function ProfileSettings({ profile, user }: ProfileSettingsProps) {
                         <Button
                             variant="outline"
                             disabled={syncingAll}
-                            className="min-h-11 rounded-none border-[#102b2b]/20 bg-[#f8f4ec] text-[#102b2b] hover:bg-[#d8f36b]/40 font-bold gap-2"
+                            className="min-h-11 rounded-none border-border bg-card text-foreground hover:bg-muted font-bold gap-2"
                         >
                             {syncingAll ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                                <RefreshCw className="h-4 w-4 text-[#0d8274]" />
+                                <RefreshCw className="h-4 w-4 text-primary" />
                             )}
                             Sync Contact Info to All Resumes
                         </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-none border-[#102b2b]/20">
+                    <AlertDialogContent className="rounded-2xl border-border bg-card">
                         <AlertDialogHeader>
-                            <AlertDialogTitle className="text-lg font-black uppercase tracking-tight text-[#102b2b] flex items-center gap-2">
-                                <Sparkles className="h-4 w-4 text-[#0d8274]" />
+                            <AlertDialogTitle className="text-lg font-black tracking-tight text-foreground flex items-center gap-2">
+                                <Sparkles className="h-4 w-4 text-primary" />
                                 Broadcast Sync to All Resumes
                             </AlertDialogTitle>
-                            <AlertDialogDescription className="text-sm text-[#52716a] leading-relaxed pt-2">
+                            <AlertDialogDescription className="text-sm text-muted-foreground leading-relaxed pt-2">
                                 This will update the contact details (Name, Email, Phone, Location, LinkedIn, GitHub, Website) across <strong>every active resume</strong> in your workspace with your current profile settings.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="pt-4">
-                            <AlertDialogCancel className="rounded-none border-[#102b2b]/20">
+                            <AlertDialogCancel className="rounded-none border-border">
                                 Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={handleBroadcastSync}
-                                className="rounded-none bg-[#102b2b] text-[#f8f4ec] hover:bg-[#1a3d3d] font-bold"
+                                className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                             >
                                 Confirm Broadcast
                             </AlertDialogAction>
