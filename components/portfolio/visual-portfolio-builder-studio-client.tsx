@@ -471,8 +471,8 @@ export function VisualPortfolioBuilderStudioClient({
   const [isSaving, setIsSaving] = useState(false);
   const [activeLeftTab, setActiveLeftTab] = useState<"blocks" | "theme" | "resume" | "media">("blocks");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isLeftOpen, setIsLeftOpen] = useState(true);
-  const [isRightOpen, setIsRightOpen] = useState(true);
+  const [isLeftOpen, setIsLeftOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
+  const [isRightOpen, setIsRightOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1280 : true);
   const [zoomScale, setZoomScale] = useState<"100%" | "fit" | "85%">("100%");
   const [newSkillInput, setNewSkillInput] = useState("");
   
@@ -1316,7 +1316,7 @@ export function VisualPortfolioBuilderStudioClient({
       <div className="flex-1 flex overflow-hidden w-full max-w-full relative">
         {/* Left Column: Blocks Palette & Importer */}
         {isLeftOpen && (
-          <aside className="w-72 xl:w-80 border-r border-white/10 bg-[#0c121e] flex flex-col shrink-0 z-20">
+          <aside className="w-72 xl:w-80 border-r border-white/10 bg-[#0c121e] flex flex-col shrink-0 z-20 max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:shadow-2xl">
             <div className="p-2.5 border-b border-white/10 grid grid-cols-4 gap-1 bg-black/20 text-center">
               <button
                 onClick={() => setActiveLeftTab("blocks")}
@@ -2504,7 +2504,7 @@ export function VisualPortfolioBuilderStudioClient({
 
         {/* Right Column: Deep Block Property Inspector */}
         {isRightOpen && (
-          <aside className="w-80 xl:w-96 border-l border-white/10 bg-[#0c121e] p-5 flex flex-col shrink-0 overflow-y-auto space-y-5 z-20">
+          <aside className="w-80 xl:w-96 border-l border-white/10 bg-[#0c121e] p-5 flex flex-col shrink-0 overflow-y-auto space-y-5 z-20 max-md:absolute max-md:inset-y-0 max-md:right-0 max-md:z-40 max-md:shadow-2xl">
             {(() => {
               const currentTheme = THEME_PALETTES[activeThemeColor] || THEME_PALETTES.emerald;
 

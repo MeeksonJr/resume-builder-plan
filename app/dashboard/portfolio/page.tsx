@@ -353,9 +353,9 @@ export default function PortfolioManagementPage() {
 
     if (isLoading) {
         return (
-            <div className="flex min-h-[520px] items-center justify-center bg-[#e9eee8] text-[#102b2b]">
-                <div className="flex items-center gap-3 border border-[#102b2b]/15 bg-[#f5f7f2] px-5 py-4 text-sm font-bold uppercase tracking-widest">
-                    <Loader2 className="h-4 w-4 animate-spin text-[#0d8274]" aria-hidden="true" />
+            <div className="flex min-h-[520px] items-center justify-center text-foreground">
+                <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4 text-sm font-bold uppercase tracking-widest shadow-sm">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
                     Loading showcase
                 </div>
             </div>
@@ -364,18 +364,18 @@ export default function PortfolioManagementPage() {
 
     if (loadError || !portfolio) {
         return (
-            <div className="flex min-h-[520px] items-center justify-center bg-[#e9eee8] px-5 text-center text-[#102b2b]">
-                <div role="alert" className="max-w-md border border-red-900/20 bg-red-50 p-8">
+            <div className="flex min-h-[520px] items-center justify-center px-5 text-center text-foreground">
+                <div role="alert" className="max-w-md rounded-2xl border border-destructive/20 bg-destructive/10 p-8">
                     <h1 className="text-2xl font-heading font-black">Showcase unavailable</h1>
-                    <p className="mt-2 text-sm leading-6 text-red-950/70">We could not load your portfolio settings. Refresh the page to try again.</p>
-                    <Button className="mt-6 rounded-none bg-[#102b2b] text-[#f8f4ec] hover:text-white hover:bg-[#0d8274]" onClick={fetchPortfolio}>Try again</Button>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">We could not load your portfolio settings. Refresh the page to try again.</p>
+                    <Button className="mt-6 rounded-none bg-primary text-primary-foreground hover:bg-primary/90 font-bold" onClick={fetchPortfolio}>Try again</Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-full bg-[#e9eee8] text-[#102b2b] w-full max-w-full overflow-x-hidden">
+        <div className="min-h-full w-full max-w-full overflow-x-hidden text-foreground">
         <div className="flex h-full min-h-full w-full max-w-full overflow-hidden">
             {/* Left: Editor Panel */}
             <div className={cn(
@@ -383,17 +383,17 @@ export default function PortfolioManagementPage() {
                 showPreview ? "w-full lg:w-[55%] xl:w-[50%]" : "w-full"
             )}>
             <div className="space-y-8 px-5 py-8 animate-in fade-in duration-500 lg:px-8 lg:py-10">
-            <div className="flex flex-col gap-6 border-b border-[#102b2b]/15 pb-7 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-6 border-b border-border pb-7 md:flex-row md:items-end md:justify-between">
                 <div className="space-y-2">
-                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#0d8274]">Showcase / My portfolio</div>
-                    <h1 className="text-4xl font-heading font-black tracking-[-0.04em] md:text-5xl">Career portfolio</h1>
-                    <p className="max-w-xl text-sm font-medium leading-6 text-[#102b2b]/60">Shape the public page that makes your work easy to understand, trust, and contact.</p>
+                    <div className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Showcase / My portfolio</div>
+                    <h1 className="text-4xl font-heading font-black tracking-tight text-foreground md:text-5xl">Career portfolio</h1>
+                    <p className="max-w-xl text-sm font-medium leading-6 text-muted-foreground">Shape the public page that makes your work easy to understand, trust, and contact.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Button
                         variant="outline"
                         size="sm"
-                        className="hidden h-9 gap-2 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b] lg:flex"
+                        className="hidden h-9 gap-2 rounded-none border-border bg-card font-bold text-foreground hover:bg-muted lg:flex"
                         onClick={() => setShowPreview(!showPreview)}
                     >
                         {showPreview ? <EyeOff className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
@@ -401,7 +401,7 @@ export default function PortfolioManagementPage() {
                     </Button>
                     {portfolio.slug && (
                         <>
-                            <Button variant="outline" size="lg" className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]" asChild>
+                            <Button variant="outline" size="lg" className="h-11 rounded-none border-border bg-card font-bold text-foreground hover:bg-muted" asChild>
                                 <a href={`/p/${portfolio.slug}`} target="_blank" rel="noopener noreferrer">
                                     <Eye className="mr-2 h-5 w-5" />
                                     Preview
@@ -410,15 +410,15 @@ export default function PortfolioManagementPage() {
                             <Button
                                 variant="outline"
                                 size="lg"
-                                className="h-11 rounded-none border-[#102b2b]/20 bg-[#f5f7f2] font-bold text-[#102b2b] hover:bg-[#d8f36b]"
+                                className="h-11 rounded-none border-border bg-card font-bold text-foreground hover:bg-muted"
                                 onClick={() => setShowShareModal(true)}
                             >
-                                <Share2 className="mr-2 h-4 w-4 text-[#0d8274]" />
+                                <Share2 className="mr-2 h-4 w-4 text-primary" />
                                 Share
                             </Button>
                         </>
                     )}
-                    <Button onClick={handleSave} disabled={isSaving} size="lg" className="h-11 gap-2 rounded-none bg-[#102b2b] px-7 font-black text-[#f8f4ec] shadow-none hover:text-white hover:bg-[#0d8274]">
+                    <Button onClick={handleSave} disabled={isSaving} size="lg" className="h-11 gap-2 rounded-none bg-primary px-7 font-bold text-primary-foreground shadow-sm hover:bg-primary/90">
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Save Changes
                     </Button>
@@ -427,53 +427,53 @@ export default function PortfolioManagementPage() {
 
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="mb-8 flex flex-wrap h-auto w-full gap-2 border-b border-[#102b2b]/15 bg-transparent p-0 pb-4">
-                    <TabsTrigger value="general" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                <TabsList className="mb-8 flex flex-wrap h-auto w-full gap-2 border-b border-border bg-transparent p-0 pb-4">
+                    <TabsTrigger value="general" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <User className="h-4 w-4" />
                         Basic Information
                     </TabsTrigger>
-                    <TabsTrigger value="social" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="social" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <Globe className="h-4 w-4" />
                         Social
                     </TabsTrigger>
-                    <TabsTrigger value="seo" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="seo" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <Search className="h-4 w-4" />
                         SEO & Social
                     </TabsTrigger>
-                    <TabsTrigger value="share" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="share" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <Share2 className="h-4 w-4" />
                         Share
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="appearance" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <Palette className="h-4 w-4" />
                         Visuals
                     </TabsTrigger>
-                    <TabsTrigger value="content" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="content" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <Layout className="h-4 w-4" />
                         Gallery
                     </TabsTrigger>
-                    <TabsTrigger value="messages" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="messages" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <MessageSquare className="h-4 w-4" />
                         Messages
                         {messages.length > 0 && (
-                            <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] bg-[#d8f36b] text-[#102b2b] border-none font-black">
+                            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] font-bold">
                                 {messages.length}
                             </Badge>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="testimonials" className="h-10 shrink-0 gap-2 rounded-full border border-[#102b2b]/15 bg-white px-4 text-xs sm:text-sm font-bold text-[#102b2b]/65 transition-all data-[state=active]:border-transparent data-[state=active]:bg-[#102b2b] data-[state=active]:text-[#f8f4ec] hover:bg-[#102b2b]/5 shadow-sm">
+                    <TabsTrigger value="testimonials" className="h-10 shrink-0 gap-2 rounded-full border border-border bg-card px-4 text-xs sm:text-sm font-bold text-muted-foreground transition-all data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted shadow-sm">
                         <Trophy className="h-4 w-4" />
                         Proof
                     </TabsTrigger>
-                    <TabsTrigger value="visual_builder" className="h-10 shrink-0 gap-2 rounded-full border border-violet-500/30 bg-violet-600/10 px-4 text-xs sm:text-sm font-bold text-violet-400 transition-all data-[state=active]:border-transparent data-[state=active]:bg-violet-600 data-[state=active]:text-white hover:bg-violet-600/20 shadow-sm">
+                    <TabsTrigger value="visual_builder" className="h-10 shrink-0 gap-2 rounded-full border border-violet-500/30 bg-violet-600/10 px-4 text-xs sm:text-sm font-bold text-violet-600 dark:text-violet-400 transition-all data-[state=active]:border-transparent data-[state=active]:bg-violet-600 data-[state=active]:text-white hover:bg-violet-600/20 shadow-sm">
                         <Sparkles className="h-4 w-4" />
                         Visual Canvas Editor (Canva / Scratch)
                     </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="visual_builder" className="mt-0 animate-in slide-in-from-bottom-2 duration-500">
-                    <Card className="overflow-hidden rounded-2xl border-[#102b2b]/15 bg-[#f5f7f2] dark:bg-card shadow-sm">
-                        <CardHeader className="border-b border-[#102b2b]/10 bg-white/50 dark:bg-card/50 p-6">
+                    <Card className="overflow-hidden rounded-2xl border-border bg-card shadow-sm">
+                        <CardHeader className="border-b border-border bg-muted/20 p-6">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
@@ -1568,16 +1568,16 @@ export default function PortfolioManagementPage() {
 
             {/* Share Portfolio Dialog */}
             <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-                <DialogContent className="max-w-xl rounded-none border border-[#102b2b]/20 bg-[#f8f4ec] p-6 text-[#102b2b]">
-                    <DialogHeader className="space-y-2 border-b border-[#102b2b]/15 pb-4">
-                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#0d8274]">
+                <DialogContent className="max-w-xl rounded-2xl border border-border bg-card p-6 text-foreground">
+                    <DialogHeader className="space-y-2 border-b border-border pb-4">
+                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary">
                             <Share2 className="h-4 w-4" />
                             Distribution & Networking
                         </div>
-                        <DialogTitle className="text-2xl font-heading font-black text-[#102b2b]">
+                        <DialogTitle className="text-2xl font-heading font-black text-foreground">
                             Share your career portfolio
                         </DialogTitle>
-                        <DialogDescription className="text-sm text-[#102b2b]/70">
+                        <DialogDescription className="text-sm text-muted-foreground">
                             Give recruiters and hiring managers direct, interactive access to your verified background, projects, and resumes.
                         </DialogDescription>
                     </DialogHeader>
@@ -1585,14 +1585,14 @@ export default function PortfolioManagementPage() {
                     <div className="space-y-6 pt-2">
                         {/* Public Link Box */}
                         <div className="space-y-2">
-                            <Label className="text-xs font-black uppercase tracking-widest text-[#102b2b]/70">
+                            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                                 Direct Portfolio Link
                             </Label>
                             <div className="flex items-center gap-2">
                                 <Input
                                     readOnly
                                     value={typeof window !== "undefined" ? `${window.location.origin}/p/${portfolio?.slug || ""}` : `/p/${portfolio?.slug || ""}`}
-                                    className="h-11 rounded-none border-[#102b2b]/20 bg-white font-mono text-xs text-[#102b2b]"
+                                    className="h-11 rounded-none border-input bg-background font-mono text-xs text-foreground"
                                 />
                                 <Button
                                     type="button"
@@ -1603,7 +1603,7 @@ export default function PortfolioManagementPage() {
                                         toast.success("Portfolio link copied to clipboard!");
                                         setTimeout(() => setCopiedLink(false), 2000);
                                     }}
-                                    className="h-11 shrink-0 rounded-none bg-[#102b2b] px-4 font-bold text-[#f8f4ec] hover:text-white hover:bg-[#0d8274]"
+                                    className="h-11 shrink-0 rounded-none bg-primary px-4 font-bold text-primary-foreground hover:bg-primary/90"
                                 >
                                     {copiedLink ? <Check className="mr-1.5 h-4 w-4" /> : <Copy className="mr-1.5 h-4 w-4" />}
                                     {copiedLink ? "Copied" : "Copy"}
@@ -1612,9 +1612,9 @@ export default function PortfolioManagementPage() {
                         </div>
 
                         {/* QR Code Section */}
-                        <div className="border border-[#102b2b]/15 bg-[#f4f7f1] p-4">
+                        <div className="border border-border bg-muted/20 p-4 rounded-xl">
                             <div className="flex flex-col sm:flex-row items-center gap-5">
-                                <div className="rounded-none border border-[#102b2b]/20 bg-white p-2 shadow-sm shrink-0">
+                                <div className="rounded-xl border border-border bg-white p-2 shadow-sm shrink-0">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/p/${portfolio?.slug || ""}` : "")}`}
@@ -1623,18 +1623,18 @@ export default function PortfolioManagementPage() {
                                     />
                                 </div>
                                 <div className="space-y-2 text-center sm:text-left">
-                                    <h4 className="text-sm font-bold text-[#102b2b] flex items-center justify-center sm:justify-start gap-1.5">
-                                        <QrCode className="h-4 w-4 text-[#0d8274]" />
+                                    <h4 className="text-sm font-bold text-foreground flex items-center justify-center sm:justify-start gap-1.5">
+                                        <QrCode className="h-4 w-4 text-primary" />
                                         Printable Portfolio QR Code
                                     </h4>
-                                    <p className="text-xs leading-relaxed text-[#102b2b]/65">
+                                    <p className="text-xs leading-relaxed text-muted-foreground">
                                         Place this scannable QR code directly on your paper resume or business card for instantaneous recruiter mobile viewing.
                                     </p>
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#d8f36b]"
+                                        className="h-8 rounded-none border-border bg-card text-xs font-bold text-foreground hover:bg-muted"
                                         asChild
                                     >
                                         <a
@@ -1643,7 +1643,7 @@ export default function PortfolioManagementPage() {
                                             rel="noopener noreferrer"
                                             download={`portfolio-qr-${portfolio?.slug}.png`}
                                         >
-                                            <Download className="mr-1.5 h-3.5 w-3.5 text-[#0d8274]" />
+                                            <Download className="mr-1.5 h-3.5 w-3.5 text-primary" />
                                             Open High-Res QR
                                         </a>
                                     </Button>
@@ -1653,7 +1653,7 @@ export default function PortfolioManagementPage() {
 
                         {/* Social Share Buttons */}
                         <div className="space-y-2">
-                            <Label className="text-xs font-black uppercase tracking-widest text-[#102b2b]/70">
+                            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                                 Share to Networks
                             </Label>
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -1664,9 +1664,9 @@ export default function PortfolioManagementPage() {
                                         const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
                                         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank");
                                     }}
-                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#0077b5] hover:text-white"
+                                    className="h-10 rounded-none border-border bg-card text-xs font-bold text-foreground hover:bg-primary/10"
                                 >
-                                    <Linkedin className="mr-1.5 h-4 w-4" />
+                                    <Linkedin className="mr-1.5 h-4 w-4 text-blue-600" />
                                     LinkedIn
                                 </Button>
                                 <Button
@@ -1676,9 +1676,9 @@ export default function PortfolioManagementPage() {
                                         const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
                                         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Check out my verified career portfolio: ")}&url=${encodeURIComponent(url)}`, "_blank");
                                     }}
-                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#102b2b] hover:text-white"
+                                    className="h-10 rounded-none border-border bg-card text-xs font-bold text-foreground hover:bg-primary/10"
                                 >
-                                    <Twitter className="mr-1.5 h-4 w-4" />
+                                    <Twitter className="mr-1.5 h-4 w-4 text-sky-500" />
                                     X / Twitter
                                 </Button>
                                 <Button
@@ -1688,9 +1688,9 @@ export default function PortfolioManagementPage() {
                                         const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
                                         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Check out my career portfolio: " + url)}`, "_blank");
                                     }}
-                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#25D366] hover:text-white"
+                                    className="h-10 rounded-none border-border bg-card text-xs font-bold text-foreground hover:bg-primary/10"
                                 >
-                                    <MessageSquare className="mr-1.5 h-4 w-4" />
+                                    <MessageSquare className="mr-1.5 h-4 w-4 text-emerald-600" />
                                     WhatsApp
                                 </Button>
                                 <Button
@@ -1700,24 +1700,24 @@ export default function PortfolioManagementPage() {
                                         const url = `${window.location.origin}/p/${portfolio?.slug || ""}`;
                                         window.location.href = `mailto:?subject=${encodeURIComponent("Career Portfolio - " + (portfolio?.full_name || "Portfolio"))}&body=${encodeURIComponent("Here is my verified career portfolio: " + url)}`;
                                     }}
-                                    className="h-10 rounded-none border-[#102b2b]/20 bg-white text-xs font-bold text-[#102b2b] hover:bg-[#0d8274] hover:text-white"
+                                    className="h-10 rounded-none border-border bg-card text-xs font-bold text-foreground hover:bg-primary/10"
                                 >
-                                    <Mail className="mr-1.5 h-4 w-4" />
+                                    <Mail className="mr-1.5 h-4 w-4 text-primary" />
                                     Email
                                 </Button>
                             </div>
                         </div>
 
                         {/* GitHub README Badge Snippet */}
-                        <div className="space-y-2 border-t border-[#102b2b]/15 pt-4">
-                            <Label className="text-xs font-black uppercase tracking-widest text-[#102b2b]/70">
+                        <div className="space-y-2 border-t border-border pt-4">
+                            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                                 GitHub Profile README Badge (Markdown)
                             </Label>
                             <div className="flex items-center gap-2">
                                 <Input
                                     readOnly
                                     value={typeof window !== "undefined" ? `[![Portfolio](https://img.shields.io/badge/Portfolio-View_Live-102b2b?style=for-the-badge)](${window.location.origin}/p/${portfolio?.slug || ""})` : ""}
-                                    className="h-9 rounded-none border-[#102b2b]/20 bg-white font-mono text-[11px] text-[#102b2b]"
+                                    className="h-9 rounded-none border-input bg-background font-mono text-[11px] text-foreground"
                                 />
                                 <Button
                                     type="button"
@@ -1727,7 +1727,7 @@ export default function PortfolioManagementPage() {
                                         navigator.clipboard.writeText(snippet);
                                         toast.success("README Markdown badge snippet copied!");
                                     }}
-                                    className="h-9 shrink-0 rounded-none bg-[#102b2b] px-3 font-bold text-xs text-[#d8f36b] hover:bg-[#0d8274]"
+                                    className="h-9 shrink-0 rounded-none bg-primary px-3 font-bold text-xs text-primary-foreground hover:bg-primary/90"
                                 >
                                     <Copy className="h-3.5 w-3.5" />
                                 </Button>
