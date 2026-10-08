@@ -260,7 +260,7 @@ export default function CoverLetterDetailPage({ params }: { params: Promise<{ id
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-7xl mx-auto space-y-6 pb-16 px-2 sm:px-4"
+            className="max-w-7xl mx-auto min-w-0 max-w-full overflow-hidden space-y-6 pb-16 px-2 sm:px-4"
         >
             {/* Top Toolbar */}
             <div className="flex flex-col gap-4 border-b border-border/80 pb-5 sm:flex-row sm:items-center sm:justify-between">

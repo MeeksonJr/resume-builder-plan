@@ -454,7 +454,7 @@ export function CareerSwarmControlCenter() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full overflow-hidden">
       {/* Hero Control Banner */}
       <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
