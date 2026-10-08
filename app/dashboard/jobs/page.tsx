@@ -469,7 +469,7 @@ export default function DashboardJobsPage() {
   const highMatchCount = jobs.filter(j => (j.match_score || 0) >= 85).length;
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-16 bg-[#e9eee8] text-[#102b2b]">
+    <div className="space-y-6 sm:space-y-8 pb-16 text-foreground min-w-0 max-w-full overflow-hidden">
       {/* Executive Header Banner */}
       <div className="relative p-6 sm:p-8 rounded-md bg-[#102b2b] border border-[#102b2b] shadow-sm overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
@@ -866,7 +866,7 @@ export default function DashboardJobsPage() {
         </div>
       ) : viewMode === "grid" ? (
         /* 3-Column Card Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-w-0">
           {paginatedJobs.map((job) => {
             const isSaved = savedJobIds.includes(job.id);
             const isTracked = trackedJobIds.includes(job.id);

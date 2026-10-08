@@ -714,15 +714,15 @@ export function KanbanBoard() {
             </div>
 
             {/* Mobile Column Segment Switcher (visible on md:hidden) */}
-            <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar shrink-0">
+            <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar shrink-0 max-w-full">
                 <button
                     type="button"
                     onClick={() => setMobileFilter("all")}
                     className={cn(
-                        "px-3 py-1.5 text-xs font-bold whitespace-nowrap border transition-colors cursor-pointer",
+                        "px-3 py-1.5 text-xs font-bold whitespace-nowrap rounded-xl border transition-colors cursor-pointer",
                         mobileFilter === "all"
-                            ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-xs"
-                            : "bg-white text-[#102b2b] border-[#102b2b]/15 hover:bg-[#102b2b]/5"
+                            ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                            : "bg-card text-foreground border-border hover:bg-muted"
                     )}
                 >
                     All ({applications.length})
@@ -735,16 +735,16 @@ export function KanbanBoard() {
                             type="button"
                             onClick={() => setMobileFilter(col.id)}
                             className={cn(
-                                "px-3 py-1.5 text-xs font-bold whitespace-nowrap border transition-colors flex items-center gap-1.5 cursor-pointer",
+                                "px-3 py-1.5 text-xs font-bold whitespace-nowrap rounded-xl border transition-colors flex items-center gap-1.5 cursor-pointer",
                                 mobileFilter === col.id
-                                    ? "bg-[#102b2b] text-[#f8f4ec] border-[#102b2b] shadow-xs"
-                                    : "bg-white text-[#102b2b] border-[#102b2b]/15 hover:bg-[#102b2b]/5"
+                                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                    : "bg-card text-foreground border-border hover:bg-muted"
                             )}
                         >
                             <span>{col.label}</span>
                             <span className={cn(
-                                "text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold",
-                                mobileFilter === col.id ? "bg-[#d8f36b] text-[#102b2b]" : "bg-[#102b2b]/10 text-[#102b2b]"
+                                "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold",
+                                mobileFilter === col.id ? "bg-amber-400 text-black" : "bg-muted text-muted-foreground"
                             )}>
                                 {count}
                             </span>
@@ -754,32 +754,32 @@ export function KanbanBoard() {
             </div>
 
             {/* Kanban Columns */}
-            <div className="flex-1 overflow-x-auto pb-2">
-                <div className="grid h-full w-full md:min-w-[1024px] grid-cols-1 md:grid-cols-4 gap-4 text-[#102b2b]">
+            <div className="flex-1 overflow-x-auto pb-2 max-w-full">
+                <div className="grid h-full w-full md:min-w-[1024px] grid-cols-1 md:grid-cols-4 gap-4 text-foreground">
                     {COLUMNS.map(col => {
                         const isHiddenOnMobile = mobileFilter !== "all" && mobileFilter !== col.id;
                         return (
                             <div 
                                 key={col.id} 
                                 className={cn(
-                                    "min-w-0 md:min-w-[250px] flex-col border border-[#102b2b]/15 bg-white/35 p-3",
+                                    "min-w-0 md:min-w-[250px] flex-col border border-border bg-card/60 backdrop-blur-xs rounded-2xl p-3 shadow-xs",
                                     isHiddenOnMobile ? "hidden md:flex" : "flex"
                                 )}
                             >
-                                <div className={`mb-3 flex items-center justify-between border-b border-[#102b2b]/10 px-2 pb-3 text-sm font-bold ${col.color}`}>
+                                <div className={`mb-3 flex items-center justify-between border-b border-border px-2 pb-3 text-sm font-bold ${col.color}`}>
                                     <span>{col.label}</span>
-                                    <Badge variant="secondary" className="rounded-none border border-[#102b2b]/15 bg-transparent text-[#102b2b]">{applications.filter(a => a.status === col.id).length}</Badge>
+                                    <Badge variant="secondary" className="rounded-lg border border-border bg-muted/50 text-foreground">{applications.filter(a => a.status === col.id).length}</Badge>
                                 </div>
                                 <ScrollArea className="flex-1">
                                     <div className="space-y-3 pr-2 pb-4">
                                         {applications.filter(a => a.status === col.id).length === 0 && (
-                                            <p className="border border-dashed border-[#102b2b]/15 px-3 py-8 text-center text-xs text-[#102b2b]/55">No applications here</p>
+                                            <p className="border border-dashed border-border rounded-xl px-3 py-8 text-center text-xs text-muted-foreground">No applications here</p>
                                         )}
                                     {applications.filter(a => a.status === col.id).map(app => (
                                         <Card 
                                             key={app.id} 
                                             onClick={() => handleOpenEdit(app)}
-                                            className="group cursor-pointer rounded-none border-[#102b2b]/15 bg-[#f8faf5] shadow-none transition-colors hover:border-[#0d8274]"
+                                            className="group cursor-pointer rounded-xl border border-border bg-card shadow-xs transition-all hover:border-primary/50 hover:shadow-md"
                                         >
                                             <CardContent className="p-3.5 space-y-3">
                                                 <div className="flex justify-between items-start">
@@ -979,30 +979,30 @@ export function KanbanBoard() {
 
             {/* Card Edit/Details Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogContent className="w-[96vw] max-w-5xl sm:max-w-5xl h-[90vh] max-h-[880px] flex flex-col p-0 overflow-hidden rounded-none border-[#102b2b]/20 bg-[#f8f4ec] shadow-2xl">
+                <DialogContent className="w-[96vw] max-w-5xl sm:max-w-5xl h-[90vh] max-h-[880px] flex flex-col p-0 overflow-hidden rounded-2xl border-border bg-card text-card-foreground shadow-2xl">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Edit Application Details</DialogTitle>
                         <DialogDescription>Review and modify tracked job status, documents, and coursework.</DialogDescription>
                     </DialogHeader>
 
                     {/* Top Command Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#102b2b]/15 bg-[#102b2b] text-[#f8f4ec] shrink-0 gap-4 min-w-0">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card text-foreground shrink-0 gap-4 min-w-0">
                         <div className="space-y-0.5 min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a6c0b8]">Job Tracker Dossier</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Job Tracker Dossier</span>
                                 {selectedApp?.priority === "high" && (
-                                    <Badge className="rounded-none bg-red-500/20 text-red-300 border-red-500/30 text-[10px] uppercase font-black">🔥 High Priority</Badge>
+                                    <Badge className="rounded-md bg-red-500/20 text-red-500 border-red-500/30 text-[10px] uppercase font-black">🔥 High Priority</Badge>
                                 )}
                             </div>
-                            <h2 className="text-xl font-black uppercase tracking-tight text-white mt-0.5 truncate" title={editRole ? `${editRole} — ${editCompany}` : "Edit Application Details"}>
+                            <h2 className="text-xl font-black uppercase tracking-tight text-foreground mt-0.5 truncate" title={editRole ? `${editRole} — ${editCompany}` : "Edit Application Details"}>
                                 {editRole ? `${editRole} — ${editCompany}` : "Edit Application Details"}
                             </h2>
-                            <p className="text-xs text-[#a6c0b8] truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                                 Manage pipeline status, linked career documents, synced coursework, and interview notes.
                             </p>
                         </div>
                         <div className="flex items-center gap-3 pr-8 shrink-0">
-                            <Badge variant="outline" className="rounded-none border-[#0d8274]/40 text-[#f8f4ec] bg-[#0d8274]/20 text-xs font-bold uppercase tracking-wider px-3 py-1 shrink-0">
+                            <Badge variant="outline" className="rounded-lg border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 text-xs font-bold uppercase tracking-wider px-3 py-1 shrink-0">
                                 {COLUMNS.find(c => c.id === editStatus)?.label || editStatus}
                             </Badge>
                         </div>
@@ -1010,12 +1010,12 @@ export function KanbanBoard() {
 
                     {selectedApp && (
                         <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scrollbar min-w-0">
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs text-[#102b2b] min-w-0">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-xs text-foreground min-w-0">
                                 {/* Left Column: 7 cols - Core Application & Opportunity Details */}
                                 <div className="lg:col-span-7 space-y-6 min-w-0">
-                                    <div className="border border-[#102b2b]/15 bg-white p-5 shadow-xs space-y-4 min-w-0">
-                                        <div className="flex items-center justify-between border-b border-[#102b2b]/10 pb-2.5">
-                                            <h4 className="font-heading font-black text-xs uppercase tracking-wider text-[#0d8274] flex items-center gap-2">
+                                    <div className="border border-border bg-card rounded-xl p-5 shadow-xs space-y-4 min-w-0">
+                                        <div className="flex items-center justify-between border-b border-border pb-2.5">
+                                            <h4 className="font-heading font-black text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
                                                 <Briefcase className="w-3.5 h-3.5" />
                                                 Opportunity Parameters
                                             </h4>

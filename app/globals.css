@@ -355,7 +355,9 @@ html.dark [class*="text-[#102b2b]"]:not(.hero-primary-btn):not([class*="bg-[#d8f
 .dark [class*="text-[#52716a]"],
 html.dark [class*="text-[#52716a]"],
 .dark [class*="text-[#365950]"],
-html.dark [class*="text-[#365950]"] {
+html.dark [class*="text-[#365950]"],
+.dark [class*="text-[#c5d7d1]"],
+html.dark [class*="text-[#c5d7d1]"] {
   color: hsl(var(--muted-foreground)) !important;
 }
 
@@ -364,6 +366,12 @@ html.dark [class*="text-[#365950]"] {
 html.dark [class*="bg-[#f8f4ec]"],
 .dark [class*="bg-[#f5f7f1]"],
 html.dark [class*="bg-[#f5f7f1]"],
+.dark [class*="bg-[#f7faf5]"],
+html.dark [class*="bg-[#f7faf5]"],
+.dark [class*="bg-[#f8faf5]"],
+html.dark [class*="bg-[#f8faf5]"],
+.dark [class*="bg-[#fbfdf9]"],
+html.dark [class*="bg-[#fbfdf9]"],
 .dark [class*="bg-[#e9eee8]"],
 html.dark [class*="bg-[#e9eee8]"],
 .dark [class*="bg-[#f2efe6]"],
@@ -375,7 +383,9 @@ html.dark [class*="bg-[#f2efe6]"] {
 
 /* Adapt light borders in dark mode */
 .dark [class*="border-[#102b2b]"],
-html.dark [class*="border-[#102b2b]"] {
+html.dark [class*="border-[#102b2b]"],
+.dark [class*="border-[#b8c8b9]"],
+html.dark [class*="border-[#b8c8b9]"] {
   border-color: hsl(var(--border)) !important;
 }
 
