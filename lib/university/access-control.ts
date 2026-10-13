@@ -10,6 +10,38 @@ export interface VerifiedSchoolRecord {
   role?: CampusUserRole;
 }
 
+export interface CampusMemberPermissions {
+  can_edit_settings: boolean;
+  can_manage_roster: boolean;
+  can_review_resumes: boolean;
+}
+
+export interface InstitutionalMemberRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  role: CampusUserRole;
+  status: "active" | "invited" | "pending" | "suspended";
+  department?: string | null;
+  title?: string | null;
+  permissions: CampusMemberPermissions;
+  created_at: string;
+  updated_at?: string;
+  avatar_url?: string | null;
+}
+
+export function getDefaultPermissions(role?: CampusUserRole | string | null): CampusMemberPermissions {
+  const r = (role || "").toLowerCase().trim();
+  if (r === "admin" || r === "dean") {
+    return { can_edit_settings: true, can_manage_roster: true, can_review_resumes: true };
+  }
+  if (r === "advisor" || r === "staff") {
+    return { can_edit_settings: false, can_manage_roster: true, can_review_resumes: true };
+  }
+  return { can_edit_settings: false, can_manage_roster: false, can_review_resumes: false };
+}
+
 export interface SchoolAccessCheckResult {
   isVerified: boolean;
   userRole: CampusUserRole;
@@ -55,7 +87,8 @@ export function canApproveCampusResumes(role?: CampusUserRole | string | null): 
  * (e.g., "odu" matches "old-dominion-university", "vt" matches "virginia-tech", "uva" matches "university-of-virginia")
  */
 export function normalizeInstitutionSlug(slug: string): string {
-  const s = slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  let s = slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  s = s.replace(/-career-center$/, "").replace(/-career-advising.*$/, "");
   
   if (s === "odu") return "old-dominion-university";
   if (s === "vt") return "virginia-tech";

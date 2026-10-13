@@ -87,6 +87,7 @@ export function InstitutionalAccessGate({
         body: JSON.stringify({
           schoolEmail: emailInput.trim(),
           universityName: targetSchoolName,
+          universitySlug: targetSlug,
         }),
       });
 
@@ -132,10 +133,12 @@ export function InstitutionalAccessGate({
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+        // Direct navigation guarantees clean reload of Server Component authorization state
+        const dest = `/dashboard/portal/${data.university_slug || targetSlug}`;
+        window.location.href = dest;
+      } else {
+        router.refresh();
       }
-
-      // Refresh page so server component verifies authorization and renders the portal
-      router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Invalid or expired verification code");
     } finally {

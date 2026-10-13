@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { normalizeInstitutionSlug } from "@/lib/university/access-control";
 
 export async function POST(req: Request) {
   try {
@@ -58,14 +59,20 @@ export async function POST(req: Request) {
       });
     }
 
+    // Normalize slug to match portal routes accurately (e.g. tidewater-community-college)
+    const resolvedSlug = normalizeInstitutionSlug(record.university_slug);
+    const resolvedName = record.university_name?.replace(/\s+Career\s+Center$/i, "") || record.university_name;
+
     // Append / update the new verified school
     const newSchoolEntry = {
-      slug: record.university_slug,
-      name: record.university_name,
+      slug: resolvedSlug,
+      name: resolvedName,
       email: record.school_email,
       verified_at: new Date().toISOString(),
     };
-    const existingIndex = verifiedSchools.findIndex((s) => s.slug === record.university_slug);
+    const existingIndex = verifiedSchools.findIndex(
+      (s) => s.slug === resolvedSlug || normalizeInstitutionSlug(s.slug) === resolvedSlug
+    );
     if (existingIndex >= 0) {
       verifiedSchools[existingIndex] = newSchoolEntry;
     } else {
@@ -79,8 +86,8 @@ export async function POST(req: Request) {
         is_student: true,
         school_verified: true,
         school_email: record.school_email,
-        university_name: record.university_name,
-        university_slug: record.university_slug,
+        university_name: resolvedName,
+        university_slug: resolvedSlug,
         settings: {
           ...currentSettings,
           verified_schools: verifiedSchools,
@@ -98,8 +105,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      university_slug: record.university_slug,
-      university_name: record.university_name,
+      university_slug: resolvedSlug,
+      university_name: resolvedName,
     });
   } catch (err: any) {
     console.error("[SCHOOL_VERIFY_CODE_ERROR]", err);

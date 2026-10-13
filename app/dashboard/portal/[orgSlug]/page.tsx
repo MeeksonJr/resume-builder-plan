@@ -33,12 +33,36 @@ export default async function UniversityPortalPage({ params }: PortalPageProps) 
     redirect("/auth/login");
   }
 
-  // Fetch student profile to verify institutional credentials
+  // Fetch user profile to verify institutional credentials & role
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, university_name, university_slug, school_verified, school_email, settings")
+    .select("id, university_name, university_slug, school_verified, school_email, role, settings")
     .eq("id", user.id)
     .maybeSingle();
+
+  // Also query institutional_memberships for school-specific elevated role
+  let membershipRole: string | null = null;
+  try {
+    const { data: membership } = await supabase
+      .from("institutional_memberships")
+      .select("role, status")
+      .eq("user_id", user.id)
+      .eq("school_slug", orgSlug.toLowerCase().trim())
+      .maybeSingle();
+
+    if (membership && membership.status === "active") {
+      membershipRole = membership.role;
+    }
+  } catch {
+    // ignore if table doesn't exist yet
+  }
+
+  // If user has an active institutional_memberships role, merge it into profile settings
+  if (membershipRole && profile) {
+    if (!profile.settings) profile.settings = {};
+    if (!profile.settings.institutional_roles) profile.settings.institutional_roles = {};
+    profile.settings.institutional_roles[orgSlug.toLowerCase().trim()] = membershipRole;
+  }
 
   // Evaluate institutional authorization
   const access = checkSchoolPortalAccess(profile, orgSlug);

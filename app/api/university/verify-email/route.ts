@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { normalizeInstitutionSlug } from "@/lib/university/access-control";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -15,17 +16,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { schoolEmail, universityName } = await req.json();
+    const { schoolEmail, universityName, universitySlug: explicitSlug } = await req.json();
 
     if (!schoolEmail || !schoolEmail.includes("@")) {
       return NextResponse.json({ error: "Invalid university email" }, { status: 400 });
     }
 
-    const universitySlug = (universityName || schoolEmail.split("@")[1].split(".")[0])
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+    const rawSlug = explicitSlug || universityName || schoolEmail.split("@")[1].split(".")[0];
+    const universitySlug = normalizeInstitutionSlug(rawSlug);
 
     // Generate 6-digit verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();

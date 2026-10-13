@@ -64,8 +64,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
-import { UserCheck, ShieldAlert, Key, Copy, CheckCheck, Bot } from "lucide-react";
+import {
+  UserCheck,
+  ShieldAlert,
+  Key,
+  Copy,
+  CheckCheck,
+  Bot,
+  Trash2,
+  UserCog,
+  UserPlus,
+  Shield,
+} from "lucide-react";
 
 import {
   VerifiedSchoolRecord,
@@ -73,6 +85,8 @@ import {
   isCampusStaffOrAdmin,
   canEditCampusSettings,
   canManageCampusRoster,
+  CampusMemberPermissions,
+  getDefaultPermissions,
 } from "@/lib/university/access-control";
 import { SyndicatedCampusIntel } from "@/lib/university/collegiate-intel-service";
 import { AcademicResearchHub } from "@/components/portal/academic-research-hub";
@@ -82,12 +96,19 @@ import { CampusAiAssistantWidget } from "@/components/portal/campus-ai-assistant
 
 export interface PortalMember {
   id: string;
+  user_id?: string;
   email: string;
   name: string;
-  role: "dean" | "advisor" | "student";
-  status: "active" | "invited";
-  invitedAt: string;
-  enrolledBy: string;
+  role: CampusUserRole;
+  status: "active" | "invited" | "pending" | "suspended";
+  invitedAt?: string;
+  created_at?: string;
+  updated_at?: string;
+  enrolledBy?: string;
+  department?: string | null;
+  title?: string | null;
+  permissions?: CampusMemberPermissions;
+  avatar_url?: string | null;
 }
 
 interface UniversityPortalViewProps {
@@ -204,16 +225,44 @@ export function UniversityPortalView({
     fetchIntel();
   }, [tenant.slug]);
 
-  // Modal State for Inviting Member
+  // Modal State for Inviting Member & Directory Governance
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [inviteForm, setInviteForm] = useState({
+  const [inviteForm, setInviteForm] = useState<{
+    name: string;
+    email: string;
+    role: CampusUserRole;
+    department: string;
+    title: string;
+  }>({
     name: "",
     email: "",
-    role: "advisor" as "advisor" | "student",
+    role: "advisor",
+    department: "Career Services & Placement",
+    title: "Career Counselor",
   });
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [campusIntel, setCampusIntel] = useState<any>(null);
   const [loadingIntel, setLoadingIntel] = useState(false);
+
+  // Institutional Member Management State
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [memberCounts, setMemberCounts] = useState({
+    total: 0,
+    deans: 0,
+    advisors: 0,
+    staff: 0,
+    students: 0,
+    pending: 0,
+  });
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberRoleFilter, setMemberRoleFilter] = useState("all");
+  const [isUpdatingRoleMemberId, setIsUpdatingRoleMemberId] = useState<string | null>(null);
+  const [editingPermissionsMember, setEditingPermissionsMember] = useState<PortalMember | null>(null);
+  const [customPermsForm, setCustomPermsForm] = useState<CampusMemberPermissions>({
+    can_edit_settings: false,
+    can_manage_roster: false,
+    can_review_resumes: false,
+  });
 
   // Fetch real campus intel and real verified students from API
   useEffect(() => {
@@ -452,28 +501,194 @@ export function UniversityPortalView({
     toast.success(`Updated status to ${newStatus}`);
   };
 
+  // Fetch real institutional members and hierarchical roles
+  const fetchMembers = async () => {
+    setLoadingMembers(true);
+    try {
+      const res = await fetch(`/api/university/${tenant.slug}/members`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.members) && data.members.length > 0) {
+          setMembers(data.members);
+        }
+        if (data.counts) {
+          setMemberCounts(data.counts);
+        }
+      }
+    } catch (err) {
+      console.warn("[MEMBERS_FETCH_ERROR]", err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, [tenant.slug]);
+
+  // Interactive Role Elevation Handlers
+  const handleElevateRole = async (member: PortalMember, newRole: CampusUserRole) => {
+    const targetUserId = member.user_id || member.id;
+    setIsUpdatingRoleMemberId(member.id);
+    const targetPerms = getDefaultPermissions(newRole);
+
+    try {
+      const res = await fetch(`/api/university/${tenant.slug}/members`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: targetUserId,
+          role: newRole,
+          department: member.department,
+          title: member.title,
+          status: member.status,
+          permissions: targetPerms,
+        }),
+      });
+
+      if (res.ok) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === member.id || m.user_id === targetUserId
+              ? {
+                  ...m,
+                  role: newRole,
+                  permissions: targetPerms,
+                }
+              : m
+          )
+        );
+        toast.success(`Role Elevated: ${member.name}`, {
+          description: `Successfully transitioned to ${newRole.toUpperCase()} permissions.`,
+        });
+        fetchMembers();
+      } else {
+        const err = await res.json();
+        toast.error("Role Elevation Failed", {
+          description: err.error || "Unable to update institutional role.",
+        });
+      }
+    } catch (error: any) {
+      toast.error("Network Error", {
+        description: error.message || "Failed to communicate with role governance endpoint.",
+      });
+    } finally {
+      setIsUpdatingRoleMemberId(null);
+    }
+  };
+
+  const handleOpenPermissionsModal = (member: PortalMember) => {
+    setEditingPermissionsMember(member);
+    setCustomPermsForm(
+      member.permissions || getDefaultPermissions(member.role)
+    );
+  };
+
+  const handleSavePermissions = async () => {
+    if (!editingPermissionsMember) return;
+    const targetUserId = editingPermissionsMember.user_id || editingPermissionsMember.id;
+
+    try {
+      const res = await fetch(`/api/university/${tenant.slug}/members`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: targetUserId,
+          role: editingPermissionsMember.role,
+          department: editingPermissionsMember.department,
+          title: editingPermissionsMember.title,
+          status: editingPermissionsMember.status,
+          permissions: customPermsForm,
+        }),
+      });
+
+      if (res.ok) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === editingPermissionsMember.id || m.user_id === targetUserId
+              ? { ...m, permissions: customPermsForm }
+              : m
+          )
+        );
+        toast.success(`Permissions Updated for ${editingPermissionsMember.name}`, {
+          description: "Granular access flags synchronized.",
+        });
+        setEditingPermissionsMember(null);
+        fetchMembers();
+      } else {
+        const err = await res.json();
+        toast.error("Failed to update permissions", { description: err.error });
+      }
+    } catch (e: any) {
+      toast.error("Network error saving permissions", { description: e.message });
+    }
+  };
+
+  const handleRevokeMemberAccess = async (member: PortalMember) => {
+    const targetUserId = member.user_id || member.id;
+    if (!confirm(`Revoke institutional credentials and access for ${member.name}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/university/${tenant.slug}/members?userId=${encodeURIComponent(targetUserId)}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setMembers((prev) => prev.filter((m) => m.id !== member.id && m.user_id !== targetUserId));
+        toast.success(`Revoked Access for ${member.name}`);
+        fetchMembers();
+      } else {
+        const err = await res.json();
+        toast.error("Failed to revoke access", { description: err.error });
+      }
+    } catch (e: any) {
+      toast.error("Network error revoking access", { description: e.message });
+    }
+  };
+
   // Member Invitation Handlers
-  const handleInviteMember = (e: React.FormEvent) => {
+  const handleInviteMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteForm.email || !inviteForm.name) {
       toast.error("Please fill in both member name and institutional email");
       return;
     }
 
-    const newMember: PortalMember = {
-      id: `mem-${Date.now()}`,
-      email: inviteForm.email,
-      name: inviteForm.name,
-      role: inviteForm.role,
-      status: "invited",
-      invitedAt: new Date().toISOString(),
-      enrolledBy: currentUser?.id || "admin",
-    };
+    try {
+      const res = await fetch(`/api/university/${tenant.slug}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: inviteForm.email,
+          name: inviteForm.name,
+          role: inviteForm.role,
+          department: inviteForm.department,
+          title: inviteForm.title,
+        }),
+      });
 
-    setMembers((prev) => [newMember, ...prev]);
-    setIsInviteModalOpen(false);
-    setInviteForm({ name: "", email: "", role: "advisor" });
-    toast.success(`Invitation dispatched to ${newMember.email} as ${newMember.role.toUpperCase()}!`);
+      if (res.ok) {
+        toast.success(`Invitation Dispatched to ${inviteForm.email}!`, {
+          description: `Scoped as ${inviteForm.role.toUpperCase()} in ${inviteForm.department}.`,
+        });
+        setIsInviteModalOpen(false);
+        setInviteForm({
+          name: "",
+          email: "",
+          role: "advisor",
+          department: "Career Services & Placement",
+          title: "Career Counselor",
+        });
+        fetchMembers();
+      } else {
+        const err = await res.json();
+        toast.error("Failed to dispatch invitation", { description: err.error });
+      }
+    } catch (e: any) {
+      toast.error("Network error dispatching invitation", { description: e.message });
+    }
   };
 
   const handleSimulateAcceptInvite = (memberId: string) => {
@@ -740,6 +955,26 @@ export function UniversityPortalView({
         ]
       : []),
   ];
+
+  const filteredMembers = members.filter((m) => {
+    const query = memberSearch.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      m.name.toLowerCase().includes(query) ||
+      m.email.toLowerCase().includes(query) ||
+      (m.department && m.department.toLowerCase().includes(query)) ||
+      (m.title && m.title.toLowerCase().includes(query));
+
+    const matchesRole =
+      memberRoleFilter === "all" ||
+      (memberRoleFilter === "dean" && (m.role === "dean" || m.role === "admin")) ||
+      (memberRoleFilter === "advisor" && m.role === "advisor") ||
+      (memberRoleFilter === "staff" && m.role === "staff") ||
+      (memberRoleFilter === "student" && m.role === "student") ||
+      (memberRoleFilter === "pending" && (m.status === "invited" || m.status === "pending"));
+
+    return matchesSearch && matchesRole;
+  });
 
   return (
     <div className="space-y-6 min-w-0 max-w-full overflow-hidden" suppressHydrationWarning>
@@ -2002,167 +2237,451 @@ export function UniversityPortalView({
         {/* Tab: Access & Hierarchy Management (Staff & Admin Only) */}
         {isStaff && (
           <TabsContent value="hierarchy" className="space-y-6">
-          <Card className="rounded-2xl border-border/80 bg-card p-6 shadow-sm space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/80 pb-5">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-black text-foreground">Institutional Role Hierarchy & Multi-User Tenancy</h3>
-                  <span className="rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
-                    Isolated Organization
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Access to this portal and candidate records is strictly scoped to users in your organization's hierarchy.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 bg-muted/60 px-3 py-1.5 rounded-xl border border-border">
-                  <span className="text-xs text-muted-foreground font-semibold">Active Role:</span>
-                  <Select value={currentRole} onValueChange={(val: any) => {
-                    setCurrentRole(val);
-                    toast.info(`Switched view to ${val.toUpperCase()} permissions.`);
-                  }}>
-                    <SelectTrigger className="h-7 text-xs border-0 bg-transparent font-bold focus:ring-0 w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl text-xs">
-                      <SelectItem value="dean">Dean (Owner)</SelectItem>
-                      <SelectItem value="advisor">Advisor (Admin)</SelectItem>
-                      <SelectItem value="student">Student (Member)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  onClick={() => setIsInviteModalOpen(true)}
-                  className="bg-primary text-primary-foreground font-bold text-xs h-9 rounded-xl shadow-sm gap-1.5"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Invite New Member</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Role Permissions Matrix */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className={`p-4 rounded-xl border transition-all ${currentRole === "dean" ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-muted/20"}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-xs text-primary flex items-center gap-1.5">
-                    <Award className="h-4 w-4" /> Dean & Creator (Owner)
-                  </span>
-                  {currentRole === "dean" && <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">Your Role</span>}
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Full administrative ownership. Can enroll students, invite faculty advisors, edit institutional white-label domains, and export FERPA-compliant CSV audits.
-                </p>
-              </div>
-
-              <div className={`p-4 rounded-xl border transition-all ${currentRole === "advisor" ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-muted/20"}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4" /> Career Advisor (Admin)
-                  </span>
-                  {currentRole === "advisor" && <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">Your Role</span>}
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Faculty and counselor level. Can review student resumes, update interview and placement milestones, execute batch ATS scoring, and submit candidate feedback.
-                </p>
-              </div>
-
-              <div className={`p-4 rounded-xl border transition-all ${currentRole === "student" ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-muted/20"}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                    <GraduationCap className="h-4 w-4" /> Enrolled Student (Member)
-                  </span>
-                  {currentRole === "student" && <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">Your Role</span>}
-                </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Candidate access. Once accepted, students can upload verified resumes, record 60-second elevator pitches, and showcase credentials to authorized enterprise recruiters.
-                </p>
-              </div>
-            </div>
-
-            {/* Connected Members Table */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">
-                  Authorized Portal Members ({members.length})
-                </h4>
-                <span className="text-[11px] text-muted-foreground">
-                  Workspace isolation: Only these {members.length} accounts can access {tenant.name}
-                </span>
-              </div>
-
-              <div className="divide-y divide-border/60 rounded-xl border border-border/80 overflow-hidden bg-background">
-                {members.map((member) => (
-                  <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 gap-3 hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted font-bold text-xs text-foreground">
-                        {member.name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-foreground">{member.name}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                            member.role === "dean"
-                              ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30"
-                              : member.role === "advisor"
-                              ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30"
-                              : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                          }`}>
-                            {member.role.toUpperCase()}
-                          </span>
-                          <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
-                            member.status === "active"
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                          }`}>
-                            {member.status === "active" ? "Active Access" : "Pending Acceptance"}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{member.email}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopyInviteLink(member)}
-                        className="h-8 text-xs gap-1 rounded-lg border-border"
-                      >
-                        {copiedLink === member.id ? (
-                          <>
-                            <CheckCheck className="h-3.5 w-3.5 text-emerald-600" />
-                            <span className="text-emerald-600 font-bold">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3 w-3" />
-                            <span>Copy Invite</span>
-                          </>
-                        )}
-                      </Button>
-
-                      {member.status === "invited" && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleSimulateAcceptInvite(member.id)}
-                          className="h-8 text-xs font-bold rounded-lg"
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          <span>Accept Invite</span>
-                        </Button>
-                      )}
-                    </div>
+            <Card className="rounded-2xl border-border/80 bg-card p-6 shadow-sm space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/80 pb-5">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-black text-foreground">
+                      Institutional Role Hierarchy &amp; Access Governance
+                    </h3>
+                    <span className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-[10px] font-bold text-primary">
+                      Isolated Organization
+                    </span>
+                    <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                      Multi-User Directory
+                    </span>
                   </div>
-                ))}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Manage campus leadership, career advisors, staff coordinators, and student candidates with real-time role elevation and granular permissions.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchMembers}
+                    disabled={loadingMembers}
+                    className="h-9 rounded-xl border-border text-xs gap-1.5"
+                    title="Refresh institutional directory"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${loadingMembers ? "animate-spin text-primary" : ""}`} />
+                    <span className="hidden sm:inline">Sync Directory</span>
+                  </Button>
+
+                  <div className="flex items-center gap-1.5 bg-muted/60 px-3 py-1.5 rounded-xl border border-border">
+                    <span className="text-xs text-muted-foreground font-semibold">Active Role:</span>
+                    <Select
+                      value={currentRole}
+                      onValueChange={(val: any) => {
+                        setCurrentRole(val);
+                        toast.info(`Switched view to ${val.toUpperCase()} permissions.`);
+                      }}
+                    >
+                      <SelectTrigger className="h-7 text-xs border-0 bg-transparent font-bold focus:ring-0 w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl text-xs">
+                        <SelectItem value="dean">Dean (Owner)</SelectItem>
+                        <SelectItem value="advisor">Advisor (Admin)</SelectItem>
+                        <SelectItem value="staff">Staff Coordinator</SelectItem>
+                        <SelectItem value="student">Student (Member)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={() => setIsInviteModalOpen(true)}
+                    className="bg-primary text-primary-foreground font-bold text-xs h-9 rounded-xl shadow-sm gap-1.5"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span>Invite Member</span>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        </TabsContent>
-      )}
+
+              {/* Institutional Metrics Ribbon */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl border border-border bg-muted/20">
+                  <div className="flex items-center justify-between text-muted-foreground mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Deans &amp; Admins</span>
+                    <Award className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <div className="text-xl font-black text-foreground">
+                    {memberCounts.deans}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Full portal ownership</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-border bg-muted/20">
+                  <div className="flex items-center justify-between text-muted-foreground mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Career Advisors</span>
+                    <Briefcase className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div className="text-xl font-black text-foreground">
+                    {memberCounts.advisors}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Resume review &amp; ATS audit</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-border bg-muted/20">
+                  <div className="flex items-center justify-between text-muted-foreground mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Staff Coordinators</span>
+                    <UserCheck className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div className="text-xl font-black text-foreground">
+                    {memberCounts.staff}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Roster &amp; career fair logistics</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-border bg-muted/20">
+                  <div className="flex items-center justify-between text-muted-foreground mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider">Enrolled Students</span>
+                    <GraduationCap className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <div className="text-xl font-black text-foreground">
+                    {memberCounts.students}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">FERPA masked candidates</span>
+                </div>
+              </div>
+
+              {/* Role Permissions Matrix */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div
+                  className={`p-4 rounded-xl border transition-all ${
+                    currentRole === "dean" || currentRole === "admin"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-xs text-primary flex items-center gap-1.5">
+                      <Award className="h-4 w-4" /> Dean &amp; Admin (Owner)
+                    </span>
+                    {(currentRole === "dean" || currentRole === "admin") && (
+                      <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                        Your Role
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Full ownership: edit white-label domains, brand colors, elevate roles, FERPA policies, and batch audit export.
+                  </p>
+                </div>
+
+                <div
+                  className={`p-4 rounded-xl border transition-all ${
+                    currentRole === "advisor"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                      <Briefcase className="h-4 w-4" /> Career Advisor (Admin)
+                    </span>
+                    {currentRole === "advisor" && (
+                      <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                        Your Role
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Faculty counselor level: review student resumes, ATS scoring, candidate milestones, and feedback.
+                  </p>
+                </div>
+
+                <div
+                  className={`p-4 rounded-xl border transition-all ${
+                    currentRole === "staff"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <UserCheck className="h-4 w-4" /> Staff Coordinator
+                    </span>
+                    {currentRole === "staff" && (
+                      <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                        Your Role
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Operations level: manage candidate cohorts, career fair schedules, and employer connection links.
+                  </p>
+                </div>
+
+                <div
+                  className={`p-4 rounded-xl border transition-all ${
+                    currentRole === "student"
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border bg-muted/20"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                      <GraduationCap className="h-4 w-4" /> Student Candidate (Member)
+                    </span>
+                    {currentRole === "student" && (
+                      <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                        Your Role
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Read-only governance: showcase verified resumes, elevator pitches, and portfolio links without settings access.
+                  </p>
+                </div>
+              </div>
+
+              {/* Connected Members Table & Role Elevation Controls */}
+              <div className="space-y-4 pt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Users className="h-3.5 w-3.5 text-primary" />
+                      Authorized Portal Members ({filteredMembers.length} of {members.length})
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Tenant isolation: Only accounts in this table hold access to {tenant.name}.
+                    </p>
+                  </div>
+
+                  {/* Filter Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    {[
+                      { id: "all", label: "All", count: members.length },
+                      { id: "dean", label: "Deans & Admins", count: memberCounts.deans },
+                      { id: "advisor", label: "Advisors", count: memberCounts.advisors },
+                      { id: "staff", label: "Staff", count: memberCounts.staff },
+                      { id: "student", label: "Students", count: memberCounts.students },
+                      { id: "pending", label: "Pending", count: memberCounts.pending },
+                    ].map((pill) => (
+                      <button
+                        key={pill.id}
+                        type="button"
+                        onClick={() => setMemberRoleFilter(pill.id)}
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all shrink-0 ${
+                          memberRoleFilter === pill.id
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {pill.label} ({pill.count})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Filter members by name, institutional email, department, or job title..."
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    className="pl-9 h-9 rounded-xl text-xs border-border bg-background"
+                  />
+                </div>
+
+                {/* Members List */}
+                {loadingMembers && members.length === 0 ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-muted-foreground">
+                    <Loader2 className="h-6 w-6 animate-spin mb-2 text-primary" />
+                    <p className="text-xs font-semibold">Loading institutional directory...</p>
+                  </div>
+                ) : filteredMembers.length === 0 ? (
+                  <div className="py-12 text-center rounded-xl border border-dashed border-border p-6 bg-muted/10">
+                    <Users className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
+                    <p className="text-xs font-bold text-foreground">No members match your search or filter</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Try adjusting the search query or invite a new institutional colleague.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsInviteModalOpen(true)}
+                      className="mt-3 text-xs rounded-xl bg-primary text-primary-foreground font-bold"
+                    >
+                      <UserPlus className="h-3.5 w-3.5 mr-1" />
+                      Invite Member
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/60 rounded-xl border border-border/80 overflow-hidden bg-background">
+                    {filteredMembers.map((member) => (
+                      <div
+                        key={member.id}
+                        className="flex flex-col lg:flex-row lg:items-center justify-between p-4 gap-3 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="flex items-start sm:items-center gap-3">
+                          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted font-black text-xs text-foreground border border-border">
+                            {member.avatar_url ? (
+                              <img
+                                src={member.avatar_url}
+                                alt={member.name}
+                                className="h-full w-full object-cover rounded-xl"
+                              />
+                            ) : (
+                              member.name.slice(0, 2).toUpperCase()
+                            )}
+                            <span
+                              className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background ${
+                                member.status === "active"
+                                  ? "bg-emerald-500"
+                                  : member.status === "suspended"
+                                  ? "bg-rose-500"
+                                  : "bg-amber-500"
+                              }`}
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-xs text-foreground">{member.name}</span>
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] font-bold px-2 py-0 rounded-md ${
+                                  member.role === "dean" || member.role === "admin"
+                                    ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30"
+                                    : member.role === "advisor"
+                                    ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                                    : member.role === "staff"
+                                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                }`}
+                              >
+                                {member.role.toUpperCase()}
+                              </Badge>
+
+                              <span
+                                className={`rounded-full px-2 py-0.2 text-[9px] font-bold ${
+                                  member.status === "active"
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                    : member.status === "suspended"
+                                    ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                }`}
+                              >
+                                {member.status === "active"
+                                  ? "Active Access"
+                                  : member.status === "suspended"
+                                  ? "Access Suspended"
+                                  : "Pending Acceptance"}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+                              <span className="font-mono">{member.email}</span>
+                              {member.department && (
+                                <>
+                                  <span>&bull;</span>
+                                  <span>{member.department}</span>
+                                </>
+                              )}
+                              {member.title && (
+                                <>
+                                  <span>&bull;</span>
+                                  <span className="text-foreground/80 font-medium">{member.title}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Interactive Elevation & Permission Controls */}
+                        <div className="flex items-center gap-2 shrink-0 self-end lg:self-center flex-wrap sm:flex-nowrap">
+                          {/* Role Elevation Dropdown */}
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase hidden sm:inline">Role:</span>
+                            <Select
+                              value={member.role}
+                              onValueChange={(newRole: CampusUserRole) => handleElevateRole(member, newRole)}
+                              disabled={isUpdatingRoleMemberId === member.id || (!canEdit && currentRole !== "dean")}
+                            >
+                              <SelectTrigger className="h-8 text-xs font-semibold rounded-lg w-36 bg-background border-border">
+                                {isUpdatingRoleMemberId === member.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin mr-1 text-primary" />
+                                ) : (
+                                  <UserCog className="h-3 w-3 mr-1 text-primary" />
+                                )}
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="rounded-xl text-xs">
+                                <SelectItem value="dean">Dean / Admin</SelectItem>
+                                <SelectItem value="advisor">Career Advisor</SelectItem>
+                                <SelectItem value="staff">Staff Coordinator</SelectItem>
+                                <SelectItem value="student">Enrolled Student</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Granular Permissions Button */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenPermissionsModal(member)}
+                            className="h-8 text-xs gap-1 rounded-lg border-border"
+                            title="Configure granular permissions"
+                          >
+                            <Key className="h-3 w-3 text-muted-foreground" />
+                            <span className="hidden sm:inline">Permissions</span>
+                          </Button>
+
+                          {/* Copy Invite Link */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopyInviteLink(member)}
+                            className="h-8 text-xs gap-1 rounded-lg border-border"
+                          >
+                            {copiedLink === member.id ? (
+                              <>
+                                <CheckCheck className="h-3.5 w-3.5 text-emerald-600" />
+                                <span className="text-emerald-600 font-bold">Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3 w-3" />
+                                <span className="hidden sm:inline">Invite</span>
+                              </>
+                            )}
+                          </Button>
+
+                          {member.status === "invited" && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleSimulateAcceptInvite(member.id)}
+                              className="h-8 text-xs font-bold rounded-lg"
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              <span>Activate</span>
+                            </Button>
+                          )}
+
+                          {/* Revoke Access Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRevokeMemberAccess(member)}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                            title="Revoke member institutional access"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+        )}
 
         {/* Tab: Alumni Mentorship & Referral Mesh */}
         <TabsContent value="alumni" className="space-y-4">
@@ -2546,27 +3065,49 @@ export function UniversityPortalView({
               <Label className="text-xs font-semibold">Institutional Email</Label>
               <Input
                 type="email"
-                placeholder="e.g. amercer@stanford.edu"
+                placeholder={`e.g. amercer@${tenant.slug.replace(/-/g, "")}.edu`}
                 value={inviteForm.email}
                 onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
                 required
                 className="rounded-xl text-xs"
               />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Portal Role</Label>
+                <Select
+                  value={inviteForm.role}
+                  onValueChange={(v: CampusUserRole) => setInviteForm({ ...inviteForm, role: v })}
+                >
+                  <SelectTrigger className="rounded-xl text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl text-xs">
+                    <SelectItem value="dean">Dean / Admin</SelectItem>
+                    <SelectItem value="advisor">Career Advisor</SelectItem>
+                    <SelectItem value="staff">Staff Coordinator</SelectItem>
+                    <SelectItem value="student">Enrolled Student</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Department</Label>
+                <Input
+                  value={inviteForm.department}
+                  onChange={(e) => setInviteForm({ ...inviteForm, department: e.target.value })}
+                  placeholder="e.g. Career Services"
+                  className="rounded-xl text-xs"
+                />
+              </div>
+            </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Portal Role Assignment</Label>
-              <Select
-                value={inviteForm.role}
-                onValueChange={(v: any) => setInviteForm({ ...inviteForm, role: v })}
-              >
-                <SelectTrigger className="rounded-xl text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl text-xs">
-                  <SelectItem value="advisor">Career Advisor / Faculty (Admin)</SelectItem>
-                  <SelectItem value="student">Student Candidate (Member)</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-xs font-semibold">Professional Title</Label>
+              <Input
+                value={inviteForm.title}
+                onChange={(e) => setInviteForm({ ...inviteForm, title: e.target.value })}
+                placeholder="e.g. Senior Placement Director"
+                className="rounded-xl text-xs"
+              />
             </div>
             <DialogFooter className="pt-2">
               <Button
@@ -2579,12 +3120,110 @@ export function UniversityPortalView({
               </Button>
               <Button
                 type="submit"
-                className="bg-primary text-primary-foreground font-bold rounded-xl text-xs"
+                className="bg-primary text-primary-foreground font-bold rounded-xl text-xs gap-1.5"
               >
+                <UserPlus className="h-3.5 w-3.5" />
                 Dispatch Invitation
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Granular Institutional Permissions Modal */}
+      <Dialog
+        open={!!editingPermissionsMember}
+        onOpenChange={(open) => !open && setEditingPermissionsMember(null)}
+      >
+        <DialogContent className="rounded-2xl border-border bg-card sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Key className="h-4 w-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold">
+                  Granular Institutional Permissions
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  {editingPermissionsMember?.name} ({editingPermissionsMember?.email})
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-3">
+            <div className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-muted/20">
+              <div className="space-y-0.5 pr-2">
+                <Label className="text-xs font-bold text-foreground">
+                  Institution Branding &amp; Domain Settings
+                </Label>
+                <p className="text-[11px] text-muted-foreground">
+                  Can edit university custom domain, brand colors, contact liaisons, and FERPA policies.
+                </p>
+              </div>
+              <Switch
+                checked={customPermsForm.can_edit_settings}
+                onCheckedChange={(checked) =>
+                  setCustomPermsForm((prev) => ({ ...prev, can_edit_settings: checked }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-muted/20">
+              <div className="space-y-0.5 pr-2">
+                <Label className="text-xs font-bold text-foreground">
+                  Student Roster &amp; Member Management
+                </Label>
+                <p className="text-[11px] text-muted-foreground">
+                  Can invite new members, enroll candidate students, export FERPA CSV audits, and elevate roles.
+                </p>
+              </div>
+              <Switch
+                checked={customPermsForm.can_manage_roster}
+                onCheckedChange={(checked) =>
+                  setCustomPermsForm((prev) => ({ ...prev, can_manage_roster: checked }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-muted/20">
+              <div className="space-y-0.5 pr-2">
+                <Label className="text-xs font-bold text-foreground">
+                  Resume Review &amp; Approval Pipeline
+                </Label>
+                <p className="text-[11px] text-muted-foreground">
+                  Can conduct neural ATS scoring, approve student public resumes, and submit faculty feedback.
+                </p>
+              </div>
+              <Switch
+                checked={customPermsForm.can_review_resumes}
+                onCheckedChange={(checked) =>
+                  setCustomPermsForm((prev) => ({ ...prev, can_review_resumes: checked }))
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="pt-2 flex sm:justify-between items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingPermissionsMember(null)}
+              className="rounded-xl text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSavePermissions}
+              className="bg-primary text-primary-foreground font-bold rounded-xl text-xs"
+            >
+              Save Scoped Permissions
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
