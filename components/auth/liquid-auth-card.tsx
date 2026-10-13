@@ -93,7 +93,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user && mode !== "confirm") {
+      if (event === "SIGNED_IN" && session?.user) {
         const targetUrl = searchParams?.get("redirect") || "/dashboard";
         window.location.href = targetUrl;
       }
