@@ -28,6 +28,18 @@ export async function GET(req: NextRequest) {
 
         let customerId = profile.stripe_customer_id;
 
+        if (customerId) {
+            try {
+                const existingCustomer = await stripe.customers.retrieve(customerId);
+                if ((existingCustomer as any).deleted) {
+                    customerId = null;
+                }
+            } catch (retrieveError: any) {
+                console.warn(`[STRIPE_CHECKOUT] Customer ${customerId} invalid in current Stripe mode: ${retrieveError.message}. Generating fresh customer.`);
+                customerId = null;
+            }
+        }
+
         if (!customerId) {
             const customer = await stripe.customers.create({
                 email: user.email,
@@ -52,6 +64,8 @@ export async function GET(req: NextRequest) {
             return new NextResponse("Stripe Price ID not configured", { status: 500 });
         }
 
+        const baseUrl = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "https://resume-builder-plan.vercel.app";
+
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             mode: "subscription",
@@ -62,16 +76,19 @@ export async function GET(req: NextRequest) {
                     quantity: 1,
                 },
             ],
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+            success_url: `${baseUrl}/dashboard?success=true`,
+            cancel_url: `${baseUrl}/pricing?canceled=true`,
             metadata: {
                 userId: user.id,
             },
         });
 
         return NextResponse.redirect(session.url!);
-    } catch (error) {
-        console.error("[STRIPE_CHECKOUT]", error);
-        return new NextResponse("Internal Error", { status: 500 });
+    } catch (error: any) {
+        console.error("[STRIPE_CHECKOUT]", error?.message || error);
+        return new NextResponse(
+            `Internal Error: ${error?.message || "Failed to initiate Stripe Checkout"}`,
+            { status: 500 }
+        );
     }
 }

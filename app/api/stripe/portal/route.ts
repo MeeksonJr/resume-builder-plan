@@ -19,10 +19,15 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (!profile?.stripe_customer_id) {
-            // Assume user wants to upgrade if no customer ID, redirect to pricing
-            // Or handle creation logic here (complex).
-            // For now, redirect to checkout or return error
-            // Actually, if manage billing is clicked but no sub, checking out is better
+            return NextResponse.redirect(new URL("/pricing", req.url), { status: 303 });
+        }
+
+        try {
+            const customer = await stripe.customers.retrieve(profile.stripe_customer_id);
+            if ((customer as any).deleted) {
+                return NextResponse.redirect(new URL("/pricing", req.url), { status: 303 });
+            }
+        } catch {
             return NextResponse.redirect(new URL("/pricing", req.url), { status: 303 });
         }
 
