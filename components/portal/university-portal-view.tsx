@@ -148,6 +148,31 @@ export function UniversityPortalView({
   const [members, setMembers] = useState<PortalMember[]>([]);
   const [syndicatedIntel, setSyndicatedIntel] = useState<SyndicatedCampusIntel | null>(null);
   const [loadingSyndicatedIntel, setLoadingSyndicatedIntel] = useState(false);
+  const [isSyncingIntel, setIsSyncingIntel] = useState(false);
+
+  const handleForceSyncIntel = async () => {
+    setIsSyncingIntel(true);
+    try {
+      const res = await fetch(`/api/university/${tenant.slug}/intel?refresh=true`);
+      if (res.ok) {
+        const data: SyndicatedCampusIntel = await res.json();
+        setSyndicatedIntel(data);
+        toast.success("Collegiate Intelligence Synced", {
+          description: `Fresh data syndicated from SchoolDigger, Colleges API, and Google Scholar. Cache valid for 48 hours until ${new Date(data.expiresAt).toLocaleDateString()}.`,
+        });
+      } else {
+        toast.error("Sync Failed", {
+          description: "Unable to refresh syndicated intelligence. Please retry momentarily.",
+        });
+      }
+    } catch (err: any) {
+      toast.error("Network Error", {
+        description: err.message || "Failed to reach collegiate sync endpoint.",
+      });
+    } finally {
+      setIsSyncingIntel(false);
+    }
+  };
 
   // Real Verified Student Cohort (NO fake data)
   const [students, setStudents] = useState<StudentRosterMember[]>([]);
@@ -2103,6 +2128,65 @@ export function UniversityPortalView({
               </div>
             ) : (
               <div className="space-y-6">
+                {/* 48-Hour Live Auto-Sync Engine Banner */}
+                <div className="p-4 bg-card border border-border/80 rounded-2xl shadow-xs space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-foreground">
+                            48-Hour Collegiate Syndication Engine
+                          </h4>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live Auto-Sync
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Multi-source syndication from SchoolDigger K-12, Colleges &amp; Universities API, and Google Scholar.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      {isStaff && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleForceSyncIntel}
+                          disabled={isSyncingIntel || loadingSyndicatedIntel}
+                          className="h-8 text-xs font-bold gap-1.5 rounded-xl border-border hover:bg-muted/60"
+                        >
+                          <RefreshCw className={`h-3.5 w-3.5 ${isSyncingIntel ? "animate-spin text-primary" : "text-muted-foreground"}`} />
+                          <span>{isSyncingIntel ? "Syndicating..." : "Sync Now (48h TTL)"}</span>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 border-t border-border/50 text-[11px]">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/40">
+                      <span className="text-muted-foreground font-medium">Cache Expiration</span>
+                      <span className="font-bold text-foreground">
+                        {syndicatedIntel?.expiresAt
+                          ? new Date(syndicatedIntel.expiresAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "48 Hours"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/40">
+                      <span className="text-muted-foreground font-medium">Syndicated Sources</span>
+                      <span className="font-bold text-emerald-600">3 Connected APIs</span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/40">
+                      <span className="text-muted-foreground font-medium">Background Worker</span>
+                      <span className="font-bold text-primary">Vercel Cron Active</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* School Overview */}
                 <div className="p-4 bg-muted/40 border border-border/70 rounded-xl">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">

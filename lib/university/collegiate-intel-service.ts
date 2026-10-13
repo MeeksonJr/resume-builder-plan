@@ -9,7 +9,17 @@
  * Includes 48-hour (2-day) database persistence, circuit-breaker resilience, and pre-seeded ground truth.
  */
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { VIRGINIA_INSTITUTIONS } from "@/lib/university/virginia-institutions";
+
+function getSupabaseServerClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createSupabaseClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 export interface CollegeDetailRecord {
   orgId?: string;
@@ -176,17 +186,34 @@ export async function getSyndicatedCampusIntel(
   // 2. Check Supabase database persistence cache
   if (!forceRefresh) {
     try {
-      const supabase = createClient();
-      const { data: cachedRow } = await supabase
-        .from("institution_intel_cache")
-        .select("enriched_intel, expires_at")
-        .eq("school_slug", normalizedSlug)
-        .maybeSingle();
+      const supabase = getSupabaseServerClient();
+      if (supabase) {
+        // Attempt 2a: Dedicated table institution_intel_cache
+        const { data: cachedRow, error: dedicatedErr } = await supabase
+          .from("institution_intel_cache")
+          .select("enriched_intel, expires_at")
+          .eq("school_slug", normalizedSlug)
+          .maybeSingle();
 
-      if (cachedRow && cachedRow.enriched_intel && new Date(cachedRow.expires_at) > new Date()) {
-        const parsed = cachedRow.enriched_intel as SyndicatedCampusIntel;
-        memoryCache.set(normalizedSlug, { data: parsed, expiresAt: new Date(cachedRow.expires_at).getTime() });
-        return parsed;
+        if (!dedicatedErr && cachedRow && cachedRow.enriched_intel && new Date(cachedRow.expires_at) > new Date()) {
+          const parsed = cachedRow.enriched_intel as SyndicatedCampusIntel;
+          memoryCache.set(normalizedSlug, { data: parsed, expiresAt: new Date(cachedRow.expires_at).getTime() });
+          return parsed;
+        }
+
+        // Attempt 2b: Fallback to university_insights_cache.raw_search_data.syndicated_intel
+        const { data: insightRow } = await supabase
+          .from("university_insights_cache")
+          .select("raw_search_data")
+          .eq("school_slug", normalizedSlug)
+          .maybeSingle();
+
+        const raw = insightRow?.raw_search_data as any;
+        if (raw?.syndicated_intel && raw?.expires_at && new Date(raw.expires_at) > new Date()) {
+          const parsed = raw.syndicated_intel as SyndicatedCampusIntel;
+          memoryCache.set(normalizedSlug, { data: parsed, expiresAt: new Date(raw.expires_at).getTime() });
+          return parsed;
+        }
       }
     } catch (e) {
       // Non-blocking fallback to fresh fetch
@@ -542,24 +569,229 @@ export async function getSyndicatedCampusIntel(
 
   // 4. Persist to Supabase Database with 48h expiration
   try {
-    const supabase = createClient();
-    await supabase.from("institution_intel_cache").upsert(
-      {
-        school_slug: normalizedSlug,
-        school_name: schoolName,
-        colleges_data: collegeRecord,
-        schooldigger_data: feederSchools,
-        scholar_data: publications,
-        enriched_intel: intelResult,
-        fetched_at: now.toISOString(),
-        expires_at: expiresAt.toISOString(),
-        updated_at: now.toISOString(),
-      },
-      { onConflict: "school_slug" }
-    );
+    const supabase = getSupabaseServerClient();
+    if (supabase) {
+      // 4a. Attempt upsert to dedicated institution_intel_cache table
+      await supabase.from("institution_intel_cache").upsert(
+        {
+          school_slug: normalizedSlug,
+          school_name: schoolName,
+          colleges_data: collegeRecord,
+          schooldigger_data: feederSchools,
+          scholar_data: publications,
+          enriched_intel: intelResult,
+          fetched_at: now.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          updated_at: now.toISOString(),
+        },
+        { onConflict: "school_slug" }
+      );
+
+      // 4b. Also persist into university_insights_cache.raw_search_data (dual-persistence)
+      const { data: existingInsight } = await supabase
+        .from("university_insights_cache")
+        .select("raw_search_data")
+        .eq("school_slug", normalizedSlug)
+        .maybeSingle();
+
+      const currentRaw = (existingInsight?.raw_search_data as Record<string, any>) || {};
+      await supabase
+        .from("university_insights_cache")
+        .update({
+          raw_search_data: {
+            ...currentRaw,
+            syndicated_intel: intelResult,
+            colleges_data: collegeRecord,
+            schooldigger_data: feederSchools,
+            scholar_data: publications,
+            expires_at: expiresAt.toISOString(),
+            last_syndicated_at: now.toISOString(),
+          },
+          last_refreshed_at: now.toISOString(),
+          updated_at: now.toISOString(),
+        })
+        .eq("school_slug", normalizedSlug);
+    }
   } catch (err) {
     // Non-blocking if table not migrated yet
   }
 
   return intelResult;
 }
+
+export interface CampusSyncReport {
+  status: "success" | "partial" | "error";
+  executedAt: string;
+  ttlHours: number;
+  totalScanned: number;
+  syncedCount: number;
+  cachedCount: number;
+  errorCount: number;
+  synced: Array<{
+    slug: string;
+    name: string;
+    feedersCount: number;
+    publicationsCount: number;
+    expiresAt: string;
+  }>;
+  cached: Array<{
+    slug: string;
+    expiresAt: string;
+  }>;
+  errors: Array<{
+    slug: string;
+    error: string;
+  }>;
+}
+
+/**
+ * Routine automated syndication sync worker.
+ * Scans institution intelligence across SchoolDigger, Colleges API, and Google Scholar.
+ * Updates colleges whose cache has expired or is missing with a 48h TTL.
+ */
+export async function syncAllCampusIntel(options?: {
+  specificSlug?: string;
+  forceRefresh?: boolean;
+  batchLimit?: number;
+}): Promise<CampusSyncReport> {
+  const forceRefresh = options?.forceRefresh ?? false;
+  const batchLimit = options?.batchLimit ?? 8;
+  const specificSlug = options?.specificSlug?.toLowerCase().trim();
+  const now = new Date();
+
+  const report: CampusSyncReport = {
+    status: "success",
+    executedAt: now.toISOString(),
+    ttlHours: 48,
+    totalScanned: 0,
+    syncedCount: 0,
+    cachedCount: 0,
+    errorCount: 0,
+    synced: [],
+    cached: [],
+    errors: [],
+  };
+
+  const supabase = getSupabaseServerClient();
+  if (!supabase) {
+    report.status = "error";
+    report.errors.push({ slug: "all", error: "Missing Supabase credentials" });
+    return report;
+  }
+
+  // 1. If a specific slug is requested
+  if (specificSlug) {
+    report.totalScanned = 1;
+    try {
+      const targetInst = VIRGINIA_INSTITUTIONS.find(
+        (v) => v.slug === specificSlug || v.slug.toLowerCase().trim() === specificSlug
+      );
+      const schoolName = targetInst?.name || specificSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+      const intel = await getSyndicatedCampusIntel(specificSlug, schoolName, forceRefresh);
+      report.syncedCount = 1;
+      report.synced.push({
+        slug: specificSlug,
+        name: schoolName,
+        feedersCount: intel.feederHighSchools.length,
+        publicationsCount: intel.researchPublications.length,
+        expiresAt: intel.expiresAt,
+      });
+      return report;
+    } catch (err: any) {
+      report.errorCount = 1;
+      report.status = "error";
+      report.errors.push({ slug: specificSlug, error: err.message || "Failed sync" });
+      return report;
+    }
+  }
+
+  // 2. Discover all schools in database
+  const { data: dbRecords, error: dbErr } = await supabase
+    .from("university_insights_cache")
+    .select("school_slug, school_name, raw_search_data, last_refreshed_at")
+    .order("last_refreshed_at", { ascending: true, nullsFirst: true });
+
+  if (dbErr) {
+    console.warn("[SYNC_ALL_CAMPUS_INTEL] Failed to read university_insights_cache:", dbErr);
+  }
+
+  const knownSlugs = new Set<string>();
+  const candidates: Array<{ slug: string; name: string; raw: any; lastRefreshed?: string }> = [];
+
+  (dbRecords || []).forEach((row) => {
+    if (row.school_slug && row.school_slug !== "this-school-does-not-exist") {
+      knownSlugs.add(row.school_slug);
+      candidates.push({
+        slug: row.school_slug,
+        name: row.school_name,
+        raw: row.raw_search_data,
+        lastRefreshed: row.last_refreshed_at,
+      });
+    }
+  });
+
+  VIRGINIA_INSTITUTIONS.forEach((v) => {
+    if (!knownSlugs.has(v.slug)) {
+      knownSlugs.add(v.slug);
+      candidates.push({
+        slug: v.slug,
+        name: v.name,
+        raw: null,
+      });
+    }
+  });
+
+  report.totalScanned = candidates.length;
+
+  const toSync: Array<{ slug: string; name: string }> = [];
+
+  for (const c of candidates) {
+    const raw = c.raw as any;
+    const expiresAtStr = raw?.expires_at || raw?.syndicated_intel?.expiresAt;
+    const isExpired = !expiresAtStr || new Date(expiresAtStr) <= now;
+
+    if (!forceRefresh && !isExpired) {
+      report.cached.push({
+        slug: c.slug,
+        expiresAt: expiresAtStr,
+      });
+    } else {
+      toSync.push({ slug: c.slug, name: c.name });
+    }
+  }
+
+  report.cachedCount = report.cached.length;
+
+  // Process up to batchLimit items to ensure smooth serverless completion
+  const batch = toSync.slice(0, batchLimit);
+
+  for (const item of batch) {
+    try {
+      const intel = await getSyndicatedCampusIntel(item.slug, item.name, true);
+      report.synced.push({
+        slug: item.slug,
+        name: item.name,
+        feedersCount: intel.feederHighSchools.length,
+        publicationsCount: intel.researchPublications.length,
+        expiresAt: intel.expiresAt,
+      });
+    } catch (err: any) {
+      report.errors.push({
+        slug: item.slug,
+        error: err.message || "Failed syndication sync",
+      });
+    }
+  }
+
+  report.syncedCount = report.synced.length;
+  report.errorCount = report.errors.length;
+  if (report.errorCount > 0 && report.syncedCount === 0) {
+    report.status = "error";
+  } else if (report.errorCount > 0) {
+    report.status = "partial";
+  }
+
+  return report;
+}
+
