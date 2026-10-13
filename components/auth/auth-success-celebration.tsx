@@ -20,9 +20,9 @@ export function AuthSuccessCelebration({
   React.useEffect(() => {
     const timer = setTimeout(() => {
       if (typeof window !== "undefined") {
-        window.location.assign(destinationUrl);
+        window.location.href = destinationUrl;
       }
-    }, 1000);
+    }, 600);
     return () => clearTimeout(timer);
   }, [destinationUrl]);
 

@@ -30,6 +30,23 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/dashboard') ||
     request.nextUrl.pathname.startsWith('/protected')
 
+  // ── Authenticated user accessing login/sign-up → redirect to dashboard ───
+  const isAuthRoute =
+    request.nextUrl.pathname === '/auth/login' ||
+    request.nextUrl.pathname === '/auth/sign-up' ||
+    request.nextUrl.pathname === '/auth/signup' ||
+    request.nextUrl.pathname === '/auth/register'
+
+  if (isAuthRoute && user) {
+    const mode = request.nextUrl.searchParams.get('mode')
+    if (mode !== 'confirm') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      url.search = ''
+      return NextResponse.redirect(url)
+    }
+  }
+
   // ── Unauthenticated → redirect to login ──────────────────────────────────
   if (isDashboardRoute && !user) {
     const url = request.nextUrl.clone()

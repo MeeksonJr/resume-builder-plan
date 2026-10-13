@@ -74,6 +74,34 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
     }
   }, [cooldown]);
 
+  // Active session detection and reactive redirect
+  useEffect(() => {
+    // If we're deliberately in confirmation mode, don't auto-redirect
+    if (mode === "confirm") return;
+
+    const supabase = createClient();
+
+    // Check existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const targetUrl = searchParams?.get("redirect") || "/dashboard";
+        window.location.href = targetUrl;
+      }
+    });
+
+    // Reactive subscription to auth state changes (e.g. login completes)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user && mode !== "confirm") {
+        const targetUrl = searchParams?.get("redirect") || "/dashboard";
+        window.location.href = targetUrl;
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [mode, searchParams]);
+
   // Tab change handler with liquid wave direction
   const handleSwitchTab = (newMode: "login" | "signup") => {
     if (newMode === mode) return;
@@ -91,7 +119,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -111,6 +139,13 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
         return;
       }
 
+      // Explicitly ensure session cookies are synced with the browser
+      await supabase.auth.getSession();
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("rf-profile-updated"));
+      }
+
       const targetUrl = searchParams?.get("redirect") || "/dashboard";
       setSuccessMessage({
         title: "Welcome Back Scholar! 🚀",
@@ -121,9 +156,9 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
 
       setTimeout(() => {
         if (typeof window !== "undefined") {
-          window.location.assign(targetUrl);
+          window.location.href = targetUrl;
         }
-      }, 700);
+      }, 500);
     } catch (err: any) {
       setError(err?.message || "Failed to sign in. Please try again.");
       setIsLoading(false);
@@ -183,9 +218,9 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
         setIsSuccess(true);
         setTimeout(() => {
           if (typeof window !== "undefined") {
-            window.location.assign(targetUrl);
+            window.location.href = targetUrl;
           }
-        }, 700);
+        }, 500);
       } else {
         // Flow directly with liquid transition into the Confirm Email view!
         setIsLoading(false);
@@ -256,9 +291,9 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
 
       setTimeout(() => {
         if (typeof window !== "undefined") {
-          window.location.assign(targetUrl);
+          window.location.href = targetUrl;
         }
-      }, 700);
+      }, 500);
     } catch (err: any) {
       setError(err?.message || "Verification failed. Please check the code and try again.");
       setIsLoading(false);
