@@ -8,13 +8,24 @@ interface AuthSuccessCelebrationProps {
   title?: string;
   subtitle?: string;
   destinationLabel?: string;
+  destinationUrl?: string;
 }
 
 export function AuthSuccessCelebration({
   title = "Authentication Verified!",
   subtitle = "Preparing your AI career workspace and tailoring engine...",
   destinationLabel = "Entering Dashboard",
+  destinationUrl = "/dashboard",
 }: AuthSuccessCelebrationProps) {
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.location.assign(destinationUrl);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [destinationUrl]);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -79,6 +90,25 @@ export function AuthSuccessCelebration({
       >
         <Rocket className="h-3.5 w-3.5 animate-bounce" />
         <span>{destinationLabel}...</span>
+      </motion.div>
+
+      {/* Direct Interactive Enter Button Fallback */}
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55 }}
+        className="mt-6 flex flex-col items-center gap-2"
+      >
+        <a
+          href={destinationUrl}
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#d8f36b] to-[#c2ea38] px-5 py-2.5 text-xs font-black text-[#051412] shadow-md transition-all hover:brightness-105 active:scale-95"
+        >
+          <span>Enter Workspace Now</span>
+          <ArrowRight className="h-3.5 w-3.5" />
+        </a>
+        <p className="text-[11px] text-emerald-800/70 dark:text-emerald-300/70">
+          Redirecting automatically in seconds...
+        </p>
       </motion.div>
     </motion.div>
   );

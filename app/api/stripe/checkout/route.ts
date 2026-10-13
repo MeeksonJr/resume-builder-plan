@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
                 .eq("id", user.id);
         }
 
-        const priceId = process.env.STRIPE_PRICE_ID;
+        // Resolve Stripe Price ID exclusively from environment variables
+        const isTestKey = (process.env.STRIPE_SECRET_KEY || "").includes("51SxFWu");
+        const priceId = process.env.STRIPE_PRICE_ID || 
+            (isTestKey ? process.env.STRIPE_PRO_PRICE_ID_TEST : process.env.STRIPE_PRO_PRICE_ID_LIVE);
 
         if (!priceId) {
             return new NextResponse("Stripe Price ID not configured", { status: 500 });

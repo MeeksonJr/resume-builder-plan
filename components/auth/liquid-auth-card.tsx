@@ -111,6 +111,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
         return;
       }
 
+      const targetUrl = searchParams?.get("redirect") || "/dashboard";
       setSuccessMessage({
         title: "Welcome Back Scholar! 🚀",
         subtitle: "Session verified. Synchronizing your student resume and campus career portfolio...",
@@ -119,9 +120,10 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
       setIsSuccess(true);
 
       setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 1200);
+        if (typeof window !== "undefined") {
+          window.location.assign(targetUrl);
+        }
+      }, 700);
     } catch (err: any) {
       setError(err?.message || "Failed to sign in. Please try again.");
       setIsLoading(false);
@@ -177,11 +179,13 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
           subtitle: "Workspace provisioned. Loading your personalized career portal...",
           label: "Entering Workspace",
         });
+        const targetUrl = searchParams?.get("redirect") || "/dashboard";
         setIsSuccess(true);
         setTimeout(() => {
-          router.push("/dashboard");
-          router.refresh();
-        }, 1200);
+          if (typeof window !== "undefined") {
+            window.location.assign(targetUrl);
+          }
+        }, 700);
       } else {
         // Flow directly with liquid transition into the Confirm Email view!
         setIsLoading(false);
@@ -238,6 +242,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
         }
       }
 
+      const targetUrl = searchParams?.get("redirect") || "/dashboard";
       setSuccessMessage({
         title: "Email Verified Successfully! 🎓",
         subtitle: "Your student status is confirmed. Launching your campus career portal...",
@@ -250,9 +255,10 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
       }
 
       setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 1200);
+        if (typeof window !== "undefined") {
+          window.location.assign(targetUrl);
+        }
+      }, 700);
     } catch (err: any) {
       setError(err?.message || "Verification failed. Please check the code and try again.");
       setIsLoading(false);
@@ -322,9 +328,10 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
       setIsSuccess(true);
 
       setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 1200);
+        if (typeof window !== "undefined") {
+          window.location.assign("/dashboard");
+        }
+      }, 700);
     } catch (err: any) {
       setError("Failed to launch demo. Please try creating a free account.");
       setIsLoading(false);
@@ -379,6 +386,7 @@ export function LiquidAuthCard({ initialMode = "login" }: LiquidAuthCardProps) {
             title={successMessage.title}
             subtitle={successMessage.subtitle}
             destinationLabel={successMessage.label}
+            destinationUrl={searchParams?.get("redirect") || "/dashboard"}
           />
         ) : (
           <div className="relative z-10">
