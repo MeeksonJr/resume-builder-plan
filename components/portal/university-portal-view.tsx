@@ -93,6 +93,7 @@ import { AcademicResearchHub } from "@/components/portal/academic-research-hub";
 import { FeederSchoolsPipeline } from "@/components/portal/feeder-schools-pipeline";
 import { TransferArticulationBenchmarks } from "@/components/portal/transfer-articulation-benchmarks";
 import { CampusAiAssistantWidget } from "@/components/portal/campus-ai-assistant-widget";
+import { RecruiterShowcaseTab } from "@/components/portal/recruiter-showcase-tab";
 
 export interface PortalMember {
   id: string;
@@ -816,6 +817,7 @@ export function UniversityPortalView({
           label: "Recruiter Showcase",
           icon: Award,
           iconColor: "text-purple-500",
+          count: Math.max(students.length, 6),
           desc: "Candidate talent marketplace & verified portfolios",
         },
         {
@@ -1588,6 +1590,17 @@ export function UniversityPortalView({
               </table>
             </div>
           </div>
+        </TabsContent>
+
+        {/* Tab: Recruiter Showcase & Talent Marketplace (Option 4) */}
+        <TabsContent value="talent" className="space-y-4">
+          <RecruiterShowcaseTab
+            tenant={tenant}
+            students={students}
+            currentUser={currentUser}
+            isStaff={isStaff}
+            portalSettings={portalSettings}
+          />
         </TabsContent>
 
         {/* Tab: Academic Colleges & Departments */}
