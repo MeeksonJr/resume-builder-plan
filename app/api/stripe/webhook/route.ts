@@ -11,6 +11,18 @@ function getSupabaseAdmin() {
     );
 }
 
+export async function GET() {
+    return NextResponse.json(
+        {
+            status: "active",
+            endpoint: "/api/stripe/webhook",
+            message: "ResumeForge Stripe Webhook is operational. Stripe sends POST events to this URL.",
+            timestamp: new Date().toISOString(),
+        },
+        { status: 200 }
+    );
+}
+
 export async function POST(req: Request) {
     const body = await req.text();
     const signature = (await headers()).get("Stripe-Signature") as string;
