@@ -26,12 +26,14 @@ interface AcademicResearchHubProps {
   publications: ResearchPublication[];
   schoolName: string;
   isStaffOrAdmin?: boolean;
+  onNavigateToFaculty?: (facultyName: string) => void;
 }
 
 export function AcademicResearchHub({
   publications,
   schoolName,
   isStaffOrAdmin = false,
+  onNavigateToFaculty,
 }: AcademicResearchHubProps) {
   const [search, setSearch] = useState("");
   const [selectedField, setSelectedField] = useState("All");
@@ -125,10 +127,16 @@ export function AcademicResearchHub({
                 <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary font-semibold text-[11px] rounded-lg">
                   {pub.field}
                 </Badge>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                <a
+                  href={`https://scholar.google.com/scholar?q=${encodeURIComponent(pub.title)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary font-medium transition-colors"
+                >
                   <Award className="h-3.5 w-3.5 text-amber-500" />
-                  <span>{pub.citations} Citations</span>
-                </div>
+                  <span>{pub.citations} Citations &bull; Google Scholar</span>
+                  <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                </a>
               </div>
 
               <div>
@@ -152,9 +160,21 @@ export function AcademicResearchHub({
               <div className="space-y-3 pt-3 border-t border-border/60">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-medium">Faculty Lead:</span>
-                  <span className="font-semibold text-foreground truncate max-w-[200px]">
-                    {pub.facultyLead || pub.authors[0]}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground truncate max-w-[170px]">
+                      {pub.facultyLead || pub.authors[0]}
+                    </span>
+                    {onNavigateToFaculty && (
+                      <button
+                        type="button"
+                        onClick={() => onNavigateToFaculty(pub.facultyLead || pub.authors[0])}
+                        className="text-[11px] font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-0.5"
+                      >
+                        <span>Faculty Card</span>
+                        <span>&rarr;</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">

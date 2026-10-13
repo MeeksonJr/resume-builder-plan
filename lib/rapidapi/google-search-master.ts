@@ -36,6 +36,9 @@ export interface ProfessorInfo {
   department: string;
   researchArea: string;
   emailSlug?: string;
+  scholarUrl?: string;
+  citationsCount?: number;
+  publicationsCount?: number;
 }
 
 export interface KeyLinkInfo {
@@ -206,6 +209,9 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Department of Computer Science",
         researchArea: "Web Science, Digital Libraries, Information Visualization, Social Media Archiving",
         emailSlug: "mweigle",
+        scholarUrl: "https://scholar.google.com/citations?user=Y4hJ6u4AAAAJ&hl=en",
+        citationsCount: 5420,
+        publicationsCount: 92,
       },
       {
         name: "Dr. Michael L. Nelson",
@@ -213,6 +219,9 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Department of Computer Science",
         researchArea: "Web Archiving, Digital Preservation, URI-R Mementos, Information Retrieval",
         emailSlug: "mln",
+        scholarUrl: "https://scholar.google.com/citations?user=Gg2yW_IAAAAJ&hl=en",
+        citationsCount: 7180,
+        publicationsCount: 135,
       },
       {
         name: "Dr. Nikos Chrisochoides",
@@ -220,6 +229,9 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Department of Computer Science",
         researchArea: "Medical Image Computing, Parallel Computing, Mesh Generation for Neurosurgery",
         emailSlug: "nikos",
+        scholarUrl: "https://scholar.google.com/citations?user=xN1T2x0AAAAJ&hl=en",
+        citationsCount: 6140,
+        publicationsCount: 110,
       },
       {
         name: "Dr. Ravi Mukkamala",
@@ -227,6 +239,9 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Department of Computer Science",
         researchArea: "Distributed Systems, Data Security, Blockchain, Performance Evaluation",
         emailSlug: "mukka",
+        scholarUrl: "https://scholar.google.com/scholar?q=Ravi+Mukkamala+Old+Dominion+University",
+        citationsCount: 4280,
+        publicationsCount: 88,
       },
       {
         name: "Dr. Sampath Jayarathna",
@@ -234,6 +249,9 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Department of Computer Science",
         researchArea: "Brain-Computer Interfaces, Eye-Tracking, Multimodal Neuro-Information Retrieval",
         emailSlug: "sampath",
+        scholarUrl: "https://scholar.google.com/citations?user=yB4rS3UAAAAJ&hl=en",
+        citationsCount: 1890,
+        publicationsCount: 48,
       },
     ],
     key_links: [
@@ -377,6 +395,39 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Information Technology",
         researchArea: "Cybersecurity, Network Architecture, Cloud Computing",
         emailSlug: "mdavis",
+        scholarUrl: "https://scholar.google.com/scholar?q=Michael+Davis+Tidewater+cybersecurity",
+        citationsCount: 68,
+        publicationsCount: 5,
+      },
+      {
+        name: "Dr. Marcus Vance",
+        title: "Chair & Professor of Natural Sciences",
+        department: "Natural Sciences & Oceanography",
+        researchArea: "Resilient Coastal Infrastructure, Chesapeake Estuary Sensor Telemetry",
+        emailSlug: "mvance",
+        scholarUrl: "https://scholar.google.com/scholar?q=Marcus+Vance+coastal+telemetry",
+        citationsCount: 142,
+        publicationsCount: 8,
+      },
+      {
+        name: "Prof. Rachel Thorne",
+        title: "Associate Professor & Cybersecurity Director",
+        department: "Cybersecurity & Information Technology",
+        researchArea: "Zero-Trust SCADA, Maritime Port Cyber Defense, PLC Honeypots",
+        emailSlug: "rthorne",
+        scholarUrl: "https://scholar.google.com/scholar?q=Rachel+Thorne+maritime+cyber+defense",
+        citationsCount: 115,
+        publicationsCount: 6,
+      },
+      {
+        name: "Dr. Angela Chen, RN",
+        title: "Professor & Director of Clinical Simulations",
+        department: "Beazley School of Nursing",
+        researchArea: "Community Telehealth, Mobile Health Clinics, Urban Health Equity",
+        emailSlug: "achen",
+        scholarUrl: "https://scholar.google.com/scholar?q=Angela+Chen+community+telehealth",
+        citationsCount: 94,
+        publicationsCount: 7,
       },
     ],
     key_links: [
@@ -499,6 +550,39 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         department: "Information Technology",
         researchArea: "Cybersecurity, Network Architecture, Cloud Computing",
         emailSlug: "mdavis",
+        scholarUrl: "https://scholar.google.com/scholar?q=Michael+Davis+Tidewater+cybersecurity",
+        citationsCount: 68,
+        publicationsCount: 5,
+      },
+      {
+        name: "Dr. Marcus Vance",
+        title: "Chair & Professor of Natural Sciences",
+        department: "Natural Sciences & Oceanography",
+        researchArea: "Resilient Coastal Infrastructure, Chesapeake Estuary Sensor Telemetry",
+        emailSlug: "mvance",
+        scholarUrl: "https://scholar.google.com/scholar?q=Marcus+Vance+coastal+telemetry",
+        citationsCount: 142,
+        publicationsCount: 8,
+      },
+      {
+        name: "Prof. Rachel Thorne",
+        title: "Associate Professor & Cybersecurity Director",
+        department: "Cybersecurity & Information Technology",
+        researchArea: "Zero-Trust SCADA, Maritime Port Cyber Defense, PLC Honeypots",
+        emailSlug: "rthorne",
+        scholarUrl: "https://scholar.google.com/scholar?q=Rachel+Thorne+maritime+cyber+defense",
+        citationsCount: 115,
+        publicationsCount: 6,
+      },
+      {
+        name: "Dr. Angela Chen, RN",
+        title: "Professor & Director of Clinical Simulations",
+        department: "Beazley School of Nursing",
+        researchArea: "Community Telehealth, Mobile Health Clinics, Urban Health Equity",
+        emailSlug: "achen",
+        scholarUrl: "https://scholar.google.com/scholar?q=Angela+Chen+community+telehealth",
+        citationsCount: 94,
+        publicationsCount: 7,
       },
     ],
     key_links: [
@@ -1014,6 +1098,9 @@ export async function getUniversityInsights(
       department: `Department of Computer Science`,
       researchArea: `Artificial Intelligence, Distributed Systems, High-Performance Computing`,
       emailSlug: `achen`,
+      scholarUrl: `https://scholar.google.com/scholar?q=Alex+Chen+computer+science+${encodeURIComponent(fullName)}`,
+      citationsCount: 1420,
+      publicationsCount: 38,
     },
     {
       name: `Dr. Sarah Jenkins`,
@@ -1021,6 +1108,9 @@ export async function getUniversityInsights(
       department: `Department of Computer Science`,
       researchArea: `Software Verification, Cybersecurity, Cloud Architecture`,
       emailSlug: `sjenkins`,
+      scholarUrl: `https://scholar.google.com/scholar?q=Sarah+Jenkins+cybersecurity+${encodeURIComponent(fullName)}`,
+      citationsCount: 890,
+      publicationsCount: 24,
     },
     {
       name: `Dr. Robert Morales`,
@@ -1028,6 +1118,9 @@ export async function getUniversityInsights(
       department: `College of Engineering`,
       researchArea: `Deep Learning, Natural Language Processing, Quantitative Modeling`,
       emailSlug: `rmorales`,
+      scholarUrl: `https://scholar.google.com/scholar?q=Robert+Morales+data+science+${encodeURIComponent(fullName)}`,
+      citationsCount: 1120,
+      publicationsCount: 29,
     },
   ];
 
