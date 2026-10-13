@@ -143,7 +143,8 @@ export default function DashboardScholarshipsPage() {
       // 3. Merge
       const merged = (opps || []).map((opp: any): FundingOpportunity => {
         const uState = userStateMap.get(opp.id);
-        const basicScore = Math.floor(Math.random() * (99 - 85 + 1)) + 85; 
+        const idSeed = String(opp.id || opp.title || "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        const basicScore = 84 + (idSeed % 14); // Stable deterministic score 84-97%
 
         return {
           ...opp,

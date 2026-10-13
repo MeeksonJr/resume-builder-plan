@@ -134,7 +134,9 @@ export default function ScholarshipsPage() {
               <Button 
                 size="sm" 
                 className="absolute right-2.5 h-9 px-4 rounded-sm bg-[#0d8274] hover:bg-[#102b2b] text-[#e9eee8] font-medium cursor-pointer"
-                onClick={() => {}}
+                onClick={() => {
+                  document.getElementById("scholarships-grid")?.scrollIntoView({ behavior: "smooth" });
+                }}
               >
                 Search
               </Button>
@@ -200,7 +202,7 @@ export default function ScholarshipsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div id="scholarships-grid" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Desktop Filter Sidebar */}
           <aside className={`lg:col-span-3 space-y-6 ${showFiltersMobile ? "block" : "hidden lg:block"} bg-[#f7faf5] p-5 rounded-md border border-[#b8c8b9]`}>
             <div className="flex items-center justify-between pb-3 border-b border-[#b8c8b9]">

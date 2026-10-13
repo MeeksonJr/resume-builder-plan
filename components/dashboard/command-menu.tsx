@@ -181,7 +181,7 @@ export function CommandMenu() {
                         <CommandShortcut className="font-mono text-[10px] bg-muted px-1.5 py-0.5 border border-border">U P</CommandShortcut>
                     </CommandItem>
                     <CommandItem
-                        onSelect={() => runCommand(() => router.push("/dashboard/network"))}
+                        onSelect={() => runCommand(() => router.push("/dashboard/portfolios"))}
                         className="rounded-none cursor-pointer py-2.5 px-3"
                     >
                         <Users className="mr-3 h-4 w-4 text-teal-600" />
@@ -210,7 +210,7 @@ export function CommandMenu() {
                 {/* ─── AI COPILOT & AUTOMATION ─── */}
                 <CommandGroup heading="Autonomous AI & Career Hub">
                     <CommandItem
-                        onSelect={() => runCommand(() => router.push("/dashboard/autopilot"))}
+                        onSelect={() => runCommand(() => router.push("/dashboard/swarm"))}
                         className="rounded-none cursor-pointer py-2.5 px-3"
                     >
                         <Bot className="mr-3 h-4 w-4 text-violet-600" />
@@ -218,7 +218,7 @@ export function CommandMenu() {
                         <CommandShortcut className="font-mono text-[10px] bg-muted px-1.5 py-0.5 border border-border">A P</CommandShortcut>
                     </CommandItem>
                     <CommandItem
-                        onSelect={() => runCommand(() => router.push("/dashboard/auto-apply"))}
+                        onSelect={() => runCommand(() => router.push("/dashboard/jobs"))}
                         className="rounded-none cursor-pointer py-2.5 px-3"
                     >
                         <Send className="mr-3 h-4 w-4 text-fuchsia-600" />
@@ -241,7 +241,7 @@ export function CommandMenu() {
                         <CommandShortcut className="font-mono text-[10px] bg-muted px-1.5 py-0.5 border border-border">A T</CommandShortcut>
                     </CommandItem>
                     <CommandItem
-                        onSelect={() => runCommand(() => router.push("/dashboard/interview"))}
+                        onSelect={() => runCommand(() => router.push("/dashboard/interview-prep"))}
                         className="rounded-none cursor-pointer py-2.5 px-3"
                     >
                         <Compass className="mr-3 h-4 w-4 text-blue-600" />
@@ -249,7 +249,7 @@ export function CommandMenu() {
                         <CommandShortcut className="font-mono text-[10px] bg-muted px-1.5 py-0.5 border border-border">I N</CommandShortcut>
                     </CommandItem>
                     <CommandItem
-                        onSelect={() => runCommand(() => router.push("/dashboard/funding"))}
+                        onSelect={() => runCommand(() => router.push("/dashboard/scholarships"))}
                         className="rounded-none cursor-pointer py-2.5 px-3"
                     >
                         <Coins className="mr-3 h-4 w-4 text-yellow-600" />

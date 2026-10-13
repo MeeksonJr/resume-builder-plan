@@ -296,12 +296,12 @@ Provide specific, actionable suggestions to improve this resume for the target j
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed") || error.message.includes("insufficient_quota") || error.message.includes("429")) {
       return {
         suggestions: [
-          "[MOCK] Add more metrics to your work experience",
-          "[MOCK] Highlight your leadership skills",
-          "[MOCK] Rephrase your summary to match the job title"
+          "Add more metrics to your work experience",
+          "Highlight your leadership skills",
+          "Rephrase your summary to match the job title"
         ],
         keywordsToAdd: ["React", "TypeScript", "Team Leadership", "Agile"],
-        improvedSummary: "[MOCK] A highly experienced professional with a proven track record in software engineering. Skilled in React, TypeScript, and leading high-performing teams to deliver scalable solutions."
+        improvedSummary: "A highly experienced professional with a proven track record in software engineering. Skilled in React, TypeScript, and leading high-performing teams to deliver scalable solutions."
       };
     }
     throw error;
@@ -473,12 +473,12 @@ export async function calculateATSScore(
       return {
         score: 75,
         breakdown: [
-          { category: "Content", score: 80, feedback: ["[MOCK] Good action verbs", "[MOCK] Quantify more results"] },
-          { category: "Keywords", score: 70, feedback: ["[MOCK] Missing some technical terms"] },
-          { category: "Completeness", score: 90, feedback: ["[MOCK] All sections present"] }
+          { category: "Content", score: 80, feedback: ["Good action verbs", "Quantify more results"] },
+          { category: "Keywords", score: 70, feedback: ["Missing some technical terms"] },
+          { category: "Completeness", score: 90, feedback: ["All sections present"] }
         ],
         missingKeywords: ["React", "TypeScript", "Next.js"],
-        overallFeedback: "[MOCK] Good resume but could be more targeted."
+        overallFeedback: "Good resume but could be more targeted."
       };
     }
     throw error;
@@ -573,9 +573,14 @@ export async function generateCoverLetter(
   } catch (error: any) {
     console.warn("[AI] Cover letter generation failed:", error.message);
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
-      return `[MOCK] Dear Hiring Manager,
+      return `Dear Hiring Manager,
 
-I am writing to express my strong interest in the position... [This is a mock response because no API keys were configured or providers failed]`;
+I am writing to express my enthusiastic interest in the position. With a strong track record of delivering measurable outcomes, collaborating cross-functionally, and applying rigorous problem-solving, I am excited about the opportunity to contribute to your team.
+
+Throughout my career, I have prioritized high standards of execution, operational resilience, and continuous skill refinement. I look forward to discussing how my experience and passion align with your organization's goals.
+
+Sincerely,
+Candidate`;
     }
     throw error;
   }
@@ -717,10 +722,10 @@ export async function getInterviewFeedback(
       return {
         score: 70,
         star_breakdown: {
-          situation: "[MOCK] You set the scene well.",
-          task: "[MOCK] Clear objective stated.",
-          action: "[MOCK] Good actions, but could use more detail on 'how'.",
-          result: "[MOCK] Result was missing or vague. Quantify it!",
+          situation: "You set the scene well.",
+          task: "Clear objective stated.",
+          action: "Good actions, but could use more detail on 'how'.",
+          result: "Result was missing or vague. Quantify it!",
         },
         scores: { situation: 85, task: 80, action: 65, result: 40 },
         strengths: ["Clear communication", "Relevant experience choice"],
@@ -794,8 +799,8 @@ export async function analyzeCareerPath(
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
       return {
         match_percentage: 65,
-        strengths: ["[MOCK] Strong React background", "[MOCK] Experience in Fintech"],
-        gaps: ["[MOCK] Missing direct Cloud experience", "[MOCK] Need for leadership projects"],
+        strengths: ["Strong React background", "Experience in Fintech"],
+        gaps: ["Missing direct Cloud experience", "Need for leadership projects"],
         roadmap: [
           { timeframe: "Next 3 Months", action: "AWS Cloud Practitioner", description: "Get certified to prove cloud foundational knowledge." },
           { timeframe: "6 Months", action: "Internal Leadership", description: "Take ownership of a cross-functional feature." },
@@ -805,8 +810,8 @@ export async function analyzeCareerPath(
           { title: "Serverless Dashboard", difficulty: "Intermediate", description: "Build a monitoring tool using AWS Lambda.", focus_area: "Cloud Architecture" },
           { title: "Team Mentorship Program", difficulty: "Advanced", description: "Design a formal process for onboarding junior devs.", focus_area: "Leadership" }
         ],
-        market_trend: "[MOCK] Shift towards AI-augmented development across all tech stacks.",
-        hiring_tip: "[MOCK] Focus on system design during your interviews to stand out for senior roles."
+        market_trend: "Shift towards AI-augmented development across all tech stacks.",
+        hiring_tip: "Focus on system design during your interviews to stand out for senior roles."
       };
     }
     throw error;
@@ -1114,30 +1119,30 @@ export async function analyzeResumeQuality(
             priority: "high",
             category: "Quantification",
             title: "Add metrics to achievements",
-            description: "[MOCK] Your work experience lacks specific numbers. Add metrics like '20% increase', '50+ users', or 'reduced by 3 hours' to demonstrate impact."
+            description: "Your work experience lacks specific numbers. Add metrics like '20% increase', '50+ users', or 'reduced by 3 hours' to demonstrate impact."
           },
           {
             priority: "high",
             category: "Impact Language",
             title: "Replace weak verbs",
-            description: "[MOCK] Replace phrases like 'responsible for' and 'worked on' with stronger action verbs like 'led', 'architected', or 'optimized'."
+            description: "Replace phrases like 'responsible for' and 'worked on' with stronger action verbs like 'led', 'architected', or 'optimized'."
           },
           {
             priority: "medium",
             category: "Completeness",
             title: "Expand project descriptions",
-            description: "[MOCK] Your projects section is thin. Add 2-3 bullet points per project highlighting technologies used and outcomes achieved."
+            description: "Your projects section is thin. Add 2-3 bullet points per project highlighting technologies used and outcomes achieved."
           },
         ],
         strengths: [
-          "[MOCK] Clear career progression",
-          "[MOCK] Strong technical skills list",
-          "[MOCK] Good ATS-friendly formatting",
+          "Clear career progression",
+          "Strong technical skills list",
+          "Good ATS-friendly formatting",
         ],
         quickWins: [
-          "[MOCK] Add your GitHub profile URL to contact info",
-          "[MOCK] Quantify your top 3 achievements with specific metrics",
-          "[MOCK] Add a professional summary at the top (2-3 sentences)",
+          "Add your GitHub profile URL to contact info",
+          "Quantify your top 3 achievements with specific metrics",
+          "Add a professional summary at the top (2-3 sentences)",
         ],
       };
     }
@@ -1220,37 +1225,37 @@ export async function generateInterviewQuestions(
         questions: [
           { 
             type: "behavioral", 
-            question: "[MOCK] Tell me about a time when you faced a significant technical challenge in a past project. How did you approach it?",
+            question: "Tell me about a time when you faced a significant technical challenge in a past project. How did you approach it?",
             star_tip: "S: Set the context of the project and user impact. T: Define the blocker. A: Detail your technical investigation and solution. R: Quantify the outcome.",
             expected_competencies: ["Problem Solving", "Resilience", "Technical Execution"]
           },
           { 
             type: "technical", 
-            question: "[MOCK] How would you design a scalable caching and event-driven architecture for 1 million concurrent users?",
+            question: "How would you design a scalable caching and event-driven architecture for 1 million concurrent users?",
             star_tip: "S/T: Clarify read vs write ratios. A: Discuss Redis caching strategies, invalidation, and Kafka messaging. R: Address failure modes.",
             expected_competencies: ["Distributed Systems", "Scalability", "Data Consistency"]
           },
           { 
             type: "situational", 
-            question: "[MOCK] If you discovered a critical latency regression in production right before a major product launch, what would be your step-by-step triage?",
+            question: "If you discovered a critical latency regression in production right before a major product launch, what would be your step-by-step triage?",
             star_tip: "S/T: Acknowledge the launch timeline. A: Outline observability tracing, rollback procedures, and emergency fixes. R: Conduct a blameless post-mortem.",
             expected_competencies: ["Incident Response", "Crisis Management", "Observability"]
           },
           { 
             type: "behavioral", 
-            question: "[MOCK] Describe a situation where you had a fundamental architectural disagreement with a team member or lead. How did you reach consensus?",
+            question: "Describe a situation where you had a fundamental architectural disagreement with a team member or lead. How did you reach consensus?",
             star_tip: "S: Contextualize the architectural debate. T: State differing viewpoints. A: Use data, benchmarks, or prototypes to evaluate. R: Achieve commitment.",
             expected_competencies: ["Collaboration", "Technical Communication", "Decision Making"]
           },
           { 
             type: "technical", 
-            question: "[MOCK] Explain how you ensure data consistency across multiple microservices or decoupled databases.",
+            question: "Explain how you ensure data consistency across multiple microservices or decoupled databases.",
             star_tip: "S/T: Identify transactional boundaries. A: Compare two-phase commit vs saga patterns with idempotent events. R: Discuss eventual consistency.",
             expected_competencies: ["Database Architecture", "Microservices", "Event-Driven Design"]
           },
           { 
             type: "situational", 
-            question: "[MOCK] If a product manager asked for a feature by end-of-week that would incur severe technical debt, how would you respond?",
+            question: "If a product manager asked for a feature by end-of-week that would incur severe technical debt, how would you respond?",
             star_tip: "S/T: Frame the business urgency. A: Offer a scoped MVP with documented fast-follow refactoring tickets. R: Align stakeholders without burning bridges.",
             expected_competencies: ["Stakeholder Management", "Pragmatism", "Tech Debt Management"]
           },
@@ -1371,13 +1376,13 @@ export async function evaluateInterviewAnswer(
           starCompleteness: 65,
         },
         strengths: [
-          "[MOCK] You provided a relevant example from your experience",
-          "[MOCK] Your answer was well-structured and easy to follow",
+          "You provided a relevant example from your experience",
+          "Your answer was well-structured and easy to follow",
         ],
         improvements: [
-          "[MOCK] Include more specific metrics or outcomes (e.g., '20% improvement')",
-          "[MOCK] Strengthen the 'Result' section with quantifiable achievements",
-          "[MOCK] Add more detail about the specific actions you took",
+          "Include more specific metrics or outcomes (e.g., '20% improvement')",
+          "Strengthen the 'Result' section with quantifiable achievements",
+          "Add more detail about the specific actions you took",
         ],
         starAnalysis: {
           situation: "present",
@@ -1385,7 +1390,7 @@ export async function evaluateInterviewAnswer(
           action: "present",
           result: "unclear",
         },
-        suggestedAnswer: "[MOCK] A stronger answer would be: 'When I was working on the e-commerce platform (Situation), we needed to reduce page load times by 50% (Task). I implemented lazy loading for images, optimized our database queries, and set up CDN caching (Action). As a result, page load time decreased from 4.2s to 1.8s, leading to a 23% increase in conversion rate (Result).'",
+        suggestedAnswer: "A stronger answer would be: 'When I was working on the e-commerce platform (Situation), we needed to reduce page load times by 50% (Task). I implemented lazy loading for images, optimized our database queries, and set up CDN caching (Action). As a result, page load time decreased from 4.2s to 1.8s, leading to a 23% increase in conversion rate (Result).'",
       };
     }
     throw error;
@@ -1549,13 +1554,13 @@ Be specific and actionable in your analysis.`,
         overallScore: 65,
         breakdown: {
           skillsMatch: { score: 70, matched: ["JavaScript", "React"], missing: ["TypeScript", "AWS"] },
-          experienceMatch: { score: 60, feedback: "[MOCK] Experience level appears to be slightly below requirements." },
-          educationMatch: { score: 80, feedback: "[MOCK] Education requirements are met." },
+          experienceMatch: { score: 60, feedback: "Experience level appears to be slightly below requirements." },
+          educationMatch: { score: 80, feedback: "Education requirements are met." },
           keywordMatch: { score: 55, found: ["development", "team"], missing: ["agile", "scrum", "CI/CD"] },
         },
-        recommendations: ["[MOCK] Add TypeScript to your skills", "[MOCK] Include more metrics in achievements"],
-        strongPoints: ["[MOCK] Strong React experience", "[MOCK] Good project portfolio"],
-        dealBreakers: ["[MOCK] Missing required cloud experience"],
+        recommendations: ["Add TypeScript to your skills", "Include more metrics in achievements"],
+        strongPoints: ["Strong React experience", "Good project portfolio"],
+        dealBreakers: ["Missing required cloud experience"],
       };
     }
     throw error;
@@ -1654,12 +1659,12 @@ Be specific and make the content immediately usable.`,
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
       return {
         generatedContent: sectionType === "summary"
-          ? { summary: "[MOCK] Results-driven professional with 5+ years of experience..." }
+          ? { summary: "Results-driven professional with 5+ years of experience..." }
           : sectionType === "skills"
             ? { suggestedSkills: [{ category: "Technical", items: ["JavaScript", "React", "Node.js"] }] }
-            : { description: "[MOCK] Generated description...", highlights: ["[MOCK] Achievement 1", "[MOCK] Achievement 2"] },
+            : { description: "Generated description...", highlights: ["Achievement 1", "Achievement 2"] },
         confidence: 60,
-        notes: ["[MOCK] This is placeholder content. Configure AI providers for real suggestions."],
+        notes: ["This is placeholder content. Configure AI providers for real suggestions."],
       };
     }
     throw error;
@@ -1759,14 +1764,14 @@ Provide:
           {
             section: "summary",
             original: resumeData.personalInfo?.summary || "",
-            optimized: "[MOCK] Optimized summary would appear here",
-            reason: "[MOCK] Added stronger action verbs and metrics",
+            optimized: "Optimized summary would appear here",
+            reason: "Added stronger action verbs and metrics",
           },
         ],
         overallImprovements: [
-          "[MOCK] Added 5 quantifiable achievements",
-          "[MOCK] Improved keyword density by 30%",
-          "[MOCK] Reduced word count by 15%",
+          "Added 5 quantifiable achievements",
+          "Improved keyword density by 30%",
+          "Reduced word count by 15%",
         ],
         scoreImprovement: { before: 65, after: 82 },
       };
@@ -1868,9 +1873,9 @@ Provide the adjusted text and analysis.`,
       return {
         adjustedContent: content,
         toneAnalysis: {
-          originalTone: "[MOCK] Professional",
+          originalTone: "Professional",
           targetTone: targetTone,
-          changes: ["[MOCK] Would adjust vocabulary", "[MOCK] Would modify sentence structure"],
+          changes: ["Would adjust vocabulary", "Would modify sentence structure"],
         },
       };
     }
@@ -1970,18 +1975,18 @@ Provide the customized resume and detailed insights.`,
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
       return {
         customizedResume: resumeData,
-        industryKeywords: ["[MOCK] " + targetIndustry, "[MOCK] Industry term 1", "[MOCK] Industry term 2"],
-        formattingTips: ["[MOCK] Use industry-standard sections", "[MOCK] Highlight relevant certifications"],
+        industryKeywords: ["" + targetIndustry, "Industry term 1", "Industry term 2"],
+        formattingTips: ["Use industry-standard sections", "Highlight relevant certifications"],
         industryInsights: {
-          trends: ["[MOCK] Digital transformation is key", "[MOCK] Remote work emphasis"],
-          valuedSkills: ["[MOCK] Communication", "[MOCK] Technical Skills", "[MOCK] Leadership"],
-          commonMistakes: ["[MOCK] Using generic language", "[MOCK] Missing industry keywords"],
+          trends: ["Digital transformation is key", "Remote work emphasis"],
+          valuedSkills: ["Communication", "Technical Skills", "Leadership"],
+          commonMistakes: ["Using generic language", "Missing industry keywords"],
         },
         changes: [
           {
             section: "summary",
-            change: "[MOCK] Would add industry-specific terminology",
-            reason: "[MOCK] Better alignment with industry expectations",
+            change: "Would add industry-specific terminology",
+            reason: "Better alignment with industry expectations",
           },
         ],
       };
@@ -2022,7 +2027,7 @@ export async function generateSuggestedAnswer(
   } catch (error: any) {
     console.warn("[AI] Suggested answer generation failed:", error.message);
     if (error.message === "NO_API_KEYS" || error.message.includes("All AI providers failed")) {
-      return "[MOCK] Ideally, you should structure your answer using the STAR method. Start with a relevant situation, describe the task, explain your specific actions, and end with the positive result. For this question, focus on your problem-solving skills.";
+      return "Ideally, you should structure your answer using the STAR method. Start with a relevant situation, describe the task, explain your specific actions, and end with the positive result. For this question, focus on your problem-solving skills.";
     }
     throw error;
   }

@@ -40,7 +40,7 @@ const plans = [
     {
         name: "Pro",
         description: "For serious job seekers.",
-        price: "$19",
+        price: "$9",
         period: "/month",
         features: [
             "Unlimited Resumes",

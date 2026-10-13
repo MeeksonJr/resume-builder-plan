@@ -74,13 +74,8 @@ export async function GET(
         const displayName = prof.full_name || (prof.school_email ? prof.school_email.split("@")[0] : "Monarch Student");
         const role = prof.target_role || "Software Engineer";
 
-        // Ensure verified student resumes/portfolios are accessible when shared via campus portal
-        if (userResume && !userResume.is_public) {
-          await supabaseAdmin.from("resumes").update({ is_public: true }).eq("id", userResume.id);
-        }
-        if (userPortfolio && !userPortfolio.is_public) {
-          await supabaseAdmin.from("portfolios").update({ is_public: true }).eq("id", userPortfolio.id);
-        }
+        const isResumePublic = !!userResume?.is_public;
+        const isPortfolioPublic = !!userPortfolio?.is_public;
 
         realStudents.push({
           id: prof.id,

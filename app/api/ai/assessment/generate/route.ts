@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { withFallback } from "@/lib/ai/index";
 import { generateText } from "ai";
 import { generateDynamicCareerAssessment, CareerAssessmentTrack, ExperienceLevel } from "@/lib/assessment/multi-career-engine";
@@ -6,6 +7,15 @@ import { getOrGenerateQuestions } from "@/lib/rapidapi/quick-assess";
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Please log in to generate an assessment." }, { status: 401 });
+    }
+
     const body = await req.json();
     const { careerTitle, experienceLevel = "Senior Specialist", customFocus } = body;
 

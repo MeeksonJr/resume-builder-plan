@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
@@ -14,6 +15,13 @@ const requestSchema = z.object({
 
 export async function POST(req: Request) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return Response.json({ error: "Unauthorized. Please log in to generate cover letters." }, { status: 401 });
+        }
+
         const json = await req.json();
 
         // 1. Validation Phase

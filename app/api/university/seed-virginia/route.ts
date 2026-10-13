@@ -107,12 +107,35 @@ export async function seedVirginiaInstitutionsToDatabase(): Promise<{
   };
 }
 
-export async function GET() {
+import { createClient as createServerClient } from "@/lib/supabase/server";
+
+async function isAuthorized(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET || process.env.ADMIN_SECRET;
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    return true;
+  }
+  try {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return !!user;
+  } catch {
+    return false;
+  }
+}
+
+export async function GET(req: Request) {
+  if (!(await isAuthorized(req))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const result = await seedVirginiaInstitutionsToDatabase();
   return NextResponse.json(result);
 }
 
-export async function POST() {
+export async function POST(req: Request) {
+  if (!(await isAuthorized(req))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const result = await seedVirginiaInstitutionsToDatabase();
   return NextResponse.json(result);
 }

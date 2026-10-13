@@ -56,8 +56,20 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         let resumeId = searchParams.get("resume_id");
 
-        // If no specific resume is requested, default to the most recently updated resume
-        if (!resumeId) {
+        // If a specific resume is requested, verify it belongs to this user (IDOR prevention)
+        if (resumeId) {
+            const { data: userResume } = await supabaseAdmin
+                .from("resumes")
+                .select("id")
+                .eq("id", resumeId)
+                .eq("user_id", userId)
+                .maybeSingle();
+
+            if (!userResume) {
+                return new NextResponse("Resume not found or unauthorized", { status: 404 });
+            }
+        } else {
+            // Default to the user's most recently updated resume
             const { data: latestResume } = await supabaseAdmin
                 .from("resumes")
                 .select("id")

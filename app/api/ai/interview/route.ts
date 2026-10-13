@@ -13,7 +13,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const { resumeId, jobDescription } = await req.json();
+        const { resumeId, jobDescription, targetRole, role, difficulty, company } = await req.json();
 
         if (!resumeId || !jobDescription) {
             return new NextResponse("Missing required fields", { status: 400 });
@@ -100,16 +100,17 @@ export async function POST(req: Request) {
             })),
         };
 
-        // 3. Generate questions
-        // 3. Generate questions
-        // Default difficulty to 'mid' if not provided (should be added to request in future)
-        const difficulty = "mid";
-        // Use jobDescription as targetRole (or extract title if available, but for now use full desc or "Software Engineer")
-        const targetRole = "Software Engineer"; // Ideally request should provide this. Using placeholder or substring.
+        // 3. Dynamically resolve target role and difficulty
+        const resolvedRole = (targetRole || role || resume.target_role || personalInfo?.title || "Professional Specialist").trim();
+        const resolvedDifficulty: "junior" | "mid" | "senior" =
+            (difficulty === "junior" || difficulty === "senior") ? difficulty : "mid";
 
-        // Actually, we should probably update parameters to accept difficulty.
-        // For now, let's just pass defaults to satisfy TS.
-        const result = await generateInterviewQuestions(resumeData, "Software Engineer", "mid");
+        const result = await generateInterviewQuestions(
+            resumeData,
+            resolvedRole,
+            resolvedDifficulty,
+            typeof company === "string" ? company : undefined
+        );
 
         return NextResponse.json(result);
     } catch (error) {

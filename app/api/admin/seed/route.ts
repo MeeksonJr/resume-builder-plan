@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import fs from "fs";
+import { SAMPLE_SCHOLARSHIPS } from "@/lib/data/scholarships";
+import { SAMPLE_GRANTS } from "@/lib/data/grants";
 
 export async function GET() {
   try {
@@ -11,20 +13,48 @@ export async function GET() {
       return new NextResponse("Unauthorized: Please log in first on the dashboard.", { status: 401 });
     }
 
-    const rawFilePath = "/home/meeksonjr/.gemini/antigravity-ide/brain/6a13dc47-c7f3-40a9-b2ab-0924a4f5866c/.system_generated/steps/564/output.txt";
+    let rawListings: any[] = [];
+    const rawFilePath = process.env.SCHOLARSHIP_SEED_FILE;
 
-    if (!fs.existsSync(rawFilePath)) {
-      return NextResponse.json({ error: `Could not locate raw output file at: ${rawFilePath}` }, { status: 404 });
+    if (rawFilePath && fs.existsSync(rawFilePath)) {
+      try {
+        const rawContent = fs.readFileSync(rawFilePath, "utf8");
+        const parsedData = JSON.parse(rawContent);
+        if (parsedData.results && Array.isArray(parsedData.results)) {
+          rawListings = parsedData.results;
+        }
+      } catch (e) {
+        console.warn("[API Seeder] Could not parse file, falling back to built-in datasets.");
+      }
     }
 
-    const rawContent = fs.readFileSync(rawFilePath, "utf8");
-    const parsedData = JSON.parse(rawContent);
-
-    if (!parsedData.results || !Array.isArray(parsedData.results)) {
-      return NextResponse.json({ error: "Invalid data format inside file." }, { status: 400 });
+    if (rawListings.length === 0) {
+      // Seed from built-in verified collections
+      rawListings = [
+        ...SAMPLE_SCHOLARSHIPS.map((s: any) => ({
+          id: s.id,
+          name: s.title,
+          type: "scholarship",
+          sponsor: s.organization,
+          summary: s.description,
+          award: { amount_min: s.amount, amount_max: s.amount, currency: "USD" },
+          deadline: { date: s.deadline },
+          links: { apply_url: s.applicationUrl, info_url: s.applicationUrl },
+          eligibility: { education_level: s.educationLevel, fields_of_study: s.majors, tags: [s.category.toLowerCase()] },
+        })),
+        ...SAMPLE_GRANTS.map((g: any) => ({
+          id: g.id,
+          name: g.title,
+          type: "grant",
+          sponsor: g.organization,
+          summary: g.description,
+          award: { amount_min: g.amount, amount_max: g.amount, currency: "USD" },
+          deadline: { date: g.deadline },
+          links: { apply_url: g.applicationUrl, info_url: g.applicationUrl },
+          eligibility: { education_level: g.educationLevel, fields_of_study: g.majors, tags: [g.category.toLowerCase()] },
+        })),
+      ];
     }
-
-    const rawListings = parsedData.results;
     console.log(`[API Seeder] Read ${rawListings.length} items from raw data.`);
 
     const seededOpportunities: any[] = [];

@@ -175,3 +175,63 @@ export async function GET(
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
+
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const supabase = await createClient();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const payload = await req.json();
+
+        // Whitelist permitted editable fields to prevent arbitrary column injection
+        const allowedFields = [
+            "title",
+            "target_role",
+            "is_public",
+            "custom_domain",
+            "slug",
+            "template_id",
+            "color_theme",
+            "font_family",
+            "content"
+        ];
+
+        const updateData: Record<string, any> = {
+            updated_at: new Date().toISOString(),
+        };
+
+        for (const key of allowedFields) {
+            if (payload[key] !== undefined) {
+                updateData[key] = payload[key];
+            }
+        }
+
+        const { data: updatedResume, error } = await supabase
+            .from("resumes")
+            .update(updateData)
+            .eq("id", id)
+            .eq("user_id", user.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error("[RESUME_PATCH_ERROR]", error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json(updatedResume);
+    } catch (error) {
+        console.error("[RESUME_PATCH_ERROR]", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}

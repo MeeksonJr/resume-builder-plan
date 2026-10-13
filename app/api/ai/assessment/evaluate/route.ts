@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { withFallback } from "@/lib/ai/index";
 import { generateText } from "ai";
 import {
@@ -10,6 +11,15 @@ import {
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Please log in to submit assessment for evaluation." }, { status: 401 });
+    }
+
     const body = await req.json();
     const { track, submission } = body as {
       track: CareerAssessmentTrack;
