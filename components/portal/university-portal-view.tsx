@@ -121,13 +121,20 @@ export function UniversityPortalView({
   canManageRoster = false,
 }: UniversityPortalViewProps) {
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState("roster");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
   const [placementFilter, setPlacementFilter] = useState<string>("all");
   const [isAuditing, setIsAuditing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hash = window.location.hash.replace("#", "");
+      if (hash === "mentorship") setActiveTab("alumni");
+      else if (hash === "ai" || hash === "copilot" || hash === "assistant") setActiveTab("assistant");
+      else if (hash === "transfers" || hash === "transfer") setActiveTab("transfer");
+      else if (hash) setActiveTab(hash);
+    }
   }, []);
 
   // Strict User Authentication & Role Scoping
@@ -533,6 +540,182 @@ export function UniversityPortalView({
     );
   }
 
+  interface NavItemDef {
+    id: string;
+    label: string;
+    icon: any;
+    iconColor?: string;
+    count?: number | string;
+    badge?: string;
+    badgeClass?: string;
+    desc?: string;
+  }
+
+  interface NavGroupDef {
+    id: string;
+    title: string;
+    badge?: string;
+    items: NavItemDef[];
+  }
+
+  const navGroups: NavGroupDef[] = [
+    {
+      id: "career",
+      title: "Career & Placement",
+      items: [
+        {
+          id: "roster",
+          label: "Student Cohort",
+          icon: Users,
+          iconColor: "text-blue-500",
+          count: filteredStudents.length,
+          desc: "Verified student candidates, ATS scores & elevator pitches",
+        },
+        {
+          id: "talent",
+          label: "Recruiter Showcase",
+          icon: Award,
+          iconColor: "text-purple-500",
+          desc: "Candidate talent marketplace & verified portfolios",
+        },
+        {
+          id: "career_fairs",
+          label: "Career Fairs",
+          icon: Calendar,
+          iconColor: "text-emerald-500",
+          count: campusIntel?.career_fairs?.length || 0,
+          desc: "Upcoming employer showcases, RSVP & speed interviews",
+        },
+        {
+          id: "alumni",
+          label: "Alumni Mentorship",
+          icon: Briefcase,
+          iconColor: "text-amber-500",
+          desc: "Connect with verified alumni in top industries",
+        },
+      ],
+    },
+    {
+      id: "academic",
+      title: "Academic & Intelligence",
+      badge: "3 APIs Connected",
+      items: [
+        {
+          id: "assistant",
+          label: "Campus AI Co-Pilot",
+          icon: Bot,
+          iconColor: "text-primary",
+          badge: "AI",
+          badgeClass: "bg-primary/15 text-primary border-primary/30",
+          desc: "Contextual advisor grounded in transfer rules & publications",
+        },
+        {
+          id: "transfer",
+          label: "Transfer Pathways",
+          icon: TrendingUp,
+          iconColor: "text-blue-500",
+          count: syndicatedIntel?.transferPartners?.length || 6,
+          desc: "4-Year GAA articulation benchmarks & credit transfer",
+        },
+        {
+          id: "research",
+          label: "Faculty Research",
+          icon: BookOpen,
+          iconColor: "text-indigo-500",
+          count: syndicatedIntel?.researchPublications?.length || 4,
+          desc: "Google Scholar publications, citation stats & lab projects",
+        },
+        {
+          id: "feeders",
+          label: "Feeder High Schools",
+          icon: School,
+          iconColor: "text-emerald-500",
+          count: syndicatedIntel?.feederHighSchools?.length || 5,
+          desc: "SchoolDigger K-12 feeder pipelines & star ratings",
+        },
+      ],
+    },
+    {
+      id: "campus",
+      title: "Campus Life & Directory",
+      items: [
+        {
+          id: "departments",
+          label: "Academic Departments",
+          icon: Building2,
+          iconColor: "text-primary",
+          count: campusIntel?.departments?.length || 0,
+          desc: "Division curricula, leadership & department pages",
+        },
+        {
+          id: "clubs",
+          label: "Clubs & Organizations",
+          icon: Compass,
+          iconColor: "text-amber-500",
+          count: campusIntel?.clubs?.length || 0,
+          desc: "Student leadership, competitive clubs & societies",
+        },
+        {
+          id: "professors",
+          label: "Faculty Directory",
+          icon: GraduationCap,
+          iconColor: "text-blue-500",
+          count: campusIntel?.professors?.length || 0,
+          desc: "Faculty researchers & recommendation letters",
+        },
+        {
+          id: "key_links",
+          label: "Campus Resources",
+          icon: Library,
+          iconColor: "text-purple-500",
+          count: campusIntel?.key_links?.length || 0,
+          desc: "SIS, Canvas LMS, library catalog & campus links",
+        },
+        {
+          id: "campus_intel",
+          label: "Campus Metrics & Intel",
+          icon: Sparkles,
+          iconColor: "text-amber-500",
+          desc: "Recruiting benchmarks, salary stats & news",
+        },
+      ],
+    },
+    ...(isStaff || canEdit
+      ? [
+          {
+            id: "admin",
+            title: "Institution Administration",
+            badge: "Staff Only",
+            items: [
+              ...(isStaff
+                ? [
+                    {
+                      id: "hierarchy",
+                      label: "Access & Hierarchy",
+                      icon: Users,
+                      iconColor: "text-purple-500",
+                      count: members.length,
+                      desc: "Multi-tenant role hierarchy & member invitations",
+                    },
+                  ]
+                : []),
+              ...(canEdit
+                ? [
+                    {
+                      id: "settings",
+                      label: "Portal Settings",
+                      icon: Settings,
+                      iconColor: "text-foreground",
+                      desc: "White-label domain, brand colors & FERPA policy",
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="space-y-6 min-w-0 max-w-full overflow-hidden" suppressHydrationWarning>
       {/* Top Campus Hub Navigation Toolbar */}
@@ -780,102 +963,223 @@ export function UniversityPortalView({
         </Card>
       </div>
 
-      {/* Main Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4" suppressHydrationWarning>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-2">
-          <TabsList className="bg-muted/60 p-1 rounded-xl flex-wrap h-auto gap-1">
-            <TabsTrigger value="roster" className="text-xs font-bold rounded-lg">
-              Student Cohort ({filteredStudents.length})
-            </TabsTrigger>
-            <TabsTrigger value="assistant" className="text-xs font-bold rounded-lg flex items-center gap-1.5 text-primary">
-              <Bot className="h-3.5 w-3.5" />
-              Campus AI Co-Pilot
-            </TabsTrigger>
-            <TabsTrigger value="transfer" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
-              Transfer Pathways ({syndicatedIntel?.transferPartners?.length || 6})
-            </TabsTrigger>
-            <TabsTrigger value="research" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5 text-indigo-500" />
-              Research &amp; Publications ({syndicatedIntel?.researchPublications?.length || 4})
-            </TabsTrigger>
-            <TabsTrigger value="feeders" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <School className="h-3.5 w-3.5 text-emerald-500" />
-              Feeder High Schools ({syndicatedIntel?.feederHighSchools?.length || 4})
-            </TabsTrigger>
-            <TabsTrigger value="departments" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <Building2 className="h-3.5 w-3.5 text-primary" />
-              Departments ({campusIntel?.departments?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="clubs" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <Compass className="h-3.5 w-3.5 text-amber-500" />
-              Clubs &amp; Orgs ({campusIntel?.clubs?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="professors" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5 text-blue-500" />
-              Faculty Directory ({campusIntel?.professors?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="career_fairs" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-emerald-500" />
-              Career Fairs ({campusIntel?.career_fairs?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="key_links" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <Library className="h-3.5 w-3.5 text-purple-500" />
-              Campus Resources ({campusIntel?.key_links?.length || 0})
-            </TabsTrigger>
-            <TabsTrigger value="talent" className="text-xs font-bold rounded-lg">
-              Recruiter Showcase
-            </TabsTrigger>
-            <TabsTrigger value="alumni" className="text-xs font-bold rounded-lg">
-              Alumni Mentorship Mesh
-            </TabsTrigger>
-            <TabsTrigger value="campus_intel" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Campus Intel &amp; Metrics
-            </TabsTrigger>
-            {isStaff && (
-              <TabsTrigger value="hierarchy" className="text-xs font-bold rounded-lg">
-                Access &amp; Hierarchy ({members.length})
-              </TabsTrigger>
-            )}
-            {canEdit && (
-              <TabsTrigger value="settings" className="text-xs font-bold rounded-lg">
-                Portal Settings
-              </TabsTrigger>
-            )}
-          </TabsList>
+      {/* Main Categorized Workspace Canvas (Split Layout) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-0" suppressHydrationWarning>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* LEFT COLUMN: Sidebar Navigation Rail (Desktop) */}
+          <div className="hidden lg:block lg:col-span-3 xl:col-span-3 sticky top-4 space-y-4">
+            <Card className="rounded-2xl border-border/80 bg-card p-3.5 shadow-sm space-y-4">
+              <div className="px-2 pt-1 pb-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">
+                    Workspace Suites
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    {navGroups.reduce((acc, g) => acc + g.items.length, 0)} Views
+                  </Badge>
+                </div>
+              </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {/* Filter by placement */}
-            {activeTab === "roster" && (
-              <Select value={placementFilter} onValueChange={setPlacementFilter}>
-                <SelectTrigger className="h-9 text-xs w-36 rounded-xl border-border bg-card">
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="searching">Searching</SelectItem>
-                  <SelectItem value="interviewing">Interviewing</SelectItem>
-                  <SelectItem value="placed">Placed</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
+              {/* Navigation Category Groups */}
+              <div className="space-y-4">
+                {navGroups.map((group) => (
+                  <div key={group.id} className="space-y-1">
+                    <div className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70 flex items-center justify-between">
+                      <span>{group.title}</span>
+                      {group.badge && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-primary/10 text-primary border border-primary/20">
+                          {group.badge}
+                        </span>
+                      )}
+                    </div>
+                    {group.items.map((item) => {
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setActiveTab(item.id)}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs transition-all text-left group ${
+                            isActive
+                              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <item.icon
+                              className={`h-4 w-4 shrink-0 transition-transform group-hover:scale-110 ${
+                                isActive ? "text-primary-foreground" : item.iconColor
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0 ml-1.5">
+                            {item.count !== undefined && (
+                              <span
+                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                  isActive
+                                    ? "bg-primary-foreground/20 text-primary-foreground"
+                                    : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {item.count}
+                              </span>
+                            )}
+                            {item.badge && (
+                              <span
+                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                                  isActive
+                                    ? "bg-primary-foreground/30 text-primary-foreground"
+                                    : item.badgeClass || "bg-primary/10 text-primary"
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
 
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search candidates, major, role..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-9 text-xs rounded-xl border-border bg-card"
-              />
-            </div>
+              {/* Institutional Tenancy Status Box */}
+              <div className="pt-2 border-t border-border/60">
+                <div className="p-3 rounded-xl bg-muted/40 border border-border/70 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-foreground">Campus Tenancy</span>
+                    <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live SIS
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground font-mono truncate">
+                    {portalSettings.customDomain}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Role: <span className="font-semibold text-foreground">{isStaff ? currentRole.toUpperCase() : "Student Member"}</span>
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
-        </div>
 
-        {/* Tab 1: Student Roster Table (Real Data Only) */}
-        <TabsContent value="roster" className="space-y-3">
+          {/* RIGHT COLUMN: Active Canvas & Contextual Header */}
+          <div className="lg:col-span-9 xl:col-span-9 space-y-4 min-w-0">
+            
+            {/* Mobile Category Navigation (lg:hidden) */}
+            <div className="lg:hidden space-y-2">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+                {navGroups.map((group) => {
+                  const isGroupActive = group.items.some((i) => i.id === activeTab);
+                  return (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => setActiveTab(group.items[0].id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                        isGroupActive
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {group.title}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Sub-item pills for active group */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none bg-muted/40 p-1.5 rounded-xl border border-border">
+                {navGroups
+                  .find((g) => g.items.some((i) => i.id === activeTab))
+                  ?.items.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveTab(item.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        activeTab === item.id
+                          ? "bg-card text-foreground font-bold shadow-xs border border-border"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className="h-3.5 w-3.5" />
+                      <span>{item.label}</span>
+                      {item.count !== undefined && (
+                        <span className="text-[10px] opacity-75">({item.count})</span>
+                      )}
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            {/* Contextual Active Section Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div
+                  style={{ backgroundColor: `${portalSettings.primaryColor}15`, color: portalSettings.primaryColor }}
+                  className="h-10 w-10 rounded-xl flex items-center justify-center font-bold shrink-0 shadow-inner"
+                >
+                  {React.createElement(
+                    navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.icon || Users,
+                    { className: "h-5 w-5" }
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-black text-foreground">
+                      {navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.label || "Student Cohort"}
+                    </h2>
+                    {navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.count !== undefined && (
+                      <Badge variant="secondary" className="text-[10px] font-mono">
+                        {navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.count} Records
+                      </Badge>
+                    )}
+                    {navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.badge && (
+                      <Badge className="text-[10px] font-bold bg-primary/15 text-primary border-primary/30">
+                        {navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.badge}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {navGroups.flatMap((g) => g.items).find((i) => i.id === activeTab)?.desc}
+                  </p>
+                </div>
+              </div>
+
+              {/* Roster Specific Quick Search and Filters */}
+              {activeTab === "roster" && (
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Select value={placementFilter} onValueChange={setPlacementFilter}>
+                    <SelectTrigger className="h-8 text-xs w-32 rounded-xl border-border bg-background">
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="searching">Searching</SelectItem>
+                      <SelectItem value="interviewing">Interviewing</SelectItem>
+                      <SelectItem value="placed">Placed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="relative w-full sm:w-56">
+                    <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Filter candidates..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 h-8 text-xs rounded-xl border-border bg-background"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Tab 1: Student Roster Table (Real Data Only) */}
+            <TabsContent value="roster" className="space-y-3">
           <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -1077,20 +1381,25 @@ export function UniversityPortalView({
                       {dept.desc}
                     </p>
 
-                    <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                    <div className="pt-3 border-t border-border/60 flex items-center justify-between flex-wrap gap-2">
                       <span className="text-[11px] text-muted-foreground font-medium">
                         Degree &bull; Research &bull; Fellowships
                       </span>
-                      {dept.website ? (
-                        <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-semibold text-primary hover:text-primary gap-1">
-                          <a href={dept.website} target="_blank" rel="noopener noreferrer">
-                            <span>Department Site</span>
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </Button>
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground">Academic Division</span>
-                      )}
+                      <Button asChild size="sm" variant="outline" className="h-8 text-xs font-bold rounded-xl border-primary/30 text-primary hover:bg-primary/10 gap-1.5 shadow-xs">
+                        <a
+                          href={
+                            dept.website ||
+                            (campusIntel?.website
+                              ? `${campusIntel.website}/academics/${dept.slug}`
+                              : `https://www.google.com/search?q=${encodeURIComponent(`${portalSettings.name} ${dept.name} department`)}`)
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span>Department Portal</span>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </Button>
                     </div>
                   </Card>
                 ))}
@@ -1153,18 +1462,25 @@ export function UniversityPortalView({
                         </p>
                       </div>
 
-                      <div className="pt-3 border-t border-border/60 flex items-center justify-between">
+                      <div className="pt-3 border-t border-border/60 flex items-center justify-between flex-wrap gap-2">
                         <span className="text-[11px] text-muted-foreground font-medium">
-                          Active Chapter
+                          Active Campus Chapter
                         </span>
-                        {club.website && (
-                          <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-semibold text-primary gap-1">
-                            <a href={club.website} target="_blank" rel="noopener noreferrer">
-                              <span>Join / Info</span>
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </Button>
-                        )}
+                        <Button asChild size="sm" variant="outline" className="h-8 text-xs font-bold rounded-xl border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 gap-1.5 shadow-xs">
+                          <a
+                            href={
+                              club.website ||
+                              (campusIntel?.website
+                                ? `${campusIntel.website}/student-life`
+                                : `https://www.google.com/search?q=${encodeURIComponent(`${portalSettings.name} ${club.name} student organization`)}`)
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <span>Club Portal &bull; Join</span>
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </Button>
                       </div>
                     </Card>
                   );
@@ -1961,6 +2277,8 @@ export function UniversityPortalView({
             cityName={syndicatedIntel?.collegeProfile?.city || "Norfolk"}
           />
         </TabsContent>
+          </div>
+        </div>
       </Tabs>
 
       {/* Candidate Enrollment Modal */}

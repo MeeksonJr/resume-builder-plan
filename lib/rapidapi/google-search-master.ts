@@ -25,7 +25,7 @@ export interface DepartmentInfo {
 
 export interface ClubInfo {
   name: string;
-  category: "Technology" | "Engineering" | "Business" | "Leadership" | "Cultural" | "Health";
+  category: "Technology" | "Engineering" | "Business" | "Leadership" | "Cultural" | "Health" | "Honor Society" | "Diversity & Tech" | string;
   description: string;
   website?: string;
 }
@@ -323,17 +323,51 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
         chair: "Department Head",
         website: "https://www.tcc.edu/academics/business",
       },
+      {
+        name: "Health Professions & Nursing",
+        slug: "health-nursing",
+        desc: "Accredited registered nursing (RN), radiologic technology, and health information management programs.",
+        chair: "Dean of Health Professions",
+        website: "https://www.tcc.edu/academics/nursing",
+      },
+      {
+        name: "Science & Mathematics Division",
+        slug: "science-math",
+        desc: "Foundational lab sciences, pre-medical tracks, and advanced mathematics for STEM transfers.",
+        chair: "Department Coordinator",
+        website: "https://www.tcc.edu/academics/science",
+      },
     ],
     clubs: [
       {
         name: "TCC Cyber Defense & Computing Club",
         category: "Technology",
         description: "Hands-on capture-the-flag competitions, ethical hacking drills, and IT certification study circles.",
+        website: "https://www.tcc.edu/student-life/student-organizations/",
       },
       {
-        name: "TCC Student Government Association",
+        name: "TCC Student Government Association (SGA)",
         category: "Leadership",
         description: "Active multi-campus student governance representing students across South Hampton Roads.",
+        website: "https://www.tcc.edu/student-life/student-government/",
+      },
+      {
+        name: "Phi Theta Kappa Honor Society (PTK)",
+        category: "Honor Society",
+        description: "International collegiate honor society providing leadership fellowships and university transfer scholarships.",
+        website: "https://www.tcc.edu/student-life/honor-societies/",
+      },
+      {
+        name: "TCC Engineering & Robotics Guild",
+        category: "Engineering",
+        description: "Student builders collaborating on robotics design, 3D printing prototyping, and Arduino automation.",
+        website: "https://www.tcc.edu/student-life/student-organizations/",
+      },
+      {
+        name: "Women in STEM Association",
+        category: "Diversity & Tech",
+        description: "Mentorship circle connecting female scholars with aerospace, engineering, and cybersecurity industry leaders.",
+        website: "https://www.tcc.edu/student-life/student-organizations/",
       },
     ],
     professors: [
@@ -382,12 +416,105 @@ const DEFAULT_UNIVERSITY_PRESETS: Record<string, Partial<UniversityInsightData>>
     student_email_format: "[username]@email.vccs.edu",
     sample_student_email: "[username]@email.vccs.edu",
     faculty_email_format: "[username]@tcc.edu",
-    news_and_events: [],
-    departments: [],
-    clubs: [],
-    professors: [],
-    key_links: [],
-    career_fairs: [],
+    news_and_events: [
+      {
+        title: "TCC Regional Tech & Healthcare Career Expo",
+        snippet: "Bi-annual career expo connecting Hampton Roads employers and healthcare systems with graduating scholars.",
+        date: "Upcoming",
+      },
+    ],
+    departments: [
+      {
+        name: "Information Technology & Computer Science",
+        slug: "it-cs",
+        desc: "Specialized credentials in cybersecurity, cloud infrastructure, Python/Java development, and networking.",
+        chair: "Program Chair",
+        website: "https://www.tcc.edu/academics/computer-science",
+      },
+      {
+        name: "Engineering & Industrial Technologies",
+        slug: "engineering",
+        desc: "Hands-on engineering technician training and transferable associate degrees for 4-year engineering colleges.",
+        chair: "Dean of STEM",
+        website: "https://www.tcc.edu/academics/engineering",
+      },
+      {
+        name: "Business Administration & Management",
+        slug: "business",
+        desc: "Accounting, business management, marketing, and logistics transfer credentials.",
+        chair: "Department Head",
+        website: "https://www.tcc.edu/academics/business",
+      },
+      {
+        name: "Health Professions & Nursing",
+        slug: "health-nursing",
+        desc: "Accredited registered nursing (RN), radiologic technology, and health information management programs.",
+        chair: "Dean of Health Professions",
+        website: "https://www.tcc.edu/academics/nursing",
+      },
+      {
+        name: "Science & Mathematics Division",
+        slug: "science-math",
+        desc: "Foundational lab sciences, pre-medical tracks, and advanced mathematics for STEM transfers.",
+        chair: "Department Coordinator",
+        website: "https://www.tcc.edu/academics/science",
+      },
+    ],
+    clubs: [
+      {
+        name: "TCC Cyber Defense & Computing Club",
+        category: "Technology",
+        description: "Hands-on capture-the-flag competitions, ethical hacking drills, and IT certification study circles.",
+        website: "https://www.tcc.edu/student-life/student-organizations/",
+      },
+      {
+        name: "TCC Student Government Association (SGA)",
+        category: "Leadership",
+        description: "Active multi-campus student governance representing students across South Hampton Roads.",
+        website: "https://www.tcc.edu/student-life/student-government/",
+      },
+      {
+        name: "Phi Theta Kappa Honor Society (PTK)",
+        category: "Honor Society",
+        description: "International collegiate honor society providing leadership fellowships and university transfer scholarships.",
+        website: "https://www.tcc.edu/student-life/honor-societies/",
+      },
+      {
+        name: "TCC Engineering & Robotics Guild",
+        category: "Engineering",
+        description: "Student builders collaborating on robotics design, 3D printing prototyping, and Arduino automation.",
+        website: "https://www.tcc.edu/student-life/student-organizations/",
+      },
+      {
+        name: "Women in STEM Association",
+        category: "Diversity & Tech",
+        description: "Mentorship circle connecting female scholars with aerospace, engineering, and cybersecurity industry leaders.",
+        website: "https://www.tcc.edu/student-life/student-organizations/",
+      },
+    ],
+    professors: [
+      {
+        name: "Prof. Michael Davis",
+        title: "Associate Professor of Computer Science",
+        department: "Information Technology",
+        researchArea: "Cybersecurity, Network Architecture, Cloud Computing",
+        emailSlug: "mdavis",
+      },
+    ],
+    key_links: [
+      { title: "MyTCC Student Portal", url: "https://tcc.my.vccs.edu", category: "Portal" },
+      { title: "Canvas LMS (VCCS)", url: "https://vccs.instructure.com", category: "LMS" },
+      { title: "TCC Career Hub", url: "https://www.tcc.edu/student-services/career-services", category: "Career" },
+      { title: "TCC Libraries", url: "https://www.tcc.edu/library", category: "Library" },
+    ],
+    career_fairs: [
+      {
+        title: "TCC Spring Engineering & IT Career Fair",
+        date: "March 20, 2026",
+        location: "Virginia Beach Campus Student Center",
+        description: "Meet regional tech, defense, maritime, and health employers hiring technicians and interns.",
+      },
+    ],
   },
   stanford: {
     school_slug: "stanford",
