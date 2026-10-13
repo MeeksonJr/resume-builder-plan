@@ -65,6 +65,10 @@ export default async function UniversityPortalPage({ params }: PortalPageProps) 
       <UniversityPortalView 
         tenant={tenant} 
         verifiedSchools={access.verifiedSchools} 
+        userRole={access.userRole}
+        isStaffOrAdmin={access.isStaffOrAdmin}
+        canEditSettings={access.canEditSettings}
+        canManageRoster={access.canManageRoster}
       />
     </div>
   );

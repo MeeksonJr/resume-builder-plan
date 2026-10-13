@@ -44,6 +44,7 @@ import {
   Library,
   Globe,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AlumniMentorshipMeshTab } from "@/components/portal/alumni-mentorship-mesh-tab";
@@ -64,9 +65,20 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { UserCheck, ShieldAlert, Key, Copy, CheckCheck } from "lucide-react";
+import { UserCheck, ShieldAlert, Key, Copy, CheckCheck, Bot } from "lucide-react";
 
-import { VerifiedSchoolRecord } from "@/lib/university/access-control";
+import {
+  VerifiedSchoolRecord,
+  CampusUserRole,
+  isCampusStaffOrAdmin,
+  canEditCampusSettings,
+  canManageCampusRoster,
+} from "@/lib/university/access-control";
+import { SyndicatedCampusIntel } from "@/lib/university/collegiate-intel-service";
+import { AcademicResearchHub } from "@/components/portal/academic-research-hub";
+import { FeederSchoolsPipeline } from "@/components/portal/feeder-schools-pipeline";
+import { TransferArticulationBenchmarks } from "@/components/portal/transfer-articulation-benchmarks";
+import { CampusAiAssistantWidget } from "@/components/portal/campus-ai-assistant-widget";
 
 export interface PortalMember {
   id: string;
@@ -81,6 +93,10 @@ export interface PortalMember {
 interface UniversityPortalViewProps {
   tenant: UniversityTenant;
   verifiedSchools?: VerifiedSchoolRecord[];
+  userRole?: CampusUserRole;
+  isStaffOrAdmin?: boolean;
+  canEditSettings?: boolean;
+  canManageRoster?: boolean;
 }
 
 function deduplicateStudents(list: StudentRosterMember[]): StudentRosterMember[] {
@@ -96,10 +112,17 @@ function deduplicateStudents(list: StudentRosterMember[]): StudentRosterMember[]
   });
 }
 
-export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPortalViewProps) {
+export function UniversityPortalView({
+  tenant,
+  verifiedSchools,
+  userRole = "student",
+  isStaffOrAdmin = false,
+  canEditSettings = false,
+  canManageRoster = false,
+}: UniversityPortalViewProps) {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("roster");
+  const [activeTab, setActiveTab] = useState("overview");
   const [placementFilter, setPlacementFilter] = useState<string>("all");
   const [isAuditing, setIsAuditing] = useState(false);
 
@@ -107,13 +130,47 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
     setMounted(true);
   }, []);
 
-  // User Authentication & Scoped Tenancy
+  // Strict User Authentication & Role Scoping
+  // Default all joining users to role 'student'. Students cannot change settings or tamper with institution configurations.
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string; name: string } | null>(null);
-  const [currentRole, setCurrentRole] = useState<"dean" | "advisor" | "student">("dean");
+  const [currentRole, setCurrentRole] = useState<CampusUserRole>(userRole || "student");
+  const isStaff = isStaffOrAdmin || isCampusStaffOrAdmin(currentRole);
+  const canEdit = canEditSettings || canEditCampusSettings(currentRole);
+  const canManage = canManageRoster || canManageCampusRoster(currentRole);
+
   const [members, setMembers] = useState<PortalMember[]>([]);
+  const [syndicatedIntel, setSyndicatedIntel] = useState<SyndicatedCampusIntel | null>(null);
+  const [loadingSyndicatedIntel, setLoadingSyndicatedIntel] = useState(false);
 
   // Real Verified Student Cohort (NO fake data)
   const [students, setStudents] = useState<StudentRosterMember[]>([]);
+
+  // Fetch syndicated 3-API intelligence (Colleges API, SchoolDigger, Google Scholar) with 48h cache
+  useEffect(() => {
+    const fetchIntel = async () => {
+      setLoadingSyndicatedIntel(true);
+      try {
+        const res = await fetch(`/api/university/${tenant.slug}/intel`);
+        if (res.ok) {
+          const data: SyndicatedCampusIntel = await res.json();
+          setSyndicatedIntel(data);
+          if (data.collegeProfile?.name) {
+            setPortalSettings((prev) => ({
+              ...prev,
+              name: data.collegeProfile.name,
+              contactEmail: `careers@${tenant.slug.replace(/-/g, "")}.edu`,
+              customDomain: `careers.${tenant.slug.replace(/-/g, "")}.edu`,
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn("[SYNDICATED_INTEL] Fetch error:", err);
+      } finally {
+        setLoadingSyndicatedIntel(false);
+      }
+    };
+    fetchIntel();
+  }, [tenant.slug]);
 
   // Modal State for Inviting Member
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -219,12 +276,15 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
               const cleanMembers = parsedMembers.filter(
                 (m: any) => !m.email?.includes("stanford.edu") && !m.name?.includes("Jordan Lee")
               );
+              const userRoleLabel = isStaff ? (currentRole === "dean" ? "Dean / Administrator" : "Career Advisor") : "Verified Student";
+              const initialMemberRole = isStaff ? (currentRole === "dean" ? "dean" : "advisor") : "student";
+
               setMembers(cleanMembers.length > 0 ? cleanMembers : [
                 {
                   id: userId,
                   email: userEmail,
-                  name: `${userName} (Workspace Admin)`,
-                  role: "dean",
+                  name: `${userName} (${userRoleLabel})`,
+                  role: initialMemberRole as "dean" | "advisor" | "student",
                   status: "active",
                   invitedAt: new Date().toISOString(),
                   enrolledBy: userId,
@@ -234,12 +294,15 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
               setMembers([]);
             }
           } else {
+            const userRoleLabel = isStaff ? (currentRole === "dean" ? "Dean / Administrator" : "Career Advisor") : "Verified Student";
+            const initialMemberRole = isStaff ? (currentRole === "dean" ? "dean" : "advisor") : "student";
+
             const initialMembers: PortalMember[] = [
               {
                 id: userId,
                 email: userEmail,
-                name: `${userName} (Workspace Admin)`,
-                role: "dean",
+                name: `${userName} (${userRoleLabel})`,
+                role: initialMemberRole as "dean" | "advisor" | "student",
                 status: "active",
                 invitedAt: new Date().toISOString(),
                 enrolledBy: userId,
@@ -538,7 +601,7 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
                   <ShieldCheck className="h-3.5 w-3.5" /> FERPA Compliant
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                  <UserCheck className="h-3.5 w-3.5" /> Scoped Workspace: {currentUser?.email || "Account"} ({currentRole.toUpperCase()})
+                  <UserCheck className="h-3.5 w-3.5" /> Workspace: {currentUser?.email || "Account"} &bull; {isStaff ? `${currentRole.toUpperCase()} (STAFF/ADMIN)` : "STUDENT (READ-ONLY)"}
                 </span>
                 {tenant.ssoEnabled && (
                   <span className="rounded-full bg-blue-500/15 border border-blue-500/30 px-2.5 py-0.5 text-[11px] font-bold text-blue-700 dark:text-blue-300">
@@ -557,47 +620,90 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="text-xs gap-1.5 h-9 rounded-xl border-border"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Export CSV</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsInviteModalOpen(true)}
-              className="text-xs gap-1.5 h-9 rounded-xl border-border"
-            >
-              <Users className="h-3.5 w-3.5" />
-              <span>Invite Member</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEnrollModalOpen(true)}
-              className="text-xs gap-1.5 h-9 rounded-xl border-border"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Enroll Student</span>
-            </Button>
-            <Button
-              size="sm"
-              style={{ backgroundColor: portalSettings.primaryColor }}
-              onClick={handleRunBatchAudit}
-              disabled={isAuditing}
-              className="text-xs gap-1.5 text-white font-bold h-9 rounded-xl hover:opacity-90 shadow-sm"
-            >
-              {isAuditing ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="h-3.5 w-3.5" />
-              )}
-              <span>{isAuditing ? "Auditing Cohort..." : "Run Batch ATS Audit"}</span>
-            </Button>
+            {isStaff ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCSV}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-border"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Export CSV</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-border"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  <span>Invite Member</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEnrollModalOpen(true)}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-border"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Enroll Student</span>
+                </Button>
+                <Button
+                  size="sm"
+                  style={{ backgroundColor: portalSettings.primaryColor }}
+                  onClick={handleRunBatchAudit}
+                  disabled={isAuditing}
+                  className="text-xs gap-1.5 text-white font-bold h-9 rounded-xl hover:opacity-90 shadow-sm"
+                >
+                  {isAuditing ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3.5 w-3.5" />
+                  )}
+                  <span>{isAuditing ? "Auditing Cohort..." : "Run Batch ATS Audit"}</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("assistant")}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-primary/30 text-primary font-bold hover:bg-primary/10"
+                >
+                  <Bot className="h-3.5 w-3.5" />
+                  <span>Ask Campus AI</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("transfer")}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-border"
+                >
+                  <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
+                  <span>Transfer Guide</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("research")}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-border"
+                >
+                  <BookOpen className="h-3.5 w-3.5 text-indigo-500" />
+                  <span>Faculty Research</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("feeders")}
+                  className="text-xs gap-1.5 h-9 rounded-xl border-border"
+                >
+                  <School className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>Feeder Schools</span>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -681,6 +787,22 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
             <TabsTrigger value="roster" className="text-xs font-bold rounded-lg">
               Student Cohort ({filteredStudents.length})
             </TabsTrigger>
+            <TabsTrigger value="assistant" className="text-xs font-bold rounded-lg flex items-center gap-1.5 text-primary">
+              <Bot className="h-3.5 w-3.5" />
+              Campus AI Co-Pilot
+            </TabsTrigger>
+            <TabsTrigger value="transfer" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
+              Transfer Pathways ({syndicatedIntel?.transferPartners?.length || 6})
+            </TabsTrigger>
+            <TabsTrigger value="research" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5 text-indigo-500" />
+              Research &amp; Publications ({syndicatedIntel?.researchPublications?.length || 4})
+            </TabsTrigger>
+            <TabsTrigger value="feeders" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
+              <School className="h-3.5 w-3.5 text-emerald-500" />
+              Feeder High Schools ({syndicatedIntel?.feederHighSchools?.length || 4})
+            </TabsTrigger>
             <TabsTrigger value="departments" className="text-xs font-bold rounded-lg flex items-center gap-1.5">
               <Building2 className="h-3.5 w-3.5 text-primary" />
               Departments ({campusIntel?.departments?.length || 0})
@@ -711,12 +833,16 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
               Campus Intel &amp; Metrics
             </TabsTrigger>
-            <TabsTrigger value="hierarchy" className="text-xs font-bold rounded-lg">
-              Access &amp; Hierarchy ({members.length})
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs font-bold rounded-lg">
-              Portal Settings
-            </TabsTrigger>
+            {isStaff && (
+              <TabsTrigger value="hierarchy" className="text-xs font-bold rounded-lg">
+                Access &amp; Hierarchy ({members.length})
+              </TabsTrigger>
+            )}
+            {canEdit && (
+              <TabsTrigger value="settings" className="text-xs font-bold rounded-lg">
+                Portal Settings
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1368,95 +1494,98 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
           )}
         </TabsContent>
 
-        {/* Tab 3: Institutional Settings */}
-        <TabsContent value="settings" className="space-y-4">
-          <Card className="rounded-2xl border-border/80 bg-card p-6 space-y-6 shadow-sm">
-            <div>
-              <h3 className="text-base font-bold text-foreground">
-                Institutional White-Label Configuration
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Manage vanity subdomains, institution branding, and student privacy controls.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-muted-foreground">
-                  Institution Name
-                </Label>
-                <Input
-                  value={portalSettings.name}
-                  onChange={(e) => setPortalSettings({ ...portalSettings, name: e.target.value })}
-                  className="rounded-xl border-border text-xs"
-                />
+        {/* Tab 3: Institutional Settings (Staff & Admin Only) */}
+        {canEdit && (
+          <TabsContent value="settings" className="space-y-4">
+            <Card className="rounded-2xl border-border/80 bg-card p-6 space-y-6 shadow-sm">
+              <div>
+                <h3 className="text-base font-bold text-foreground">
+                  Institutional White-Label Configuration
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Manage vanity subdomains, institution branding, and student privacy controls.
+                </p>
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-muted-foreground">
-                  Custom Domain
-                </Label>
-                <Input
-                  value={portalSettings.customDomain}
-                  onChange={(e) => setPortalSettings({ ...portalSettings, customDomain: e.target.value })}
-                  className="rounded-xl border-border text-xs font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-muted-foreground">
-                  Primary Institutional Hex Color
-                </Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={portalSettings.primaryColor}
-                    onChange={(e) => setPortalSettings({ ...portalSettings, primaryColor: e.target.value })}
-                    className="h-9 w-9 rounded-xl cursor-pointer border border-border p-0.5 bg-transparent"
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">
+                    Institution Name
+                  </Label>
                   <Input
-                    value={portalSettings.primaryColor}
-                    onChange={(e) => setPortalSettings({ ...portalSettings, primaryColor: e.target.value })}
-                    className="font-mono rounded-xl border-border text-xs"
+                    value={portalSettings.name}
+                    onChange={(e) => setPortalSettings({ ...portalSettings, name: e.target.value })}
+                    className="rounded-xl border-border text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">
+                    Custom Domain
+                  </Label>
+                  <Input
+                    value={portalSettings.customDomain}
+                    onChange={(e) => setPortalSettings({ ...portalSettings, customDomain: e.target.value })}
+                    className="rounded-xl border-border text-xs font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">
+                    Primary Institutional Hex Color
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={portalSettings.primaryColor}
+                      onChange={(e) => setPortalSettings({ ...portalSettings, primaryColor: e.target.value })}
+                      className="h-9 w-9 rounded-xl cursor-pointer border border-border p-0.5 bg-transparent"
+                    />
+                    <Input
+                      value={portalSettings.primaryColor}
+                      onChange={(e) => setPortalSettings({ ...portalSettings, primaryColor: e.target.value })}
+                      className="font-mono rounded-xl border-border text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground">
+                    Liaison Contact Email
+                  </Label>
+                  <Input
+                    value={portalSettings.contactEmail}
+                    onChange={(e) => setPortalSettings({ ...portalSettings, contactEmail: e.target.value })}
+                    className="rounded-xl border-border text-xs"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-muted-foreground">
-                  Liaison Contact Email
-                </Label>
-                <Input
-                  value={portalSettings.contactEmail}
-                  onChange={(e) => setPortalSettings({ ...portalSettings, contactEmail: e.target.value })}
-                  className="rounded-xl border-border text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                <div>
-                  <p className="font-bold text-foreground">FERPA Privacy & Student Data Masking</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    Protects student GPA and contact information from unauthorized external scrapers.
-                  </p>
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <p className="font-bold text-foreground">FERPA Privacy &amp; Student Data Masking</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Protects student GPA and contact information from unauthorized external scrapers.
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  size="sm"
+                  onClick={handleSaveSettings}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl"
+                >
+                  Save Settings
+                </Button>
               </div>
-              <Button
-                size="sm"
-                onClick={handleSaveSettings}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl"
-              >
-                Save Settings
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
+        )}
 
-        {/* Tab: Access & Hierarchy Management */}
-        <TabsContent value="hierarchy" className="space-y-6">
+        {/* Tab: Access & Hierarchy Management (Staff & Admin Only) */}
+        {isStaff && (
+          <TabsContent value="hierarchy" className="space-y-6">
           <Card className="rounded-2xl border-border/80 bg-card p-6 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/80 pb-5">
               <div>
@@ -1617,6 +1746,7 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
             </div>
           </Card>
         </TabsContent>
+      )}
 
         {/* Tab: Alumni Mentorship & Referral Mesh */}
         <TabsContent value="alumni" className="space-y-4">
@@ -1781,6 +1911,55 @@ export function UniversityPortalView({ tenant, verifiedSchools }: UniversityPort
               </div>
             )}
           </div>
+        </TabsContent>
+
+        {/* Tab: Campus AI Academic & Career Co-Pilot */}
+        <TabsContent value="assistant" className="space-y-4">
+          <CampusAiAssistantWidget
+            schoolSlug={tenant.slug}
+            schoolName={portalSettings.name}
+          />
+        </TabsContent>
+
+        {/* Tab: 4-Year Transfer Articulation Benchmarks (Colleges and Universities API) */}
+        <TabsContent value="transfer" className="space-y-4">
+          <TransferArticulationBenchmarks
+            currentCollege={
+              syndicatedIntel?.collegeProfile || {
+                name: portalSettings.name,
+                state: "VA",
+                city: "Norfolk",
+                zipCode: "23510",
+                country: "US",
+                schoolTypeByYears: 2,
+                schoolTypeByDesignation: "public",
+                schoolSetting: "suburban",
+                schoolSize: "large",
+                apCreditAwarded: true,
+                photos: [],
+              }
+            }
+            partners={syndicatedIntel?.transferPartners || []}
+            collegeName={portalSettings.name}
+          />
+        </TabsContent>
+
+        {/* Tab: Faculty Research & Publications (Google Scholar API) */}
+        <TabsContent value="research" className="space-y-4">
+          <AcademicResearchHub
+            publications={syndicatedIntel?.researchPublications || []}
+            schoolName={portalSettings.name}
+            isStaffOrAdmin={isStaff}
+          />
+        </TabsContent>
+
+        {/* Tab: Regional Feeder High Schools Pipeline (SchoolDigger API) */}
+        <TabsContent value="feeders" className="space-y-4">
+          <FeederSchoolsPipeline
+            schools={syndicatedIntel?.feederHighSchools || []}
+            collegeName={portalSettings.name}
+            cityName={syndicatedIntel?.collegeProfile?.city || "Norfolk"}
+          />
         </TabsContent>
       </Tabs>
 

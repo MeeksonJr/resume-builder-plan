@@ -1,18 +1,53 @@
 import { VIRGINIA_INSTITUTIONS } from "@/lib/university/virginia-institutions";
 
+export type CampusUserRole = "student" | "staff" | "advisor" | "dean" | "admin";
+
 export interface VerifiedSchoolRecord {
   slug: string;
   name: string;
   email?: string;
   verified_at?: string;
+  role?: CampusUserRole;
 }
 
 export interface SchoolAccessCheckResult {
   isVerified: boolean;
+  userRole: CampusUserRole;
+  isStaffOrAdmin: boolean;
+  canEditSettings: boolean;
+  canManageRoster: boolean;
   userPrimarySlug?: string | null;
   userPrimaryName?: string | null;
   verifiedSchools: VerifiedSchoolRecord[];
   targetInstitution?: (typeof VIRGINIA_INSTITUTIONS)[number] | null;
+}
+
+/**
+ * Helper to determine whether a given role holds elevated staff/admin privileges.
+ * By default, regular verified accounts are 'student' and have zero change/edit access.
+ */
+export function isCampusStaffOrAdmin(role?: CampusUserRole | string | null): boolean {
+  if (!role) return false;
+  const r = role.toLowerCase().trim();
+  return r === "admin" || r === "staff" || r === "dean" || r === "advisor" || r === "institution_admin";
+}
+
+export function canEditCampusSettings(role?: CampusUserRole | string | null): boolean {
+  if (!role) return false;
+  const r = role.toLowerCase().trim();
+  return r === "admin" || r === "dean" || r === "staff";
+}
+
+export function canManageCampusRoster(role?: CampusUserRole | string | null): boolean {
+  if (!role) return false;
+  const r = role.toLowerCase().trim();
+  return r === "admin" || r === "dean" || r === "staff" || r === "advisor";
+}
+
+export function canApproveCampusResumes(role?: CampusUserRole | string | null): boolean {
+  if (!role) return false;
+  const r = role.toLowerCase().trim();
+  return r === "admin" || r === "dean" || r === "staff" || r === "advisor";
 }
 
 /**
@@ -45,6 +80,8 @@ export function checkSchoolPortalAccess(
     university_slug?: string | null;
     university_name?: string | null;
     school_email?: string | null;
+    role?: string | null;
+    is_admin?: boolean | null;
     settings?: Record<string, any> | null;
   } | null | undefined,
   targetSlug: string
@@ -62,6 +99,10 @@ export function checkSchoolPortalAccess(
   if (!profile) {
     return {
       isVerified: false,
+      userRole: "student",
+      isStaffOrAdmin: false,
+      canEditSettings: false,
+      canManageRoster: false,
       userPrimarySlug: null,
       userPrimaryName: null,
       verifiedSchools: [],
@@ -76,6 +117,23 @@ export function checkSchoolPortalAccess(
   const userPrimarySlug = profile.university_slug || null;
   const userPrimaryName = profile.university_name || null;
 
+  // Resolve user role: strictly default all users who joined/verified to 'student'
+  // Unless explicitly marked as admin, staff, dean, or advisor in profile or institutional settings
+  let resolvedRole: CampusUserRole = "student";
+  
+  if (profile.is_admin === true || profile.role === "admin") {
+    resolvedRole = "admin";
+  } else if (profile.role === "staff" || profile.role === "dean") {
+    resolvedRole = "dean";
+  } else if (profile.role === "advisor") {
+    resolvedRole = "advisor";
+  } else if (profile.settings?.institutional_roles?.[normalizedTarget]) {
+    const customRole = String(profile.settings.institutional_roles[normalizedTarget]).toLowerCase();
+    if (customRole === "admin" || customRole === "dean" || customRole === "staff" || customRole === "advisor") {
+      resolvedRole = customRole as CampusUserRole;
+    }
+  }
+
   // Collect all verified schools for this user
   const verifiedSchools: VerifiedSchoolRecord[] = [];
 
@@ -84,6 +142,7 @@ export function checkSchoolPortalAccess(
       slug: normalizeInstitutionSlug(userPrimarySlug),
       name: userPrimaryName || userPrimarySlug,
       email: profile.school_email || undefined,
+      role: resolvedRole,
     });
   }
 
@@ -93,12 +152,14 @@ export function checkSchoolPortalAccess(
     for (const s of settingsSchools) {
       if (s && s.slug) {
         const norm = normalizeInstitutionSlug(s.slug);
+        const schoolSpecificRole = s.role && isCampusStaffOrAdmin(s.role) ? (s.role as CampusUserRole) : resolvedRole;
         if (!verifiedSchools.some((existing) => existing.slug === norm)) {
           verifiedSchools.push({
             slug: norm,
             name: s.name || s.slug,
             email: s.email,
             verified_at: s.verified_at,
+            role: schoolSpecificRole,
           });
         }
       }
@@ -106,14 +167,21 @@ export function checkSchoolPortalAccess(
   }
 
   // Check if target institution is among verified schools
-  const isMatch = verifiedSchools.some(
+  const matchedRecord = verifiedSchools.find(
     (v) =>
       v.slug === normalizedTarget ||
       (targetInstitution && v.slug === normalizeInstitutionSlug(targetInstitution.slug))
   );
 
+  const isMatch = Boolean(matchedRecord);
+  const finalRole: CampusUserRole = matchedRecord?.role || resolvedRole;
+
   return {
     isVerified: isMatch,
+    userRole: finalRole,
+    isStaffOrAdmin: isCampusStaffOrAdmin(finalRole),
+    canEditSettings: canEditCampusSettings(finalRole),
+    canManageRoster: canManageCampusRoster(finalRole),
     userPrimarySlug,
     userPrimaryName,
     verifiedSchools,
